@@ -2,7 +2,12 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useComposer } from "@/state/composer";
-import { inspectObjectSchema, type InspectedField } from "@/lib/codegen/schema-introspection";
+import {
+  inspectObjectSchema,
+  inspectUiFields,
+  type InspectedField,
+  type InspectedUiField,
+} from "@/lib/codegen/schema-introspection";
 import { getMetaDeep, type ImageInputValue } from "@/shaders/core/schemas";
 import type { Node } from "@/shaders/core/node";
 import type { BlendMode } from "@/shaders/core/types";
@@ -319,7 +324,7 @@ function FieldControl({
   value,
   onChange,
 }: {
-  field: InspectedField;
+  field: InspectedField | InspectedUiField;
   label: string;
   value: unknown;
   onChange: (value: unknown) => void;
@@ -328,6 +333,28 @@ function FieldControl({
   const ui = meta?.ui;
 
   switch (field.glslType) {
+    case "enumString": {
+      const opts = (field as InspectedUiField).enumValues ?? [];
+      const current = (value as string | undefined) ?? opts[0] ?? "";
+      return (
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">{label}</Label>
+          <Select value={current} onValueChange={(v) => onChange(v)}>
+            <SelectTrigger className="w-full h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {opts.map((opt) => (
+                <SelectItem key={opt} value={opt}>
+                  {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      );
+    }
+
     case "float": {
       const numValue = (value as number) ?? 0;
       return (
@@ -513,7 +540,7 @@ function FieldControl({
   }
 }
 
-function fieldLabel(field: InspectedField): string {
+function fieldLabel(field: InspectedField | InspectedUiField): string {
   const description = field.schema.description;
   if (description) return description;
   return field.key;
@@ -531,10 +558,24 @@ export function PropertyPanel() {
   const fields = useMemo(() => {
     if (!selectedNode) return null;
     const cls = selectedNode.cls;
-    const cfgFields = inspectObjectSchema(cls.config);
+    const cfgFields = inspectUiFields(cls.config);
     const inFields = inspectObjectSchema(cls.inputs);
     return { cfgFields, inFields };
   }, [selectedNode]);
+
+  const visibleCfgFields = useMemo(() => {
+    if (!selectedNode || !fields) return [] as InspectedUiField[];
+    const config = selectedNode.config as Record<string, unknown>;
+    return fields.cfgFields.filter((field) => {
+      const cond = getMetaDeep(field.schema)?.ui?.visibleWhen;
+      if (!cond) return true;
+      for (const [siblingKey, allowed] of Object.entries(cond)) {
+        const v = config[siblingKey];
+        if (!allowed.includes(v as string | number | boolean)) return false;
+      }
+      return true;
+    });
+  }, [selectedNode, fields]);
 
   if (!selectedNode || !fields) {
     return (
@@ -545,7 +586,7 @@ export function PropertyPanel() {
   }
 
   const meta = selectedNode.meta;
-  const allFields = [...fields.cfgFields, ...fields.inFields];
+  const allFields = [...visibleCfgFields, ...fields.inFields];
 
   return (
     <ScrollArea className="h-full">
@@ -608,7 +649,7 @@ export function PropertyPanel() {
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Properties
             </h3>
-            {fields.cfgFields.map((field) => {
+            {visibleCfgFields.map((field) => {
               const value = (selectedNode.config as Record<string, unknown>)[
                 field.key
               ];

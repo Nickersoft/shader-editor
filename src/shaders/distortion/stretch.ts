@@ -2,20 +2,22 @@ import { z } from 'zod'
 import { EffectNode } from '@/shaders/core/node'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zFloat } from '@/shaders/core/schemas'
+import { edgeMode, zAngle, zCenterAxis, zEdges, zFloat } from '@/shaders/core/schemas'
 
 const config = z.object({
-  scaleX: zFloat(0.1, 4).default(1.0).describe('Scale X'),
-  scaleY: zFloat(0.1, 4).default(1.0).describe('Scale Y'),
-  centerX: zFloat(0, 1).default(0.5).describe('Center X'),
-  centerY: zFloat(0, 1).default(0.5).describe('Center Y'),
+  angle: zAngle().default(0.0).describe('Angle'),
+  strength: zFloat(-1, 1, 0.01).default(0.0).describe('Strength'),
+  falloff: zFloat(0, 1, 0.01).default(0.5).describe('Falloff'),
+  centerX: zCenterAxis().default(0.5).describe('Center X'),
+  centerY: zCenterAxis().default(0.5).describe('Center Y'),
+  edges: zEdges().default('stretch').describe('Edges'),
 })
 
 const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Stretch',
-  description: 'Stretch along the X / Y axes',
+  description: 'Directional stretch with falloff',
   color: '#22d3ee',
   category: 'distortion',
   defaultBlendMode: 'normal',
@@ -31,15 +33,25 @@ export class Stretch extends EffectNode<Config, Inputs> {
   static readonly meta = meta
 
   glsl(): GlslBlock {
-    const sx = this.uniformName('scaleX')
-    const sy = this.uniformName('scaleY')
+    const angle = this.uniformName('angle')
+    const strength = this.uniformName('strength')
+    const falloff = this.uniformName('falloff')
     const cx = this.uniformName('centerX')
     const cy = this.uniformName('centerY')
     return {
+      dependencies: ['pi', 'applyEdgeHandling', 'unpremultiplyAlpha'],
       main: `
 vec2 c = vec2(${cx}, ${cy});
-vec2 d = (uv - c) / vec2(${sx}, ${sy});
-return texture(u_prevPass, c + d);`,
+vec2 d = uv - c;
+float ar = ${angle} * PI / 180.0;
+vec2 dir = vec2(cos(ar), sin(ar));
+float proj = dot(d, dir);
+vec2 perp = d - dir * proj;
+float fall = smoothstep(${falloff}, 0.0, abs(proj));
+float scale = 1.0 + ${strength} * fall;
+vec2 newD = dir * (proj * scale) + perp;
+vec2 finalUV = c + newD;
+return unpremultiplyAlpha(applyEdgeHandling(u_prevPass, finalUV, ${edgeMode(this.config.edges)}));`,
     }
   }
 }

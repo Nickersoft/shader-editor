@@ -40,7 +40,15 @@ export interface GeneratedPass {
   // 'js' marks the trivial GLSL pass that just samples a ProcessingNode's
   // CPU-computed output texture. 'glsl-render' marks a ProcessingNode's
   // optional follow-on render phase (sees the preprocessed image via u_prevPass).
-  mode?: 'js' | 'glsl-render'
+  // 'compositor' marks the scene compositor pass that blends layer textures.
+  mode?: 'js' | 'glsl-render' | 'compositor'
+  // When set, the pass writes its output into `layerTextures[commitToLayer]`
+  // rather than into the ping-pong write target. Used to terminate a layer's
+  // mini-chain so subsequent layers / the compositor can read the result.
+  commitToLayer?: number
+  // When true, the runtime binds `u_layer_<i>` samplers to the layer-texture
+  // pool before invoking `bindUniforms`. Set on the compositor pass.
+  bindLayerTextures?: boolean
 }
 
 export interface GeneratedShader {

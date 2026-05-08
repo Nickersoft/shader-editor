@@ -22,6 +22,21 @@ export interface InspectedField {
 }
 
 /**
+ * UI-only field — covers schema entries that aren't representable as GLSL
+ * uniforms (e.g. enum strings) but should still appear in the property panel.
+ * `glslType` is `'enumString'` for enum-valued fields.
+ */
+export interface InspectedUiField {
+  key: string
+  glslType: UniformGlType | 'enumString'
+  schema: z.ZodTypeAny
+  kind?: 'image-input' | 'palette' | 'sampler2D'
+  arrayLength?: number
+  /** For enum strings, the allowed values. */
+  enumValues?: readonly string[]
+}
+
+/**
  * Walk through wrapper types (`.optional()`, `.default(...)`, `.nullable()`)
  * to reach the underlying schema. Zod 4 stores wrappers with `_def.innerType`.
  */
@@ -90,6 +105,49 @@ export function inspectObjectSchema(schema: z.ZodTypeAny): InspectedField[] {
           ? meta?.ui?.array?.maxLength ?? DEFAULT_VEC4_ARRAY_LENGTH
           : undefined,
     })
+  }
+  return out
+}
+
+/**
+ * Like `inspectObjectSchema` but additionally includes enum-string fields so
+ * the property panel can render dropdowns for non-uniform config fields
+ * (e.g. a Gradient node's `type: 'linear' | 'radial'`).
+ */
+export function inspectUiFields(schema: z.ZodTypeAny): InspectedUiField[] {
+  const inner = unwrap(schema)
+  if (!(inner instanceof z.ZodObject)) return []
+  const shape = inner.shape as Record<string, z.ZodTypeAny>
+  const out: InspectedUiField[] = []
+  for (const [key, fieldSchema] of Object.entries(shape)) {
+    const glslType = inferGlslType(fieldSchema)
+    if (glslType) {
+      const meta = getMetaDeep(fieldSchema)
+      out.push({
+        key,
+        glslType,
+        schema: fieldSchema,
+        kind: meta?.kind,
+        arrayLength:
+          glslType === 'vec4Array'
+            ? meta?.ui?.array?.maxLength ?? DEFAULT_VEC4_ARRAY_LENGTH
+            : undefined,
+      })
+      continue
+    }
+    const innerField = unwrap(fieldSchema)
+    const t = (innerField._def as { type?: string }).type
+    if (t === 'enum') {
+      const entries = (innerField._def as { entries?: Record<string, string> })
+        .entries
+      const values = entries ? Object.values(entries) : []
+      out.push({
+        key,
+        glslType: 'enumString',
+        schema: fieldSchema,
+        enumValues: values,
+      })
+    }
   }
   return out
 }

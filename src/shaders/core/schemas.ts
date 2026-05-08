@@ -21,6 +21,12 @@ export interface UiMeta {
     // Renders a color picker for vec3/vec4 tuples instead of three sliders.
     color?: boolean
     array?: { minLength?: number; maxLength?: number }
+    /**
+     * Hide this field in the property panel unless the listed sibling-field
+     * values match the current config — e.g. `{ type: ['linear'] }` on a
+     * gradient's `start` field will only show it when `config.type === 'linear'`.
+     */
+    visibleWhen?: Record<string, readonly (string | number | boolean)[]>
   }
   // Tagged kinds the codegen and UI dispatch on. `image-input` and `sampler2D`
   // both refer to image data; the difference is where they live:
@@ -97,6 +103,18 @@ export function zBool() {
   return z.boolean()
 }
 
+/**
+ * Mark a schema as conditionally visible based on sibling field values. Used
+ * by the property panel to hide irrelevant fields (e.g. on a unified Gradient
+ * node, hide `radius` unless `type === 'radial'`).
+ */
+export function zVisibleWhen<S extends z.ZodTypeAny>(
+  schema: S,
+  conditions: Record<string, readonly (string | number | boolean)[]>,
+): S {
+  return withMeta(schema, { ui: { visibleWhen: conditions } })
+}
+
 // === Vectors / colors ===
 
 export type Vec3 = [number, number, number]
@@ -105,6 +123,21 @@ export type Vec4 = [number, number, number, number]
 export function zVec2(min?: number, max?: number, step = 0.01) {
   const ui = min !== undefined && max !== undefined ? { min, max, step } : { step }
   return withMeta(z.tuple([z.number(), z.number()]), { ui })
+}
+
+/**
+ * vec2 in UV space for a "center"/"origin"/"position" control. Range is
+ * symmetric around 0 so origins can sit off-screen (e.g. godray sun, lens
+ * flare just out of frame). Canvas itself spans 0..1; a default extent of 1
+ * gives one canvas-width of off-screen reach in every direction.
+ */
+export function zCenter(extent = 1, step = 0.01) {
+  return zVec2(-extent, extent, step)
+}
+
+/** Single-axis counterpart to `zCenter` for `centerX`/`centerY` style configs. */
+export function zCenterAxis(extent = 1, step = 0.01) {
+  return zFloat(-extent, extent, step)
 }
 
 export function zVec3(min?: number, max?: number, step = 0.01) {
@@ -148,6 +181,30 @@ export function zPalette(maxLength = 10) {
     kind: 'palette',
     ui: { array: { maxLength } },
   })
+}
+
+// === Edge handling (mirrors upstream's `edges` enum) ===
+//
+// Mirrors the four edge modes used by upstream distortion/effect shaders:
+// stretch, transparent, mirror, wrap. Stored as a literal string on config,
+// branched at codegen time (not as a uniform — enum-string fields aren't
+// representable as GLSL uniforms in this system). Use `edgeMode(value)` in a
+// node's `glsl()` to get the matching int constant for `applyEdgeHandling`.
+
+export const EdgeModeSchema = z.enum(['stretch', 'transparent', 'mirror', 'wrap'])
+export type EdgeMode = z.infer<typeof EdgeModeSchema>
+
+export function zEdges() {
+  return EdgeModeSchema
+}
+
+export function edgeMode(value: EdgeMode): '0' | '1' | '2' | '3' {
+  switch (value) {
+    case 'stretch': return '0'
+    case 'transparent': return '1'
+    case 'mirror': return '2'
+    case 'wrap': return '3'
+  }
 }
 
 // === Image inputs ===

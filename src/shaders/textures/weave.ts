@@ -2,20 +2,21 @@ import { z } from 'zod'
 import { GeneratorNode } from '@/shaders/core/node'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat } from '@/shaders/core/schemas'
+import { zAngle, zColor, zFloat, zInt } from '@/shaders/core/schemas'
 
 const config = z.object({
-  scale: zFloat(1, 60, 0.5).default(14.0).describe('Scale'),
-  thickness: zFloat(0.05, 0.95).default(0.4).describe('Thickness'),
-  color1: zColor().default([0.05, 0.05, 0.05]).describe('Color 1'),
-  color2: zColor().default([0.95, 0.95, 0.95]).describe('Color 2'),
+  colorA: zColor().default([0.77, 0.77, 0.77]).describe('Color A'),
+  colorB: zColor().default([0.30, 0.30, 0.30]).describe('Color B'),
+  cells: zInt(2, 80).default(10).describe('Cells'),
+  gap: zFloat(0, 0.5).default(0.25).describe('Gap'),
+  rotation: zAngle().default(0).describe('Rotation'),
 })
 
 const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Weave',
-  description: 'Interlaced over/under stripes',
+  description: 'Interlaced textile weave with two thread colors going over and under',
   color: '#0ea5e9',
   category: 'textures',
   defaultBlendMode: 'normal',
@@ -31,23 +32,31 @@ export class Weave extends GeneratorNode<Config, Inputs> {
   static readonly meta = meta
 
   glsl(): GlslBlock {
-    const scale = this.uniformName('scale')
-    const thickness = this.uniformName('thickness')
-    const color1 = this.uniformName('color1')
-    const color2 = this.uniformName('color2')
+    const colorA = this.uniformName('colorA')
+    const colorB = this.uniformName('colorB')
+    const cells = this.uniformName('cells')
+    const gap = this.uniformName('gap')
+    const rotation = this.uniformName('rotation')
     return {
-      dependencies: ['aastep'],
+      dependencies: ['aastep', 'rotate2D'],
       main: `
 vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 vec2 p = (uv - 0.5) * _ar;
-vec2 q = p * ${scale};
+p = rotate2D(p, ${rotation} * 3.14159 / 180.0);
+vec2 q = p * float(${cells});
 vec2 cell = floor(q);
 vec2 f = fract(q) - 0.5;
-bool over = mod(cell.x + cell.y, 2.0) < 0.5;
-float horiz = 1.0 - aastep(${thickness} * 0.5, abs(f.y));
-float vert = 1.0 - aastep(${thickness} * 0.5, abs(f.x));
-float m = over ? max(horiz, vert * 0.5) : max(vert, horiz * 0.5);
-return vec4(mix(${color1}, ${color2}, m), 1.0);`,
+bool aOver = mod(cell.x + cell.y, 2.0) < 0.5;
+float threadHalf = (0.5 - clamp(${gap}, 0.0, 0.5)) * 0.5 + 0.05;
+float horiz = 1.0 - aastep(threadHalf, abs(f.y));
+float vert = 1.0 - aastep(threadHalf, abs(f.x));
+float aMask = aOver ? horiz : horiz * 0.5;
+float bMask = aOver ? vert * 0.5 : vert;
+vec3 col = vec3(0.0);
+float a = max(aMask, bMask);
+col = mix(col, ${colorA}, aMask);
+col = mix(col, ${colorB}, bMask);
+return vec4(col, a);`,
     }
   }
 }

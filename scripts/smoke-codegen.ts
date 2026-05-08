@@ -1,7 +1,7 @@
-// Phase 2 smoke test. Exercises the new chain → codegen path with both a
-// simple GeneratorNode (Circle) and a compound ProcessingNode (Heatmap with
-// follow-on glsl-render pass). Validates pass splitting, fragment emission,
-// uniform collection, and serialization round-trip.
+// Phase 2 smoke test. Exercises the chain → codegen path with a simple
+// GeneratorNode (Circle) followed by an EffectNode (Glow). Validates pass
+// splitting, fragment emission, uniform collection, and serialization
+// round-trip.
 //
 // Run with: bun scripts/smoke-codegen.ts
 
@@ -9,7 +9,7 @@ import '@/shaders'
 
 import { chain, ShaderChain } from '@/shaders/core/chain'
 import Circle from '@/shaders/shapes/circle'
-import Heatmap from '@/shaders/textures/heatmap'
+import Glow from '@/shaders/stylize/glow'
 import { generate } from '@/lib/codegen'
 
 function section(title: string) {
@@ -21,13 +21,11 @@ console.log('Circle config:', c.config)
 console.log('Circle inputs:', c.inputs)
 console.log('Circle blendMode:', c.blendMode, 'opacity:', c.opacity)
 
-const h = new Heatmap({
-  inputs: { image: { url: 'data:test', sourceKind: 'dataUrl', fit: 'contain', offsetX: 0, offsetY: 0, scale: 1, rotation: 0 } },
-})
-console.log('\nHeatmap config keys:', Object.keys(h.config))
-console.log('Heatmap inputs:', h.inputs)
+const g = new Glow()
+console.log('\nGlow config keys:', Object.keys(g.config))
+console.log('Glow inputs:', g.inputs)
 
-const myChain = chain().pipe(c).pipe(h)
+const myChain = chain().pipe(c).pipe(g)
 console.log('\nChain length:', myChain.nodes.length)
 console.log('Enabled:', myChain.enabled.map((n) => n.typeId))
 

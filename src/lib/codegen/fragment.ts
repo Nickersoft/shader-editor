@@ -18,6 +18,7 @@ import { inspectObjectSchema } from './schema-introspection'
 import type { GeneratedPass } from './types'
 import type { PassPlan } from './passes'
 import { EffectNode, GeneratorNode } from '@/shaders/core/node'
+import type { Layer } from '@/shaders/core/scene'
 
 interface BuildContext {
   // Whether any node in the chain references a structured-UV varying (v_objectUV
@@ -28,6 +29,72 @@ interface BuildContext {
 export function buildFragment(plan: PassPlan, _ctx: BuildContext): GeneratedPass {
   if (plan.mode === 'js') return buildJsFragment(plan)
   return buildGlslFragment(plan)
+}
+
+/**
+ * Compositor fragment for the Scene model. Samples one texture per enabled
+ * Layer (`u_layer_<i>`) and blends them in render order onto a clear base
+ * using each layer's blendMode + opacity. Background color comes in via
+ * `u_sceneBackground`.
+ */
+export function buildCompositorFragment(layers: Layer[]): GeneratedPass {
+  const blendModes = new Set<string>(['normal'])
+  for (const l of layers) blendModes.add(l.blendMode)
+  const dependencies = new Set<string>()
+  for (const m of blendModes) {
+    const fn = BLEND_MODE_FUNCTIONS[m as keyof typeof BLEND_MODE_FUNCTIONS]
+    if (fn) dependencies.add(fn)
+  }
+  const sortedDeps = sortDependencies(Array.from(dependencies))
+  const utilFunctions: string[] = []
+  for (const dep of sortedDeps) {
+    if (GLSL_UTILS[dep]) utilFunctions.push(GLSL_UTILS[dep])
+  }
+
+  const uniformDeclarations: string[] = [
+    'uniform vec2 u_resolution;',
+    'uniform vec4 u_sceneBackground;',
+  ]
+  for (let i = 0; i < layers.length; i++) {
+    uniformDeclarations.push(`uniform sampler2D u_layer_${i};`)
+    uniformDeclarations.push(`uniform float u_layer_${i}_opacity;`)
+  }
+
+  const layerCalls: string[] = []
+  layerCalls.push(`  vec4 color = u_sceneBackground;`)
+  for (let i = 0; i < layers.length; i++) {
+    const blendFn =
+      BLEND_MODE_FUNCTIONS[layers[i].blendMode] || 'blendNormal'
+    layerCalls.push(
+      `  color = ${blendFn}(color, texture(u_layer_${i}, v_uv), u_layer_${i}_opacity);`,
+    )
+  }
+
+  const fragmentShader = `#version 300 es
+precision highp float;
+
+in vec2 v_uv;
+out vec4 fragColor;
+
+// Uniforms
+${uniformDeclarations.join('\n')}
+
+// Utility Functions
+${utilFunctions.join('\n')}
+
+void main() {
+${layerCalls.join('\n')}
+  fragColor = color;
+}
+`
+
+  return {
+    fragmentShader,
+    readsPrevPass: false,
+    nodeIds: [],
+    mode: 'compositor',
+    bindLayerTextures: true,
+  }
 }
 
 function buildJsFragment(plan: PassPlan): GeneratedPass {
@@ -56,13 +123,13 @@ void main() {
 }
 
 function buildGlslFragment(plan: PassPlan): GeneratedPass {
-  const { nodes, readsPrevPass, mode } = plan
+  const { nodes, readsPrevPass, mode, blockIndex } = plan
   const dependencies = new Set<string>()
   const blendModes = new Set<string>()
 
   // Collect dependencies and blend modes.
   for (const node of nodes) {
-    const block = getGlslBlock(node)
+    const block = getGlslBlock(node, blockIndex)
     if (!block) continue
     block.dependencies?.forEach((d) => dependencies.add(d))
     if (node.blendMode !== 'normal') blendModes.add(node.blendMode)
@@ -96,6 +163,23 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
   ]
   if (readsPrevPass) {
     uniformDeclarations.push('uniform sampler2D u_prevPass;')
+  }
+
+  // Optional global uniforms — declared only if any node in this pass
+  // references them. The runtime always binds them when the location resolves;
+  // declaring conditionally keeps unused programs clean.
+  const allBlocks = nodes
+    .map((n) => getGlslBlock(n, blockIndex))
+    .filter((b): b is NonNullable<ReturnType<typeof getGlslBlock>> => !!b)
+  const passBody = allBlocks.map((b) => b.main + (b.functions ?? '')).join('\n')
+  if (/\bu_mouse\b/.test(passBody)) {
+    uniformDeclarations.push('uniform vec2 u_mouse;')
+  }
+  if (/\bu_mouseDelta\b/.test(passBody)) {
+    uniformDeclarations.push('uniform vec2 u_mouseDelta;')
+  }
+  if (/\bu_prevFrame\b/.test(passBody)) {
+    uniformDeclarations.push('uniform sampler2D u_prevFrame;')
   }
 
   for (const node of nodes) {
@@ -136,7 +220,7 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
 
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i]
-    const block = getGlslBlock(node)
+    const block = getGlslBlock(node, blockIndex)
     if (!block) continue
     if (block.functions) layerHelpers.add(block.functions.trim())
 
@@ -154,7 +238,12 @@ ${indent(block.main.trim(), 2)}
     const blendFunc =
       BLEND_MODE_FUNCTIONS[node.blendMode] || 'blendNormal'
     if (i === 0) {
-      mainCalls.push(`  vec4 color = ${funcName}(uv, vec4(0.0));`)
+      // Compose onto a transparent base so the layer's alpha is folded into
+      // its RGB. Without this, fragments outside the shape carry the fill
+      // color with alpha=0, which the canvas (alpha:false) displays as opaque.
+      mainCalls.push(
+        `  vec4 color = blendNormal(vec4(0.0), ${funcName}(uv, vec4(0.0)), 1.0);`,
+      )
     } else {
       mainCalls.push(
         `  color = ${blendFunc}(color, ${funcName}(uv, color), u_${prefix}_opacity);`,
@@ -215,9 +304,13 @@ ${mainCalls.length > 0 ? mainCalls.join('\n') : '  vec4 color = vec4(0.0, 0.0, 0
   }
 }
 
-function getGlslBlock(node: import('@/shaders/core/node').Node) {
-  if (node instanceof GeneratorNode || node instanceof EffectNode) {
+function getGlslBlock(node: import('@/shaders/core/node').Node, blockIndex = 0) {
+  if (node instanceof GeneratorNode) {
     return node.glsl()
+  }
+  if (node instanceof EffectNode) {
+    const out = node.glsl()
+    return Array.isArray(out) ? (out[blockIndex] ?? null) : out
   }
   // ProcessingNode in glsl-render phase.
   const proc = node as unknown as { glsl?: () => ReturnType<GeneratorNode['glsl']> }
@@ -256,7 +349,8 @@ const DEP_ORDER: Record<string, number> = {
   valueNoise: 1, simplex2D: 1,
   fbm: 2, fiberNoise: 2, domainWarp: 2, voronoi: 2, snoise: 2, oklchTransforms: 2,
   oklchColorRampLookup: 3,
-  luma: 0, colorBandingFix: 3, gaussian9: 4,
+  luma: 0, colorBandingFix: 3, gaussian9: 4, gaussian13: 4,
+  applyEdgeHandling: 4, unpremultiplyAlpha: 0,
   blendNormal: 3, blendAdd: 3, blendMultiply: 3, blendScreen: 3,
   blendOverlay: 3, blendSoftLight: 3, blendHardLight: 3,
 }

@@ -193,14 +193,37 @@ export abstract class GeneratorNode<
 }
 
 /**
+ * Where an EffectNode may be attached in the Scene model:
+ *   'layer' — only inside a Layer's `effects[]` (acts on the layer texture).
+ *   'scene' — only on `scene.postEffects[]` (acts on the composited canvas;
+ *             often required by effects that read `u_prevFrame` for cross-frame
+ *             state, e.g. cursor ripples or particle trails).
+ *   'both'  — works in either position (the default).
+ */
+export type EffectScope = 'layer' | 'scene' | 'both'
+
+/**
  * Receives the previous pass output. Always triggers an FBO split. Inside
- * `main`, the previous color is bound to `vec4 prev`.
+ * `main`, the previous color is bound to `vec4 base` and the previous-pass
+ * texture is `u_prevPass`.
+ *
+ * `glsl()` may return either a single GlslBlock (one pass) or an array of
+ * blocks (each becomes its own GLSL pass; each subsequent pass reads the
+ * preceding pass's output via `u_prevPass`). Use the array form for inherently
+ * multi-stage effects like a true separable Gaussian blur (horizontal then
+ * vertical) or an iterative simulation step.
  */
 export abstract class EffectNode<
   C extends Record<string, unknown> = Record<string, unknown>,
   I extends Record<string, unknown> = Record<string, unknown>,
 > extends Node<C, I> {
-  abstract glsl(): GlslBlock
+  /**
+   * Attachment scope. Subclasses override to restrict where they may be
+   * placed (e.g. cursor-driven effects that need full canvas state set
+   * `scope = 'scene'`).
+   */
+  static readonly scope: EffectScope = 'both'
+  abstract glsl(): GlslBlock | GlslBlock[]
 }
 
 /**
@@ -234,4 +257,14 @@ export function isEffectNode(node: Node): node is EffectNode {
 
 export function isProcessingNode(node: Node): node is ProcessingNode {
   return node instanceof ProcessingNode
+}
+
+/**
+ * Read the static `scope` field from an EffectNode subclass. Returns 'both'
+ * when the field isn't declared (the default). Generators / Processing nodes
+ * have no scope concept and return 'both' as a no-op.
+ */
+export function getEffectScope(cls: NodeClass): EffectScope {
+  const scope = (cls as unknown as { scope?: EffectScope }).scope
+  return scope ?? 'both'
 }

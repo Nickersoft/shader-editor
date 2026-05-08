@@ -2,27 +2,20 @@ import { z } from 'zod'
 import { GeneratorNode } from '@/shaders/core/node'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat, zInt } from '@/shaders/core/schemas'
+import { zColor, zFloat } from '@/shaders/core/schemas'
 
 const config = z.object({
-  colorBack: zColor().default([0.05, 0.05, 0.08]).describe('Background'),
-  colorFill: zColor().default([0.95, 0.9, 0.7]).describe('Fill'),
-  colorStroke: zColor().default([1.0, 0.7, 0.3]).describe('Stroke'),
-  gapX: zFloat(4, 200, 1).default(30.0).describe('Gap X'),
-  gapY: zFloat(4, 200, 1).default(30.0).describe('Gap Y'),
-  dotSize: zFloat(0.05, 0.95).default(0.3).describe('Dot Size'),
-  strokeWidth: zFloat(0, 0.2, 0.005).default(0).describe('Stroke'),
-  sizeRange: zFloat(0, 0.5).default(0).describe('Size Rand'),
-  opacityRange: zFloat(0, 1).default(0).describe('Opacity Rand'),
-  shape: zInt(0, 3).default(0).describe('Shape (0=circle 1=sq 2=diamond 3=cross)'),
+  color: zColor().default([1, 1, 1]).describe('Color'),
+  density: zFloat(2, 200, 1).default(30).describe('Density'),
+  dotSize: zFloat(0, 1).default(0.3).describe('Dot Size'),
+  twinkle: zFloat(0, 1).default(0).describe('Twinkle'),
 })
 
 const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Dot Grid',
-  description:
-    'Grid of geometric dots — circle, square, diamond, or cross with optional per-cell size/opacity randomization',
+  description: 'Grid of dots with optional twinkling animation',
   color: '#0ea5e9',
   category: 'textures',
   defaultBlendMode: 'normal',
@@ -38,51 +31,24 @@ export class DotGrid extends GeneratorNode<Config, Inputs> {
   static readonly meta = meta
 
   glsl(): GlslBlock {
-    const colorBack = this.uniformName('colorBack')
-    const colorFill = this.uniformName('colorFill')
-    const colorStroke = this.uniformName('colorStroke')
-    const gapX = this.uniformName('gapX')
-    const gapY = this.uniformName('gapY')
+    const color = this.uniformName('color')
+    const density = this.uniformName('density')
     const dotSize = this.uniformName('dotSize')
-    const strokeWidth = this.uniformName('strokeWidth')
-    const sizeRange = this.uniformName('sizeRange')
-    const opacityRange = this.uniformName('opacityRange')
-    const shape = this.uniformName('shape')
+    const twinkle = this.uniformName('twinkle')
     return {
       dependencies: ['hash21'],
       main: `
-vec2 px = uv * u_resolution;
-vec2 cellSize = vec2(${gapX}, ${gapY});
-vec2 cellId = floor(px / cellSize);
-vec2 cellUv = (px - cellId * cellSize) / cellSize - 0.5;
-float rnd = hash21(cellId);
-float sz = ${dotSize} + (rnd - 0.5) * ${sizeRange};
-sz = clamp(sz, 0.01, 0.99);
-float opRand = 1.0 - rnd * ${opacityRange};
-cellUv.x *= cellSize.x / cellSize.y;
-float d;
-int sh = ${shape};
-if (sh == 1) {
-  vec2 q = abs(cellUv);
-  d = max(q.x, q.y) - sz * 0.5;
-} else if (sh == 2) {
-  d = (abs(cellUv.x) + abs(cellUv.y)) - sz * 0.5;
-} else if (sh == 3) {
-  float arm = sz * 0.15;
-  float len = sz * 0.5;
-  float h = max(abs(cellUv.x) - len, abs(cellUv.y) - arm);
-  float v2 = max(abs(cellUv.y) - len, abs(cellUv.x) - arm);
-  d = min(h, v2);
-} else {
-  d = length(cellUv) - sz * 0.5;
-}
+vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
+vec2 q = uv * _ar * ${density};
+vec2 cellId = floor(q);
+vec2 cellUv = fract(q) - 0.5;
+float d = length(cellUv);
+float sz = clamp(${dotSize}, 0.0, 1.0) * 0.5;
 float aa = fwidth(d);
-float fill = 1.0 - smoothstep(-aa, aa, d);
-float stroke = smoothstep(-(${strokeWidth} + aa), -(${strokeWidth} - aa), d) * fill;
-vec3 col = ${colorBack};
-col = mix(col, ${colorFill}, fill * opRand);
-col = mix(col, ${colorStroke}, stroke * opRand);
-return vec4(col, 1.0);`,
+float dot_ = 1.0 - smoothstep(sz - aa, sz + aa, d);
+float tw = 0.5 + 0.5 * sin(u_time * 3.0 + hash21(cellId) * 6.2831);
+float a = dot_ * mix(1.0, tw, ${twinkle});
+return vec4(${color} * a, a);`,
     }
   }
 }

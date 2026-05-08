@@ -1,9 +1,9 @@
 // Core types for the class-based shader composition system.
 //
 // `Node` (in ./node.ts) is the abstract base. Every primitive lives in its
-// own file under src/shaders/{shapes,textures,effects,distortion,overlays}/
-// and `export default`s a class extending GeneratorNode, EffectNode, or
-// ProcessingNode.
+// own file under src/shaders/<category>/ — categories mirror the bucketing
+// at shaders.com/docs/components — and `export default`s a class extending
+// GeneratorNode, EffectNode, or ProcessingNode.
 //
 // `ShaderChain` (in ./chain.ts) holds an ordered list of node instances and
 // exposes `.pipe()` for fluent composition. The codegen pipeline at
@@ -19,12 +19,18 @@ export type BlendMode =
   | 'softLight'
   | 'hardLight'
 
+// Category buckets mirror the structure of shaders.com/docs/components.
+// Each primitive declares one of these on its `meta.category`. The layer-stack
+// UI uses CATEGORY_ORDER (in layer-stack.tsx) to group nodes in the picker.
 export type Category =
-  | 'shapes'
   | 'textures'
-  | 'effects'
+  | 'shapes'
+  | 'shape-effects'
+  | 'stylize'
+  | 'interactive'
   | 'distortion'
-  | 'overlays'
+  | 'blurs'
+  | 'adjustments'
 
 export interface NodeMeta {
   name: string

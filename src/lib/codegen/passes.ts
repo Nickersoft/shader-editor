@@ -21,8 +21,20 @@ export interface PassPlan {
   readsPrevPass: boolean
   // 'js' = degenerate fragment pass that samples a ProcessingNode's CPU output.
   // 'glsl-render' = ProcessingNode's follow-on render phase using its own glsl().
+  // 'compositor' = scene compositor that blends layer textures via u_layer_*.
   // Otherwise a normal GLSL pass containing one or more Generator/Effect nodes.
-  mode?: 'js' | 'glsl-render'
+  mode?: 'js' | 'glsl-render' | 'compositor'
+  // For EffectNodes whose `glsl()` returns multiple blocks (multi-pass effects
+  // like separable blurs), this is the index into that block array. Undefined
+  // / 0 means "the first / only block." Each multi-block pass after the first
+  // is implicitly `readsPrevPass: true`.
+  blockIndex?: number
+  // When set, the runtime renders this pass into the per-layer texture pool
+  // at `layerTextures[commitToLayer]`. Used to terminate a Layer's mini-chain.
+  commitToLayer?: number
+  // When true (set on the compositor pass) the runtime intrinsically binds
+  // each `u_layer_<i>` sampler to the matching layer texture.
+  bindLayerTextures?: boolean
 }
 
 export function splitIntoPasses(nodes: Node[]): PassPlan[] {
@@ -54,10 +66,15 @@ export function splitIntoPasses(nodes: Node[]): PassPlan[] {
     }
 
     if (node instanceof EffectNode) {
-      // Boundary: close any GeneratorNode run before us, then this EffectNode
-      // becomes its own pass that reads the previous output.
+      // Boundary: close any GeneratorNode run before us. EffectNodes whose
+      // glsl() returns multiple blocks expand to one pass per block; each
+      // pass after the first reads the previous block's output.
       closeCurrent()
-      plans.push({ nodes: [node], readsPrevPass: true })
+      const out = node.glsl()
+      const blocks = Array.isArray(out) ? out : [out]
+      for (let i = 0; i < blocks.length; i++) {
+        plans.push({ nodes: [node], readsPrevPass: true, blockIndex: i })
+      }
       isReader = true
       continue
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { useComposer } from "@/state/composer";
 import { generate, type GeneratedPass, type GeneratedUniform } from "@/lib/codegen";
 import { isProcessingNode } from "@/shaders/core/node";
@@ -11,6 +11,7 @@ import {
 import { TextureCache } from "@/lib/codegen/runtime/texture-cache";
 import { JsLayerRunner } from "@/lib/codegen/runtime/js-layer-runner";
 import type { ImageInputValue } from "@/shaders/core/schemas";
+import { CanvasOverlay } from "./canvas-overlay";
 
 const FIT_MODE: Record<string, number> = {
   cover: 0,
@@ -50,7 +51,42 @@ export function ShaderPreview() {
   const textureCacheRef = useRef<TextureCache | null>(null);
   const jsRunnerRef = useRef<JsLayerRunner | null>(null);
 
-  const { chain } = useComposer();
+  const { scene, selectedNodeId } = useComposer();
+  const selectedLayer = useMemo(() => {
+    if (!selectedNodeId) return null;
+    const found = scene.findNode(selectedNodeId);
+    return found?.layer ?? null;
+  }, [scene, selectedNodeId]);
+
+  // Keep latest scene in a ref so the render loop can read live values
+  // without tearing down rAF on every config tweak.
+  const sceneRef = useRef(scene);
+  sceneRef.current = scene;
+
+  // Structural signature: rebuild the pipeline only when topology/wiring
+  // changes, not on per-config drags. Captures layer/effect identity,
+  // ordering, enabled state, and blend modes — anything that would alter
+  // generated GLSL or pass layout.
+  const structuralKey = useMemo(() => {
+    const parts: string[] = [];
+    parts.push(`bg:${scene.background.color.join(",")}`);
+    for (const layer of scene.layers) {
+      parts.push(
+        `L:${layer.id}:${layer.enabled ? 1 : 0}:${layer.blendMode}:${layer.source.id}:${layer.source.typeId}:${layer.source.enabled ? 1 : 0}`,
+      );
+      for (const fx of layer.effects) {
+        parts.push(
+          `E:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}`,
+        );
+      }
+    }
+    for (const fx of scene.postEffects) {
+      parts.push(
+        `P:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}`,
+      );
+    }
+    return parts.join("|");
+  }, [scene]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -70,8 +106,17 @@ export function ShaderPreview() {
     textureCacheRef.current = new TextureCache(gl);
     jsRunnerRef.current = new JsLayerRunner(gl);
 
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / Math.max(rect.width, 1);
+      const y = 1 - (e.clientY - rect.top) / Math.max(rect.height, 1);
+      pipelineRef.current?.setMouse(x, y);
+    };
+    canvas.addEventListener("mousemove", onMouseMove);
+
     return () => {
       cancelAnimationFrame(animationRef.current);
+      canvas.removeEventListener("mousemove", onMouseMove);
       pipelineRef.current?.destroy();
       pipelineRef.current = null;
       textureCacheRef.current?.destroy();
@@ -84,32 +129,50 @@ export function ShaderPreview() {
   useEffect(() => {
     const gl = glRef.current;
     if (!gl) return;
+    const scene = sceneRef.current;
 
     pipelineRef.current?.destroy();
     pipelineRef.current = null;
     passesRef.current = [];
     uniformsRef.current = [];
 
-    const enabled = chain.enabled;
-    if (enabled.length === 0) {
+    const enabledLayers = scene.enabledLayers;
+    if (enabledLayers.length === 0) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.clearColor(0, 0, 0, 1);
+      const [r, g, b, a] = scene.background.color;
+      gl.clearColor(r, g, b, a);
       gl.clear(gl.COLOR_BUFFER_BIT);
       return;
     }
 
-    const { passes, vertexShader, uniforms } = generate(chain);
+    const { passes, vertexShader, uniforms } = generate(scene);
     passesRef.current = passes;
     uniformsRef.current = uniforms;
     pipelineRef.current = createShaderPipeline(
       gl,
       vertexShader,
-      passes.map((p) => ({ fragment: p.fragmentShader, readsPrevPass: p.readsPrevPass }))
+      passes.map((p) => ({
+        fragment: p.fragmentShader,
+        readsPrevPass: p.readsPrevPass,
+        bindLayerTextures: p.bindLayerTextures,
+        commitToLayer: p.commitToLayer,
+      })),
+      {
+        layerCount: enabledLayers.length,
+        sceneBackground: scene.background.color,
+        layerOpacities: enabledLayers.map((l) => l.opacity),
+      }
     );
 
     // Drop JS-runner state for nodes that no longer exist or were disabled.
-    jsRunnerRef.current?.prune(new Set(enabled.map((n) => n.id)));
-  }, [chain]);
+    const liveIds = new Set<string>();
+    for (const layer of enabledLayers) {
+      liveIds.add(layer.source.id);
+      for (const fx of layer.effects) liveIds.add(fx.id);
+    }
+    for (const fx of scene.postEffects) liveIds.add(fx.id);
+    jsRunnerRef.current?.prune(liveIds);
+  }, [structuralKey]);
 
   useEffect(() => {
     const gl = glRef.current;
@@ -134,12 +197,17 @@ export function ShaderPreview() {
       }
 
       const time = (Date.now() - startTimeRef.current) / 1000;
+      const scene = sceneRef.current;
+
+      // Push scene-level state every frame (cheap, decouples from React reconciliation).
+      pipeline.setSceneBackground(scene.background.color);
+      pipeline.setLayerOpacities(scene.enabledLayers.map((l) => l.opacity));
 
       pipeline.render(time, w, h, (ctx, program) => {
         const pass = passes[ctx.passIndex];
         let textureUnit = ctx.nextTextureUnit;
         for (const nodeId of pass.nodeIds) {
-          const node = chain.nodes.find((n) => n.id === nodeId);
+          const node = scene.findNode(nodeId)?.node;
           if (!node) continue;
           const prefix = node.prefix;
 
@@ -289,12 +357,12 @@ export function ShaderPreview() {
 
     animationRef.current = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animationRef.current);
-  }, [chain]);
+  }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full bg-black"
-    />
+    <div className="relative w-full h-full">
+      <canvas ref={canvasRef} className="w-full h-full bg-black" />
+      <CanvasOverlay canvasRef={canvasRef} layer={selectedLayer} />
+    </div>
   );
 }

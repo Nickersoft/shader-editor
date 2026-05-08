@@ -5,14 +5,14 @@ import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import { zColor } from '@/shaders/core/schemas'
 
 const config = z.object({
-  color: zColor().default([0.1, 0.1, 0.12]).describe('Color'),
+  color: zColor().default([0.357, 0.094, 0.792]).describe('Color'),
 })
 
 const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Solid Color',
-  description: 'Single flat color over the entire canvas',
+  description: 'Fill the canvas with a single solid color',
   color: '#a3a3a3',
   category: 'textures',
   defaultBlendMode: 'normal',

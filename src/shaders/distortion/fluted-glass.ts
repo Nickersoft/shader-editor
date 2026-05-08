@@ -2,23 +2,25 @@ import { z } from 'zod'
 import { EffectNode } from '@/shaders/core/node'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zAngle, zFloat, zInt } from '@/shaders/core/schemas'
+import { edgeMode, zAngle, zColor, zEdges, zFloat } from '@/shaders/core/schemas'
 
 const config = z.object({
-  size: zFloat(0, 1).default(0.5).describe('Lane Width'),
-  angle: zAngle().default(0.0).describe('Angle'),
-  shape: zInt(0, 2).default(0).describe('Shape'),
-  distortion: zFloat(0, 1).default(0.5).describe('Distortion'),
-  highlights: zFloat(0, 1).default(0.4).describe('Highlights'),
-  shadows: zFloat(0, 1).default(0.4).describe('Shadows'),
-  shift: zFloat(-0.5, 0.5).default(0.0).describe('Shift'),
+  frequency: zFloat(1, 50, 0.5).default(8.0).describe('Frequency'),
+  softness: zFloat(0, 1, 0.01).default(0.5).describe('Softness'),
+  refraction: zFloat(0, 1, 0.01).default(0.5).describe('Refraction'),
+  aberration: zFloat(0, 1, 0.01).default(0.0).describe('Aberration'),
+  lightAngle: zAngle().default(45.0).describe('Light Angle'),
+  highlight: zFloat(0, 2, 0.01).default(0.5).describe('Highlight'),
+  highlightSoftness: zFloat(0, 1, 0.01).default(0.5).describe('Highlight Softness'),
+  highlightColor: zColor().default([1, 1, 1]).describe('Highlight Color'),
+  edges: zEdges().default('mirror').describe('Edges'),
 })
 
 const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Fluted Glass',
-  description: 'Refractive lanes — pair with image-source for fluted-glass effect',
+  description: 'Refractive vertical fluting with chromatic aberration and highlight',
   color: '#22d3ee',
   category: 'distortion',
   defaultBlendMode: 'normal',
@@ -34,45 +36,33 @@ export class FlutedGlass extends EffectNode<Config, Inputs> {
   static readonly meta = meta
 
   glsl(): GlslBlock {
-    const size = this.uniformName('size')
-    const angle = this.uniformName('angle')
-    const shape = this.uniformName('shape')
-    const distortion = this.uniformName('distortion')
-    const highlights = this.uniformName('highlights')
-    const shadows = this.uniformName('shadows')
-    const shift = this.uniformName('shift')
+    const frequency = this.uniformName('frequency')
+    const softness = this.uniformName('softness')
+    const refraction = this.uniformName('refraction')
+    const aberration = this.uniformName('aberration')
+    const lightAngle = this.uniformName('lightAngle')
+    const highlight = this.uniformName('highlight')
+    const highlightSoftness = this.uniformName('highlightSoftness')
+    const highlightColor = this.uniformName('highlightColor')
     return {
-      dependencies: ['rotate2D'],
+      dependencies: ['pi', 'applyEdgeHandling', 'unpremultiplyAlpha'],
       main: `
-float patternRotation = -${angle} * 3.14159 / 180.0;
-float patternSize = mix(200.0, 5.0, clamp(${size}, 0.0, 1.0));
-vec2 q = (uv - 0.5) * patternSize;
-q = rotate2D(q, patternRotation);
-float laneIdx = floor(q.x);
-float xRaw = fract(q.x);
-float x = abs(xRaw - 0.5) * 2.0;
-float distortion = 0.0;
-if (${shape} == 0) {
-  distortion = -pow(1.5 * x, 3.0);
-  distortion += (0.5 - ${shift});
-} else if (${shape} == 1) {
-  distortion = 2.0 * pow(x, 2.0);
-  distortion -= (0.5 + ${shift});
-} else {
-  distortion = pow(2.0 * (xRaw - 0.5), 6.0);
-  distortion -= 0.25 + ${shift};
-}
-vec2 dir = vec2(cos(patternRotation), sin(patternRotation));
-vec2 refractUv = uv + dir * distortion * ${distortion} * 0.05;
-vec4 src = texture(u_prevPass, refractUv);
-float edgeWidth = 2.0 * max(0.001, fwidth(xRaw));
-float edge = smoothstep(0.0, edgeWidth, xRaw) * smoothstep(1.0, 1.0 - edgeWidth, xRaw);
-float highlight = (1.0 - edge) * ${highlights};
-float shadow = pow(x, 1.3) * ${shadows};
-vec3 col = src.rgb;
-col = mix(col, col * (1.0 - shadow), shadow);
-col = mix(col, vec3(1.0), highlight);
-return vec4(col, src.a);`,
+float t = sin(uv.x * ${frequency} * PI);
+float ts = sign(t) * pow(abs(t), mix(1.0, 0.3, ${softness}));
+float refrX = ts * ${refraction} * 0.05;
+vec2 finalUV = vec2(uv.x + refrX, uv.y);
+float chr = ts * ${aberration} * 0.025;
+vec4 rS = applyEdgeHandling(u_prevPass, vec2(finalUV.x + chr, finalUV.y), ${edgeMode(this.config.edges)});
+vec4 gS = applyEdgeHandling(u_prevPass, finalUV, ${edgeMode(this.config.edges)});
+vec4 bS = applyEdgeHandling(u_prevPass, vec2(finalUV.x - chr, finalUV.y), ${edgeMode(this.config.edges)});
+vec4 sampled = unpremultiplyAlpha(vec4(rS.r, gS.g, bS.b, gS.a));
+float softInv = 1.0 / max(${highlightSoftness}, 0.01);
+float spec = pow(max(1.0 - abs(t), 0.0), softInv) * ${highlight};
+float la = ${lightAngle} * PI / 180.0;
+float lightFactor = max(cos(la - uv.x * PI), 0.0);
+spec *= lightFactor;
+vec3 lit = mix(sampled.rgb, ${highlightColor}, clamp(spec, 0.0, 1.0));
+return vec4(lit, sampled.a);`,
     }
   }
 }

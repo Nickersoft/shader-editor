@@ -5,20 +5,20 @@ import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import { zColor, zFloat } from '@/shaders/core/schemas'
 
 const config = z.object({
-  scale: zFloat(0.1, 20, 0.1).default(3.0).describe('Scale'),
-  speed: zFloat(0, 5, 0.1).default(1.0).describe('Speed'),
-  octaves: zFloat(1, 8, 1).default(4.0).describe('Octaves'),
-  lacunarity: zFloat(1, 4, 0.1).default(2.0).describe('Lacunarity'),
-  gain: zFloat(0, 1).default(0.5).describe('Gain'),
-  color1: zColor().default([0.0, 0.0, 0.0]).describe('Color 1'),
-  color2: zColor().default([1.0, 1.0, 1.0]).describe('Color 2'),
+  colorA: zColor().default([1, 1, 1]).describe('Color A'),
+  colorB: zColor().default([0, 0, 0]).describe('Color B'),
+  scale: zFloat(0.1, 20, 0.1).default(2).describe('Scale'),
+  balance: zFloat(-1, 1).default(0).describe('Balance'),
+  contrast: zFloat(-1, 4, 0.05).default(0).describe('Contrast'),
+  seed: zFloat(0, 100, 0.1).default(0).describe('Seed'),
+  speed: zFloat(0, 4, 0.05).default(1).describe('Speed'),
 })
 
 const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Simplex Noise',
-  description: 'Smooth, organic noise pattern',
+  description: 'Organic noise with animated movement',
   color: '#8b5cf6',
   category: 'textures',
   defaultBlendMode: 'normal',
@@ -34,20 +34,25 @@ export class SimplexNoise extends GeneratorNode<Config, Inputs> {
   static readonly meta = meta
 
   glsl(): GlslBlock {
+    const colorA = this.uniformName('colorA')
+    const colorB = this.uniformName('colorB')
     const scale = this.uniformName('scale')
+    const balance = this.uniformName('balance')
+    const contrast = this.uniformName('contrast')
+    const seed = this.uniformName('seed')
     const speed = this.uniformName('speed')
-    const octaves = this.uniformName('octaves')
-    const lacunarity = this.uniformName('lacunarity')
-    const gain = this.uniformName('gain')
-    const color1 = this.uniformName('color1')
-    const color2 = this.uniformName('color2')
     return {
       dependencies: ['simplex2D', 'fbm'],
       main: `
-vec2 noiseUv = uv * ${scale} + u_time * ${speed} * 0.1;
-float n = fbm(noiseUv, ${octaves}, ${lacunarity}, ${gain});
+vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
+vec2 p = (uv - 0.5) * _ar * ${scale} + ${seed};
+float t = u_time * ${speed} * 0.15;
+float n = fbm(p + t, 5.0, 2.0, 0.5);
 n = n * 0.5 + 0.5;
-vec3 col = mix(${color1}, ${color2}, n);
+n = clamp(n + ${balance} * 0.5, 0.0, 1.0);
+float c = clamp(${contrast} + 1.0, 0.0, 5.0);
+n = clamp((n - 0.5) * c + 0.5, 0.0, 1.0);
+vec3 col = mix(${colorB}, ${colorA}, n);
 return vec4(col, 1.0);`,
     }
   }

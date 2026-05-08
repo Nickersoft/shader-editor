@@ -2,23 +2,26 @@ import { z } from 'zod'
 import { GeneratorNode } from '@/shaders/core/node'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat } from '@/shaders/core/schemas'
+import { zAngle, zColorRgba, zFloat } from '@/shaders/core/schemas'
 
 const config = z.object({
-  count: zFloat(4, 200, 1).default(40.0).describe('Count'),
-  speed: zFloat(0, 8, 0.05).default(1.0).describe('Speed'),
-  lengthMin: zFloat(0.05, 1).default(0.2).describe('Min Length'),
-  lengthMax: zFloat(0.05, 1).default(0.7).describe('Max Length'),
-  thickness: zFloat(0.01, 1).default(0.3).describe('Thickness'),
-  color1: zColor().default([0.05, 0.05, 0.05]).describe('Color 1'),
-  color2: zColor().default([0.95, 0.95, 0.95]).describe('Color 2'),
+  colorA: zColorRgba().default([1, 1, 1, 1]).describe('Color A'),
+  colorB: zColorRgba().default([1, 1, 1, 0]).describe('Color B'),
+  angle: zAngle(1).default(90).describe('Angle'),
+  speed: zFloat(0, 4, 0.05).default(0.5).describe('Speed'),
+  speedVariance: zFloat(0, 1).default(0.3).describe('Speed Variance'),
+  density: zFloat(2, 100, 1).default(15).describe('Density'),
+  trailLength: zFloat(0, 1).default(0.35).describe('Trail Length'),
+  balance: zFloat(0, 1).default(0.5).describe('Balance'),
+  strokeWidth: zFloat(0, 1).default(0.15).describe('Stroke Width'),
+  rounding: zFloat(0, 1).default(1).describe('Rounding'),
 })
 
 const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Falling Lines',
-  description: 'Animated downward streaks',
+  description: 'Directional falling lines with a leading-to-trailing color fade',
   color: '#0ea5e9',
   category: 'textures',
   defaultBlendMode: 'normal',
@@ -34,31 +37,42 @@ export class FallingLines extends GeneratorNode<Config, Inputs> {
   static readonly meta = meta
 
   glsl(): GlslBlock {
-    const count = this.uniformName('count')
+    const colorA = this.uniformName('colorA')
+    const colorB = this.uniformName('colorB')
+    const angle = this.uniformName('angle')
     const speed = this.uniformName('speed')
-    const lengthMin = this.uniformName('lengthMin')
-    const lengthMax = this.uniformName('lengthMax')
-    const thickness = this.uniformName('thickness')
-    const color1 = this.uniformName('color1')
-    const color2 = this.uniformName('color2')
+    const speedVariance = this.uniformName('speedVariance')
+    const density = this.uniformName('density')
+    const trailLength = this.uniformName('trailLength')
+    const balance = this.uniformName('balance')
+    const strokeWidth = this.uniformName('strokeWidth')
+    const rounding = this.uniformName('rounding')
     return {
-      dependencies: ['aastep', 'hash'],
+      dependencies: ['hash21', 'rotate2D'],
       main: `
 vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 vec2 p = (uv - 0.5) * _ar;
-float n = ${count};
-vec2 q = vec2(p.x * n, p.y);
-float col = floor(q.x);
-float seed = hash(vec2(col, 1.0));
-float speedJ = mix(0.5, 1.5, hash(vec2(col, 2.0)));
-float len = mix(${lengthMin}, ${lengthMax}, hash(vec2(col, 3.0)));
-float yOff = -u_time * ${speed} * speedJ + seed * 4.0;
-float yLocal = fract(p.y + yOff);
-float lineMask = smoothstep(0.0, 0.05, yLocal) * (1.0 - smoothstep(len, len + 0.05, yLocal));
-float xLocal = fract(q.x) - 0.5;
-float xMask = 1.0 - aastep(${thickness} * 0.5, abs(xLocal));
-float m = xMask * lineMask;
-return vec4(mix(${color1}, ${color2}, m), 1.0);`,
+p = rotate2D(p, -(${angle} - 90.0) * 3.14159265 / 180.0);
+float dens = ${density};
+float colId = floor(p.x * dens);
+float jitter = hash21(vec2(colId, 7.0));
+float jSpeed = mix(1.0 - ${speedVariance}, 1.0 + ${speedVariance}, jitter);
+float yOff = u_time * ${speed} * 0.6 * jSpeed + jitter * 9.7;
+float spacing = max(${trailLength} * 1.6, 0.05);
+float lane = fract(p.y + yOff) / spacing;
+float along = clamp(lane, 0.0, 1.0);
+float on = step(lane, 1.0);
+float xLocal = (fract(p.x * dens) - 0.5) * 2.0;
+float halfW = clamp(${strokeWidth}, 0.001, 1.0);
+float stroke = 1.0 - smoothstep(halfW * 0.95, halfW, abs(xLocal));
+// Round leading cap.
+float cap = 1.0 - smoothstep(0.95, 1.0, along);
+float roundCap = mix(1.0, cap, ${rounding});
+float lineMask = stroke * on * roundCap;
+float mixT = mix(along, smoothstep(0.0, 1.0, along), 1.0);
+mixT = clamp(mixT + (${balance} - 0.5), 0.0, 1.0);
+vec4 col = mix(${colorA}, ${colorB}, mixT);
+return vec4(col.rgb * lineMask * col.a, col.a * lineMask);`,
     }
   }
 }

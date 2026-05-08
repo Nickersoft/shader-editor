@@ -618,6 +618,72 @@ vec4 gaussian9(sampler2D src, vec2 uv, vec2 r) {
   return c;
 }`
 
+// 13-tap separable Gaussian (single direction). Mirrors upstream's blur kernel
+// weights: [0.056, 0.135, 0.265, 0.444, 0.654, 0.857, 1.0, 0.857, 0.654,
+//           0.444, 0.265, 0.135, 0.056], normalized to ~6.214 total.
+// `step` is the per-tap pixel offset along `direction` (pre-normalized).
+export const gaussian13 = `
+vec4 gaussian13(sampler2D src, vec2 uv, vec2 direction) {
+  const float W0 = 1.0;
+  const float W1 = 0.857;
+  const float W2 = 0.654;
+  const float W3 = 0.444;
+  const float W4 = 0.265;
+  const float W5 = 0.135;
+  const float W6 = 0.056;
+  const float TOTAL = W0 + 2.0 * (W1 + W2 + W3 + W4 + W5 + W6);
+  vec4 acc = texture(src, uv) * W0;
+  acc += texture(src, uv + direction * 1.0) * W1;
+  acc += texture(src, uv - direction * 1.0) * W1;
+  acc += texture(src, uv + direction * 2.0) * W2;
+  acc += texture(src, uv - direction * 2.0) * W2;
+  acc += texture(src, uv + direction * 3.0) * W3;
+  acc += texture(src, uv - direction * 3.0) * W3;
+  acc += texture(src, uv + direction * 4.0) * W4;
+  acc += texture(src, uv - direction * 4.0) * W4;
+  acc += texture(src, uv + direction * 5.0) * W5;
+  acc += texture(src, uv - direction * 5.0) * W5;
+  acc += texture(src, uv + direction * 6.0) * W6;
+  acc += texture(src, uv - direction * 6.0) * W6;
+  return acc / TOTAL;
+}`
+
+// Edge-handling helper. Modes (passed as int):
+//   0 = stretch (clamp to [0,1])
+//   1 = transparent (return vec4(0) outside)
+//   2 = mirror
+//   3 = wrap
+// Returns the resampled color from `src` after applying the edge policy to `uv`.
+export const applyEdgeHandling = `
+vec4 applyEdgeHandling(sampler2D src, vec2 uv, int mode) {
+  if (mode == 1) {
+    // Transparent: return clear if outside.
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+      return vec4(0.0);
+    }
+    return texture(src, uv);
+  }
+  if (mode == 2) {
+    // Mirror: triangle wave on each axis.
+    vec2 m = mod(uv, 2.0);
+    m = mix(m, 2.0 - m, step(1.0, m));
+    return texture(src, m);
+  }
+  if (mode == 3) {
+    // Wrap.
+    return texture(src, fract(uv));
+  }
+  // Stretch (default).
+  return texture(src, clamp(uv, 0.0, 1.0));
+}`
+
+// Unpremultiplies alpha. Mirrors upstream's `unpremultiplyAlpha` used after
+// edge-handled samples in distortion/effect nodes.
+export const unpremultiplyAlpha = `
+vec4 unpremultiplyAlpha(vec4 c) {
+  return c.a > 1e-4 ? vec4(c.rgb / c.a, c.a) : c;
+}`
+
 // === Aggregate lookup (codegen-internal) ===
 //
 // Maps dependency name → GLSL source. The codegen splices the right bodies
@@ -672,4 +738,7 @@ export const GLSL_UTILS: Record<string, string> = {
   oklchColorRampLookup,
   colorBandingFix,
   gaussian9,
+  gaussian13,
+  applyEdgeHandling,
+  unpremultiplyAlpha,
 }

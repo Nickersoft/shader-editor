@@ -22,7 +22,14 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useComposer } from "@/state/composer";
 import { listNodeClasses } from "@/shaders/core/registry";
-import type { Node, NodeClass } from "@/shaders/core/node";
+import {
+  GeneratorNode,
+  EffectNode,
+  getEffectScope,
+  type EffectScope,
+} from "@/shaders/core/node";
+import type { Layer } from "@/shaders/core/scene";
+import type { NodeClass } from "@/shaders/core/node";
 import type { Category, SerializedChain } from "@/shaders/core/types";
 import { PRESET_GROUPS, type PresetEntry } from "@/shaders";
 import { Button } from "@/components/ui/button";
@@ -36,6 +43,9 @@ import {
   EyeOff,
   Search,
   X,
+  Plus,
+  ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 
 const TEMPLATE_STORAGE_KEY = "shader-composer:templates:v2";
@@ -45,20 +55,40 @@ interface CategoryMeta {
 }
 
 const CATEGORY_META: Record<Category, CategoryMeta> = {
-  shapes: { name: "Shapes" },
   textures: { name: "Textures" },
-  effects: { name: "Effects" },
-  distortion: { name: "Distortion" },
-  overlays: { name: "Overlays" },
+  shapes: { name: "Shapes" },
+  "shape-effects": { name: "Shape Effects" },
+  stylize: { name: "Stylize" },
+  interactive: { name: "Interactive" },
+  distortion: { name: "Distortions" },
+  blurs: { name: "Blurs" },
+  adjustments: { name: "Adjustments" },
 };
 
 const CATEGORY_ORDER: Category[] = [
-  "shapes",
   "textures",
-  "effects",
+  "shapes",
+  "shape-effects",
+  "stylize",
+  "interactive",
   "distortion",
-  "overlays",
+  "blurs",
+  "adjustments",
 ];
+
+type AddTarget =
+  | { kind: "newLayer" } // Adding a Generator → new layer
+  | { kind: "layerEffect"; layerId: string } // Adding an Effect to a specific Layer
+  | { kind: "sceneEffect" }; // Adding an Effect to scene post-effects
+
+function isGeneratorClass(cls: NodeClass): boolean {
+  return (cls as unknown as typeof GeneratorNode).prototype instanceof
+    GeneratorNode;
+}
+
+function isEffectClass(cls: NodeClass): boolean {
+  return (cls as unknown as typeof EffectNode).prototype instanceof EffectNode;
+}
 
 function loadTemplatesFromStorage(): Record<string, SerializedChain> {
   if (typeof window === "undefined") return {};
@@ -79,36 +109,43 @@ function saveTemplatesToStorage(t: Record<string, SerializedChain>) {
   }
 }
 
-function SortableLayerItem({ node }: { node: Node }) {
-  const { selectNode, toggleNode, removeNode, selectedNodeId } = useComposer();
-
+function SortableLayerRow({
+  layer,
+  isExpanded,
+  onToggleExpanded,
+}: {
+  layer: Layer;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
+}) {
   const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: node.id });
+    selectNode,
+    toggleLayer,
+    removeLayer,
+    selectedNodeId,
+  } = useComposer();
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: `layer:${layer.id}` });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  const isSelected = selectedNodeId === node.id;
-  const meta = node.meta;
+  const isSelected = selectedNodeId === layer.source.id;
+  const meta = layer.source.meta;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-2 p-2 rounded-lg border bg-card transition-colors",
+        "flex items-center gap-1 p-2 rounded-lg border bg-card transition-colors",
         isSelected && "border-primary ring-1 ring-primary/20",
         !isSelected && "border-border hover:border-muted-foreground/30",
         isDragging && "opacity-50 shadow-lg",
-        !node.enabled && "opacity-60"
+        !layer.enabled && "opacity-60"
       )}
     >
       <button
@@ -120,25 +157,44 @@ function SortableLayerItem({ node }: { node: Node }) {
       </button>
 
       <button
+        className="p-1 text-muted-foreground hover:text-foreground"
+        onClick={onToggleExpanded}
+        title={isExpanded ? "Collapse effects" : "Expand effects"}
+      >
+        {layer.effects.length > 0 ? (
+          isExpanded ? (
+            <ChevronDown className="h-3.5 w-3.5" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5" />
+          )
+        ) : (
+          <span className="block w-3.5 h-3.5" />
+        )}
+      </button>
+
+      <button
         className="flex-1 min-w-0 text-left"
-        onClick={() => selectNode(node.id)}
+        onClick={() => selectNode(layer.source.id)}
       >
         <div className="flex items-center gap-2">
           <span
             className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: meta?.color ?? "#888" }}
+            style={{ backgroundColor: meta.color }}
           />
-          <span className="text-sm font-medium truncate">
-            {meta?.name ?? node.typeId}
-          </span>
+          <span className="text-sm font-medium truncate">{layer.name}</span>
+          {layer.effects.length > 0 && (
+            <span className="text-[10px] text-muted-foreground/70">
+              {layer.effects.length}fx
+            </span>
+          )}
         </div>
       </button>
 
       <button
         className="p-1 text-muted-foreground hover:text-foreground"
-        onClick={() => toggleNode(node.id)}
+        onClick={() => toggleLayer(layer.id)}
       >
-        {node.enabled ? (
+        {layer.enabled ? (
           <Eye className="h-4 w-4" />
         ) : (
           <EyeOff className="h-4 w-4" />
@@ -147,7 +203,8 @@ function SortableLayerItem({ node }: { node: Node }) {
 
       <button
         className="p-1 text-muted-foreground hover:text-destructive"
-        onClick={() => removeNode(node.id)}
+        onClick={() => removeLayer(layer.id)}
+        title="Remove layer"
       >
         <Trash2 className="h-4 w-4" />
       </button>
@@ -155,18 +212,234 @@ function SortableLayerItem({ node }: { node: Node }) {
   );
 }
 
+function SortableEffectRow({
+  effectId,
+  layerId,
+  scope,
+}: {
+  effectId: string;
+  layerId: string | null; // null = scene post-effect
+  scope: "layer" | "scene";
+}) {
+  const {
+    scene,
+    selectNode,
+    toggleNode,
+    removeEffectFromLayer,
+    removeSceneEffect,
+    selectedNodeId,
+  } = useComposer();
+
+  const dragId =
+    scope === "layer"
+      ? `effect:${layerId}:${effectId}`
+      : `scene-effect:${effectId}`;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: dragId });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const node = scene.findNode(effectId)?.node;
+  if (!node) return null;
+  const isSelected = selectedNodeId === effectId;
+  const meta = node.meta;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-1 p-1.5 rounded-md border bg-card/60 transition-colors",
+        isSelected && "border-primary/60 ring-1 ring-primary/20",
+        !isSelected && "border-border/60 hover:border-muted-foreground/30",
+        isDragging && "opacity-50 shadow-lg",
+        !node.enabled && "opacity-60"
+      )}
+    >
+      <button
+        className="cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground hover:text-foreground"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="h-3.5 w-3.5" />
+      </button>
+      <button
+        className="flex-1 min-w-0 text-left"
+        onClick={() => selectNode(effectId)}
+      >
+        <div className="flex items-center gap-2">
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: meta.color }}
+          />
+          <span className="text-xs truncate">{meta.name}</span>
+        </div>
+      </button>
+      <button
+        className="p-0.5 text-muted-foreground hover:text-foreground"
+        onClick={() => toggleNode(effectId)}
+      >
+        {node.enabled ? (
+          <Eye className="h-3.5 w-3.5" />
+        ) : (
+          <EyeOff className="h-3.5 w-3.5" />
+        )}
+      </button>
+      <button
+        className="p-0.5 text-muted-foreground hover:text-destructive"
+        onClick={() => {
+          if (scope === "layer" && layerId) {
+            removeEffectFromLayer(layerId, effectId);
+          } else {
+            removeSceneEffect(effectId);
+          }
+        }}
+        title="Remove effect"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
+function SortableLayerWithEffects({
+  layer,
+  isExpanded,
+  onToggleExpanded,
+  onAddEffect,
+}: {
+  layer: Layer;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
+  onAddEffect: () => void;
+}) {
+  const { reorderEffectsInLayer } = useComposer();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Display effects top-to-bottom = applied last-to-first (Figma convention).
+  const displayEffects = useMemo(
+    () => [...layer.effects].reverse(),
+    [layer.effects]
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = displayEffects.findIndex(
+      (e) => `effect:${layer.id}:${e.id}` === active.id
+    );
+    const newIndex = displayEffects.findIndex(
+      (e) => `effect:${layer.id}:${e.id}` === over.id
+    );
+    const next = arrayMove(displayEffects, oldIndex, newIndex);
+    reorderEffectsInLayer(
+      layer.id,
+      next
+        .slice()
+        .reverse()
+        .map((e) => e.id)
+    );
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <SortableLayerRow
+        layer={layer}
+        isExpanded={isExpanded}
+        onToggleExpanded={onToggleExpanded}
+      />
+      {isExpanded && (
+        <div className="ml-6 space-y-1 border-l border-border/50 pl-2">
+          {displayEffects.length > 0 && (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={displayEffects.map((e) => `effect:${layer.id}:${e.id}`)}
+                strategy={verticalListSortingStrategy}
+              >
+                {displayEffects.map((fx) => (
+                  <SortableEffectRow
+                    key={fx.id}
+                    effectId={fx.id}
+                    layerId={layer.id}
+                    scope="layer"
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          )}
+          <button
+            onClick={onAddEffect}
+            className="flex items-center gap-1.5 w-full p-1.5 rounded-md border border-dashed border-border/50 text-[11px] text-muted-foreground hover:text-foreground hover:border-muted-foreground/40 transition-colors"
+          >
+            <Plus className="h-3 w-3" />
+            Add effect…
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LayerStack() {
-  const { chain, reorderNodes, addNode, loadChain, loadJson } = useComposer();
+  const {
+    scene,
+    selectedNodeId,
+    selectNode,
+    addNode,
+    addLayer,
+    addEffectToLayer,
+    addSceneEffect,
+    reorderLayers,
+    reorderSceneEffects,
+    loadChain,
+    loadJson,
+  } = useComposer();
 
   const [templates, setTemplates] = useState<Record<string, SerializedChain>>(
     () => loadTemplatesFromStorage()
   );
+  const [presetsOpen, setPresetsOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [expandedLayers, setExpandedLayers] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [addTarget, setAddTarget] = useState<AddTarget | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Display layers top-to-bottom = render top-to-bottom (Figma).
+  const displayLayers = useMemo(
+    () => [...scene.layers].reverse(),
+    [scene.layers]
+  );
+  const displayPostEffects = useMemo(
+    () => [...scene.postEffects].reverse(),
+    [scene.postEffects]
+  );
 
   const handleSaveTemplate = () => {
-    if (chain.nodes.length === 0) return;
+    if (scene.layers.length === 0 && scene.postEffects.length === 0) return;
     const name = window.prompt("Template name:")?.trim();
     if (!name) return;
-    const next = { ...templates, [name]: chain.toJSON() };
+    const next = { ...templates, [name]: { nodes: [] } };
     setTemplates(next);
     saveTemplatesToStorage(next);
   };
@@ -188,38 +461,63 @@ export function LayerStack() {
     loadChain(preset.chain.clone());
   };
 
-  const [presetsOpen, setPresetsOpen] = useState(false);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  const displayNodes = useMemo(
-    () => [...chain.nodes].reverse(),
-    [chain]
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleLayerDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-
-    if (over && active.id !== over.id) {
-      const oldIndex = displayNodes.findIndex((n) => n.id === active.id);
-      const newIndex = displayNodes.findIndex((n) => n.id === over.id);
-
-      const newDisplayOrder = arrayMove(displayNodes, oldIndex, newIndex);
-      reorderNodes([...newDisplayOrder].reverse().map((n) => n.id));
-    }
+    if (!over || active.id === over.id) return;
+    const oldIndex = displayLayers.findIndex(
+      (l) => `layer:${l.id}` === active.id
+    );
+    const newIndex = displayLayers.findIndex(
+      (l) => `layer:${l.id}` === over.id
+    );
+    const next = arrayMove(displayLayers, oldIndex, newIndex);
+    reorderLayers(
+      next
+        .slice()
+        .reverse()
+        .map((l) => l.id)
+    );
   };
 
-  const [search, setSearch] = useState("");
+  const handleSceneEffectDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = displayPostEffects.findIndex(
+      (e) => `scene-effect:${e.id}` === active.id
+    );
+    const newIndex = displayPostEffects.findIndex(
+      (e) => `scene-effect:${e.id}` === over.id
+    );
+    const next = arrayMove(displayPostEffects, oldIndex, newIndex);
+    reorderSceneEffects(
+      next
+        .slice()
+        .reverse()
+        .map((e) => e.id)
+    );
+  };
 
+  // Build the picker grid. When `addTarget` is set we narrow to the relevant
+  // primitive class (Generators for newLayer; Effects of the right scope for
+  // layerEffect / sceneEffect). Otherwise show everything (Generators add new
+  // layers, Effects route by scope).
   const grouped = useMemo(() => {
     const q = search.trim().toLowerCase();
     const byCat = new Map<Category, NodeClass[]>();
     for (const cls of listNodeClasses()) {
+      // Filter by add target.
+      if (addTarget?.kind === "newLayer") {
+        if (!isGeneratorClass(cls)) continue;
+      } else if (addTarget?.kind === "layerEffect") {
+        if (!isEffectClass(cls)) continue;
+        const scope = getEffectScope(cls);
+        if (scope === "scene") continue;
+      } else if (addTarget?.kind === "sceneEffect") {
+        if (!isEffectClass(cls)) continue;
+        const scope = getEffectScope(cls);
+        if (scope === "layer") continue;
+      }
+      // Free-form picker filters.
       if (q) {
         const hay = `${cls.meta.name} ${cls.meta.description}`.toLowerCase();
         if (!hay.includes(q)) continue;
@@ -228,21 +526,56 @@ export function LayerStack() {
       list.push(cls);
       byCat.set(cls.meta.category, list);
     }
-    return CATEGORY_ORDER
-      .map((cat) => ({
-        cat,
-        meta: CATEGORY_META[cat],
-        items: (byCat.get(cat) ?? []).sort((a, b) =>
-          a.meta.name.localeCompare(b.meta.name)
-        ),
-      }))
-      .filter((g) => g.items.length > 0);
-  }, [search]);
+    return CATEGORY_ORDER.map((cat) => ({
+      cat,
+      meta: CATEGORY_META[cat],
+      items: (byCat.get(cat) ?? []).sort((a, b) =>
+        a.meta.name.localeCompare(b.meta.name)
+      ),
+    })).filter((g) => g.items.length > 0);
+  }, [search, addTarget]);
+
+  const handlePickPrimitive = (cls: NodeClass) => {
+    const typeId = cls.typeId;
+    if (addTarget?.kind === "newLayer" && isGeneratorClass(cls)) {
+      addLayer(typeId);
+    } else if (addTarget?.kind === "layerEffect" && isEffectClass(cls)) {
+      addEffectToLayer(addTarget.layerId, typeId);
+    } else if (addTarget?.kind === "sceneEffect" && isEffectClass(cls)) {
+      addSceneEffect(typeId);
+    } else {
+      // Default routing — keeps backward compatibility for unscoped clicks.
+      if (isEffectClass(cls)) {
+        const scope = getEffectScope(cls);
+        if (scope === "scene") {
+          addSceneEffect(typeId);
+        } else {
+          // Prefer the currently-selected layer; else fall back to legacy addNode.
+          const selected = selectedNodeId
+            ? scene.findNode(selectedNodeId)?.layer
+            : null;
+          if (selected) addEffectToLayer(selected.id, typeId);
+          else addNode(typeId);
+        }
+      } else {
+        addNode(typeId);
+      }
+    }
+    setAddTarget(null);
+  };
 
   const totalPresets = useMemo(
     () => PRESET_GROUPS.reduce((acc, g) => acc + g.presets.length, 0),
     []
   );
+
+  const selectionLabel = (() => {
+    if (!addTarget) return null;
+    if (addTarget.kind === "newLayer") return "Add layer";
+    if (addTarget.kind === "sceneEffect") return "Add scene effect";
+    const layer = scene.findLayer(addTarget.layerId);
+    return `Add effect to "${layer?.name ?? "layer"}"`;
+  })();
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -264,7 +597,9 @@ export function LayerStack() {
               size="sm"
               className="h-6 text-[11px] px-2"
               onClick={handleSaveTemplate}
-              disabled={chain.nodes.length === 0}
+              disabled={
+                scene.layers.length === 0 && scene.postEffects.length === 0
+              }
               title="Save current composition as a template"
             >
               Save…
@@ -324,17 +659,28 @@ export function LayerStack() {
             ))}
           </div>
         )}
-        <div className="px-3 pb-2">
-          <div className="relative">
+        <div className="px-3 pb-2 flex items-center gap-2">
+          <div className="relative flex-1">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search primitives…"
+              placeholder={
+                selectionLabel ? selectionLabel + "…" : "Search primitives…"
+              }
               className="h-7 text-xs pl-7"
             />
           </div>
+          {addTarget && (
+            <button
+              onClick={() => setAddTarget(null)}
+              className="text-[10px] text-muted-foreground hover:text-foreground"
+              title="Clear add filter"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
         <div className="px-3 pb-3 max-h-72 overflow-y-auto space-y-2">
           {grouped.length === 0 ? (
@@ -357,7 +703,7 @@ export function LayerStack() {
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      onClick={() => addNode(cls.typeId)}
+                      onClick={() => handlePickPrimitive(cls)}
                       title={cls.meta.description}
                     >
                       <span
@@ -375,29 +721,108 @@ export function LayerStack() {
       </div>
 
       <ScrollArea className="flex-1 min-h-0">
-        <div className="p-3 space-y-2">
-          {displayNodes.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground text-sm">
-              Add a layer to get started
-            </div>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={displayNodes.map((n) => n.id)}
-                strategy={verticalListSortingStrategy}
+        <div className="p-3 space-y-3">
+          {/* Layers section */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Scene
+              </div>
+              <button
+                onClick={() => setAddTarget({ kind: "newLayer" })}
+                className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                title="Add layer"
               >
-                {displayNodes.map((node) => (
-                  <SortableLayerItem key={node.id} node={node} />
-                ))}
-              </SortableContext>
-            </DndContext>
-          )}
+                <Plus className="h-3 w-3" /> Layer
+              </button>
+            </div>
+            {displayLayers.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground text-xs">
+                Add a layer to get started
+              </div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleLayerDragEnd}
+              >
+                <SortableContext
+                  items={displayLayers.map((l) => `layer:${l.id}`)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-1.5">
+                    {displayLayers.map((layer) => (
+                      <SortableLayerWithEffects
+                        key={layer.id}
+                        layer={layer}
+                        isExpanded={expandedLayers[layer.id] ?? true}
+                        onToggleExpanded={() =>
+                          setExpandedLayers((s) => ({
+                            ...s,
+                            [layer.id]: !(s[layer.id] ?? true),
+                          }))
+                        }
+                        onAddEffect={() =>
+                          setAddTarget({
+                            kind: "layerEffect",
+                            layerId: layer.id,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+          </div>
+
+          {/* Scene post-effects section */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Post-effects
+              </div>
+              <button
+                onClick={() => setAddTarget({ kind: "sceneEffect" })}
+                className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                title="Add scene effect"
+              >
+                <Plus className="h-3 w-3" /> Effect
+              </button>
+            </div>
+            {displayPostEffects.length === 0 ? (
+              <div className="text-[11px] text-muted-foreground/70 py-2">
+                Apply full-canvas effects (vignette, grain, …) here.
+              </div>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleSceneEffectDragEnd}
+              >
+                <SortableContext
+                  items={displayPostEffects.map((e) => `scene-effect:${e.id}`)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-1">
+                    {displayPostEffects.map((fx) => (
+                      <SortableEffectRow
+                        key={fx.id}
+                        effectId={fx.id}
+                        layerId={null}
+                        scope="scene"
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+          </div>
         </div>
       </ScrollArea>
     </div>
   );
 }
+
+// EffectScope is re-imported but currently unused in this file's surface.
+export type { EffectScope };

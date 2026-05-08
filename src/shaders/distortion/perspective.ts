@@ -2,18 +2,21 @@ import { z } from 'zod'
 import { EffectNode } from '@/shaders/core/node'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zFloat } from '@/shaders/core/schemas'
+import { edgeMode, zEdges, zFloat, zVec2 } from '@/shaders/core/schemas'
 
 const config = z.object({
-  horizontal: zFloat(-1, 1).default(0.0).describe('Horizontal'),
-  vertical: zFloat(-1, 1).default(0.0).describe('Vertical'),
+  pan: zVec2(-1, 1, 0.01).default([0, 0]).describe('Pan'),
+  tilt: zVec2(-1, 1, 0.01).default([0, 0]).describe('Tilt'),
+  fov: zFloat(10, 120, 1).default(60.0).describe('FOV'),
+  offset: zVec2(-1, 1, 0.01).default([0, 0]).describe('Offset'),
+  edges: zEdges().default('transparent').describe('Edges'),
 })
 
 const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Perspective',
-  description: 'Trapezoidal perspective skew',
+  description: 'Rotate the plane in 3D space with pan, tilt, and FOV',
   color: '#22d3ee',
   category: 'distortion',
   defaultBlendMode: 'normal',
@@ -29,15 +32,25 @@ export class Perspective extends EffectNode<Config, Inputs> {
   static readonly meta = meta
 
   glsl(): GlslBlock {
-    const horizontal = this.uniformName('horizontal')
-    const vertical = this.uniformName('vertical')
+    const pan = this.uniformName('pan')
+    const tilt = this.uniformName('tilt')
+    const fov = this.uniformName('fov')
+    const offset = this.uniformName('offset')
     return {
+      dependencies: ['pi', 'applyEdgeHandling', 'unpremultiplyAlpha'],
       main: `
-vec2 q = uv - 0.5;
-float scaleX = 1.0 + ${vertical} * q.y;
-float scaleY = 1.0 + ${horizontal} * q.x;
-q = q / vec2(scaleX, scaleY);
-return texture(u_prevPass, q + 0.5);`,
+vec3 p = vec3((uv - 0.5 - ${offset}) * 2.0, 1.0);
+float fovScale = 1.0 / tan(${fov} * 0.5 * PI / 180.0);
+p.xy *= fovScale;
+float ay = ${tilt}.x;
+float ax = ${tilt}.y;
+float cy = cos(ay), sy = sin(ay);
+float cx = cos(ax), sx = sin(ax);
+mat3 ry = mat3(cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy);
+mat3 rx = mat3(1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx);
+p = rx * (ry * p);
+vec2 finalUV = p.xy / max(p.z, 0.001) * 0.5 + 0.5 + ${pan};
+return unpremultiplyAlpha(applyEdgeHandling(u_prevPass, finalUV, ${edgeMode(this.config.edges)}));`,
     }
   }
 }
