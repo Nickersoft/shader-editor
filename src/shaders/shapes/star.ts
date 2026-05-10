@@ -1,69 +1,69 @@
-import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { transformFields, zColor, zFloat, zInt } from '@/shaders/core/schemas'
-import type { SpatialControl } from '@/shaders/core/spatial'
+import { z } from "zod";
+import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { transformFields, zColor, zFloat, zInt } from "@/shaders/core/schemas";
+import type { SpatialControl } from "@/shaders/core/spatial";
 
 const config = z.object({
   ...transformFields(),
-  points: zInt(3, 12).default(5).describe('Points'),
-  innerRatio: zFloat(0.1, 0.9, 0.01).default(0.4).describe('Inner Ratio'),
-  fillColor: zColor().default([1, 1, 1]).describe('Fill'),
-  strokeColor: zColor().default([0, 0, 0]).describe('Stroke'),
-  strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe('Stroke Width'),
-  strokeMode: z.enum(['inside', 'center', 'outside']).default('center').describe('Stroke Mode'),
-})
+  points: zInt(3, 12).default(5).describe("Points"),
+  innerRatio: zFloat(0.1, 0.9, 0.01).default(0.4).describe("Inner Ratio"),
+  fillColor: zColor().default([1, 1, 1]).describe("Fill"),
+  strokeColor: zColor().default([0, 0, 0]).describe("Stroke"),
+  strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe("Stroke Width"),
+  strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Star',
-  description: 'N-pointed star with adjustable inner radius ratio',
-  color: '#3b82f6',
-  category: 'shapes',
-  defaultBlendMode: 'normal',
-}
+  name: "Star",
+  description: "N-pointed star with adjustable inner radius ratio",
+  color: "#3b82f6",
+  category: "shapes",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class Star extends GeneratorNode<Config, Inputs> {
-  static readonly typeId = 'star'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "star";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
   static readonly spatialControls: readonly SpatialControl[] = [
     {
-      kind: 'transform',
-      x: 'x',
-      y: 'y',
-      w: 'width',
-      h: 'height',
-      rotation: 'rotation',
-      label: 'Bounds',
+      kind: "transform",
+      x: "x",
+      y: "y",
+      w: "width",
+      h: "height",
+      rotation: "rotation",
+      label: "Bounds",
     },
-  ]
+  ];
 
   glsl(): GlslBlock {
-    const x = this.uniformName('x')
-    const y = this.uniformName('y')
-    const w = this.uniformName('width')
-    const h = this.uniformName('height')
-    const rot = this.uniformName('rotation')
-    const pts = this.uniformName('points')
-    const ir = this.uniformName('innerRatio')
-    const fill = this.uniformName('fillColor')
-    const stroke = this.uniformName('strokeColor')
-    const sw = this.uniformName('strokeWidth')
+    const x = this.uniformName("x");
+    const y = this.uniformName("y");
+    const w = this.uniformName("width");
+    const h = this.uniformName("height");
+    const rot = this.uniformName("rotation");
+    const pts = this.uniformName("points");
+    const ir = this.uniformName("innerRatio");
+    const fill = this.uniformName("fillColor");
+    const stroke = this.uniformName("strokeColor");
+    const sw = this.uniformName("strokeWidth");
     const offset =
-      this.config.strokeMode === 'inside'
+      this.config.strokeMode === "inside"
         ? `(-${sw} * 0.5)`
-        : this.config.strokeMode === 'outside'
+        : this.config.strokeMode === "outside"
           ? `(${sw} * 0.5)`
-          : `0.0`
+          : `0.0`;
     return {
-      dependencies: ['aastep', 'rotate2D'],
+      dependencies: ["aastep", "rotate2D"],
       functions: `
 float sdStarRatio(vec2 p, float outerRadius, float sides, float innerRatio) {
   float innerRadius = outerRadius * innerRatio;
@@ -97,9 +97,9 @@ float fillA = 1.0 - aastep(0.0, d);
 float strokeA = (1.0 - aastep(${sw} * 0.5, abs(d - ${offset}))) * step(0.0001, ${sw});
 vec3 col = mix(${fill}, ${stroke}, strokeA);
 return vec4(col, max(fillA, strokeA));`,
-    }
+    };
   }
 }
 
-register(Star)
-export default Star
+register(Star);
+export default Star;

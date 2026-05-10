@@ -1,56 +1,56 @@
-import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zCenter, zColor, zFloat, zInt } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zCenter, zColor, zFloat, zInt } from "@/shaders/core/schemas";
 
 const config = z.object({
-  colorA: zColor().default([0.65, 0.20, 0.97]).describe('Color A'),
-  colorB: zColor().default([0.13, 0.93, 0.53]).describe('Color B'),
-  colorC: zColor().default([0.09, 0.58, 0.91]).describe('Color C'),
-  balance: zFloat(0, 100, 1).default(50).describe('Balance'),
-  intensity: zFloat(0, 200, 1).default(80).describe('Intensity'),
-  curtainCount: zInt(1, 8).default(4).describe('Curtain Count'),
-  speed: zFloat(0, 20, 0.1).default(5).describe('Speed'),
-  waviness: zFloat(0, 100, 1).default(50).describe('Waviness'),
-  rayDensity: zFloat(0, 100, 1).default(20).describe('Ray Density'),
-  height: zFloat(0, 200, 1).default(120).describe('Height'),
-  center: zCenter().default([0.5, 0]).describe('Center'),
-  seed: zFloat(0, 10, 0.01).default(0).describe('Seed'),
-})
+  colorA: zColor().default([0.65, 0.2, 0.97]).describe("Color A"),
+  colorB: zColor().default([0.13, 0.93, 0.53]).describe("Color B"),
+  colorC: zColor().default([0.09, 0.58, 0.91]).describe("Color C"),
+  balance: zFloat(0, 100, 1).default(50).describe("Balance"),
+  intensity: zFloat(0, 200, 1).default(80).describe("Intensity"),
+  curtainCount: zInt(1, 8).default(4).describe("Curtain Count"),
+  speed: zFloat(0, 20, 0.1).default(5).describe("Speed"),
+  waviness: zFloat(0, 100, 1).default(50).describe("Waviness"),
+  rayDensity: zFloat(0, 100, 1).default(20).describe("Ray Density"),
+  height: zFloat(0, 200, 1).default(120).describe("Height"),
+  center: zCenter().default([0.5, 0]).describe("Center"),
+  seed: zFloat(0, 10, 0.01).default(0).describe("Seed"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Aurora',
-  description: 'Layered aurora curtains with vertical rays and flowing light',
-  color: '#22ee88',
-  category: 'textures',
-  defaultBlendMode: 'normal',
-}
+  name: "Aurora",
+  description: "Layered aurora curtains with vertical rays and flowing light",
+  color: "#22ee88",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class Aurora extends GeneratorNode<Config, Inputs> {
-  static readonly typeId = 'aurora'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "aurora";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const colorA = this.uniformName('colorA')
-    const colorB = this.uniformName('colorB')
-    const colorC = this.uniformName('colorC')
-    const balance = this.uniformName('balance')
-    const intensity = this.uniformName('intensity')
-    const curtainCount = this.uniformName('curtainCount')
-    const speed = this.uniformName('speed')
-    const waviness = this.uniformName('waviness')
-    const rayDensity = this.uniformName('rayDensity')
-    const height = this.uniformName('height')
-    const center = this.uniformName('center')
-    const seed = this.uniformName('seed')
+    const colorA = this.uniformName("colorA");
+    const colorB = this.uniformName("colorB");
+    const colorC = this.uniformName("colorC");
+    const balance = this.uniformName("balance");
+    const intensity = this.uniformName("intensity");
+    const curtainCount = this.uniformName("curtainCount");
+    const speed = this.uniformName("speed");
+    const waviness = this.uniformName("waviness");
+    const rayDensity = this.uniformName("rayDensity");
+    const height = this.uniformName("height");
+    const center = this.uniformName("center");
+    const seed = this.uniformName("seed");
     return {
       main: `
 vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
@@ -121,9 +121,9 @@ col *= 1.0 - 0.18 * midDim;
 
 float a = clamp(aur, 0.0, 1.0);
 return vec4(col * a, a);`,
-    }
+    };
   }
 }
 
-register(Aurora)
-export default Aurora
+register(Aurora);
+export default Aurora;

@@ -1,79 +1,79 @@
-import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { transformFields, zColor, zFloat } from '@/shaders/core/schemas'
-import type { SpatialControl } from '@/shaders/core/spatial'
+import { z } from "zod";
+import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { transformFields, zColor, zFloat } from "@/shaders/core/schemas";
+import type { SpatialControl } from "@/shaders/core/spatial";
 
 const config = z.object({
   ...transformFields(),
-  thickness: zFloat(0, 1, 0.001).default(0.2).describe('Thickness'),
-  innerShape: zFloat(0, 1, 0.01).default(0).describe('Inner Falloff'),
-  fillColor: zColor().default([1, 1, 1]).describe('Fill'),
-  strokeColor: zColor().default([0, 0, 0]).describe('Stroke'),
-  strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe('Stroke Width'),
-  strokeMode: z.enum(['inside', 'center', 'outside']).default('center').describe('Stroke Mode'),
-})
+  thickness: zFloat(0, 1, 0.001).default(0.2).describe("Thickness"),
+  innerShape: zFloat(0, 1, 0.01).default(0).describe("Inner Falloff"),
+  fillColor: zColor().default([1, 1, 1]).describe("Fill"),
+  strokeColor: zColor().default([0, 0, 0]).describe("Stroke"),
+  strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe("Stroke Width"),
+  strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Ring',
-  description: 'Annular ring with adjustable thickness — fills its bounding box',
-  color: '#3b82f6',
-  category: 'shapes',
-  defaultBlendMode: 'normal',
-}
+  name: "Ring",
+  description: "Annular ring with adjustable thickness — fills its bounding box",
+  color: "#3b82f6",
+  category: "shapes",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class Ring extends GeneratorNode<Config, Inputs> {
-  static readonly typeId = 'ring'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "ring";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
   static readonly spatialControls: readonly SpatialControl[] = [
     {
-      kind: 'transform',
-      x: 'x',
-      y: 'y',
-      w: 'width',
-      h: 'height',
-      rotation: 'rotation',
-      label: 'Bounds',
+      kind: "transform",
+      x: "x",
+      y: "y",
+      w: "width",
+      h: "height",
+      rotation: "rotation",
+      label: "Bounds",
     },
-  ]
+  ];
 
   structuralKey(): string {
     // Soft-falloff path uses two smoothsteps and changes the meaning of the
     // band centre. Toggle rebuilds the shader.
-    return this.config.innerShape > 0 ? 'soft' : 'crisp'
+    return this.config.innerShape > 0 ? "soft" : "crisp";
   }
 
   glsl(): GlslBlock {
-    const x = this.uniformName('x')
-    const y = this.uniformName('y')
-    const w = this.uniformName('width')
-    const h = this.uniformName('height')
-    const rot = this.uniformName('rotation')
-    const th = this.uniformName('thickness')
-    const innerShape = this.uniformName('innerShape')
-    const fill = this.uniformName('fillColor')
-    const stroke = this.uniformName('strokeColor')
-    const sw = this.uniformName('strokeWidth')
+    const x = this.uniformName("x");
+    const y = this.uniformName("y");
+    const w = this.uniformName("width");
+    const h = this.uniformName("height");
+    const rot = this.uniformName("rotation");
+    const th = this.uniformName("thickness");
+    const innerShape = this.uniformName("innerShape");
+    const fill = this.uniformName("fillColor");
+    const stroke = this.uniformName("strokeColor");
+    const sw = this.uniformName("strokeWidth");
     const offset =
-      this.config.strokeMode === 'inside'
+      this.config.strokeMode === "inside"
         ? `(-${sw} * 0.5)`
-        : this.config.strokeMode === 'outside'
+        : this.config.strokeMode === "outside"
           ? `(${sw} * 0.5)`
-          : `0.0`
+          : `0.0`;
 
     // Outer boundary in pn-space sits at length(pn)=1; band centre tracks
     // the (0.5 → 1.0) midpoint pulled inward by the thickness ratio. World-
     // space distances are reconstituted via the smaller half-extent for
     // stroke fidelity.
-    const useSoft = this.config.innerShape > 0
+    const useSoft = this.config.innerShape > 0;
     const fillABody = useSoft
       ? `
 // Soft-falloff ring: smooth alpha bump fading inward from the outer boundary.
@@ -83,10 +83,10 @@ float fillA = outer * inner;`
       : `
 // Crisp band: alpha 1 inside [-thickness, 0] in unit-bbox space, ~1px feather.
 float d = abs(distOut + ${th} * 0.5) - ${th} * 0.5;
-float fillA = 1.0 - aastep(0.0, d);`
+float fillA = 1.0 - aastep(0.0, d);`;
 
     return {
-      dependencies: ['aastep', 'sdCircle', 'rotate2D'],
+      dependencies: ["aastep", "sdCircle", "rotate2D"],
       main: `
 vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 vec2 p = (uv - vec2(${x}, ${y})) * _ar;
@@ -100,9 +100,9 @@ float strokeD = (abs(distOut + ${th} * 0.5) - ${th} * 0.5) * refHalf;
 float strokeA = (1.0 - aastep(${sw} * 0.5, abs(strokeD - ${offset}))) * step(0.0001, ${sw});
 vec3 col = mix(${fill}, ${stroke}, strokeA);
 return vec4(col, max(fillA, strokeA));`,
-    }
+    };
   }
 }
 
-register(Ring)
-export default Ring
+register(Ring);
+export default Ring;

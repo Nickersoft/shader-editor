@@ -1,44 +1,44 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zBool, zColor, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zBool, zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  density: zFloat(8, 300, 1).default(80).describe('Density'),
-  gamma: zFloat(0.5, 3, 0.01).default(1).describe('Gamma'),
-  alphaThreshold: zFloat(0, 1).default(0.05).describe('Alpha Threshold'),
-  preserveAlpha: zBool().default(true).describe('Preserve Alpha'),
-  colorBack: zColor().default([0, 0, 0]).describe('Background'),
-  colorChar: zColor().default([0.4, 1, 0.5]).describe('Character'),
-})
+  density: zFloat(8, 300, 1).default(80).describe("Density"),
+  gamma: zFloat(0.5, 3, 0.01).default(1).describe("Gamma"),
+  alphaThreshold: zFloat(0, 1).default(0.05).describe("Alpha Threshold"),
+  preserveAlpha: zBool().default(true).describe("Preserve Alpha"),
+  colorBack: zColor().default([0, 0, 0]).describe("Background"),
+  colorChar: zColor().default([0.4, 1, 0.5]).describe("Character"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'ASCII',
-  description: 'Coarse ASCII-like dot density',
-  color: '#475569',
-  category: 'stylize',
-  defaultBlendMode: 'normal',
-}
+  name: "ASCII",
+  description: "Coarse ASCII-like dot density",
+  color: "#475569",
+  category: "stylize",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class Ascii extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'ascii'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "ascii";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const density = this.uniformName('density')
-    const gamma = this.uniformName('gamma')
-    const alphaThreshold = this.uniformName('alphaThreshold')
-    const preserveAlpha = this.uniformName('preserveAlpha')
-    const colorBack = this.uniformName('colorBack')
-    const colorChar = this.uniformName('colorChar')
+    const density = this.uniformName("density");
+    const gamma = this.uniformName("gamma");
+    const alphaThreshold = this.uniformName("alphaThreshold");
+    const preserveAlpha = this.uniformName("preserveAlpha");
+    const colorBack = this.uniformName("colorBack");
+    const colorChar = this.uniformName("colorChar");
     return {
       main: `
 vec2 cells = vec2(${density}, ${density} * (u_resolution.y / max(u_resolution.x, 1.0)));
@@ -56,9 +56,9 @@ float srcAlpha = texture(u_prevPass, uv).a;
 float outA = ${preserveAlpha} ? srcAlpha : 1.0;
 if (srcAlpha < ${alphaThreshold}) outA = 0.0;
 return vec4(rgb, outA);`,
-    }
+    };
   }
 }
 
-register(Ascii)
-export default Ascii
+register(Ascii);
+export default Ascii;

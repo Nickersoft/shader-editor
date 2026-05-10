@@ -1,1 +1,46 @@
-[data-select-viewport],[data-combobox-viewport]{scrollbar-width:none!important;-ms-overflow-style:none!important;-webkit-overflow-scrolling:touch!important}[data-combobox-viewport]::-webkit-scrollbar{display:none!important}[data-select-viewport]::-webkit-scrollbar{display:none!important}[data-scroll-area-viewport]{scrollbar-width:none!important;-ms-overflow-style:none!important;-webkit-overflow-scrolling:touch!important}[data-scroll-area-viewport]::-webkit-scrollbar{display:none!important}:where([data-scroll-area-viewport]){flex-direction:column;align-items:stretch;display:flex}:where([data-scroll-area-content]){flex-grow:1}.transparency-checker.svelte-1a1gil9{background-color:#1a1a1a;background-image:linear-gradient(45deg,#2a2a2a 25%,#0000 25%),linear-gradient(-45deg,#2a2a2a 25%,#0000 25%),linear-gradient(45deg,#0000 75%,#2a2a2a 75%),linear-gradient(-45deg,#0000 75%,#2a2a2a 75%);background-position:0 0,0 8px,8px -8px,-8px 0;background-size:16px 16px}.shiki-wrap.svelte-13i9lgm pre{border-radius:.5rem;padding:1rem;overflow:auto;background:0 0!important}
+[data-select-viewport],
+[data-combobox-viewport] {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+[data-combobox-viewport]::-webkit-scrollbar {
+  display: none !important;
+}
+[data-select-viewport]::-webkit-scrollbar {
+  display: none !important;
+}
+[data-scroll-area-viewport] {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+[data-scroll-area-viewport]::-webkit-scrollbar {
+  display: none !important;
+}
+:where([data-scroll-area-viewport]) {
+  flex-direction: column;
+  align-items: stretch;
+  display: flex;
+}
+:where([data-scroll-area-content]) {
+  flex-grow: 1;
+}
+.transparency-checker.svelte-1a1gil9 {
+  background-color: #1a1a1a;
+  background-image:
+    linear-gradient(45deg, #2a2a2a 25%, #0000 25%), linear-gradient(-45deg, #2a2a2a 25%, #0000 25%),
+    linear-gradient(45deg, #0000 75%, #2a2a2a 75%), linear-gradient(-45deg, #0000 75%, #2a2a2a 75%);
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
+  background-size: 16px 16px;
+}
+.shiki-wrap.svelte-13i9lgm pre {
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow: auto;
+  background: 0 0 !important;
+}

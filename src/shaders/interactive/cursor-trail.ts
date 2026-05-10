@@ -1,43 +1,43 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  length: zFloat(0, 1, 0.01).default(0.3).describe('Length'),
-  width: zFloat(0, 0.5, 0.005).default(0.05).describe('Width'),
-  color: zColor().default([1.0, 0.9, 0.4]).describe('Color'),
-  intensity: zFloat(0, 1).default(0.5).describe('Intensity'),
-  fade: zFloat(0.5, 0.99, 0.005).default(0.92).describe('Fade'),
-})
+  length: zFloat(0, 1, 0.01).default(0.3).describe("Length"),
+  width: zFloat(0, 0.5, 0.005).default(0.05).describe("Width"),
+  color: zColor().default([1.0, 0.9, 0.4]).describe("Color"),
+  intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
+  fade: zFloat(0.5, 0.99, 0.005).default(0.92).describe("Fade"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Cursor Trail',
-  description: 'Glowing curved trail from a center point',
-  color: '#facc15',
-  category: 'interactive',
-  defaultBlendMode: 'normal',
-}
+  name: "Cursor Trail",
+  description: "Glowing curved trail from a center point",
+  color: "#facc15",
+  category: "interactive",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class CursorTrail extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'cursor-trail'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
-  static readonly scope = 'scene' as const
+  static readonly typeId = "cursor-trail";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
+  static readonly scope = "scene" as const;
 
   glsl(): GlslBlock {
-    const len = this.uniformName('length')
-    const width = this.uniformName('width')
-    const color = this.uniformName('color')
-    const intensity = this.uniformName('intensity')
-    const fade = this.uniformName('fade')
+    const len = this.uniformName("length");
+    const width = this.uniformName("width");
+    const color = this.uniformName("color");
+    const intensity = this.uniformName("intensity");
+    const fade = this.uniformName("fade");
     return {
       main: `
 vec4 src = texture(u_prevPass, uv);
@@ -57,9 +57,9 @@ vec3 painted = ${color} * emit;
 vec3 faded = prev.rgb * ${fade};
 vec3 trailRgb = max(faded, painted);
 return vec4(src.rgb + trailRgb, max(src.a, max(prev.a * ${fade}, emit)));`,
-    }
+    };
   }
 }
 
-register(CursorTrail)
-export default CursorTrail
+register(CursorTrail);
+export default CursorTrail;

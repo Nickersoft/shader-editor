@@ -1,60 +1,60 @@
-import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zCenter, zColor, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zCenter, zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  colorA: zColor().default([1.0, 0.42, 0.21]).describe('Color A'),
-  colorB: zColor().default([0.91, 0.12, 0.39]).describe('Color B'),
-  size: zFloat(0, 1).default(0.5).describe('Size'),
-  deformation: zFloat(0, 1).default(0.5).describe('Deformation'),
-  softness: zFloat(0, 1).default(0.5).describe('Softness'),
-  highlightIntensity: zFloat(0, 1).default(0.5).describe('Highlight Intensity'),
-  highlightX: zFloat(-1, 1).default(0.3).describe('Highlight X'),
-  highlightY: zFloat(-1, 1).default(-0.3).describe('Highlight Y'),
-  highlightZ: zFloat(0, 1).default(0.4).describe('Highlight Z'),
-  highlightColor: zColor().default([1.0, 0.88, 0.10]).describe('Highlight Color'),
-  speed: zFloat(0, 4, 0.05).default(0.5).describe('Speed'),
-  seed: zFloat(0, 100, 0.1).default(1).describe('Seed'),
-  center: zCenter().default([0.5, 0.5]).describe('Center'),
-})
+  colorA: zColor().default([1.0, 0.42, 0.21]).describe("Color A"),
+  colorB: zColor().default([0.91, 0.12, 0.39]).describe("Color B"),
+  size: zFloat(0, 1).default(0.5).describe("Size"),
+  deformation: zFloat(0, 1).default(0.5).describe("Deformation"),
+  softness: zFloat(0, 1).default(0.5).describe("Softness"),
+  highlightIntensity: zFloat(0, 1).default(0.5).describe("Highlight Intensity"),
+  highlightX: zFloat(-1, 1).default(0.3).describe("Highlight X"),
+  highlightY: zFloat(-1, 1).default(-0.3).describe("Highlight Y"),
+  highlightZ: zFloat(0, 1).default(0.4).describe("Highlight Z"),
+  highlightColor: zColor().default([1.0, 0.88, 0.1]).describe("Highlight Color"),
+  speed: zFloat(0, 4, 0.05).default(0.5).describe("Speed"),
+  seed: zFloat(0, 100, 0.1).default(1).describe("Seed"),
+  center: zCenter().default([0.5, 0.5]).describe("Center"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Blob',
-  description: 'Organic animated blob with 3D lighting and gradients',
-  color: '#ff6b35',
-  category: 'textures',
-  defaultBlendMode: 'normal',
-}
+  name: "Blob",
+  description: "Organic animated blob with 3D lighting and gradients",
+  color: "#ff6b35",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class Blob extends GeneratorNode<Config, Inputs> {
-  static readonly typeId = 'blob'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "blob";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const colorA = this.uniformName('colorA')
-    const colorB = this.uniformName('colorB')
-    const size = this.uniformName('size')
-    const deformation = this.uniformName('deformation')
-    const softness = this.uniformName('softness')
-    const hlIntensity = this.uniformName('highlightIntensity')
-    const hlX = this.uniformName('highlightX')
-    const hlY = this.uniformName('highlightY')
-    const hlZ = this.uniformName('highlightZ')
-    const hlColor = this.uniformName('highlightColor')
-    const speed = this.uniformName('speed')
-    const seed = this.uniformName('seed')
-    const center = this.uniformName('center')
+    const colorA = this.uniformName("colorA");
+    const colorB = this.uniformName("colorB");
+    const size = this.uniformName("size");
+    const deformation = this.uniformName("deformation");
+    const softness = this.uniformName("softness");
+    const hlIntensity = this.uniformName("highlightIntensity");
+    const hlX = this.uniformName("highlightX");
+    const hlY = this.uniformName("highlightY");
+    const hlZ = this.uniformName("highlightZ");
+    const hlColor = this.uniformName("highlightColor");
+    const speed = this.uniformName("speed");
+    const seed = this.uniformName("seed");
+    const center = this.uniformName("center");
     return {
-      dependencies: ['fbm', 'simplex2D'],
+      dependencies: ["fbm", "simplex2D"],
       main: `
 vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 vec2 p = (uv - ${center}) * _ar;
@@ -86,9 +86,9 @@ vec3 hilite = ${hlColor} * spec * ${hlIntensity} * 1.6;
 
 vec3 col = bg + hilite * mask;
 return vec4(col * mask, mask);`,
-    }
+    };
   }
 }
 
-register(Blob)
-export default Blob
+register(Blob);
+export default Blob;

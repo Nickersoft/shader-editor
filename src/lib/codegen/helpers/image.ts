@@ -1,7 +1,7 @@
 // Image-domain helpers: aspect-corrected sampling, separable Gaussians,
 // edge-handling, and alpha-unpremultiplication used after distortion passes.
 
-import { helper } from './types'
+import { helper } from "./types";
 
 /**
  * Maps canvas-space UV in [0,1] to image-space UV honouring image aspect, fit
@@ -42,7 +42,7 @@ vec2 applySizing(vec2 uv, vec4 meta, vec2 offset) {
   c /= ratio;
   return c + 0.5;
 }`,
-})
+});
 
 export const gaussian9 = helper({
   code: `
@@ -58,7 +58,7 @@ vec4 gaussian9(sampler2D src, vec2 uv, vec2 r) {
   c += texture(src, uv + vec2(-r.x, -r.y)) * 0.0707;
   return c;
 }`,
-})
+});
 
 /**
  * 13-tap separable Gaussian (single direction). Mirrors upstream's blur kernel
@@ -92,7 +92,7 @@ vec4 gaussian13(sampler2D src, vec2 uv, vec2 direction) {
   acc += texture(src, uv - direction * 6.0) * W6;
   return acc / TOTAL;
 }`,
-})
+});
 
 /**
  * Edge-handling helper. Modes (passed as int):
@@ -121,7 +121,7 @@ vec4 applyEdgeHandling(sampler2D src, vec2 uv, int mode) {
   }
   return texture(src, clamp(uv, 0.0, 1.0));
 }`,
-})
+});
 
 /**
  * Unpremultiplies alpha. Used after edge-handled samples in distortion/effect
@@ -132,4 +132,4 @@ export const unpremultiplyAlpha = helper({
 vec4 unpremultiplyAlpha(vec4 c) {
   return c.a > 1e-4 ? vec4(c.rgb / c.a, c.a) : c;
 }`,
-})
+});

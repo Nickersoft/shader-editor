@@ -11,86 +11,80 @@
 // Today's flat chain is a degenerate case: one Layer with one Generator and
 // any subsequent Effects attached to it.
 
-import type { ShaderChain } from './chain'
-import {
-  EffectNode,
-  GeneratorNode,
-  isEffectNode,
-  isGeneratorNode,
-  type Node,
-} from './node.svelte'
-import { deserializeNode } from './registry'
-import type { BlendMode, SerializedNode } from './types'
+import type { ShaderChain } from "./chain";
+import { EffectNode, GeneratorNode, isEffectNode, isGeneratorNode, type Node } from "./node.svelte";
+import { deserializeNode } from "./registry";
+import type { BlendMode, SerializedNode } from "./types";
 
-let layerCounter = 0
+let layerCounter = 0;
 function defaultLayerId(): string {
-  layerCounter += 1
-  return `layer-${Date.now().toString(36)}-${layerCounter}`
+  layerCounter += 1;
+  return `layer-${Date.now().toString(36)}-${layerCounter}`;
 }
 
 export interface SerializedLayer {
-  id: string
-  name: string
-  source: SerializedNode
-  effects: SerializedNode[]
-  blendMode: BlendMode
-  opacity: number
-  enabled: boolean
-  useAsMask?: boolean
+  id: string;
+  name: string;
+  source: SerializedNode;
+  effects: SerializedNode[];
+  blendMode: BlendMode;
+  opacity: number;
+  enabled: boolean;
+  useAsMask?: boolean;
   /** Clip-mask children — render order siblings whose alpha is gated by this
    *  layer's alpha. */
-  children?: SerializedLayer[]
+  children?: SerializedLayer[];
 }
 
 export interface SerializedScene {
-  layers: SerializedLayer[]
-  postEffects: SerializedNode[]
-  background: { color: [number, number, number, number] }
+  layers: SerializedLayer[];
+  postEffects: SerializedNode[];
+  background: { color: [number, number, number, number] };
 }
 
 export interface LayerInit {
-  id?: string
-  name?: string
-  source: GeneratorNode
-  effects?: EffectNode[]
-  blendMode?: BlendMode
-  opacity?: number
-  enabled?: boolean
-  useAsMask?: boolean
-  children?: Layer[]
+  id?: string;
+  name?: string;
+  source: GeneratorNode;
+  effects?: EffectNode[];
+  blendMode?: BlendMode;
+  opacity?: number;
+  enabled?: boolean;
+  useAsMask?: boolean;
+  children?: Layer[];
 }
 
 export class Layer {
-  id: string
-  name = $state('')
-  source = $state<GeneratorNode>(null!)
-  effects = $state<EffectNode[]>([])
-  blendMode = $state<BlendMode>('normal')
-  opacity = $state(1)
-  enabled = $state(true)
+  id: string;
+  name = $state("");
+  source = $state<GeneratorNode>(null!);
+  effects = $state<EffectNode[]>([]);
+  blendMode = $state<BlendMode>("normal");
+  opacity = $state(1);
+  enabled = $state(true);
   // When true, this layer doesn't draw — its alpha gates every layer beneath
   // it in the stack. Stacks multiplicatively with other masks above it.
-  useAsMask = $state(false)
+  useAsMask = $state(false);
   // Clip-mask children. Each child renders into its own layer texture but is
   // composited with its alpha multiplied by this layer's alpha (Figma-style
   // clipping mask / "clipped to shape").
-  children = $state<Layer[]>([])
+  children = $state<Layer[]>([]);
 
   constructor(init: LayerInit) {
-    this.id = init.id ?? defaultLayerId()
-    this.source = init.source
-    this.effects = init.effects ?? []
-    this.name = init.name ?? init.source.meta.name
-    this.blendMode = init.blendMode ?? init.source.blendMode
-    this.opacity = init.opacity ?? 1
-    this.enabled = init.enabled ?? true
-    this.useAsMask = init.useAsMask ?? false
-    this.children = init.children ?? []
+    this.id = init.id ?? defaultLayerId();
+    this.source = init.source;
+    this.effects = init.effects ?? [];
+    this.name = init.name ?? init.source.meta.name;
+    this.blendMode = init.blendMode ?? init.source.blendMode;
+    this.opacity = init.opacity ?? 1;
+    this.enabled = init.enabled ?? true;
+    this.useAsMask = init.useAsMask ?? false;
+    this.children = init.children ?? [];
   }
 
   /** All GLSL nodes inside this layer, in render order. */
   get nodes(): Node[] {
-    return [this.source, ...this.effects]
+    return [this.source, ...this.effects];
   }
 
   toJSON(): SerializedLayer {
@@ -103,29 +97,25 @@ export class Layer {
       opacity: this.opacity,
       enabled: this.enabled,
       useAsMask: this.useAsMask,
-      children: this.children.length > 0
-        ? this.children.map((c) => c.toJSON())
-        : undefined,
-    }
+      children: this.children.length > 0 ? this.children.map((c) => c.toJSON()) : undefined,
+    };
   }
 
   static fromJSON(json: SerializedLayer): Layer {
-    const source = deserializeNode(json.source)
+    const source = deserializeNode(json.source);
     if (!isGeneratorNode(source)) {
       throw new Error(
         `Layer "${json.id}" source must be a GeneratorNode (got ${json.source.typeId})`,
-      )
+      );
     }
     const effects = json.effects.map((e) => {
-      const node = deserializeNode(e)
+      const node = deserializeNode(e);
       if (!isEffectNode(node)) {
-        throw new Error(
-          `Layer "${json.id}" effect must be an EffectNode (got ${e.typeId})`,
-        )
+        throw new Error(`Layer "${json.id}" effect must be an EffectNode (got ${e.typeId})`);
       }
-      return node
-    })
-    const children = (json.children ?? []).map((c) => Layer.fromJSON(c))
+      return node;
+    });
+    const children = (json.children ?? []).map((c) => Layer.fromJSON(c));
     return new Layer({
       id: json.id,
       name: json.name,
@@ -136,18 +126,18 @@ export class Layer {
       enabled: json.enabled,
       useAsMask: json.useAsMask ?? false,
       children,
-    })
+    });
   }
 
   clone(): Layer {
-    return Layer.fromJSON(this.toJSON())
+    return Layer.fromJSON(this.toJSON());
   }
 }
 
 export interface SceneInit {
-  layers?: Layer[]
-  postEffects?: EffectNode[]
-  background?: { color: [number, number, number, number] }
+  layers?: Layer[];
+  postEffects?: EffectNode[];
+  background?: { color: [number, number, number, number] };
 }
 
 /**
@@ -158,48 +148,50 @@ export interface SceneInit {
  * alpha before blending.
  */
 export interface FlatLayer {
-  layer: Layer
-  flatIndex: number
-  parentFlatIndex: number | null
+  layer: Layer;
+  flatIndex: number;
+  parentFlatIndex: number | null;
 }
 
-const DEFAULT_BACKGROUND: [number, number, number, number] = [0, 0, 0, 0]
+const DEFAULT_BACKGROUND: [number, number, number, number] = [0, 0, 0, 0];
 
 export class Scene {
-  layers = $state<Layer[]>([])
-  postEffects = $state<EffectNode[]>([])
-  background = $state<{ color: [number, number, number, number] }>({ color: [...DEFAULT_BACKGROUND] })
+  layers = $state<Layer[]>([]);
+  postEffects = $state<EffectNode[]>([]);
+  background = $state<{ color: [number, number, number, number] }>({
+    color: [...DEFAULT_BACKGROUND],
+  });
 
   constructor(init: SceneInit = {}) {
-    this.layers = init.layers ?? []
-    this.postEffects = init.postEffects ?? []
-    this.background = init.background ?? { color: [...DEFAULT_BACKGROUND] }
+    this.layers = init.layers ?? [];
+    this.postEffects = init.postEffects ?? [];
+    this.background = init.background ?? { color: [...DEFAULT_BACKGROUND] };
   }
 
   /** Find a layer by id (recursive — searches into children). */
   findLayer(id: string): Layer | undefined {
     const walk = (layers: Layer[]): Layer | undefined => {
       for (const l of layers) {
-        if (l.id === id) return l
-        const c = walk(l.children)
-        if (c) return c
+        if (l.id === id) return l;
+        const c = walk(l.children);
+        if (c) return c;
       }
-      return undefined
-    }
-    return walk(this.layers)
+      return undefined;
+    };
+    return walk(this.layers);
   }
 
   /** Find a layer's parent by id (or null if it's at the top level). */
   findLayerParent(id: string): Layer | null | undefined {
     const walk = (layers: Layer[], parent: Layer | null): Layer | null | undefined => {
       for (const l of layers) {
-        if (l.id === id) return parent
-        const c = walk(l.children, l)
-        if (c !== undefined) return c
+        if (l.id === id) return parent;
+        const c = walk(l.children, l);
+        if (c !== undefined) return c;
       }
-      return undefined
-    }
-    return walk(this.layers, null)
+      return undefined;
+    };
+    return walk(this.layers, null);
   }
 
   /**
@@ -207,24 +199,22 @@ export class Scene {
    * depth), or a scene post-effect. Returns the node plus the layer that owns
    * it (`null` for scene post-effects).
    */
-  findNode(
-    id: string,
-  ): { node: Node; layer: Layer | null } | undefined {
+  findNode(id: string): { node: Node; layer: Layer | null } | undefined {
     const walk = (layers: Layer[]): { node: Node; layer: Layer | null } | undefined => {
       for (const layer of layers) {
-        if (layer.source.id === id) return { node: layer.source, layer }
-        const fx = layer.effects.find((e) => e.id === id)
-        if (fx) return { node: fx, layer }
-        const found = walk(layer.children)
-        if (found) return found
+        if (layer.source.id === id) return { node: layer.source, layer };
+        const fx = layer.effects.find((e) => e.id === id);
+        if (fx) return { node: fx, layer };
+        const found = walk(layer.children);
+        if (found) return found;
       }
-      return undefined
-    }
-    const found = walk(this.layers)
-    if (found) return found
-    const sceneFx = this.postEffects.find((e) => e.id === id)
-    if (sceneFx) return { node: sceneFx, layer: null }
-    return undefined
+      return undefined;
+    };
+    const found = walk(this.layers);
+    if (found) return found;
+    const sceneFx = this.postEffects.find((e) => e.id === id);
+    if (sceneFx) return { node: sceneFx, layer: null };
+    return undefined;
   }
 
   /**
@@ -233,7 +223,7 @@ export class Scene {
    * compositor.
    */
   get enabledLayers(): Layer[] {
-    return this.layers.filter((l) => l.enabled)
+    return this.layers.filter((l) => l.enabled);
   }
 
   /**
@@ -243,15 +233,15 @@ export class Scene {
    * any descendants of a disabled layer — are skipped.
    */
   flatLayers(): FlatLayer[] {
-    const out: FlatLayer[] = []
+    const out: FlatLayer[] = [];
     const walk = (layer: Layer, parentFlatIndex: number | null) => {
-      if (!layer.enabled) return
-      const myIndex = out.length
-      out.push({ layer, flatIndex: myIndex, parentFlatIndex })
-      for (const child of layer.children) walk(child, myIndex)
-    }
-    for (const l of this.layers) walk(l, null)
-    return out
+      if (!layer.enabled) return;
+      const myIndex = out.length;
+      out.push({ layer, flatIndex: myIndex, parentFlatIndex });
+      for (const child of layer.children) walk(child, myIndex);
+    };
+    for (const l of this.layers) walk(l, null);
+    return out;
   }
 
   toJSON(): SerializedScene {
@@ -259,35 +249,33 @@ export class Scene {
       layers: this.layers.map((l) => l.toJSON()),
       postEffects: this.postEffects.map((e) => e.toJSON()),
       background: { color: [...this.background.color] },
-    }
+    };
   }
 
   static fromJSON(json: SerializedScene): Scene {
-    const layers = json.layers.map((l) => Layer.fromJSON(l))
+    const layers = json.layers.map((l) => Layer.fromJSON(l));
     const postEffects = (json.postEffects ?? []).map((e) => {
-      const node = deserializeNode(e)
+      const node = deserializeNode(e);
       if (!isEffectNode(node)) {
-        throw new Error(
-          `Scene postEffect must be an EffectNode (got ${e.typeId})`,
-        )
+        throw new Error(`Scene postEffect must be an EffectNode (got ${e.typeId})`);
       }
-      return node
-    })
+      return node;
+    });
     return new Scene({
       layers,
       postEffects,
       background: json.background ?? { color: [...DEFAULT_BACKGROUND] },
-    })
+    });
   }
 
   clone(): Scene {
-    return Scene.fromJSON(this.toJSON())
+    return Scene.fromJSON(this.toJSON());
   }
 }
 
 /** Fluent constructor. */
 export function scene(...layers: Layer[]): Scene {
-  return new Scene({ layers })
+  return new Scene({ layers });
 }
 
 /**
@@ -299,17 +287,17 @@ export function scene(...layers: Layer[]): Scene {
  * bridge is only meant to keep the editor functional during the rewrite.
  */
 export function flattenSceneToChain(scene: Scene): Node[] {
-  const out: Node[] = []
+  const out: Node[] = [];
   for (const flat of scene.flatLayers()) {
-    out.push(flat.layer.source)
-    for (const fx of flat.layer.effects) out.push(fx)
+    out.push(flat.layer.source);
+    for (const fx of flat.layer.effects) out.push(fx);
   }
-  for (const fx of scene.postEffects) out.push(fx)
-  return out
+  for (const fx of scene.postEffects) out.push(fx);
+  return out;
 }
 
 export function chainToScene(chain: ShaderChain): Scene {
-  return migrateChainNodes(chain.nodes)
+  return migrateChainNodes(chain.nodes);
 }
 
 /**
@@ -326,8 +314,8 @@ export function chainToScene(chain: ShaderChain): Scene {
  * shape of one Generator at the head followed by Effects.
  */
 function migrateChainNodes(nodes: Node[]): Scene {
-  const layers: Layer[] = []
-  let current: { source: GeneratorNode; effects: EffectNode[] } | null = null
+  const layers: Layer[] = [];
+  let current: { source: GeneratorNode; effects: EffectNode[] } | null = null;
 
   const flush = () => {
     if (current) {
@@ -339,24 +327,24 @@ function migrateChainNodes(nodes: Node[]): Scene {
           opacity: current.source.opacity,
           enabled: current.source.enabled,
         }),
-      )
-      current = null
+      );
+      current = null;
     }
-  }
+  };
 
   for (const node of nodes) {
     if (isGeneratorNode(node)) {
-      flush()
-      current = { source: node, effects: [] }
-      continue
+      flush();
+      current = { source: node, effects: [] };
+      continue;
     }
     if (isEffectNode(node) && current) {
-      current.effects.push(node)
-      continue
+      current.effects.push(node);
+      continue;
     }
     // ProcessingNode or stray Effect with no source — dropped.
   }
-  flush()
+  flush();
 
-  return new Scene({ layers })
+  return new Scene({ layers });
 }

@@ -7,14 +7,14 @@
 // includes the matching vertex-shader outputs on demand.
 
 const STRUCTURED_VARYINGS = [
-  'v_objectUV',
-  'v_objectBoxSize',
-  'v_responsiveUV',
-  'v_responsiveBoxGivenSize',
-  'v_patternUV',
-  'v_patternBoxSize',
-  'v_imageUV',
-] as const
+  "v_objectUV",
+  "v_objectBoxSize",
+  "v_responsiveUV",
+  "v_responsiveBoxGivenSize",
+  "v_patternUV",
+  "v_patternBoxSize",
+  "v_imageUV",
+] as const;
 
 /**
  * Returns true if any pass's fragment source references a structured-UV
@@ -24,10 +24,10 @@ const STRUCTURED_VARYINGS = [
 export function fragmentNeedsStructuredUv(fragmentSources: string[]): boolean {
   for (const src of fragmentSources) {
     for (const v of STRUCTURED_VARYINGS) {
-      if (src.includes(v)) return true
+      if (src.includes(v)) return true;
     }
   }
-  return false
+  return false;
 }
 
 export function buildVertexShader(usesStructuredUv: boolean): string {
@@ -42,7 +42,7 @@ void main() {
   v_uv = a_position * 0.5 + 0.5;
   gl_Position = vec4(a_position, 0.0, 1.0);
 }
-`
+`;
   }
 
   return `#version 300 es
@@ -172,5 +172,5 @@ void main() {
   v_imageUV += 0.5;
   v_imageUV.y = 1.0 - v_imageUV.y;
 }
-`
+`;
 }

@@ -1,6 +1,6 @@
 // Color-space transforms, ramp lookups, and grading helpers.
 
-import { helper } from './types'
+import { helper } from "./types";
 
 export const rgb2hsv = helper({
   code: `
@@ -12,7 +12,7 @@ vec3 rgb2hsv(vec3 c) {
   float e = 1.0e-10;
   return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }`,
-})
+});
 
 export const hsv2rgb = helper({
   code: `
@@ -21,7 +21,7 @@ vec3 hsv2rgb(vec3 c) {
   vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
   return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }`,
-})
+});
 
 /**
  * Smooth/stepped color-ramp lookup over a fixed-size vec4 palette.
@@ -62,7 +62,7 @@ vec4 colorRampLookup(float t, vec4 colors[10], int count, int steps, float softn
   vec4 b = colors[i1];
   return mix(a, b, f);
 }`,
-})
+});
 
 export const oklchTransforms = helper({
   code: `
@@ -147,8 +147,8 @@ vec3 oklchMix(vec3 color1, vec3 color2, float mixer) {
   vec3 o2 = srgbToOklch(color2);
   return clamp(oklchToSrgb(mixOklchVector(o1, o2, mixer)), 0.0, 1.0);
 }`,
-  needs: ['pi'],
-})
+  needs: ["pi"],
+});
 
 export const oklchColorRampLookup = helper({
   code: `
@@ -180,8 +180,8 @@ vec4 oklchColorRampLookup(float t, vec4 colors[10], int count, int steps, float 
   vec3 rgb = oklchMix(a.rgb, b.rgb, f);
   return vec4(rgb, mix(a.a, b.a, f));
 }`,
-  needs: ['oklchTransforms'],
-})
+  needs: ["oklchTransforms"],
+});
 
 export const colorBandingFix = helper({
   code: `
@@ -194,4 +194,4 @@ float colorBandingFix(float value) {
   float n = fract(sin(dot(0.014 * gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453123) - 0.5;
   return value + n / 256.0;
 }`,
-})
+});

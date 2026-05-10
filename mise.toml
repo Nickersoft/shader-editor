@@ -1,0 +1,5 @@
+[tools]
+"npm:@typescript/native-preview" = "latest"
+"npm:oxfmt" = "latest"
+"npm:oxlint" = "latest"
+"npm:oxlint-tsgolint" = "latest"

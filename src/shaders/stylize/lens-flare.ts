@@ -1,48 +1,48 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat, zInt } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zColor, zFloat, zInt } from "@/shaders/core/schemas";
 
 const config = z.object({
-  lightX: zFloat(0, 1).default(0.5).describe('Light X'),
-  lightY: zFloat(0, 1).default(0.5).describe('Light Y'),
-  intensity: zFloat(0, 2).default(1).describe('Intensity'),
-  ghosts: zInt(0, 8).default(4).describe('Ghosts'),
-  ghostSpacing: zFloat(0, 1).default(0.3).describe('Ghost Spacing'),
-  haloSize: zFloat(0, 1).default(0.5).describe('Halo Size'),
-  streakLength: zFloat(0, 1).default(0.3).describe('Streak Length'),
-  color: zColor().default([1.0, 0.9, 0.7]).describe('Color'),
-})
+  lightX: zFloat(0, 1).default(0.5).describe("Light X"),
+  lightY: zFloat(0, 1).default(0.5).describe("Light Y"),
+  intensity: zFloat(0, 2).default(1).describe("Intensity"),
+  ghosts: zInt(0, 8).default(4).describe("Ghosts"),
+  ghostSpacing: zFloat(0, 1).default(0.3).describe("Ghost Spacing"),
+  haloSize: zFloat(0, 1).default(0.5).describe("Halo Size"),
+  streakLength: zFloat(0, 1).default(0.3).describe("Streak Length"),
+  color: zColor().default([1.0, 0.9, 0.7]).describe("Color"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Lens Flare',
-  description: 'Anamorphic lens flare with ghosts, halo, and streak',
-  color: '#fde047',
-  category: 'stylize',
-  defaultBlendMode: 'add',
-}
+  name: "Lens Flare",
+  description: "Anamorphic lens flare with ghosts, halo, and streak",
+  color: "#fde047",
+  category: "stylize",
+  defaultBlendMode: "add",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class LensFlare extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'lens-flare'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "lens-flare";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const lx = this.uniformName('lightX')
-    const ly = this.uniformName('lightY')
-    const intensity = this.uniformName('intensity')
-    const ghosts = this.uniformName('ghosts')
-    const ghostSpacing = this.uniformName('ghostSpacing')
-    const haloSize = this.uniformName('haloSize')
-    const streakLength = this.uniformName('streakLength')
-    const color = this.uniformName('color')
+    const lx = this.uniformName("lightX");
+    const ly = this.uniformName("lightY");
+    const intensity = this.uniformName("intensity");
+    const ghosts = this.uniformName("ghosts");
+    const ghostSpacing = this.uniformName("ghostSpacing");
+    const haloSize = this.uniformName("haloSize");
+    const streakLength = this.uniformName("streakLength");
+    const color = this.uniformName("color");
     return {
       main: `
 base = texture(u_prevPass, uv);
@@ -70,9 +70,9 @@ for (int i = 1; i <= 8; i++) {
 float v = (core + halo * 0.6 + streak * 0.7 + ghostsAcc * 0.8) * ${intensity};
 vec3 rgb = ${color} * v;
 return vec4(rgb, clamp(v, 0.0, 1.0));`,
-    }
+    };
   }
 }
 
-register(LensFlare)
-export default LensFlare
+register(LensFlare);
+export default LensFlare;

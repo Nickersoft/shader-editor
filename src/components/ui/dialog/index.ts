@@ -8,21 +8,21 @@ import Title from "./dialog-title.svelte";
 import Description from "./dialog-description.svelte";
 
 export {
-	Root,
-	Trigger,
-	Close,
-	Content,
-	Overlay,
-	Header,
-	Title,
-	Description,
-	//
-	Root as Dialog,
-	Trigger as DialogTrigger,
-	Close as DialogClose,
-	Content as DialogContent,
-	Overlay as DialogOverlay,
-	Header as DialogHeader,
-	Title as DialogTitle,
-	Description as DialogDescription,
+  Root,
+  Trigger,
+  Close,
+  Content,
+  Overlay,
+  Header,
+  Title,
+  Description,
+  //
+  Root as Dialog,
+  Trigger as DialogTrigger,
+  Close as DialogClose,
+  Content as DialogContent,
+  Overlay as DialogOverlay,
+  Header as DialogHeader,
+  Title as DialogTitle,
+  Description as DialogDescription,
 };

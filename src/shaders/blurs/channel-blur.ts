@@ -1,39 +1,39 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  redIntensity: zFloat(0, 100, 1).default(0).describe('Red Intensity'),
-  greenIntensity: zFloat(0, 100, 1).default(0).describe('Green Intensity'),
-  blueIntensity: zFloat(0, 100, 1).default(0).describe('Blue Intensity'),
-})
+  redIntensity: zFloat(0, 100, 1).default(0).describe("Red Intensity"),
+  greenIntensity: zFloat(0, 100, 1).default(0).describe("Green Intensity"),
+  blueIntensity: zFloat(0, 100, 1).default(0).describe("Blue Intensity"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Channel Blur',
-  description: 'Independent blur for red, green, and blue channels',
-  color: '#94a3b8',
-  category: 'blurs',
-  defaultBlendMode: 'normal',
-}
+  name: "Channel Blur",
+  description: "Independent blur for red, green, and blue channels",
+  color: "#94a3b8",
+  category: "blurs",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class ChannelBlur extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'channel-blur'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "channel-blur";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock[] {
-    const r = this.uniformName('redIntensity')
-    const g = this.uniformName('greenIntensity')
-    const b = this.uniformName('blueIntensity')
-    const deps = ['gaussian13'] as const
+    const r = this.uniformName("redIntensity");
+    const g = this.uniformName("greenIntensity");
+    const b = this.uniformName("blueIntensity");
+    const deps = ["gaussian13"] as const;
     return [
       {
         dependencies: deps,
@@ -53,9 +53,9 @@ vec4 gV = gaussian13(u_prevPass, uv, vec2(0.0, texel.y * ${g} * 0.36));
 vec4 bV = gaussian13(u_prevPass, uv, vec2(0.0, texel.y * ${b} * 0.36));
 return vec4(rV.r, gV.g, bV.b, texture(u_prevPass, uv).a);`,
       },
-    ]
+    ];
   }
 }
 
-register(ChannelBlur)
-export default ChannelBlur
+register(ChannelBlur);
+export default ChannelBlur;

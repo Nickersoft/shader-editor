@@ -1,46 +1,46 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zAngle, zBool, zColor, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zAngle, zBool, zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  angle: zAngle().default(135).describe('Angle'),
-  distance: zFloat(0, 1, 0.001).default(0.05).describe('Distance'),
-  blur: zFloat(0, 50, 0.5).default(10).describe('Blur'),
-  color: zColor().default([0, 0, 0]).describe('Shadow Color'),
-  opacity: zFloat(0, 1).default(0.5).describe('Opacity'),
-  cutout: zBool().default(false).describe('Cutout'),
-})
+  angle: zAngle().default(135).describe("Angle"),
+  distance: zFloat(0, 1, 0.001).default(0.05).describe("Distance"),
+  blur: zFloat(0, 50, 0.5).default(10).describe("Blur"),
+  color: zColor().default([0, 0, 0]).describe("Shadow Color"),
+  opacity: zFloat(0, 1).default(0.5).describe("Opacity"),
+  cutout: zBool().default(false).describe("Cutout"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Drop Shadow',
-  description: 'Soft shadow behind opaque content',
-  color: '#1e293b',
-  category: 'stylize',
-  defaultBlendMode: 'normal',
-}
+  name: "Drop Shadow",
+  description: "Soft shadow behind opaque content",
+  color: "#1e293b",
+  category: "stylize",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class DropShadow extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'drop-shadow'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "drop-shadow";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const angle = this.uniformName('angle')
-    const distance = this.uniformName('distance')
-    const blur = this.uniformName('blur')
-    const color = this.uniformName('color')
-    const opacity = this.uniformName('opacity')
-    const cutout = this.uniformName('cutout')
+    const angle = this.uniformName("angle");
+    const distance = this.uniformName("distance");
+    const blur = this.uniformName("blur");
+    const color = this.uniformName("color");
+    const opacity = this.uniformName("opacity");
+    const cutout = this.uniformName("cutout");
     return {
-      dependencies: ['gaussian13', 'pi'],
+      dependencies: ["gaussian13", "pi"],
       main: `
 vec2 texel = 1.0 / u_resolution;
 float a = ${angle} * PI / 180.0;
@@ -59,9 +59,9 @@ vec4 outCol;
 outCol.rgb = mix(shadow.rgb, src.rgb, src.a);
 outCol.a = src.a + shadow.a * (1.0 - src.a);
 return outCol;`,
-    }
+    };
   }
 }
 
-register(DropShadow)
-export default DropShadow
+register(DropShadow);
+export default DropShadow;

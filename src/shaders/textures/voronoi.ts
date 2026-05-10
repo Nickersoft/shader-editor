@@ -1,50 +1,50 @@
-import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  colorA: zColor().default([0.19, 0.53, 0.81]).describe('Color A'),
-  colorB: zColor().default([0.99, 0.01, 0.87]).describe('Color B'),
-  colorBorder: zColor().default([0, 0, 0]).describe('Border Color'),
-  scale: zFloat(0.5, 30, 0.1).default(6).describe('Scale'),
-  speed: zFloat(0, 4, 0.05).default(0.5).describe('Speed'),
-  seed: zFloat(0, 100, 0.1).default(0).describe('Seed'),
-  edgeIntensity: zFloat(0, 1).default(0.5).describe('Edge Intensity'),
-  edgeSoftness: zFloat(0, 0.5, 0.005).default(0.05).describe('Edge Softness'),
-})
+  colorA: zColor().default([0.19, 0.53, 0.81]).describe("Color A"),
+  colorB: zColor().default([0.99, 0.01, 0.87]).describe("Color B"),
+  colorBorder: zColor().default([0, 0, 0]).describe("Border Color"),
+  scale: zFloat(0.5, 30, 0.1).default(6).describe("Scale"),
+  speed: zFloat(0, 4, 0.05).default(0.5).describe("Speed"),
+  seed: zFloat(0, 100, 0.1).default(0).describe("Seed"),
+  edgeIntensity: zFloat(0, 1).default(0.5).describe("Edge Intensity"),
+  edgeSoftness: zFloat(0, 0.5, 0.005).default(0.05).describe("Edge Softness"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Voronoi',
-  description: 'Cellular pattern shaded by distance to nearest scattered point',
-  color: '#06b6d4',
-  category: 'textures',
-  defaultBlendMode: 'normal',
-}
+  name: "Voronoi",
+  description: "Cellular pattern shaded by distance to nearest scattered point",
+  color: "#06b6d4",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class Voronoi extends GeneratorNode<Config, Inputs> {
-  static readonly typeId = 'voronoi'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "voronoi";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const colorA = this.uniformName('colorA')
-    const colorB = this.uniformName('colorB')
-    const colorBorder = this.uniformName('colorBorder')
-    const scale = this.uniformName('scale')
-    const speed = this.uniformName('speed')
-    const seed = this.uniformName('seed')
-    const edgeIntensity = this.uniformName('edgeIntensity')
-    const edgeSoftness = this.uniformName('edgeSoftness')
+    const colorA = this.uniformName("colorA");
+    const colorB = this.uniformName("colorB");
+    const colorBorder = this.uniformName("colorBorder");
+    const scale = this.uniformName("scale");
+    const speed = this.uniformName("speed");
+    const seed = this.uniformName("seed");
+    const edgeIntensity = this.uniformName("edgeIntensity");
+    const edgeSoftness = this.uniformName("edgeSoftness");
     return {
-      dependencies: ['hash22'],
+      dependencies: ["hash22"],
       main: `
 float aspect = u_resolution.x / max(u_resolution.y, 1.0);
 vec2 scaledUV = vec2(uv.x * aspect, uv.y) * ${scale};
@@ -73,9 +73,9 @@ float edgeMetric = (d2 - d1) / safeSum;
 float edgeMask = smoothstep(0.0, scaledEdge + 0.001, edgeMetric);
 vec3 col = mix(${colorBorder}, cellColor, edgeMask);
 return vec4(col, 1.0);`,
-    }
+    };
   }
 }
 
-register(Voronoi)
-export default Voronoi
+register(Voronoi);
+export default Voronoi;

@@ -27,13 +27,8 @@
 //     }
 //   }
 
-import type { z } from 'zod'
-import type {
-  BlendMode,
-  GlslBlock,
-  NodeMeta,
-  SerializedNode,
-} from './types'
+import type { z } from "zod";
+import type { BlendMode, GlslBlock, NodeMeta, SerializedNode } from "./types";
 
 /**
  * String-keyed fields of an inferred type, with string-indexed signatures
@@ -43,7 +38,7 @@ import type {
  * `never` for index-signature shapes so empty input schemas don't widen
  * the constraint.
  */
-type ConcreteKeys<T> = string extends keyof T ? never : Extract<keyof T, string>
+type ConcreteKeys<T> = string extends keyof T ? never : Extract<keyof T, string>;
 
 /**
  * Sanitizes a node id into a GLSL-safe identifier prefix. Used to namespace
@@ -51,21 +46,21 @@ type ConcreteKeys<T> = string extends keyof T ? never : Extract<keyof T, string>
  * same primitive don't collide.
  */
 export function sanitizeName(name: string): string {
-  let sanitized = name.replace(/[^a-zA-Z0-9]/g, '')
-  if (/^[0-9]/.test(sanitized)) sanitized = 'l' + sanitized
-  if (!sanitized) sanitized = 'layer'
-  return sanitized
+  let sanitized = name.replace(/[^a-zA-Z0-9]/g, "");
+  if (/^[0-9]/.test(sanitized)) sanitized = "l" + sanitized;
+  if (!sanitized) sanitized = "layer";
+  return sanitized;
 }
 
 // Static contract every Node subclass implements. Used by the Registry to
 // instantiate nodes from `SerializedNode`. The Registry stores nodes
 // erased — generic config/inputs types are only useful at the leaf class.
 export interface NodeClass<T extends Node = Node> {
-  new (init?: NodeInit): T
-  readonly typeId: string
-  readonly config: z.ZodTypeAny
-  readonly inputs: z.ZodTypeAny
-  readonly meta: NodeMeta
+  new (init?: NodeInit): T;
+  readonly typeId: string;
+  readonly config: z.ZodTypeAny;
+  readonly inputs: z.ZodTypeAny;
+  readonly meta: NodeMeta;
 }
 
 /**
@@ -77,18 +72,18 @@ export interface NodeClass<T extends Node = Node> {
  * stay typesafe.
  */
 export interface NodeInit {
-  id?: string
-  config?: Record<string, unknown>
-  inputs?: Record<string, unknown>
-  blendMode?: BlendMode
-  opacity?: number
-  enabled?: boolean
+  id?: string;
+  config?: Record<string, unknown>;
+  inputs?: Record<string, unknown>;
+  blendMode?: BlendMode;
+  opacity?: number;
+  enabled?: boolean;
 }
 
-let instanceCounter = 0
+let instanceCounter = 0;
 function defaultId(typeId: string): string {
-  instanceCounter += 1
-  return `${typeId}-${Date.now().toString(36)}-${instanceCounter}`
+  instanceCounter += 1;
+  return `${typeId}-${Date.now().toString(36)}-${instanceCounter}`;
 }
 
 /**
@@ -106,55 +101,51 @@ export abstract class Node<
   I extends Record<string, unknown> = Record<string, unknown>,
 > {
   // === Static identity (set on each subclass) ===
-  static readonly typeId: string = ''
-  static readonly config: z.ZodTypeAny
-  static readonly inputs: z.ZodTypeAny
-  static readonly meta: NodeMeta
+  static readonly typeId: string = "";
+  static readonly config: z.ZodTypeAny;
+  static readonly inputs: z.ZodTypeAny;
+  static readonly meta: NodeMeta;
 
   // === Instance state ===
   // `id` is immutable after construction and need not be reactive.
   // Mutable fields use `$state` so direct mutation (composer or external
   // tooling) triggers Svelte reactivity without scene/layer reassignment.
-  id: string
-  config: C
-  inputs: I
-  blendMode: BlendMode
-  opacity: number
-  enabled: boolean
+  id: string;
+  config: C;
+  inputs: I;
+  blendMode: BlendMode;
+  opacity: number;
+  enabled: boolean;
 
   constructor(init: NodeInit = {}) {
-    const cls = this.constructor as NodeClass
+    const cls = this.constructor as NodeClass;
     if (!cls.typeId) {
       throw new Error(
         `Node subclass ${cls.name} is missing static typeId — set 'static typeId = "..."' on the class.`,
-      )
+      );
     }
 
-    this.id = init.id ?? defaultId(cls.typeId)
+    this.id = init.id ?? defaultId(cls.typeId);
     // Validate or fall back to schema defaults. Zod's .parse on an empty
     // object hydrates fields with their .default(...) values.
-    this.config = $state(
-      (init.config ? cls.config.parse(init.config) : cls.config.parse({})) as C,
-    )
-    this.inputs = $state(
-      (init.inputs ? cls.inputs.parse(init.inputs) : cls.inputs.parse({})) as I,
-    )
-    this.blendMode = $state(init.blendMode ?? cls.meta.defaultBlendMode)
-    this.opacity = $state(init.opacity ?? 1)
-    this.enabled = $state(init.enabled ?? true)
+    this.config = $state((init.config ? cls.config.parse(init.config) : cls.config.parse({})) as C);
+    this.inputs = $state((init.inputs ? cls.inputs.parse(init.inputs) : cls.inputs.parse({})) as I);
+    this.blendMode = $state(init.blendMode ?? cls.meta.defaultBlendMode);
+    this.opacity = $state(init.opacity ?? 1);
+    this.enabled = $state(init.enabled ?? true);
   }
 
   /** Static metadata accessor for the instance's class. */
   get cls(): NodeClass {
-    return this.constructor as NodeClass
+    return this.constructor as NodeClass;
   }
 
   get typeId(): string {
-    return this.cls.typeId
+    return this.cls.typeId;
   }
 
   get meta(): NodeMeta {
-    return this.cls.meta
+    return this.cls.meta;
   }
 
   /**
@@ -165,11 +156,11 @@ export abstract class Node<
    *
    * @internal codegen-only.
    */
-  prefixOverride: string | null = null
+  prefixOverride: string | null = null;
 
   /** GLSL-safe prefix for this instance's uniforms. */
   get prefix(): string {
-    return this.prefixOverride ?? sanitizeName(this.id)
+    return this.prefixOverride ?? sanitizeName(this.id);
   }
 
   /**
@@ -181,7 +172,7 @@ export abstract class Node<
    *   const oops   = this.uniformName('radiu')    // TS error
    */
   uniformName(key: ConcreteKeys<C> | ConcreteKeys<I>): string {
-    return `u_${this.prefix}_${key}`
+    return `u_${this.prefix}_${key}`;
   }
 
   /**
@@ -192,7 +183,7 @@ export abstract class Node<
    * a stable string of the relevant config slice. Default = no contribution.
    */
   structuralKey(): string {
-    return ''
+    return "";
   }
 
   toJSON(): SerializedNode {
@@ -204,7 +195,7 @@ export abstract class Node<
       blendMode: this.blendMode,
       opacity: this.opacity,
       enabled: this.enabled,
-    }
+    };
   }
 }
 
@@ -217,7 +208,7 @@ export abstract class GeneratorNode<
   C extends Record<string, unknown> = Record<string, unknown>,
   I extends Record<string, unknown> = Record<string, unknown>,
 > extends Node<C, I> {
-  abstract glsl(): GlslBlock
+  abstract glsl(): GlslBlock;
 }
 
 /**
@@ -228,7 +219,7 @@ export abstract class GeneratorNode<
  *             state, e.g. cursor ripples or particle trails).
  *   'both'  — works in either position (the default).
  */
-export type EffectScope = 'layer' | 'scene' | 'both'
+export type EffectScope = "layer" | "scene" | "both";
 
 /**
  * What kind of layer source an EffectNode is allowed to attach to.
@@ -237,7 +228,7 @@ export type EffectScope = 'layer' | 'scene' | 'both'
  *   'texture' — needs an image-domain input (rare; reserved for future).
  *   'any'     — works on either (default — blurs, distortions, adjustments).
  */
-export type EffectAppliesTo = 'shape' | 'texture' | 'any'
+export type EffectAppliesTo = "shape" | "texture" | "any";
 
 /**
  * Receives the previous pass output. Always triggers an FBO split. Inside
@@ -259,13 +250,13 @@ export abstract class EffectNode<
    * placed (e.g. cursor-driven effects that need full canvas state set
    * `scope = 'scene'`).
    */
-  static readonly scope: EffectScope = 'both'
+  static readonly scope: EffectScope = "both";
   /**
    * Source-kind constraint. Subclasses override to declare what generator
    * type they require — e.g. 'shape' for `shape-effects`.
    */
-  static readonly appliesTo: readonly EffectAppliesTo[] = ['any']
-  abstract glsl(): GlslBlock | GlslBlock[]
+  static readonly appliesTo: readonly EffectAppliesTo[] = ["any"];
+  abstract glsl(): GlslBlock | GlslBlock[];
 }
 
 /**
@@ -280,25 +271,25 @@ export abstract class ProcessingNode<
   C extends Record<string, unknown> = Record<string, unknown>,
   I extends Record<string, unknown> = Record<string, unknown>,
 > extends Node<C, I> {
-  abstract preprocess(): Promise<{ dataUrl: string } | null>
-  glsl?(): GlslBlock
+  abstract preprocess(): Promise<{ dataUrl: string } | null>;
+  glsl?(): GlslBlock;
 }
 
 /** Type guard: GLSL-only node (Generator or Effect). */
 export function isGlslNode(node: Node): node is GeneratorNode | EffectNode {
-  return node instanceof GeneratorNode || node instanceof EffectNode
+  return node instanceof GeneratorNode || node instanceof EffectNode;
 }
 
 export function isGeneratorNode(node: Node): node is GeneratorNode {
-  return node instanceof GeneratorNode
+  return node instanceof GeneratorNode;
 }
 
 export function isEffectNode(node: Node): node is EffectNode {
-  return node instanceof EffectNode
+  return node instanceof EffectNode;
 }
 
 export function isProcessingNode(node: Node): node is ProcessingNode {
-  return node instanceof ProcessingNode
+  return node instanceof ProcessingNode;
 }
 
 /**
@@ -307,8 +298,8 @@ export function isProcessingNode(node: Node): node is ProcessingNode {
  * have no scope concept and return 'both' as a no-op.
  */
 export function getEffectScope(cls: NodeClass): EffectScope {
-  const scope = (cls as unknown as { scope?: EffectScope }).scope
-  return scope ?? 'both'
+  const scope = (cls as unknown as { scope?: EffectScope }).scope;
+  return scope ?? "both";
 }
 
 /**
@@ -317,8 +308,8 @@ export function getEffectScope(cls: NodeClass): EffectScope {
  * applicability constraint and return `['any']` as a no-op.
  */
 export function getEffectAppliesTo(cls: NodeClass): readonly EffectAppliesTo[] {
-  const v = (cls as unknown as { appliesTo?: readonly EffectAppliesTo[] }).appliesTo
-  return v ?? ['any']
+  const v = (cls as unknown as { appliesTo?: readonly EffectAppliesTo[] }).appliesTo;
+  return v ?? ["any"];
 }
 
 /**
@@ -327,8 +318,8 @@ export function getEffectAppliesTo(cls: NodeClass): readonly EffectAppliesTo[] {
  * doesn't accidentally exclude effects.
  */
 export function generatorSourceKind(cls: NodeClass): EffectAppliesTo {
-  const cat = cls.meta.category
-  if (cat === 'shapes') return 'shape'
-  if (cat === 'textures') return 'texture'
-  return 'any'
+  const cat = cls.meta.category;
+  if (cat === "shapes") return "shape";
+  if (cat === "textures") return "texture";
+  return "any";
 }

@@ -1,54 +1,54 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  wobble: zFloat(0, 5, 0.01).default(1.0).describe('Wobble'),
-  scanlineNoise: zFloat(0, 1, 0.01).default(0.6).describe('Scanline Noise'),
-  smear: zFloat(-2, 2, 0.01).default(0.2).describe('Smear'),
-  speed: zFloat(0.1, 3, 0.1).default(1.0).describe('Speed'),
-})
+  wobble: zFloat(0, 5, 0.01).default(1.0).describe("Wobble"),
+  scanlineNoise: zFloat(0, 1, 0.01).default(0.6).describe("Scanline Noise"),
+  smear: zFloat(-2, 2, 0.01).default(0.2).describe("Smear"),
+  speed: zFloat(0.1, 3, 0.1).default(1.0).describe("Speed"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'VHS',
+  name: "VHS",
   description:
-    'Analog VHS tape with intermittent tape damage, chroma bleed, and per-scanline noise',
-  color: '#22d3ee',
-  category: 'stylize',
-  defaultBlendMode: 'normal',
-}
+    "Analog VHS tape with intermittent tape damage, chroma bleed, and per-scanline noise",
+  color: "#22d3ee",
+  category: "stylize",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
-const SMEAR_SAMPLES = 6
-const FIELD_LINES = 487
+const SMEAR_SAMPLES = 6;
+const FIELD_LINES = 487;
 
 export class Vhs extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'vhs'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "vhs";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const wobble = this.uniformName('wobble')
-    const scanlineNoiseAmt = this.uniformName('scanlineNoise')
-    const smear = this.uniformName('smear')
-    const speed = this.uniformName('speed')
+    const wobble = this.uniformName("wobble");
+    const scanlineNoiseAmt = this.uniformName("scanlineNoise");
+    const smear = this.uniformName("smear");
+    const speed = this.uniformName("speed");
 
     // Unrolled chroma-smear loop. Weights are i/(N-1) * 2/N and sum to 1.
-    const smearLoop: string[] = []
+    const smearLoop: string[] = [];
     for (let i = 0; i < SMEAR_SAMPLES; i++) {
-      const w = (i / (SMEAR_SAMPLES - 1)) * (2 / SMEAR_SAMPLES)
+      const w = (i / (SMEAR_SAMPLES - 1)) * (2 / SMEAR_SAMPLES);
       smearLoop.push(
         `{ vec3 s = texture(u_prevPass, vec2(chromaUV.x + (${(-i).toFixed(1)}) * smearScale, chromaUV.y)).rgb;
   accumI += dot(s, vec3(0.596, -0.274, -0.322)) * ${w.toFixed(8)};
   accumQ += dot(s, vec3(0.211, -0.523,  0.312)) * ${w.toFixed(8)}; }`,
-      )
+      );
     }
 
     return {
@@ -110,7 +110,7 @@ float sharpY = dot(lumaSample.rgb, vec3(0.299, 0.587, 0.114));
 float smearScale = ${smear} * 0.0075;
 float accumI = 0.0;
 float accumQ = 0.0;
-${smearLoop.join('\n')}
+${smearLoop.join("\n")}
 
 vec3 finalRgb = vec3(
   sharpY + accumI * 0.956 + accumQ * 0.621,
@@ -123,9 +123,9 @@ float acBeat = 1.0 + cos(mod(t, 6.2831853) * 2.0 + uv.y * 0.5) * 0.015 * ${wobbl
 finalRgb = clamp(finalRgb * acBeat, vec3(0.0), vec3(1.0));
 
 return vec4(finalRgb, lumaSample.a);`,
-    }
+    };
   }
 }
 
-register(Vhs)
-export default Vhs
+register(Vhs);
+export default Vhs;

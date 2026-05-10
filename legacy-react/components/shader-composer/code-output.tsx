@@ -19,11 +19,7 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
   };
 
   if (!code) {
-    return (
-      <div className="p-4 text-muted-foreground text-sm">
-        No code generated yet
-      </div>
-    );
+    return <div className="p-4 text-muted-foreground text-sm">No code generated yet</div>;
   }
 
   return (
@@ -34,17 +30,9 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
         className="absolute right-2 top-2 h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity z-10"
         onClick={handleCopy}
       >
-        {copied ? (
-          <Check className="h-4 w-4 text-green-500" />
-        ) : (
-          <Copy className="h-4 w-4" />
-        )}
+        {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
       </Button>
-      <Highlight
-        theme={themes.nightOwl}
-        code={code}
-        language={language as "typescript" | "glsl"}
-      >
+      <Highlight theme={themes.nightOwl} code={code} language={language as "typescript" | "glsl"}>
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <pre
             className={`${className} text-xs p-4 rounded-lg overflow-auto`}

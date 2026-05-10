@@ -1,10 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ShaderEditor } from '@/components/shader-composer/shader-editor'
+import { createFileRoute } from "@tanstack/react-router";
+import { ShaderEditor } from "@/components/shader-composer/shader-editor";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: Home,
-})
+});
 
 function Home() {
-  return <ShaderEditor />
+  return <ShaderEditor />;
 }

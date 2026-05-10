@@ -1,11 +1,11 @@
 // SDF primitives (Inigo Quilez canonical set).
 
-import { helper } from './types'
+import { helper } from "./types";
 
 export const sdCircle = helper({
   code: `
 float sdCircle(vec2 p, float r) { return length(p) - r; }`,
-})
+});
 
 export const sdBox = helper({
   code: `
@@ -13,7 +13,7 @@ float sdBox(vec2 p, vec2 b) {
   vec2 d = abs(p) - b;
   return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 }`,
-})
+});
 
 export const sdRoundedBox = helper({
   code: `
@@ -21,7 +21,7 @@ float sdRoundedBox(vec2 p, vec2 b, float r) {
   vec2 q = abs(p) - b + vec2(r);
   return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 }`,
-})
+});
 
 export const sdEllipse = helper({
   code: `
@@ -58,7 +58,7 @@ float sdEllipse(vec2 p, vec2 ab) {
   vec2 r = vec2(ab.x * co, ab.y * sqrt(1.0 - co * co));
   return length(r - p) * sign(p.y - r.y);
 }`,
-})
+});
 
 export const sdEquilateralTriangle = helper({
   code: `
@@ -70,7 +70,7 @@ float sdEquilateralTriangle(vec2 p, float r) {
   p.x -= clamp(p.x, -2.0 * r, 0.0);
   return -length(p) * sign(p.y);
 }`,
-})
+});
 
 export const sdRegularPolygon = helper({
   code: `
@@ -79,7 +79,7 @@ float sdRegularPolygon(vec2 p, float r, float n) {
   float bn = mod(atan(p.x, p.y), 2.0 * an) - an;
   return length(p) * cos(bn) - r * cos(an);
 }`,
-})
+});
 
 export const sdStar = helper({
   code: `
@@ -94,7 +94,7 @@ float sdStar(vec2 p, float r, float n, float m) {
   p += ecs * clamp(-dot(p, ecs), 0.0, r * acs.y / ecs.y);
   return length(p) * sign(p.x);
 }`,
-})
+});
 
 export const sdSegment = helper({
   code: `
@@ -103,7 +103,7 @@ float sdSegment(vec2 p, vec2 a, vec2 b) {
   float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
   return length(pa - ba * h);
 }`,
-})
+});
 
 export const sdCross = helper({
   code: `
@@ -114,7 +114,7 @@ float sdCross(vec2 p, vec2 b, float r) {
   vec2 w = (k > 0.0) ? q : vec2(b.y - p.x, -k);
   return sign(k) * length(max(w, 0.0)) + r;
 }`,
-})
+});
 
 export const sdVesica = helper({
   code: `
@@ -125,4 +125,4 @@ float sdVesica(vec2 p, float r, float d) {
     ? length(p - vec2(0.0, b))
     : length(p - vec2(-d, 0.0)) - r;
 }`,
-})
+});

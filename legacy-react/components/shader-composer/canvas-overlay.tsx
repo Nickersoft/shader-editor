@@ -10,10 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Layer } from "@/shaders/core/scene";
-import {
-  resolveSpatialControls,
-  type SpatialControlsSpec,
-} from "@/shaders/core/spatial";
+import { resolveSpatialControls, type SpatialControlsSpec } from "@/shaders/core/spatial";
 import { useComposer } from "@/state/composer";
 
 /** Convert a 0..1 RGB triple from config into a CSS rgb() string. */
@@ -109,14 +106,11 @@ function DraggableHandle({
   const ref = useRef<SVGCircleElement | null>(null);
   const draggingRef = useRef(false);
 
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent<SVGCircleElement>) => {
-      e.stopPropagation();
-      draggingRef.current = true;
-      ref.current?.setPointerCapture(e.pointerId);
-    },
-    [],
-  );
+  const handlePointerDown = useCallback((e: React.PointerEvent<SVGCircleElement>) => {
+    e.stopPropagation();
+    draggingRef.current = true;
+    ref.current?.setPointerCapture(e.pointerId);
+  }, []);
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<SVGCircleElement>) => {
@@ -131,14 +125,11 @@ function DraggableHandle({
     [onDrag],
   );
 
-  const handlePointerUp = useCallback(
-    (e: React.PointerEvent<SVGCircleElement>) => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-      ref.current?.releasePointerCapture(e.pointerId);
-    },
-    [],
-  );
+  const handlePointerUp = useCallback((e: React.PointerEvent<SVGCircleElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    ref.current?.releasePointerCapture(e.pointerId);
+  }, []);
 
   return (
     <circle
@@ -163,24 +154,19 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
   const { width, height } = useObservedSize(canvasRef);
 
   const cls = layer?.source.cls as
-    | (typeof layer extends null
-        ? never
-        : { spatialControls?: SpatialControlsSpec })
+    | (typeof layer extends null ? never : { spatialControls?: SpatialControlsSpec })
     | undefined;
   const config = (layer?.source.config as Record<string, unknown>) ?? {};
   // Composer mutates config in place (config ref is stable across updates),
   // so we can't memo on `config`. Recompute every render — cheap.
   const controls =
-    cls && "spatialControls" in cls
-      ? resolveSpatialControls(cls.spatialControls, config)
-      : [];
+    cls && "spatialControls" in cls ? resolveSpatialControls(cls.spatialControls, config) : [];
 
   if (!layer || width === 0 || height === 0 || controls.length === 0) {
     return null;
   }
   const sourceId = layer.source.id;
-  const setField = (key: string, value: number) =>
-    updateConfig(sourceId, key, value);
+  const setField = (key: string, value: number) => updateConfig(sourceId, key, value);
 
   return (
     <svg
@@ -210,11 +196,7 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
         if (c.kind === "radius") {
           const cx = toPx((config[c.cx] as number) ?? 0.5, width);
           const cy = toPxY((config[c.cy] as number) ?? 0.5, height);
-          const r = radiusToPx(
-            (config[c.r] as number) ?? 0.3,
-            width,
-            height,
-          );
+          const r = radiusToPx((config[c.r] as number) ?? 0.3, width, height);
           // Edge handle on the +x ray. Drag distance from center → radius.
           const ex = cx + r;
           const ey = cy;
@@ -309,9 +291,7 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
           const v = (config[c.key] as [number, number] | undefined) ?? [0.5, 0.5];
           const cx = toPx(v[0], width);
           const cy = toPxY(v[1], height);
-          const fill = c.color
-            ? rgbFromColor(config[c.color], "#3b82f6")
-            : "#3b82f6";
+          const fill = c.color ? rgbFromColor(config[c.color], "#3b82f6") : "#3b82f6";
           return (
             <DraggableHandle
               key={`pv-${idx}`}
@@ -332,9 +312,7 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
           const r = radiusToPx((config[c.r] as number) ?? 0.3, width, height);
           const ex = cx + r;
           const ey = cy;
-          const centerFill = c.color
-            ? rgbFromColor(config[c.color], "#3b82f6")
-            : "#3b82f6";
+          const centerFill = c.color ? rgbFromColor(config[c.color], "#3b82f6") : "#3b82f6";
           return (
             <g key={`rv-${idx}`}>
               <circle
@@ -352,10 +330,7 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
                 cy={cy}
                 fill={centerFill}
                 onDrag={(px, py) => {
-                  setField(c.center, [
-                    fromPx(px, width),
-                    fromPxY(py, height),
-                  ] as unknown as number);
+                  setField(c.center, [fromPx(px, width), fromPxY(py, height)] as unknown as number);
                 }}
               />
               <DraggableHandle
@@ -380,12 +355,8 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
           const y1 = toPxY(a[1], height);
           const x2 = toPx(b[0], width);
           const y2 = toPxY(b[1], height);
-          const fillFrom = c.colorFrom
-            ? rgbFromColor(config[c.colorFrom], "#3b82f6")
-            : "#3b82f6";
-          const fillTo = c.colorTo
-            ? rgbFromColor(config[c.colorTo], "#a855f7")
-            : "#a855f7";
+          const fillFrom = c.colorFrom ? rgbFromColor(config[c.colorFrom], "#3b82f6") : "#3b82f6";
+          const fillTo = c.colorTo ? rgbFromColor(config[c.colorTo], "#a855f7") : "#a855f7";
           return (
             <g key={`sv-${idx}`}>
               <line
@@ -404,10 +375,7 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
                 size={12}
                 fill={fillFrom}
                 onDrag={(px, py) => {
-                  setField(c.from, [
-                    fromPx(px, width),
-                    fromPxY(py, height),
-                  ] as unknown as number);
+                  setField(c.from, [fromPx(px, width), fromPxY(py, height)] as unknown as number);
                 }}
               />
               <DraggableHandle
@@ -416,10 +384,7 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
                 size={12}
                 fill={fillTo}
                 onDrag={(px, py) => {
-                  setField(c.to, [
-                    fromPx(px, width),
-                    fromPxY(py, height),
-                  ] as unknown as number);
+                  setField(c.to, [fromPx(px, width), fromPxY(py, height)] as unknown as number);
                 }}
               />
             </g>
@@ -462,10 +427,7 @@ export function CanvasOverlay({ canvasRef, layer }: CanvasOverlayProps) {
               size={12}
               fill={fill}
               onDrag={(px, py) => {
-                setField(c.key, [
-                  fromPx(px, width),
-                  fromPxY(py, height),
-                ] as unknown as number);
+                setField(c.key, [fromPx(px, width), fromPxY(py, height)] as unknown as number);
               }}
             />
           );

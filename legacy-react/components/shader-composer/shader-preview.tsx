@@ -4,10 +4,7 @@ import { useRef, useEffect, useMemo } from "react";
 import { useComposer } from "@/state/composer";
 import { generate, type GeneratedPass, type GeneratedUniform } from "@/lib/codegen";
 import { isProcessingNode } from "@/shaders/core/node";
-import {
-  createShaderPipeline,
-  type PipelineHandle,
-} from "@/lib/codegen/runtime/runtime-shell";
+import { createShaderPipeline, type PipelineHandle } from "@/lib/codegen/runtime/runtime-shell";
 import { TextureCache } from "@/lib/codegen/runtime/texture-cache";
 import { JsLayerRunner } from "@/lib/codegen/runtime/js-layer-runner";
 import type { ImageInputValue } from "@/shaders/core/schemas";
@@ -20,11 +17,7 @@ const FIT_MODE: Record<string, number> = {
 };
 
 function isImageValue(v: unknown): v is ImageInputValue {
-  return (
-    typeof v === "object" &&
-    v !== null &&
-    "sourceKind" in (v as Record<string, unknown>)
-  );
+  return typeof v === "object" && v !== null && "sourceKind" in (v as Record<string, unknown>);
 }
 
 interface PaletteValue {
@@ -33,11 +26,7 @@ interface PaletteValue {
 }
 
 function isPaletteValue(v: unknown): v is PaletteValue {
-  return (
-    typeof v === "object" &&
-    v !== null &&
-    Array.isArray((v as PaletteValue).values)
-  );
+  return typeof v === "object" && v !== null && Array.isArray((v as PaletteValue).values);
 }
 
 export function ShaderPreview() {
@@ -75,15 +64,11 @@ export function ShaderPreview() {
         `L:${layer.id}:${layer.enabled ? 1 : 0}:${layer.blendMode}:${layer.source.id}:${layer.source.typeId}:${layer.source.enabled ? 1 : 0}`,
       );
       for (const fx of layer.effects) {
-        parts.push(
-          `E:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}`,
-        );
+        parts.push(`E:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}`);
       }
     }
     for (const fx of scene.postEffects) {
-      parts.push(
-        `P:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}`,
-      );
+      parts.push(`P:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}`);
     }
     return parts.join("|");
   }, [scene]);
@@ -161,7 +146,7 @@ export function ShaderPreview() {
         layerCount: enabledLayers.length,
         sceneBackground: scene.background.color,
         layerOpacities: enabledLayers.map((l) => l.opacity),
-      }
+      },
     );
 
     // Drop JS-runner state for nodes that no longer exist or were disabled.
@@ -212,10 +197,7 @@ export function ShaderPreview() {
           const prefix = node.prefix;
 
           // Per-node opacity.
-          const opacityLocation = gl.getUniformLocation(
-            program,
-            `u_${prefix}_opacity`
-          );
+          const opacityLocation = gl.getUniformLocation(program, `u_${prefix}_opacity`);
           if (opacityLocation) gl.uniform1f(opacityLocation, node.opacity);
 
           // For ProcessingNodes' JS pass, bind the runner-managed output texture
@@ -228,10 +210,7 @@ export function ShaderPreview() {
             const tex = runner.ensure(node, () => {});
             gl.activeTexture(gl.TEXTURE0 + textureUnit);
             gl.bindTexture(gl.TEXTURE_2D, tex);
-            const loc = gl.getUniformLocation(
-              program,
-              `u_${prefix}_jsOutput`
-            );
+            const loc = gl.getUniformLocation(program, `u_${prefix}_jsOutput`);
             if (loc !== null) gl.uniform1i(loc, textureUnit);
             textureUnit += 1;
             continue;
@@ -252,40 +231,22 @@ export function ShaderPreview() {
 
             switch (u.type) {
               case "float":
-                gl.uniform1f(
-                  gl.getUniformLocation(program, baseName),
-                  value as number
-                );
+                gl.uniform1f(gl.getUniformLocation(program, baseName), value as number);
                 break;
               case "vec2":
-                gl.uniform2fv(
-                  gl.getUniformLocation(program, baseName),
-                  value as number[]
-                );
+                gl.uniform2fv(gl.getUniformLocation(program, baseName), value as number[]);
                 break;
               case "vec3":
-                gl.uniform3fv(
-                  gl.getUniformLocation(program, baseName),
-                  value as number[]
-                );
+                gl.uniform3fv(gl.getUniformLocation(program, baseName), value as number[]);
                 break;
               case "vec4":
-                gl.uniform4fv(
-                  gl.getUniformLocation(program, baseName),
-                  value as number[]
-                );
+                gl.uniform4fv(gl.getUniformLocation(program, baseName), value as number[]);
                 break;
               case "int":
-                gl.uniform1i(
-                  gl.getUniformLocation(program, baseName),
-                  value as number
-                );
+                gl.uniform1i(gl.getUniformLocation(program, baseName), value as number);
                 break;
               case "bool":
-                gl.uniform1i(
-                  gl.getUniformLocation(program, baseName),
-                  value ? 1 : 0
-                );
+                gl.uniform1i(gl.getUniformLocation(program, baseName), value ? 1 : 0);
                 break;
               case "sampler2D": {
                 const cache = textureCacheRef.current;
@@ -298,30 +259,21 @@ export function ShaderPreview() {
                 const tex = entry?.texture ?? cache.getPlaceholder();
                 gl.activeTexture(gl.TEXTURE0 + textureUnit);
                 gl.bindTexture(gl.TEXTURE_2D, tex);
-                gl.uniform1i(
-                  gl.getUniformLocation(program, baseName),
-                  textureUnit
-                );
-                gl.uniform4fv(
-                  gl.getUniformLocation(program, `${baseName}_meta`),
-                  [
-                    entry?.aspect ?? 1,
-                    FIT_MODE[img?.fit ?? "cover"] ?? 0,
-                    img?.scale ?? 1,
-                    img?.rotation ?? 0,
-                  ]
-                );
-                const imageAspectLocation = gl.getUniformLocation(
-                  program,
-                  "u_imageAspectRatio"
-                );
+                gl.uniform1i(gl.getUniformLocation(program, baseName), textureUnit);
+                gl.uniform4fv(gl.getUniformLocation(program, `${baseName}_meta`), [
+                  entry?.aspect ?? 1,
+                  FIT_MODE[img?.fit ?? "cover"] ?? 0,
+                  img?.scale ?? 1,
+                  img?.rotation ?? 0,
+                ]);
+                const imageAspectLocation = gl.getUniformLocation(program, "u_imageAspectRatio");
                 if (imageAspectLocation !== null) {
                   gl.uniform1f(imageAspectLocation, entry?.aspect ?? 1);
                 }
-                gl.uniform2fv(
-                  gl.getUniformLocation(program, `${baseName}_offset`),
-                  [img?.offsetX ?? 0, img?.offsetY ?? 0]
-                );
+                gl.uniform2fv(gl.getUniformLocation(program, `${baseName}_offset`), [
+                  img?.offsetX ?? 0,
+                  img?.offsetY ?? 0,
+                ]);
                 textureUnit += 1;
                 break;
               }
@@ -337,14 +289,8 @@ export function ShaderPreview() {
                   flat[i * 4 + 2] = c[2] ?? 0;
                   flat[i * 4 + 3] = c[3] ?? 1;
                 }
-                gl.uniform4fv(
-                  gl.getUniformLocation(program, baseName),
-                  flat
-                );
-                gl.uniform1i(
-                  gl.getUniformLocation(program, `${baseName}_count`),
-                  count
-                );
+                gl.uniform4fv(gl.getUniformLocation(program, baseName), flat);
+                gl.uniform1i(gl.getUniformLocation(program, `${baseName}_count`), count);
                 break;
               }
             }

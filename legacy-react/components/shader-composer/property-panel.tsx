@@ -38,17 +38,15 @@ interface PaletteValue {
   length: number;
 }
 
-function ColorInput({
-  value,
-  onChange,
-}: {
-  value: number[];
-  onChange: (value: number[]) => void;
-}) {
+function ColorInput({ value, onChange }: { value: number[]; onChange: (value: number[]) => void }) {
   const hasAlpha = value.length === 4;
   const hexValue = `#${value
     .slice(0, 3)
-    .map((v) => Math.round(v * 255).toString(16).padStart(2, "0"))
+    .map((v) =>
+      Math.round(v * 255)
+        .toString(16)
+        .padStart(2, "0"),
+    )
     .join("")}`;
 
   const handleHexChange = (hex: string) => {
@@ -97,7 +95,11 @@ function ColorInput({
 function rgbToHex(c: number[]): string {
   return `#${c
     .slice(0, 3)
-    .map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0"))
+    .map((v) =>
+      Math.round(Math.max(0, Math.min(1, v)) * 255)
+        .toString(16)
+        .padStart(2, "0"),
+    )
     .join("")}`;
 }
 
@@ -150,9 +152,7 @@ function ColorArrayInput({
               }}
               className="w-7 h-7 rounded border border-border cursor-pointer"
             />
-            <span className="text-[11px] font-mono text-muted-foreground flex-1">
-              {hex}
-            </span>
+            <span className="text-[11px] font-mono text-muted-foreground flex-1">{hex}</span>
             <Slider
               value={[c[3] ?? 1]}
               onValueChange={([a]) => updateColor(i, [c[0], c[1], c[2], a])}
@@ -227,11 +227,7 @@ function ImageInput({
       >
         {value.url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={value.url}
-            alt="Preview"
-            className="w-12 h-12 object-cover rounded"
-          />
+          <img src={value.url} alt="Preview" className="w-12 h-12 object-cover rounded" />
         ) : (
           <div className="w-12 h-12 rounded bg-muted/60 flex items-center justify-center text-muted-foreground">
             <Upload className="h-4 w-4" />
@@ -245,9 +241,7 @@ function ImageInput({
                 : value.url
               : "Drop or paste an image"}
           </div>
-          {error && (
-            <div className="text-[10px] text-destructive truncate">{error}</div>
-          )}
+          {error && <div className="text-[10px] text-destructive truncate">{error}</div>}
         </div>
         {value.url && (
           <button
@@ -404,11 +398,7 @@ function FieldControl({
       return (
         <div className="flex items-center justify-between">
           <Label className="text-xs text-muted-foreground">{label}</Label>
-          <input
-            type="checkbox"
-            checked={boolValue}
-            onChange={(e) => onChange(e.target.checked)}
-          />
+          <input type="checkbox" checked={boolValue} onChange={(e) => onChange(e.target.checked)} />
         </div>
       );
     }
@@ -461,10 +451,7 @@ function FieldControl({
         return (
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">{label}</Label>
-            <ColorInput
-              value={vecValue}
-              onChange={(next) => onChange(next as unknown)}
-            />
+            <ColorInput value={vecValue} onChange={(next) => onChange(next as unknown)} />
           </div>
         );
       }
@@ -474,9 +461,7 @@ function FieldControl({
           <Label className="text-xs text-muted-foreground">{label}</Label>
           {vecValue.map((v, i) => (
             <div key={i} className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground w-4">
-                {["X", "Y", "Z", "W"][i]}
-              </span>
+              <span className="text-xs text-muted-foreground w-4">{["X", "Y", "Z", "W"][i]}</span>
               <Slider
                 value={[v]}
                 onValueChange={([newV]) => {
@@ -552,7 +537,7 @@ export function PropertyPanel() {
 
   const selectedNode: Node | null = useMemo(
     () => chain.nodes.find((n) => n.id === selectedNodeId) ?? null,
-    [chain, selectedNodeId]
+    [chain, selectedNodeId],
   );
 
   const fields = useMemo(() => {
@@ -593,10 +578,7 @@ export function PropertyPanel() {
       <div className="p-4 space-y-6">
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: meta.color }}
-            />
+            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: meta.color }} />
             <h2 className="text-sm font-semibold">{meta.name}</h2>
           </div>
 
@@ -606,9 +588,7 @@ export function PropertyPanel() {
               <Label className="text-xs text-muted-foreground">Blend Mode</Label>
               <Select
                 value={selectedNode.blendMode || "normal"}
-                onValueChange={(v) =>
-                  updateBlendMode(selectedNode.id, v as BlendMode)
-                }
+                onValueChange={(v) => updateBlendMode(selectedNode.id, v as BlendMode)}
               >
                 <SelectTrigger className="w-full h-8 text-xs">
                   <SelectValue />
@@ -650,9 +630,7 @@ export function PropertyPanel() {
               Properties
             </h3>
             {visibleCfgFields.map((field) => {
-              const value = (selectedNode.config as Record<string, unknown>)[
-                field.key
-              ];
+              const value = (selectedNode.config as Record<string, unknown>)[field.key];
               return (
                 <FieldControl
                   key={`cfg-${field.key}`}
@@ -664,9 +642,7 @@ export function PropertyPanel() {
               );
             })}
             {fields.inFields.map((field) => {
-              const value = (selectedNode.inputs as Record<string, unknown>)[
-                field.key
-              ];
+              const value = (selectedNode.inputs as Record<string, unknown>)[field.key];
               return (
                 <FieldControl
                   key={`in-${field.key}`}

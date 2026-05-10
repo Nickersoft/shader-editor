@@ -8,10 +8,10 @@
 export interface GlslUtilEntry {
   /** GLSL source spliced into a fragment shader at file scope when this helper
    *  is referenced (directly or transitively) by an enabled node. */
-  code: string
+  code: string;
   /** Other helpers this one calls. Codegen walks them transitively so callers
    *  only need to declare the helpers they directly reference. */
-  needs?: readonly string[]
+  needs?: readonly string[];
 }
 
 /**
@@ -25,8 +25,8 @@ export interface GlslUtilEntry {
  * full set of helper names — a typo in `needs` becomes a compile-time error.
  */
 export function helper<const N extends readonly string[] = readonly []>(t: {
-  code: string
-  needs?: N
+  code: string;
+  needs?: N;
 }): { code: string; needs?: N } {
-  return t
+  return t;
 }

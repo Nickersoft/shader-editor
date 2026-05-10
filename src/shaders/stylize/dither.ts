@@ -1,38 +1,38 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
   pattern: z
-    .enum(['bayer2', 'bayer4', 'bayer8', 'whiteNoise'])
-    .default('bayer4')
-    .describe('Pattern'),
-  threshold: zFloat(0, 1).default(0.5).describe('Threshold'),
-  spread: zFloat(0, 1).default(0.5).describe('Spread'),
-  colorDark: zColor().default([0.05, 0.05, 0.1]).describe('Dark'),
-  colorLight: zColor().default([1, 1, 0.95]).describe('Light'),
-})
+    .enum(["bayer2", "bayer4", "bayer8", "whiteNoise"])
+    .default("bayer4")
+    .describe("Pattern"),
+  threshold: zFloat(0, 1).default(0.5).describe("Threshold"),
+  spread: zFloat(0, 1).default(0.5).describe("Spread"),
+  colorDark: zColor().default([0.05, 0.05, 0.1]).describe("Dark"),
+  colorLight: zColor().default([1, 1, 0.95]).describe("Light"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Dither',
-  description: 'Bayer or noise-based ordered dither (2-color)',
-  color: '#475569',
-  category: 'stylize',
-  defaultBlendMode: 'normal',
-}
+  name: "Dither",
+  description: "Bayer or noise-based ordered dither (2-color)",
+  color: "#475569",
+  category: "stylize",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 const BAYER2 = `
 const float bayer2[4] = float[4](
   0.0/4.0, 2.0/4.0,
   3.0/4.0, 1.0/4.0
-);`
+);`;
 
 const BAYER4 = `
 const float bayer4[16] = float[16](
@@ -40,7 +40,7 @@ const float bayer4[16] = float[16](
  12.0/16.0,  4.0/16.0, 14.0/16.0,  6.0/16.0,
   3.0/16.0, 11.0/16.0,  1.0/16.0,  9.0/16.0,
  15.0/16.0,  7.0/16.0, 13.0/16.0,  5.0/16.0
-);`
+);`;
 
 const BAYER8 = `
 const float bayer8[64] = float[64](
@@ -52,45 +52,45 @@ const float bayer8[64] = float[64](
   51.0/64.0, 19.0/64.0, 59.0/64.0, 27.0/64.0, 49.0/64.0, 17.0/64.0, 57.0/64.0, 25.0/64.0,
   15.0/64.0, 47.0/64.0,  7.0/64.0, 39.0/64.0, 13.0/64.0, 45.0/64.0,  5.0/64.0, 37.0/64.0,
   63.0/64.0, 31.0/64.0, 55.0/64.0, 23.0/64.0, 61.0/64.0, 29.0/64.0, 53.0/64.0, 21.0/64.0
-);`
+);`;
 
 export class Dither extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'dither'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "dither";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const threshold = this.uniformName('threshold')
-    const spread = this.uniformName('spread')
-    const colorDark = this.uniformName('colorDark')
-    const colorLight = this.uniformName('colorLight')
-    const pattern = this.config.pattern
+    const threshold = this.uniformName("threshold");
+    const spread = this.uniformName("spread");
+    const colorDark = this.uniformName("colorDark");
+    const colorLight = this.uniformName("colorLight");
+    const pattern = this.config.pattern;
 
-    let functions = ''
-    let sampleExpr = ''
-    if (pattern === 'bayer2') {
-      functions = BAYER2
+    let functions = "";
+    let sampleExpr = "";
+    if (pattern === "bayer2") {
+      functions = BAYER2;
       sampleExpr = `
 ivec2 ipx = ivec2(mod(gl_FragCoord.xy, 2.0));
-float t = bayer2[ipx.y * 2 + ipx.x];`
-    } else if (pattern === 'bayer4') {
-      functions = BAYER4
+float t = bayer2[ipx.y * 2 + ipx.x];`;
+    } else if (pattern === "bayer4") {
+      functions = BAYER4;
       sampleExpr = `
 ivec2 ipx = ivec2(mod(gl_FragCoord.xy, 4.0));
-float t = bayer4[ipx.y * 4 + ipx.x];`
-    } else if (pattern === 'bayer8') {
-      functions = BAYER8
+float t = bayer4[ipx.y * 4 + ipx.x];`;
+    } else if (pattern === "bayer8") {
+      functions = BAYER8;
       sampleExpr = `
 ivec2 ipx = ivec2(mod(gl_FragCoord.xy, 8.0));
-float t = bayer8[ipx.y * 8 + ipx.x];`
+float t = bayer8[ipx.y * 8 + ipx.x];`;
     } else {
       sampleExpr = `
-float t = hash21(gl_FragCoord.xy);`
+float t = hash21(gl_FragCoord.xy);`;
     }
 
     const block: GlslBlock = {
-      dependencies: pattern === 'whiteNoise' ? ['hash21', 'luma'] : ['luma'],
+      dependencies: pattern === "whiteNoise" ? ["hash21", "luma"] : ["luma"],
       main: `
 vec4 src = texture(u_prevPass, uv);
 float lum = luma(src.rgb);
@@ -98,11 +98,11 @@ ${sampleExpr}
 float d = lum + (t - 0.5) * ${spread};
 float v = step(${threshold}, d);
 return vec4(mix(${colorDark}, ${colorLight}, v), src.a);`,
-    }
-    if (functions) block.functions = functions
-    return block
+    };
+    if (functions) block.functions = functions;
+    return block;
   }
 }
 
-register(Dither)
-export default Dither
+register(Dither);
+export default Dither;

@@ -1,4 +1,4 @@
-import { helper } from './types'
+import { helper } from "./types";
 
 export const simplex2D = helper({
   code: `
@@ -29,14 +29,14 @@ float simplex2D(vec2 v) {
   g.yz = a0.yz * x12.xz + h.yz * x12.yw;
   return 130.0 * dot(m, g);
 }`,
-})
+});
 
 /** Alias for simplex2D so verbatim ports compile without renaming. */
 export const snoise = helper({
   code: `
 float snoise(vec2 v) { return simplex2D(v); }`,
-  needs: ['simplex2D'],
-})
+  needs: ["simplex2D"],
+});
 
 export const valueNoise = helper({
   code: `
@@ -52,8 +52,8 @@ float valueNoise(vec2 st) {
   float x2 = mix(c, d, u.x);
   return mix(x1, x2, u.y);
 }`,
-  needs: ['hash21'],
-})
+  needs: ["hash21"],
+});
 
 export const fbm = helper({
   code: `
@@ -70,8 +70,8 @@ float fbm(vec2 p, float octaves, float lacunarity, float gain) {
   }
   return sum;
 }`,
-  needs: ['simplex2D'],
-})
+  needs: ["simplex2D"],
+});
 
 // === Noise-texture lookups (sample u_noiseTexture, the global TEXTURE15 binding) ===
 
@@ -80,14 +80,14 @@ export const noiseTextureRandomR = helper({
 float noiseTextureRandomR(vec2 p) {
   return texture(u_noiseTexture, floor(p) / 100.0 + 0.5).r;
 }`,
-})
+});
 
 export const noiseTextureRandomGB = helper({
   code: `
 vec2 noiseTextureRandomGB(vec2 p) {
   return texture(u_noiseTexture, floor(p) / 100.0 + 0.5).gb;
 }`,
-})
+});
 
 export const fiberNoise = helper({
   code: `
@@ -128,13 +128,13 @@ float fiberNoise(vec2 uv, vec2 seedOffset) {
   float n4 = fiberNoiseFbm(uv - vec2(0.0, epsilon), seedOffset);
   return length(vec2(n1 - n2, n3 - n4)) / (2.0 * epsilon);
 }`,
-  needs: ['rotate'],
-})
+  needs: ["rotate"],
+});
 
 export const domainWarp = helper({
   code: `
 vec2 domainWarp(vec2 uv, float n, float amplitude) {
   return uv + vec2(cos(n * TWO_PI), sin(n * TWO_PI)) * amplitude;
 }`,
-  needs: ['pi'],
-})
+  needs: ["pi"],
+});

@@ -1,48 +1,48 @@
-import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zCenter, zColorRgba, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zCenter, zColorRgba, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  rayColor: zColorRgba().default([0.26, 0.51, 0.98, 1]).describe('Ray Color'),
-  backgroundColor: zColorRgba().default([0, 0, 0, 0]).describe('Background Color'),
-  center: zCenter(2).default([0, 0]).describe('Center'),
-  density: zFloat(0, 1, 0.01).default(0.3).describe('Density'),
-  intensity: zFloat(0, 1, 0.01).default(0.8).describe('Intensity'),
-  spotty: zFloat(0, 1, 0.01).default(1).describe('Spotty'),
-  speed: zFloat(0, 2, 0.05).default(0.5).describe('Speed'),
-})
+  rayColor: zColorRgba().default([0.26, 0.51, 0.98, 1]).describe("Ray Color"),
+  backgroundColor: zColorRgba().default([0, 0, 0, 0]).describe("Background Color"),
+  center: zCenter(2).default([0, 0]).describe("Center"),
+  density: zFloat(0, 1, 0.01).default(0.3).describe("Density"),
+  intensity: zFloat(0, 1, 0.01).default(0.8).describe("Intensity"),
+  spotty: zFloat(0, 1, 0.01).default(1).describe("Spotty"),
+  speed: zFloat(0, 2, 0.05).default(0.5).describe("Speed"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'God Rays',
-  description: 'Volumetric light rays emanating from a point',
-  color: '#facc15',
-  category: 'textures',
-  defaultBlendMode: 'add',
-}
+  name: "God Rays",
+  description: "Volumetric light rays emanating from a point",
+  color: "#facc15",
+  category: "textures",
+  defaultBlendMode: "add",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class GodRays extends GeneratorNode<Config, Inputs> {
-  static readonly typeId = 'godrays'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "godrays";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const rayColor = this.uniformName('rayColor')
-    const backgroundColor = this.uniformName('backgroundColor')
-    const center = this.uniformName('center')
-    const density = this.uniformName('density')
-    const intensity = this.uniformName('intensity')
-    const spotty = this.uniformName('spotty')
-    const speed = this.uniformName('speed')
+    const rayColor = this.uniformName("rayColor");
+    const backgroundColor = this.uniformName("backgroundColor");
+    const center = this.uniformName("center");
+    const density = this.uniformName("density");
+    const intensity = this.uniformName("intensity");
+    const spotty = this.uniformName("spotty");
+    const speed = this.uniformName("speed");
     return {
-      dependencies: ['valueNoise'],
+      dependencies: ["valueNoise"],
       main: `
 float aspect = u_resolution.x / u_resolution.y;
 vec2 centerUV = ${center} * 0.5 + 0.5;
@@ -86,9 +86,9 @@ float finalAlpha = rayAlpha + bg.a * (1.0 - rayAlpha);
 vec3 rayContribution = rc.rgb * rayAlpha;
 vec3 bgContribution = bg.rgb * bg.a * (1.0 - rayAlpha);
 return vec4(rayContribution + bgContribution, finalAlpha);`,
-    }
+    };
   }
 }
 
-register(GodRays)
-export default GodRays
+register(GodRays);
+export default GodRays;

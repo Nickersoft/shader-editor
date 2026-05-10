@@ -1,4 +1,4 @@
-import { helper } from './types'
+import { helper } from "./types";
 
 export const pi = helper({
   code: `
@@ -8,4 +8,4 @@ export const pi = helper({
 #ifndef PI
 #define PI 3.14159265358979323846
 #endif`,
-})
+});

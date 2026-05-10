@@ -9,7 +9,7 @@
 ## User
 
 i need you to review all of the shaders in https://github.com/paper-design/shaders and make sure our presets map to them 1:1. adjust the
-  primitives if needed to achieve the exact effects, including adding image support 
+primitives if needed to achieve the exact effects, including adding image support
 
 ---
 
@@ -20,6 +20,7 @@ Certainly, Mr. Nickerson. I shall treat this as a planning pass only: inspect th
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "**/*shader*",
@@ -28,6 +29,7 @@ Certainly, Mr. Nickerson. I shall treat this as a planning pass only: inspect th
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts
@@ -37,6 +39,7 @@ Certainly, Mr. Nickerson. I shall treat this as a planning pass only: inspect th
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "**/*preset*",
@@ -45,6 +48,7 @@ Certainly, Mr. Nickerson. I shall treat this as a planning pass only: inspect th
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/paper-presets.ts
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts
@@ -53,6 +57,7 @@ Certainly, Mr. Nickerson. I shall treat this as a planning pass only: inspect th
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "**/package.json",
@@ -61,6 +66,7 @@ Certainly, Mr. Nickerson. I shall treat this as a planning pass only: inspect th
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/package.json
 ```
@@ -68,6 +74,7 @@ Certainly, Mr. Nickerson. I shall treat this as a planning pass only: inspect th
 **Tool: grep**
 
 **Input:**
+
 ```json
 {
   "pattern": "paper-design|Shader|preset|primitive|image|texture",
@@ -77,6 +84,7 @@ Certainly, Mr. Nickerson. I shall treat this as a planning pass only: inspect th
 ```
 
 **Output:**
+
 ```
 Found 298 matches (showing first 100)
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/scripts/check-generator.ts:
@@ -303,6 +311,7 @@ Found 298 matches (showing first 100)
 **Tool: skill**
 
 **Input:**
+
 ```json
 {
   "name": "threejs-shaders"
@@ -310,7 +319,8 @@ Found 298 matches (showing first 100)
 ```
 
 **Output:**
-```
+
+````
 <skill_content name="threejs-shaders">
 # Skill: threejs-shaders
 
@@ -342,7 +352,7 @@ const material = new THREE.ShaderMaterial({
 
 // Update in animation loop
 material.uniforms.time.value = clock.getElapsedTime();
-```
+````
 
 ## ShaderMaterial vs RawShaderMaterial
 
@@ -960,7 +970,8 @@ Note: file list is sampled.
 
 </skill_files>
 </skill_content>
-```
+
+````
 
 ---
 
@@ -975,9 +986,10 @@ Note: file list is sampled.
   "offset": 1,
   "limit": 220
 }
-```
+````
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/package.json</path>
 <type>file</type>
@@ -1070,6 +1082,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/paper-presets.ts",
@@ -1079,6 +1092,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/paper-presets.ts</path>
 <type>file</type>
@@ -1099,38 +1113,38 @@ Note: file list is sampled.
 14: //                 isn't the identical algorithm; small differences expected.
 15: //   placeholder — atom is missing or only partially expressible today; the
 16: //                 composition is the best current approximation.
-17: 
+17:
 18: import type { BlendMode, UniformValue, Vec4ArrayValue } from './types'
-19: 
+19:
 20: export type PaperFidelity = 'exact' | 'approx' | 'placeholder'
-21: 
+21:
 22: export interface PaperLayerSpec {
 23:   layerType: string
 24:   uniformValues: Record<string, UniformValue>
 25:   blendMode?: BlendMode
 26:   opacity?: number
 27: }
-28: 
+28:
 29: export interface PaperPreset {
 30:   name: string
 31:   fidelity: PaperFidelity
 32:   layers: PaperLayerSpec[]
 33: }
-34: 
+34:
 35: export interface PaperGroup {
 36:   slug: string
 37:   name: string
 38:   description: string
 39:   presets: PaperPreset[]
 40: }
-41: 
+41:
 42: // Helpers -----------------------------------------------------------------
-43: 
+43:
 44: const palette = (...colors: number[][]): Vec4ArrayValue => ({
 45:   values: colors.map((c) => (c.length === 4 ? c : [c[0], c[1], c[2], 1])),
 46:   length: colors.length,
 47: })
-48: 
+48:
 49: const hex = (s: string): number[] => {
 50:   const v = s.replace('#', '')
 51:   const n = v.length
@@ -1140,11 +1154,11 @@ Note: file list is sampled.
 55:   const a = n === 8 ? parseInt(v.substring(6, 8), 16) / 255 : 1
 56:   return [r, g, b, a]
 57: }
-58: 
+58:
 59: const noImage = { url: null, sourceKind: 'url' as const, fit: 'cover' as const }
-60: 
+60:
 61: // Groups -------------------------------------------------------------------
-62: 
+62:
 63: export const PAPER_GROUPS: PaperGroup[] = [
 64:   {
 65:     slug: 'mesh-gradient',
@@ -1962,9 +1976,9 @@ Note: file list is sampled.
 877:     ],
 878:   },
 879: ]
-880: 
+880:
 881: // Flat list for the existing preset picker UI -----------------------------
-882: 
+882:
 883: export interface FlatPaperPreset {
 884:   name: string
 885:   description: string
@@ -1972,7 +1986,7 @@ Note: file list is sampled.
 887:   fidelity: PaperFidelity
 888:   layers: PaperLayerSpec[]
 889: }
-890: 
+890:
 891: export const PAPER_FLAT_PRESETS: FlatPaperPreset[] = PAPER_GROUPS.flatMap(
 892:   (group) =>
 893:     group.presets.map((p) => ({
@@ -1991,6 +2005,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts",
@@ -2000,13 +2015,14 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts</path>
 <type>file</type>
 <content>
 1: import type { BlendMode, UniformValue } from './types'
 2: import { PAPER_FLAT_PRESETS } from './paper-presets'
-3: 
+3:
 4: // Built-in preset gallery. Each preset is a layer-stack recipe; the runtime
 5: // generates fresh layer IDs on load so multiple instances don't collide.
 6: //
@@ -2019,23 +2035,23 @@ Note: file list is sampled.
 13: // and their fidelity tags (`exact` / `approx` / `placeholder`). The legacy
 14: // PAPER_PRESETS export below is preserved for any UI still using the old
 15: // shape; new code should consume PAPER_GROUPS / PAPER_FLAT_PRESETS instead.
-16: 
+16:
 17: export interface PresetLayer {
 18:   layerType: string
 19:   uniformValues: Record<string, UniformValue>
 20:   blendMode?: BlendMode
 21:   opacity?: number
 22: }
-23: 
+23:
 24: export interface Preset {
 25:   name: string
 26:   description: string
 27:   layers: PresetLayer[]
 28: }
-29: 
+29:
 30: export { PAPER_GROUPS, PAPER_FLAT_PRESETS } from './paper-presets'
 31: export type { PaperGroup, PaperPreset, PaperFidelity } from './paper-presets'
-32: 
+32:
 33: // New canonical preset list, derived from paper-presets.ts. Mapped to the
 34: // legacy `Preset` shape so the existing layer-stack picker UI works unchanged.
 35: export const PAPER_PRESETS: Preset[] = PAPER_FLAT_PRESETS.map((p) => ({
@@ -2043,7 +2059,7 @@ Note: file list is sampled.
 37:   description: `[${p.fidelity}] ${p.description}`,
 38:   layers: p.layers,
 39: }))
-40: 
+40:
 41: // Older hand-curated entries — kept as `LEGACY_PAPER_PRESETS` in case any
 42: // downstream still references them. Will be removed once the new gallery
 43: // lands in the UI.
@@ -2232,6 +2248,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts",
@@ -2241,6 +2258,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts</path>
 <type>file</type>
@@ -2256,13 +2274,13 @@ Note: file list is sampled.
 9: //   * `texture(u_noiseTexture, x)` lookups → procedural `hash21(x)` (Paper's
 10: //     own pre-computed noise texture is itself produced from hash21, so the
 11: //     visual difference is negligible at typical scales)
-12: 
+12:
 13: import type { LayerDefinition } from '../types'
 14: import { gen } from './_helpers'
-15: 
+15:
 16: const SCREEN_OBJECT_UV = `vec2 _ar = vec2(u_resolution.x / max(u_resolution.y, 1.0), 1.0);
 17: vec2 p = (uv - 0.5) * _ar;`
-18: 
+18:
 19: // ──────────────────────────────────────────────────────────────────────────
 20: // Mesh Gradient — IDW of N moving color spots over a swirled, distorted UV,
 21: // post-mixed with a B/W grain overlay. Direct port of Paper's mesh-gradient.ts.
@@ -2348,7 +2366,7 @@ Note: file list is sampled.
 101: return vec4(color, 1.0);`,
 102:   },
 103: })
-104: 
+104:
 105: // ──────────────────────────────────────────────────────────────────────────
 106: // Neuro Noise — 15-iter rotate-and-grow trig-fold accumulator.
 107: // Direct port of Paper's neuro-noise.ts.
@@ -2404,7 +2422,7 @@ Note: file list is sampled.
 157: return vec4(color, 1.0);`,
 158:   },
 159: })
-160: 
+160:
 161: // ──────────────────────────────────────────────────────────────────────────
 162: // Swirl — angle×bandCount pattern with vortex twist; direct port of swirl.ts.
 163: export const paperSwirlLayer = gen({
@@ -2473,7 +2491,7 @@ Note: file list is sampled.
 226: return vec4(color, 1.0);`,
 227:   },
 228: })
-229: 
+229:
 230: // ──────────────────────────────────────────────────────────────────────────
 231: // Spiral — animated logarithmic spiral with stroke, distortion, noise.
 232: // Direct port of spiral.ts.
@@ -2519,6 +2537,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts",
@@ -2528,6 +2547,7 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts</path>
 <type>file</type>
@@ -2558,7 +2578,7 @@ The local project already contains a Paper preset source of truth and several di
 284: return vec4(color, 1.0);`,
 285:   },
 286: })
-287: 
+287:
 288: // ──────────────────────────────────────────────────────────────────────────
 289: // Voronoi (Paper) — IQ two-pass voronoi with cell colors, gap, glow.
 290: // Direct port of voronoi.ts. Uses hash21 in place of u_noiseTexture lookup.
@@ -2648,7 +2668,7 @@ The local project already contains a Paper preset source of truth and several di
 374: return vec4(color, 1.0);`,
 375:   },
 376: })
-377: 
+377:
 378: // ──────────────────────────────────────────────────────────────────────────
 379: // Simplex Noise (Paper) — two-sample sum mapped through a stepped color ramp.
 380: // Distinct from our existing FBM-based `simplex-noise` primitive: this is
@@ -2704,14 +2724,14 @@ The local project already contains a Paper preset source of truth and several di
 430: return vec4(gradient, 1.0);`,
 431:   },
 432: })
-433: 
+433:
 434: // paper-voronoi is intentionally NOT exported. The IQ two-pass voronoi
 435: // algorithm depends on a well-distributed pre-baked noise texture (Paper
 436: // uses a 100×100 RGB lookup); our procedural hash22 substitute clusters
 437: // cell centers tightly enough that the perpendicular-bisector distance
 438: // (md) collapses to ~0 across the canvas, producing only a sparse-glow
 439: // artifact. Re-enable once a noise-texture binding lands.
-440: 
+440:
 441: export const PAPER_SHADER_LAYERS: Record<string, LayerDefinition> = {
 442:   'paper-mesh-gradient': paperMeshGradientLayer,
 443:   'paper-neuro-noise': paperNeuroNoiseLayer,
@@ -2727,6 +2747,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/types.ts",
@@ -2736,12 +2757,13 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/types.ts</path>
 <type>file</type>
 <content>
 1: // Core types for the shader composition system
-2: 
+2:
 3: export type UniformType =
 4:   | 'float'
 5:   | 'vec2'
@@ -2759,9 +2781,9 @@ The local project already contains a Paper preset source of truth and several di
 17:   //   uniform vec4 NAME[arrayLength];
 18:   //   uniform int  NAME_count;        // active entries; rest are zero-padded
 19:   | 'vec4Array'
-20: 
+20:
 21: export type ImageFit = 'cover' | 'contain' | 'fill'
-22: 
+22:
 23: export interface ImageUniformValue {
 24:   // null = bind a 1×1 transparent placeholder texture; layers should treat
 25:   // this as "no image".
@@ -2778,7 +2800,7 @@ The local project already contains a Paper preset source of truth and several di
 36:   scale?: number
 37:   rotation?: number
 38: }
-39: 
+39:
 40: export interface Vec4ArrayValue {
 41:   // Each entry is [r, g, b, a] in 0..1. `length` may be < values.length;
 42:   // entries past `length` are ignored at the shader level via the _count
@@ -2786,14 +2808,14 @@ The local project already contains a Paper preset source of truth and several di
 44:   values: number[][]
 45:   length: number
 46: }
-47: 
+47:
 48: export type UniformValue =
 49:   | number
 50:   | number[]
 51:   | boolean
 52:   | ImageUniformValue
 53:   | Vec4ArrayValue
-54: 
+54:
 55: export interface UniformDefinition {
 56:   name: string
 57:   label: string
@@ -2811,7 +2833,7 @@ The local project already contains a Paper preset source of truth and several di
 69:     array?: { minLength?: number; maxLength?: number }
 70:   }
 71: }
-72: 
+72:
 73: export interface LayerDefinition {
 74:   id: string
 75:   name: string
@@ -2839,7 +2861,7 @@ The local project already contains a Paper preset source of truth and several di
 97:     main: string
 98:   }
 99: }
-100: 
+100:
 101: export interface LayerInstance {
 102:   id: string
 103:   layerType: string
@@ -2848,8 +2870,8 @@ The local project already contains a Paper preset source of truth and several di
 106:   blendMode: BlendMode
 107:   opacity: number
 108: }
-109: 
-110: export type BlendMode = 
+109:
+110: export type BlendMode =
 111:   | 'normal'
 112:   | 'add'
 113:   | 'multiply'
@@ -2857,13 +2879,13 @@ The local project already contains a Paper preset source of truth and several di
 115:   | 'overlay'
 116:   | 'softLight'
 117:   | 'hardLight'
-118: 
+118:
 119: export interface ShaderComposition {
 120:   name: string
 121:   layers: LayerInstance[]
 122:   resolution?: [number, number]
 123: }
-124: 
+124:
 125: export interface GeneratedPass {
 126:   // Complete fragment shader source for this pass
 127:   fragmentShader: string
@@ -2872,7 +2894,7 @@ The local project already contains a Paper preset source of truth and several di
 130:   // IDs of the layer instances that contribute to this pass (in order)
 131:   layerIds: string[]
 132: }
-133: 
+133:
 134: export interface GeneratedShader {
 135:   // Multi-pass output. Single-pass compositions yield exactly one element.
 136:   // Last pass renders to the canvas; intermediate passes render to an FBO
@@ -2904,6 +2926,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts",
@@ -2913,6 +2936,7 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts</path>
 <type>file</type>
@@ -2928,18 +2952,18 @@ The local project already contains a Paper preset source of truth and several di
 9: import { LAYER_LIBRARY } from './layers'
 10: import { GLSL_UTILS, BLEND_MODE_FUNCTIONS } from './glsl-utils'
 11: import runtimeShellSource from './runtime-shell.ts?raw'
-12: 
+12:
 13: const INLINED_RUNTIME = runtimeShellSource.replace(/^export /gm, '')
-14: 
+14:
 15: // Default fixed length for vec4Array uniforms when LayerDefinition does not
 16: // override `arrayLength`. Mirrors RAMP_MAX in glsl-utils.colorRampLookup.
 17: export const DEFAULT_VEC4_ARRAY_LENGTH = 10
-18: 
+18:
 19: interface PassPlan {
 20:   layers: LayerInstance[]
 21:   readsPrevPass: boolean
 22: }
-23: 
+23:
 24: /**
 25:  * Generates optimized GLSL shader code from a layer composition.
 26:  * Splits the layer chain into render passes at every `consumesPrevPass`
@@ -2950,17 +2974,17 @@ The local project already contains a Paper preset source of truth and several di
 31:   shaderName: string = 'CustomShader'
 32: ): GeneratedShader {
 33:   const enabledLayers = layers.filter((l) => l.enabled)
-34: 
+34:
 35:   // Walk the layer list and split into passes at every consumer boundary.
 36:   const passPlans = splitIntoPasses(enabledLayers)
-37: 
+37:
 38:   // Build the global uniform list (used by runtime + exported code).
 39:   const uniforms: GeneratedShader['uniforms'] = []
 40:   for (const layer of enabledLayers) {
 41:     const def = LAYER_LIBRARY[layer.layerType]
 42:     if (!def) continue
 43:     const prefix = sanitizeName(layer.id)
-44: 
+44:
 45:     uniforms.push({
 46:       name: `u_${prefix}_opacity`,
 47:       type: 'float',
@@ -2982,24 +3006,24 @@ The local project already contains a Paper preset source of truth and several di
 63:       })
 64:     }
 65:   }
-66: 
+66:
 67:   // Generate one fragment shader per pass.
 68:   const passes: GeneratedPass[] = passPlans.map((plan) =>
 69:     buildPass(plan)
 70:   )
-71: 
+71:
 72:   const vertexShader = `#version 300 es
 73: precision highp float;
-74: 
+74:
 75: in vec2 a_position;
 76: out vec2 v_uv;
-77: 
+77:
 78: void main() {
 79:   v_uv = a_position * 0.5 + 0.5;
 80:   gl_Position = vec4(a_position, 0.0, 1.0);
 81: }
 82: `
-83: 
+83:
 84:   // For display purposes, concatenate all passes into one document.
 85:   const fragmentShader = passes
 86:     .map(
@@ -3009,7 +3033,7 @@ The local project already contains a Paper preset source of truth and several di
 90:         ` ===\n${p.fragmentShader}`
 91:     )
 92:     .join('\n\n')
-93: 
+93:
 94:   const typescript = generateTypeScript(uniforms, shaderName)
 95:   const reactComponent = generateReactComponent(
 96:     uniforms,
@@ -3023,7 +3047,7 @@ The local project already contains a Paper preset source of truth and several di
 104:     passes,
 105:     vertexShader
 106:   )
-107: 
+107:
 108:   return {
 109:     passes,
 110:     vertexShader,
@@ -3034,16 +3058,16 @@ The local project already contains a Paper preset source of truth and several di
 115:     fragmentShader,
 116:   }
 117: }
-118: 
+118:
 119: function splitIntoPasses(layers: LayerInstance[]): PassPlan[] {
 120:   const plans: PassPlan[] = []
 121:   let current: LayerInstance[] = []
 122:   let isReader = false
-123: 
+123:
 124:   for (const layer of layers) {
 125:     const def = LAYER_LIBRARY[layer.layerType]
 126:     if (!def) continue
-127: 
+127:
 128:     if (def.consumesPrevPass) {
 129:       // Close the current pass first.
 130:       plans.push({ layers: current, readsPrevPass: isReader })
@@ -3054,7 +3078,7 @@ The local project already contains a Paper preset source of truth and several di
 135:     }
 136:   }
 137:   plans.push({ layers: current, readsPrevPass: isReader })
-138: 
+138:
 139:   // Drop a leading empty pass (happens if the very first layer is a consumer
 140:   // and there is nothing below). The runtime will just bind a black texture.
 141:   if (plans.length > 1 && plans[0].layers.length === 0) {
@@ -3063,13 +3087,13 @@ The local project already contains a Paper preset source of truth and several di
 144:   }
 145:   return plans
 146: }
-147: 
+147:
 148: function buildPass(plan: PassPlan): GeneratedPass {
 149:   const { layers, readsPrevPass } = plan
-150: 
+150:
 151:   const dependencies = new Set<string>()
 152:   const blendModes = new Set<BlendMode>()
-153: 
+153:
 154:   for (const layer of layers) {
 155:     const def = LAYER_LIBRARY[layer.layerType]
 156:     if (!def) continue
@@ -3081,7 +3105,7 @@ The local project already contains a Paper preset source of truth and several di
 162:     const funcName = BLEND_MODE_FUNCTIONS[mode]
 163:     if (funcName) dependencies.add(funcName)
 164:   })
-165: 
+165:
 166:   // Implicit dependency expansion.
 167:   if (dependencies.has('fbm') && !dependencies.has('simplex2D')) {
 168:     dependencies.add('simplex2D')
@@ -3092,7 +3116,7 @@ The local project already contains a Paper preset source of truth and several di
 173:   if (dependencies.has('snoise') && !dependencies.has('simplex2D')) {
 174:     dependencies.add('simplex2D')
 175:   }
-176: 
+176:
 177:   const uniformDeclarations: string[] = [
 178:     'uniform float u_time;',
 179:     'uniform vec2 u_resolution;',
@@ -3100,7 +3124,7 @@ The local project already contains a Paper preset source of truth and several di
 181:   if (readsPrevPass) {
 182:     uniformDeclarations.push('uniform sampler2D u_prevPass;')
 183:   }
-184: 
+184:
 185:   for (const layer of layers) {
 186:     const def = LAYER_LIBRARY[layer.layerType]
 187:     if (!def) continue
@@ -3127,38 +3151,38 @@ The local project already contains a Paper preset source of truth and several di
 208:       }
 209:     }
 210:   }
-211: 
+211:
 212:   const utilFunctions: string[] = []
 213:   const sortedDeps = sortDependencies(Array.from(dependencies))
 214:   for (const dep of sortedDeps) {
 215:     if (GLSL_UTILS[dep]) utilFunctions.push(GLSL_UTILS[dep])
 216:   }
-217: 
+217:
 218:   const layerFunctions: string[] = []
 219:   const mainCalls: string[] = []
 220:   const layerHelpers = new Set<string>()
-221: 
+221:
 222:   for (let i = 0; i < layers.length; i++) {
 223:     const layer = layers[i]
 224:     const def = LAYER_LIBRARY[layer.layerType]
 225:     if (!def) continue
-226: 
+226:
 227:     const prefix = sanitizeName(layer.id)
 228:     const funcName = `layer_${prefix}`
-229: 
+229:
 230:     let mainCode = def.glsl.main
 231:     for (const uniform of def.uniforms) {
 232:       const placeholder = new RegExp(`\\{\\{${uniform.name}\\}\\}`, 'g')
 233:       mainCode = mainCode.replace(placeholder, `u_${prefix}_${uniform.name}`)
 234:     }
-235: 
+235:
 236:     if (def.glsl.functions) layerHelpers.add(def.glsl.functions.trim())
-237: 
+237:
 238:     layerFunctions.push(`
 239: vec4 ${funcName}(vec2 uv, vec4 base) {
 240: ${indent(mainCode.trim(), 2)}
 241: }`)
-242: 
+242:
 243:     const blendFunc = BLEND_MODE_FUNCTIONS[layer.blendMode] || 'blendNormal'
 244:     if (i === 0) {
 245:       // The first layer of the pass is either a generator (ignores base)
@@ -3170,48 +3194,48 @@ The local project already contains a Paper preset source of truth and several di
 251:       )
 252:     }
 253:   }
-254: 
+254:
 255:   const fragmentShader = `#version 300 es
 256: precision highp float;
-257: 
+257:
 258: in vec2 v_uv;
 259: out vec4 fragColor;
-260: 
+260:
 261: // Uniforms
 262: ${uniformDeclarations.join('\n')}
-263: 
+263:
 264: // Utility Functions
 265: ${utilFunctions.join('\n')}
-266: 
+266:
 267: // Layer Helpers
 268: ${Array.from(layerHelpers).join('\n')}
-269: 
+269:
 270: // Layer Functions
 271: ${layerFunctions.join('\n')}
-272: 
+272:
 273: void main() {
 274:   vec2 uv = v_uv;
-275: 
+275:
 276: ${mainCalls.length > 0 ? mainCalls.join('\n') : '  vec4 color = vec4(0.0, 0.0, 0.0, 1.0);'}
-277: 
+277:
 278:   fragColor = color;
 279: }
 280: `
-281: 
+281:
 282:   return {
 283:     fragmentShader,
 284:     readsPrevPass,
 285:     layerIds: layers.map((l) => l.id),
 286:   }
 287: }
-288: 
+288:
 289: export function sanitizeName(name: string): string {
 290:   let sanitized = name.replace(/[^a-zA-Z0-9]/g, '')
 291:   if (/^[0-9]/.test(sanitized)) sanitized = 'l' + sanitized
 292:   if (!sanitized) sanitized = 'layer'
 293:   return sanitized
 294: }
-295: 
+295:
 296: function indent(code: string, spaces: number): string {
 297:   const pad = ' '.repeat(spaces)
 298:   return code
@@ -3219,7 +3243,7 @@ The local project already contains a Paper preset source of truth and several di
 300:     .map((line) => pad + line)
 301:     .join('\n')
 302: }
-303: 
+303:
 304: function sortDependencies(deps: string[]): string[] {
 305:   const order: Record<string, number> = {
 306:     hash: 0,
@@ -3247,7 +3271,7 @@ The local project already contains a Paper preset source of truth and several di
 328:   }
 329:   return deps.sort((a, b) => (order[a] ?? 99) - (order[b] ?? 99))
 330: }
-331: 
+331:
 332: // sampler2D and vec4Array uniforms aren't exposed as plain JS prop values
 333: // in the exported React/vanilla code yet — image binding and palette
 334: // authoring stay editor-only until a follow-up wires marshalling.
@@ -3258,7 +3282,7 @@ The local project already contains a Paper preset source of truth and several di
 339:     u.type !== 'vec4Array'
 340:   )
 341: }
-342: 
+342:
 343: function generateTypeScript(
 344:   uniforms: GeneratedShader['uniforms'],
 345:   shaderName: string
@@ -3273,7 +3297,7 @@ The local project already contains a Paper preset source of truth and several di
 354:       )}?: ${tsType} // default: ${defaultVal}`
 355:     })
 356:     .join('\n')
-357: 
+357:
 358:   return `export interface ${shaderName}Props {
 359: ${propsInterface}
 360: }
@@ -3285,6 +3309,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx",
@@ -3294,12 +3319,13 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx</path>
 <type>file</type>
 <content>
 180: }
-181: 
+181:
 182: function ImageInput({
 183:   value,
 184:   onChange,
@@ -3308,7 +3334,7 @@ The local project already contains a Paper preset source of truth and several di
 187:   onChange: (value: ImageUniformValue) => void;
 188: }) {
 189:   const fileRef = useRef<HTMLInputElement>(null);
-190: 
+190:
 191:   const handleFile = (file: File) => {
 192:     const reader = new FileReader();
 193:     reader.onload = () => {
@@ -3318,12 +3344,12 @@ The local project already contains a Paper preset source of truth and several di
 197:     };
 198:     reader.readAsDataURL(file);
 199:   };
-200: 
+200:
 201:   const handlePaste = (url: string) => {
 202:     if (!url) return;
 203:     onChange({ ...value, url, sourceKind: "url" });
 204:   };
-205: 
+205:
 206:   return (
 207:     <div className="space-y-2">
 208:       <div
@@ -3430,6 +3456,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx",
@@ -3439,6 +3466,7 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx</path>
 <type>file</type>
@@ -3450,7 +3478,7 @@ The local project already contains a Paper preset source of truth and several di
 304:     </div>
 305:   );
 306: }
-307: 
+307:
 308: function UniformControl({
 309:   uniform,
 310:   value,
@@ -3461,7 +3489,7 @@ The local project already contains a Paper preset source of truth and several di
 315:   onChange: (value: unknown) => void;
 316: }) {
 317:   const { ui } = uniform;
-318: 
+318:
 319:   switch (uniform.type) {
 320:     case "float": {
 321:       const numValue = value as number;
@@ -3484,7 +3512,7 @@ The local project already contains a Paper preset source of truth and several di
 338:         </div>
 339:       );
 340:     }
-341: 
+341:
 342:     case "int": {
 343:       const intValue = value as number;
 344:       return (
@@ -3506,7 +3534,7 @@ The local project already contains a Paper preset source of truth and several di
 360:         </div>
 361:       );
 362:     }
-363: 
+363:
 364:     case "vec2": {
 365:       const vec2Value = value as number[];
 366:       return (
@@ -3545,13 +3573,13 @@ The local project already contains a Paper preset source of truth and several di
 399:         </div>
 400:       );
 401:     }
-402: 
+402:
 403:     case "vec3":
 404:     case "vec4": {
 405:       const vecValue = value as number[];
 406:       // Check if this looks like a color (values between 0-1)
 407:       const isColor = ui?.color || vecValue.every((v) => v >= 0 && v <= 1);
-408: 
+408:
 409:       if (isColor) {
 410:         return (
 411:           <div className="space-y-2">
@@ -3563,7 +3591,7 @@ The local project already contains a Paper preset source of truth and several di
 417:           </div>
 418:         );
 419:       }
-420: 
+420:
 421:       // Fallback to sliders for non-color vectors
 422:       return (
 423:         <div className="space-y-2">
@@ -3590,7 +3618,7 @@ The local project already contains a Paper preset source of truth and several di
 444:         </div>
 445:       );
 446:     }
-447: 
+447:
 448:     case "sampler2D": {
 449:       const imgValue = value as ImageUniformValue;
 450:       return (
@@ -3603,7 +3631,7 @@ The local project already contains a Paper preset source of truth and several di
 457:         </div>
 458:       );
 459:     }
-460: 
+460:
 461:     case "vec4Array": {
 462:       const arr = value as Vec4ArrayValue;
 463:       const max = ui?.array?.maxLength ?? uniform.arrayLength ?? 10;
@@ -3620,7 +3648,7 @@ The local project already contains a Paper preset source of truth and several di
 474:         </div>
 475:       );
 476:     }
-477: 
+477:
 478:     default:
 479:       return null;
 
@@ -3631,6 +3659,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts",
@@ -3640,11 +3669,12 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts</path>
 <type>file</type>
 <content>
-361: 
+361:
 362: export const ${shaderName.toLowerCase()}Defaults: Required<${shaderName}Props> = {
 363: ${exportable
 364:   .map((u) => `  ${camelCase(u.name)}: ${formatDefault(u.default, u.type)},`)
@@ -3652,7 +3682,7 @@ The local project already contains a Paper preset source of truth and several di
 366: }
 367: `
 368: }
-369: 
+369:
 370: function generateReactComponent(
 371:   uniforms: GeneratedShader['uniforms'],
 372:   shaderName: string,
@@ -3671,7 +3701,7 @@ The local project already contains a Paper preset source of truth and several di
 385:       return `      { name: '${u.name}', set: (gl: WebGL2RenderingContext, loc: WebGLUniformLocation | null) => { if (loc !== null) gl.${setter}(loc, ${value}) } },`
 386:     })
 387:     .join('\n')
-388: 
+388:
 389:   const escapedVertex = escape(vertexShader)
 390:   const passSources = passes
 391:     .map(
@@ -3679,13 +3709,13 @@ The local project already contains a Paper preset source of truth and several di
 393:         `  { fragment: \`${escape(p.fragmentShader)}\`, readsPrevPass: ${p.readsPrevPass} },`
 394:     )
 395:     .join('\n')
-396: 
+396:
 397:   return `'use client'
-398: 
+398:
 399: import { useEffect, useRef } from 'react'
-400: 
+400:
 401: ${INLINED_RUNTIME}
-402: 
+402:
 403: interface ${shaderName}Props {
 404: ${propUniforms
 405:   .map((u) => `  ${camelCase(u.name)}?: ${uniformTypeToTS(u.type)}`)
@@ -3693,35 +3723,35 @@ The local project already contains a Paper preset source of truth and several di
 407:   className?: string
 408:   style?: React.CSSProperties
 409: }
-410: 
+410:
 411: const VERTEX_SHADER = \`${escapedVertex}\`
-412: 
+412:
 413: const PASSES: PipelinePass[] = [
 414: ${passSources}
 415: ]
-416: 
+416:
 417: export function ${shaderName}({
 418: ${propsWithDefaults}
 419:     className,
 420:     style,
 421:   }: ${shaderName}Props) {
 422:   const canvasRef = useRef<HTMLCanvasElement>(null)
-423: 
+423:
 424:   useEffect(() => {
 425:     const canvas = canvasRef.current
 426:     if (!canvas) return
 427:     const gl = canvas.getContext('webgl2', { alpha: false, antialias: true, premultipliedAlpha: false })
 428:     if (!gl) { console.error('WebGL2 not supported'); return }
-429: 
+429:
 430:     const pipeline = createShaderPipeline(gl, VERTEX_SHADER, PASSES)
-431: 
+431:
 432:     const setUniforms = [
 433: ${uniformSetterEntries}
 434:     ]
-435: 
+435:
 436:     const startTime = performance.now()
 437:     let raf = 0
-438: 
+438:
 439:     function frame() {
 440:       const dpr = window.devicePixelRatio || 1
 441:       const w = canvas!.clientWidth * dpr
@@ -3730,23 +3760,23 @@ The local project already contains a Paper preset source of truth and several di
 444:         canvas!.width = w; canvas!.height = h
 445:       }
 446:       const time = (performance.now() - startTime) / 1000
-447: 
+447:
 448:       pipeline.render(time, w, h, (_i, prog) => {
 449:         for (const u of setUniforms) {
 450:           u.set(gl!, gl!.getUniformLocation(prog, u.name))
 451:         }
 452:       })
-453: 
+453:
 454:       raf = requestAnimationFrame(frame)
 455:     }
 456:     frame()
-457: 
+457:
 458:     return () => {
 459:       cancelAnimationFrame(raf)
 460:       pipeline.destroy()
 461:     }
 462:   }, [${propsList.join(', ')}])
-463: 
+463:
 464:   return (
 465:     <canvas
 466:       ref={canvasRef}
@@ -3757,7 +3787,7 @@ The local project already contains a Paper preset source of truth and several di
 471: }
 472: `
 473: }
-474: 
+474:
 475: function generateVanillaJs(
 476:   uniforms: GeneratedShader['uniforms'],
 477:   shaderName: string,
@@ -3772,11 +3802,11 @@ The local project already contains a Paper preset source of truth and several di
 486:         `  { fragment: \`${escape(p.fragmentShader)}\`, readsPrevPass: ${p.readsPrevPass} },`
 487:     )
 488:     .join('\n')
-489: 
+489:
 490:   const optionsType = propUniforms
 491:     .map((u) => `  ${camelCase(u.name)}?: ${uniformTypeToTS(u.type)}`)
 492:     .join('\n')
-493: 
+493:
 494:   const setUniformEntries = propUniforms
 495:     .map((u) => {
 496:       const setter = getUniformSetter(u.type)
@@ -3787,40 +3817,40 @@ The local project already contains a Paper preset source of truth and several di
 501:       return `      { name: '${u.name}', set: (loc: WebGLUniformLocation | null) => { if (loc !== null) gl.${setter}(loc, ${value}) } },`
 502:     })
 503:     .join('\n')
-504: 
+504:
 505:   return `/**
 506:  * ${shaderName} - Multi-pass WebGL2 shader
 507:  * Generated by Shader Composer
 508:  */
-509: 
+509:
 510: ${INLINED_RUNTIME}
-511: 
+511:
 512: const VERTEX_SHADER = \`${escapedVertex}\`
-513: 
+513:
 514: const PASSES: PipelinePass[] = [
 515: ${passSources}
 516: ]
-517: 
+517:
 518: export interface ${shaderName}Options {
 519: ${optionsType}
 520: }
-521: 
+521:
 522: export function create${shaderName}(canvas: HTMLCanvasElement, options: ${shaderName}Options = {}) {
 523:   const gl = canvas.getContext('webgl2', { alpha: false, antialias: true, premultipliedAlpha: false })
 524:   if (!gl) throw new Error('WebGL2 not supported')
-525: 
+525:
 526:   const pipeline = createShaderPipeline(gl, VERTEX_SHADER, PASSES)
-527: 
+527:
 528:   function setOptionUniforms(prog: WebGLProgram) {
 529:     const setters: { name: string; set: (loc: WebGLUniformLocation | null) => void }[] = [
 530: ${setUniformEntries}
 531:     ]
 532:     for (const s of setters) s.set(gl!.getUniformLocation(prog, s.name))
 533:   }
-534: 
+534:
 535:   const startTime = performance.now()
 536:   let animationId = 0
-537: 
+537:
 538:   function frame() {
 539:     const dpr = window.devicePixelRatio || 1
 540:     const w = canvas.clientWidth * dpr
@@ -3831,7 +3861,7 @@ The local project already contains a Paper preset source of truth and several di
 545:     animationId = requestAnimationFrame(frame)
 546:   }
 547:   frame()
-548: 
+548:
 549:   return {
 550:     update(newOptions: Partial<${shaderName}Options>) { Object.assign(options, newOptions) },
 551:     destroy() {
@@ -3842,7 +3872,7 @@ The local project already contains a Paper preset source of truth and several di
 556: }
 557: `
 558: }
-559: 
+559:
 560: function uniformTypeToTS(type: UniformType): string {
 561:   switch (type) {
 562:     case 'float':
@@ -3860,7 +3890,7 @@ The local project already contains a Paper preset source of truth and several di
 574:       return 'number'
 575:   }
 576: }
-577: 
+577:
 578: function formatDefault(value: unknown, _type: UniformType): string {
 579:   if (Array.isArray(value)) return `[${value.join(', ')}]`
 580:   if (typeof value === 'object' && value !== null) {
@@ -3870,7 +3900,7 @@ The local project already contains a Paper preset source of truth and several di
 584:   }
 585:   return String(value)
 586: }
-587: 
+587:
 588: function getUniformSetter(type: UniformType): string {
 589:   switch (type) {
 590:     case 'float':
@@ -3889,7 +3919,7 @@ The local project already contains a Paper preset source of truth and several di
 603:       return 'uniform1f'
 604:   }
 605: }
-606: 
+606:
 607: function formatUniformValue(type: UniformType, name: string): string {
 608:   switch (type) {
 609:     case 'bool':
@@ -3902,11 +3932,11 @@ The local project already contains a Paper preset source of truth and several di
 616:       return name
 617:   }
 618: }
-619: 
+619:
 620: function camelCase(str: string): string {
 621:   return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
 622: }
-623: 
+623:
 624: function escape(s: string): string {
 625:   return s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')
 626: }
@@ -3918,6 +3948,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx",
@@ -3927,12 +3958,13 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx</path>
 <type>file</type>
 <content>
 1: "use client";
-2: 
+2:
 3: import { useRef, useEffect } from "react";
 4: import { useComposer } from "@/lib/shader-composer/context";
 5: import {
@@ -3951,13 +3983,13 @@ The local project already contains a Paper preset source of truth and several di
 18:   ImageUniformValue,
 19:   Vec4ArrayValue,
 20: } from "@/lib/shader-composer/types";
-21: 
+21:
 22: const FIT_MODE: Record<string, number> = {
 23:   cover: 0,
 24:   contain: 1,
 25:   fill: 2,
 26: };
-27: 
+27:
 28: function isImageValue(v: unknown): v is ImageUniformValue {
 29:   return (
 30:     typeof v === "object" &&
@@ -3965,7 +3997,7 @@ The local project already contains a Paper preset source of truth and several di
 32:     "sourceKind" in (v as Record<string, unknown>)
 33:   );
 34: }
-35: 
+35:
 36: function isVec4ArrayValue(v: unknown): v is Vec4ArrayValue {
 37:   return (
 38:     typeof v === "object" &&
@@ -3973,7 +4005,7 @@ The local project already contains a Paper preset source of truth and several di
 40:     Array.isArray((v as Vec4ArrayValue).values)
 41:   );
 42: }
-43: 
+43:
 44: export function ShaderPreview() {
 45:   const canvasRef = useRef<HTMLCanvasElement>(null);
 46:   const glRef = useRef<WebGL2RenderingContext | null>(null);
@@ -3982,26 +4014,26 @@ The local project already contains a Paper preset source of truth and several di
 49:   const animationRef = useRef<number>(0);
 50:   const startTimeRef = useRef<number>(Date.now());
 51:   const textureCacheRef = useRef<TextureCache | null>(null);
-52: 
+52:
 53:   const { state } = useComposer();
-54: 
+54:
 55:   useEffect(() => {
 56:     const canvas = canvasRef.current;
 57:     if (!canvas) return;
-58: 
+58:
 59:     const gl = canvas.getContext("webgl2", {
 60:       alpha: false,
 61:       antialias: true,
 62:       premultipliedAlpha: false,
 63:     });
-64: 
+64:
 65:     if (!gl) {
 66:       console.error("WebGL2 not supported");
 67:       return;
 68:     }
 69:     glRef.current = gl;
 70:     textureCacheRef.current = new TextureCache(gl);
-71: 
+71:
 72:     return () => {
 73:       cancelAnimationFrame(animationRef.current);
 74:       pipelineRef.current?.destroy();
@@ -4010,15 +4042,15 @@ The local project already contains a Paper preset source of truth and several di
 77:       textureCacheRef.current = null;
 78:     };
 79:   }, []);
-80: 
+80:
 81:   useEffect(() => {
 82:     const gl = glRef.current;
 83:     if (!gl) return;
-84: 
+84:
 85:     pipelineRef.current?.destroy();
 86:     pipelineRef.current = null;
 87:     passesRef.current = [];
-88: 
+88:
 89:     const enabledLayers = state.layers.filter((l) => l.enabled);
 90:     if (enabledLayers.length === 0) {
 91:       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -4026,7 +4058,7 @@ The local project already contains a Paper preset source of truth and several di
 93:       gl.clear(gl.COLOR_BUFFER_BIT);
 94:       return;
 95:     }
-96: 
+96:
 97:     const { passes, vertexShader } = generateShader(enabledLayers);
 98:     passesRef.current = passes;
 99:     pipelineRef.current = createShaderPipeline(
@@ -4035,12 +4067,12 @@ The local project already contains a Paper preset source of truth and several di
 102:       passes.map((p) => ({ fragment: p.fragmentShader, readsPrevPass: p.readsPrevPass }))
 103:     );
 104:   }, [state.layers]);
-105: 
+105:
 106:   useEffect(() => {
 107:     const gl = glRef.current;
 108:     const canvas = canvasRef.current;
 109:     if (!gl || !canvas) return;
-110: 
+110:
 111:     const render = () => {
 112:       const pipeline = pipelineRef.current;
 113:       const passes = passesRef.current;
@@ -4048,7 +4080,7 @@ The local project already contains a Paper preset source of truth and several di
 115:         animationRef.current = requestAnimationFrame(render);
 116:         return;
 117:       }
-118: 
+118:
 119:       const dpr = window.devicePixelRatio || 1;
 120:       const w = Math.max(1, canvas.clientWidth * dpr);
 121:       const h = Math.max(1, canvas.clientHeight * dpr);
@@ -4056,9 +4088,9 @@ The local project already contains a Paper preset source of truth and several di
 123:         canvas.width = w;
 124:         canvas.height = h;
 125:       }
-126: 
+126:
 127:       const time = (Date.now() - startTimeRef.current) / 1000;
-128: 
+128:
 129:       pipeline.render(time, w, h, (ctx, program) => {
 130:         const pass = passes[ctx.passIndex];
 131:         let textureUnit = ctx.nextTextureUnit;
@@ -4068,18 +4100,18 @@ The local project already contains a Paper preset source of truth and several di
 135:           const definition = LAYER_LIBRARY[layer.layerType];
 136:           if (!definition) continue;
 137:           const prefix = sanitizeName(layer.id);
-138: 
+138:
 139:           const opacityLocation = gl.getUniformLocation(
 140:             program,
 141:             `u_${prefix}_opacity`
 142:           );
 143:           if (opacityLocation) gl.uniform1f(opacityLocation, layer.opacity);
-144: 
+144:
 145:           for (const uniform of definition.uniforms) {
 146:             const baseName = `u_${prefix}_${uniform.name}`;
 147:             const value = layer.uniformValues[uniform.name];
 148:             if (value === undefined) continue;
-149: 
+149:
 150:             switch (uniform.type) {
 151:               case "float":
 152:                 gl.uniform1f(
@@ -4176,14 +4208,14 @@ The local project already contains a Paper preset source of truth and several di
 243:           }
 244:         }
 245:       });
-246: 
+246:
 247:       animationRef.current = requestAnimationFrame(render);
 248:     };
-249: 
+249:
 250:     animationRef.current = requestAnimationFrame(render);
 251:     return () => cancelAnimationFrame(animationRef.current);
 252:   }, [state.layers]);
-253: 
+253:
 254:   return (
 255:     <canvas
 256:       ref={canvasRef}
@@ -4200,6 +4232,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts",
@@ -4209,6 +4242,7 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts</path>
 <type>file</type>
@@ -4227,7 +4261,7 @@ The local project already contains a Paper preset source of truth and several di
 12: import { STYLIZE_LAYERS } from './stylize'
 13: import { SPECIALIZED_LAYERS } from './specialized'
 14: import { PAPER_SHADER_LAYERS } from './paper-shaders'
-15: 
+15:
 16: export const simplexNoiseLayer: LayerDefinition = {
 17:   id: 'simplex-noise',
 18:   name: 'Simplex Noise',
@@ -4254,7 +4288,7 @@ The local project already contains a Paper preset source of truth and several di
 39: return vec4(col, 1.0);`,
 40:   },
 41: }
-42: 
+42:
 43: export const voronoiLayer: LayerDefinition = {
 44:   id: 'voronoi',
 45:   name: 'Voronoi',
@@ -4280,7 +4314,7 @@ The local project already contains a Paper preset source of truth and several di
 65: return vec4(col, 1.0);`,
 66:   },
 67: }
-68: 
+68:
 69: export const linearGradientLayer: LayerDefinition = {
 70:   id: 'linear-gradient',
 71:   name: 'Linear Gradient',
@@ -4308,7 +4342,7 @@ The local project already contains a Paper preset source of truth and several di
 93: return vec4(col, 1.0);`,
 94:   },
 95: }
-96: 
+96:
 97: export const radialGradientLayer: LayerDefinition = {
 98:   id: 'radial-gradient',
 99:   name: 'Radial Gradient',
@@ -4335,7 +4369,7 @@ The local project already contains a Paper preset source of truth and several di
 120: return vec4(col, 1.0);`,
 121:   },
 122: }
-123: 
+123:
 124: export const wavesLayer: LayerDefinition = {
 125:   id: 'waves',
 126:   name: 'Waves',
@@ -4363,7 +4397,7 @@ The local project already contains a Paper preset source of truth and several di
 148: return vec4(col, 1.0);`,
 149:   },
 150: }
-151: 
+151:
 152: export const vignetteLayer: LayerDefinition = {
 153:   id: 'vignette',
 154:   name: 'Vignette',
@@ -4387,7 +4421,7 @@ The local project already contains a Paper preset source of truth and several di
 172: return vec4(vigColor, base.a);`,
 173:   },
 174: }
-175: 
+175:
 176: export const grainLayer: LayerDefinition = {
 177:   id: 'grain',
 178:   name: 'Film Grain',
@@ -4416,7 +4450,7 @@ The local project already contains a Paper preset source of truth and several di
 201: return vec4(col, base.a);`,
 202:   },
 203: }
-204: 
+204:
 205: export const chromaticAberrationLayer: LayerDefinition = {
 206:   id: 'chromatic-aberration',
 207:   name: 'Chromatic Aberration',
@@ -4445,6 +4479,7 @@ The local project already contains a Paper preset source of truth and several di
 **Tool: webfetch**
 
 **Input:**
+
 ```json
 {
   "url": "https://api.github.com/repos/paper-design/shaders/git/trees/main?recursive=1",
@@ -4454,6 +4489,7 @@ The local project already contains a Paper preset source of truth and several di
 ```
 
 **Output:**
+
 ```
 {
   "sha": "17da1346832cba44365ba12d76c0ad6b2a9dd39d",
@@ -5803,6 +5839,7 @@ Use the Task tool to have explore agent process this file with Grep and Read (wi
 **Tool: webfetch**
 
 **Input:**
+
 ```json
 {
   "url": "https://api.github.com/repos/paper-design/shaders/contents/packages/shaders/src?ref=main",
@@ -5812,6 +5849,7 @@ Use the Task tool to have explore agent process this file with Grep and Read (wi
 ```
 
 **Output:**
+
 ```
 [
   {
@@ -6017,6 +6055,7 @@ Use the Task tool to have explore agent process this file with Grep and Read (wi
 **Tool: webfetch**
 
 **Input:**
+
 ```json
 {
   "url": "https://api.github.com/repos/paper-design/shaders/contents/packages/shaders/src/shaders?ref=main",
@@ -6026,6 +6065,7 @@ Use the Task tool to have explore agent process this file with Grep and Read (wi
 ```
 
 **Output:**
+
 ```
 [
   {
@@ -6503,6 +6543,7 @@ Use the Task tool to have explore agent process this file with Grep and Read (wi
 **Tool: task**
 
 **Input:**
+
 ```json
 {
   "description": "Audit upstream shaders",
@@ -6514,6 +6555,7 @@ Use the Task tool to have explore agent process this file with Grep and Read (wi
 ```
 
 **Output:**
+
 ```
 task_id: ses_2143cd22dffeAFBscmd6hSudeb (for resuming to continue this task if needed)
 
@@ -6561,6 +6603,7 @@ Registry note: all `docs/registry/*-example.tsx` examples pass the fixed full-sc
 **Tool: task**
 
 **Input:**
+
 ```json
 {
   "description": "Audit local composer",
@@ -6572,6 +6615,7 @@ Registry note: all `docs/registry/*-example.tsx` examples pass the fixed full-sc
 ```
 
 **Output:**
+
 ```
 task_id: ses_2143cd223ffeAipTCH4LJo9hpY (for resuming to continue this task if needed)
 
@@ -6652,6 +6696,7 @@ Will there be anything further, my lord?
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/sources.ts",
@@ -6661,13 +6706,14 @@ Will there be anything further, my lord?
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/sources.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { gen } from './_helpers'
-3: 
+3:
 4: export const solidColorLayer: LayerDefinition = {
 5:   id: 'solid-color',
 6:   name: 'Solid Color',
@@ -6683,7 +6729,7 @@ Will there be anything further, my lord?
 16: return vec4({{color}}, 1.0);`,
 17:   },
 18: }
-19: 
+19:
 20: // Sample an uploaded or remote image as a texture. Honours fit/scale/rotation/
 21: // offset via the auto-generated _meta and _offset companion uniforms.
 22: export const imageSourceLayer = gen({
@@ -6718,7 +6764,7 @@ Will there be anything further, my lord?
 51: return src * {{tint}};`,
 52:   },
 53: })
-54: 
+54:
 55: export const SOURCE_LAYERS: Record<string, LayerDefinition> = {
 56:   'solid-color': solidColorLayer,
 57:   'image-source': imageSourceLayer,
@@ -6731,6 +6777,7 @@ Will there be anything further, my lord?
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts",
@@ -6740,6 +6787,7 @@ Will there be anything further, my lord?
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts</path>
 <type>file</type>
@@ -6754,9 +6802,9 @@ Will there be anything further, my lord?
 8: // effects (heatmap, liquid-metal, paper-texture, halftone-dots, halftone-cmyk,
 9: // fluted-glass, gem-smoke, image-dithering, water) can be added back here as
 10: // faithful ports.
-11: 
+11:
 12: import type { LayerDefinition } from '../types'
-13: 
+13:
 14: export const SPECIALIZED_LAYERS: Record<string, LayerDefinition> = {}
 
 (End of file - total 14 lines)
@@ -6766,6 +6814,7 @@ Will there be anything further, my lord?
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/patterns.ts",
@@ -6775,6 +6824,7 @@ Will there be anything further, my lord?
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/patterns.ts</path>
 <type>file</type>
@@ -6790,7 +6840,7 @@ Will there be anything further, my lord?
 248: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 249:   },
 250: }
-251: 
+251:
 252: export const ringLayer: LayerDefinition = {
 253:   id: 'ring',
 254:   name: 'Ring',
@@ -6815,7 +6865,7 @@ Will there be anything further, my lord?
 273: return vec4(mix({{color2}}, {{color1}}, m), 1.0);`,
 274:   },
 275: }
-276: 
+276:
 277: // Pseudo-3D semi-transparent panels rotating around a central axis. Direct
 278: // port of paper-design/shaders' color-panels algorithm; kept as a single
 279: // atom because the panel-rotation field isn't reducible to existing primitives.
@@ -6868,7 +6918,7 @@ Will there be anything further, my lord?
 326: #define PI 3.14159265358979
 327: #endif
 328: const float CP_Z_LIMIT = 0.5;
-329: 
+329:
 330: vec2 cpGetPanel(float angle, vec2 uv, float invLength, float aa, float blur, float a1, float a2, bool edges) {
 331:   float sinA = sin(angle);
 332:   float cosA = cos(angle);
@@ -6894,7 +6944,7 @@ Will there be anything further, my lord?
 352:   }
 353:   return vec2(panel, panelMap);
 354: }
-355: 
+355:
 356: vec4 cpBlend(vec4 colorA, float panelMask, float panelMap, float fadeIn, float fadeOut) {
 357:   float fade = 1.0 - smoothstep(0.97 - 0.97 * fadeIn, 1.0, panelMap);
 358:   fade *= smoothstep(-0.2 * (1.0 - fadeOut), fadeOut, panelMap);
@@ -6990,7 +7040,7 @@ Will there be anything further, my lord?
 448: return vec4(color, opacity);`,
 449:   },
 450: }
-451: 
+451:
 452: export const PATTERN_LAYERS: Record<string, LayerDefinition> = {
 453:   checkerboard: checkerboardLayer,
 454:   stripes: stripesLayer,
@@ -7007,6 +7057,7 @@ Will there be anything further, my lord?
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/shapes.ts",
@@ -7016,12 +7067,13 @@ Will there be anything further, my lord?
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/shapes.ts</path>
 <type>file</type>
 <content>
 180: }
-181: 
+181:
 182: export const vesicaLayer: LayerDefinition = {
 183:   id: 'vesica',
 184:   name: 'Vesica',
@@ -7043,7 +7095,7 @@ Will there be anything further, my lord?
 200: ${fillAndStroke}`,
 201:   },
 202: }
-203: 
+203:
 204: // Faithful port of paper-design/shaders' pulsing-border. Spots travel around
 205: // a rounded-rectangle perimeter at independent speeds; per-spot colour is
 206: // drawn from a vec4Array palette; output blends between alpha-over and
@@ -7102,13 +7154,13 @@ Will there be anything further, my lord?
 259: #ifndef PI
 260: #define PI 3.14159265358979
 261: #endif
-262: 
+262:
 263: float pbBeat(float time) {
 264:   float first = pow(abs(sin(time * TWO_PI)), 10.0);
 265:   float second = pow(abs(sin((time - 0.15) * TWO_PI)), 10.0);
 266:   return clamp(first + 0.6 * second, 0.0, 1.0);
 267: }
-268: 
+268:
 269: float pbValueNoise(vec2 st) {
 270:   vec2 i = floor(st);
 271:   vec2 f = fract(st);
@@ -7123,7 +7175,7 @@ Will there be anything further, my lord?
 280:   float x2 = mix(c, d, u.x);
 281:   return mix(x1, x2, u.y);
 282: }
-283: 
+283:
 284: float pbRoundedBox(
 285:   vec2 uv, vec2 halfSize, float dist, float cornerDistance,
 286:   float thickness, float softness
@@ -7147,48 +7199,48 @@ Will there be anything further, my lord?
 304:     main: `
 305: const float firstFrameOffset = 109.0;
 306: float t = 1.2 * (u_time * {{speed}} + firstFrameOffset);
-307: 
+307:
 308: // borderUV: centered + aspect-corrected (Paper's v_responsiveUV equivalent).
 309: float canvasRatio = u_resolution.x / max(u_resolution.y, 1.0);
 310: vec2 borderUV = (uv - 0.5);
 311: borderUV.x *= max(canvasRatio, 1.0);
 312: borderUV.y /= min(canvasRatio, 1.0);
-313: 
+313:
 314: vec2 halfSize = vec2(0.5);
 315: halfSize.x *= max(canvasRatio, 1.0);
 316: halfSize.y /= min(canvasRatio, 1.0);
-317: 
+317:
 318: float pulse = {{pulse}} * pbBeat(0.18 * u_time * {{speed}});
-319: 
+319:
 320: float mL = {{marginLeft}};
 321: float mR = {{marginRight}};
 322: float mT = {{marginTop}};
 323: float mB = {{marginBottom}};
 324: float mX = mL + mR;
 325: float mY = mT + mB;
-326: 
+326:
 327: float thickness = 0.5 * {{thickness}} * min(halfSize.x, halfSize.y);
 328: halfSize.x *= (1.0 - mX);
 329: halfSize.y *= (1.0 - mY);
-330: 
+330:
 331: vec2 centerShift = vec2(
 332:   (mL - mR) * max(canvasRatio, 1.0) * 0.5,
 333:   (mB - mT) / min(canvasRatio, 1.0) * 0.5
 334: );
 335: borderUV -= centerShift;
 336: halfSize -= mix(thickness, 0.0, {{softness}});
-337: 
+337:
 338: float radius = mix(0.0, min(halfSize.x, halfSize.y), {{roundness}});
 339: vec2 dvec = abs(borderUV) - halfSize + radius;
 340: float outsideDistance = length(max(dvec, 0.0001)) - radius;
 341: float insideDistance = min(max(dvec.x, dvec.y), 0.0001);
 342: float cornerDistance = abs(min(max(dvec.x, dvec.y) - 0.45 * radius, 0.0));
 343: float dist = outsideDistance + insideDistance;
-344: 
+344:
 345: float borderThickness = mix(thickness, 3.0 * thickness, {{softness}});
 346: float border = pbRoundedBox(borderUV, halfSize, dist, cornerDistance, borderThickness, {{softness}});
 347: border = pow(border, 1.0 + {{softness}});
-348: 
+348:
 349: vec2 smokeUV = 0.3 * {{smokeSize}} * uv;
 350: float smoke = clamp(3.0 * pbValueNoise(2.7 * smokeUV + 0.5 * t), 0.0, 1.0);
 351: smoke -= pbValueNoise(3.4 * smokeUV - 0.5 * t);
@@ -7208,6 +7260,7 @@ Will there be anything further, my lord?
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/texture-cache.ts",
@@ -7217,6 +7270,7 @@ Will there be anything further, my lord?
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/texture-cache.ts</path>
 <type>file</type>
@@ -7225,10 +7279,10 @@ Will there be anything further, my lord?
 2: // Used by the in-app preview to manage texture lifecycle without thrashing on
 3: // every uniform update. Editor-only for now; exported components implement
 4: // their own simpler binding.
-5: 
+5:
 6: const MAX_TEXTURE_SIZE = 2048
 7: const MAX_ENTRIES = 20
-8: 
+8:
 9: interface CacheEntry {
 10:   texture: WebGLTexture
 11:   width: number
@@ -7237,17 +7291,17 @@ Will there be anything further, my lord?
 14:   /** Updated on every getTexture() so eviction picks the oldest. */
 15:   lastUsed: number
 16: }
-17: 
+17:
 18: export class TextureCache {
 19:   private gl: WebGL2RenderingContext
 20:   private entries = new Map<string, CacheEntry>()
 21:   private placeholder: WebGLTexture | null = null
 22:   private inFlight = new Map<string, Promise<CacheEntry | null>>()
-23: 
+23:
 24:   constructor(gl: WebGL2RenderingContext) {
 25:     this.gl = gl
 26:   }
-27: 
+27:
 28:   /** 1×1 transparent texture; safe to bind unconditionally as a fallback. */
 29:   getPlaceholder(): WebGLTexture {
 30:     if (this.placeholder) return this.placeholder
@@ -7273,7 +7327,7 @@ Will there be anything further, my lord?
 50:     this.placeholder = tex
 51:     return tex
 52:   }
-53: 
+53:
 54:   /** Returns a cached entry synchronously if loaded; otherwise null. */
 55:   peek(url: string): CacheEntry | null {
 56:     const entry = this.entries.get(url)
@@ -7281,7 +7335,7 @@ Will there be anything further, my lord?
 58:     entry.lastUsed = performance.now()
 59:     return entry
 60:   }
-61: 
+61:
 62:   /**
 63:    * Loads `url` into a texture (cache or fresh). Calls onReady once the
 64:    * upload completes so the renderer can re-render with the new texture.
@@ -7297,12 +7351,12 @@ Will there be anything further, my lord?
 74:       })
 75:     }
 76:   }
-77: 
+77:
 78:   private async load(url: string): Promise<CacheEntry | null> {
 79:     const gl = this.gl
 80:     const img = await loadImage(url).catch(() => null)
 81:     if (!img) return null
-82: 
+82:
 83:     let source: HTMLImageElement | HTMLCanvasElement = img
 84:     let w = img.naturalWidth
 85:     let h = img.naturalHeight
@@ -7325,7 +7379,7 @@ Will there be anything further, my lord?
 102:         h = dh
 103:       }
 104:     }
-105: 
+105:
 106:     const tex = gl.createTexture()
 107:     if (!tex) return null
 108:     gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -7337,7 +7391,7 @@ Will there be anything further, my lord?
 114:     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 115:     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
 116:     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-117: 
+117:
 118:     const entry: CacheEntry = {
 119:       texture: tex,
 120:       width: w,
@@ -7349,7 +7403,7 @@ Will there be anything further, my lord?
 126:     this.evictIfNeeded()
 127:     return entry
 128:   }
-129: 
+129:
 130:   private evictIfNeeded() {
 131:     if (this.entries.size <= MAX_ENTRIES) return
 132:     let oldestKey: string | null = null
@@ -7366,7 +7420,7 @@ Will there be anything further, my lord?
 143:       this.entries.delete(oldestKey)
 144:     }
 145:   }
-146: 
+146:
 147:   destroy() {
 148:     for (const entry of this.entries.values()) {
 149:       this.gl.deleteTexture(entry.texture)
@@ -7378,7 +7432,7 @@ Will there be anything further, my lord?
 155:     }
 156:   }
 157: }
-158: 
+158:
 159: function loadImage(url: string): Promise<HTMLImageElement> {
 160:   return new Promise((resolve, reject) => {
 161:     const img = new Image()
@@ -7401,6 +7455,7 @@ Will there be anything further, my lord?
 **Tool: webfetch**
 
 **Input:**
+
 ```json
 {
   "url": "https://raw.githubusercontent.com/paper-design/shaders/main/docs/registry.json",
@@ -7410,6 +7465,7 @@ Will there be anything further, my lord?
 ```
 
 **Output:**
+
 ```
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
@@ -7764,6 +7820,7 @@ Local gaps found:
 - Image-driven shader ports were deferred in `specialized.ts`, but the comment is now stale because editor-side sampler support exists: `src/lib/shader-composer/layers/specialized.ts:1`.
 
 **Plan**
+
 1. Add Paper parity foundations:
    - Add built-in Paper noise texture support for shaders that use `u_noiseTexture`.
    - Extend export generation so `sampler2D` images and `vec4Array` palettes work outside the editor.
@@ -7802,6 +7859,7 @@ Of course, my lord. That clarification changes the goal in the right direction: 
 **Tool: task**
 
 **Input:**
+
 ```json
 {
   "description": "Map primitive gaps",
@@ -7813,6 +7871,7 @@ Of course, my lord. That clarification changes the goal in the right direction: 
 ```
 
 **Output:**
+
 ```
 task_id: ses_214300cdbffeopiSBMjVr6pAWX (for resuming to continue this task if needed)
 
@@ -7839,7 +7898,7 @@ Inspected:
 ## Smallest primitive additions/modifications
 
 ### 1. **Scalar Noise Field**
-A grayscale noise generator with modes like “simplex two-octave,” “fbm,” and “animated drift.”  
+A grayscale noise generator with modes like “simplex two-octave,” “fbm,” and “animated drift.”
 Use with `color-ramp`, `dither`, `posterize`.
 
 Unlocks:
@@ -8048,6 +8107,7 @@ Very good, sire. The shortest path is: upgrade `color-ramp`, add scalar fields/m
 **Tool: task**
 
 **Input:**
+
 ```json
 {
   "description": "Decompose Paper effects",
@@ -8059,6 +8119,7 @@ Very good, sire. The shortest path is: upgrade `color-ramp`, add scalar fields/m
 ```
 
 **Output:**
+
 ```
 task_id: ses_214300caaffelMLcT9mQZk9OtY (for resuming to continue this task if needed)
 
@@ -8215,14 +8276,14 @@ Turn Paper-style shaders into readable preset recipes made from reusable primiti
 
 Relevant current files:
 
-| Area | File |
-|---|---|
-| Presets | `src/lib/shader-composer/paper-presets.ts:63` |
-| Layer registry | `src/lib/shader-composer/layers/index.ts:1` |
-| Uniform types | `src/lib/shader-composer/types.ts:3` |
-| Shader generation | `src/lib/shader-composer/generator.ts:29` |
-| Image preview binding | `src/components/shader-composer/shader-preview.tsx:187` |
-| Export gap for images/palettes | `src/lib/shader-composer/generator.ts:332` |
+| Area                           | File                                                    |
+| ------------------------------ | ------------------------------------------------------- |
+| Presets                        | `src/lib/shader-composer/paper-presets.ts:63`           |
+| Layer registry                 | `src/lib/shader-composer/layers/index.ts:1`             |
+| Uniform types                  | `src/lib/shader-composer/types.ts:3`                    |
+| Shader generation              | `src/lib/shader-composer/generator.ts:29`               |
+| Image preview binding          | `src/components/shader-composer/shader-preview.tsx:187` |
+| Export gap for images/palettes | `src/lib/shader-composer/generator.ts:332`              |
 
 **Product Rule**
 Every Paper preset should be expressible as:
@@ -8234,6 +8295,7 @@ source → field/mask → distortion → color/stylize → lighting/composite
 Avoid adding `paper-liquid-metal`, `paper-water`, etc. unless a shader truly cannot be expressed through reusable parts.
 
 **Phase 1: Foundation**
+
 1. Keep existing Paper ports as internal references only.
 2. Add a preset fidelity model that distinguishes recipe quality.
 3. Suggested fidelity labels:
@@ -8272,22 +8334,22 @@ Acceptance criteria:
 **Phase 3: High-Leverage Primitive Additions**
 Implement these before rewriting most presets.
 
-| Primitive | Layer ID Suggestion | Purpose |
-|---|---|---|
-| Scalar Field | `scalar-field` | Grayscale procedural field with noise/shape modes |
-| Color Ramp v2 | `color-ramp` upgrade | Smooth/stepped/soft/wrapped multi-stop palettes |
-| Mesh Spots | `mesh-spots-gradient` | Soft animated color blobs |
-| Organic Warp | `organic-warp` | Large liquid distortion/swirl |
-| Polar Bands | `polar-bands` | Twisted radial bands |
-| Spiral Stripe | `spiral-stripe` | Spiral mask with stroke controls |
-| Voronoi Cells | `voronoi-cells` | Colored cells, gaps, glow |
-| Dot Glyph Grid | `dot-glyph-grid` | Grid of circle/square/diamond/triangle glyphs |
-| Halftone Screen | `halftone-screen` | Luma-driven dots and CMYK mode |
-| Material Noise | `material-noise` | Paper fibers, folds, crumples, grain |
-| Perimeter Runner | `perimeter-runner` | Animated lights around a rounded rect |
-| Perspective Panels | `perspective-panels` | Rotating translucent panels |
-| Chrome Relief | `chrome-relief` | Luma/edge-based metallic lighting |
-| Glow Field | `glow-field` | Inner/outer glow, bloom, ray-style light |
+| Primitive          | Layer ID Suggestion   | Purpose                                           |
+| ------------------ | --------------------- | ------------------------------------------------- |
+| Scalar Field       | `scalar-field`        | Grayscale procedural field with noise/shape modes |
+| Color Ramp v2      | `color-ramp` upgrade  | Smooth/stepped/soft/wrapped multi-stop palettes   |
+| Mesh Spots         | `mesh-spots-gradient` | Soft animated color blobs                         |
+| Organic Warp       | `organic-warp`        | Large liquid distortion/swirl                     |
+| Polar Bands        | `polar-bands`         | Twisted radial bands                              |
+| Spiral Stripe      | `spiral-stripe`       | Spiral mask with stroke controls                  |
+| Voronoi Cells      | `voronoi-cells`       | Colored cells, gaps, glow                         |
+| Dot Glyph Grid     | `dot-glyph-grid`      | Grid of circle/square/diamond/triangle glyphs     |
+| Halftone Screen    | `halftone-screen`     | Luma-driven dots and CMYK mode                    |
+| Material Noise     | `material-noise`      | Paper fibers, folds, crumples, grain              |
+| Perimeter Runner   | `perimeter-runner`    | Animated lights around a rounded rect             |
+| Perspective Panels | `perspective-panels`  | Rotating translucent panels                       |
+| Chrome Relief      | `chrome-relief`       | Luma/edge-based metallic lighting                 |
+| Glow Field         | `glow-field`          | Inner/outer glow, bloom, ray-style light          |
 
 **Phase 4: Primitive Details**
 `scalar-field`
@@ -8437,29 +8499,29 @@ Replace current approximate/placeholder stacks in `src/lib/shader-composer/paper
 
 Target recipe examples:
 
-| Paper Preset | New Recipe |
-|---|---|
-| `mesh-gradient` | `mesh-spots-gradient → organic-warp → grain` |
-| `static-mesh-gradient` | `mesh-spots-gradient(static) → grain` |
-| `simplex-noise` | `scalar-field(simplex) → color-ramp` |
-| `perlin-noise` | `scalar-field(perlin/fbm) → color-ramp` |
-| `neuro-noise` | `scalar-field(tendrils) → color-ramp → glow-field` |
-| `swirl` | `polar-bands → color-ramp` |
-| `spiral` | `spiral-stripe → color-ramp` |
-| `voronoi` | `voronoi-cells → color-ramp/glow` |
-| `waves` | `scalar-field(waves) → color-ramp` |
-| `warp` | `dot/check pattern → organic-warp → color-ramp` |
-| `dithering` | `scalar-field → dither` |
-| `image-dithering` | `image-source → image-luma → dither` |
-| `heatmap` | `image-source → image-luma/contour → color-ramp → glow-field` |
-| `halftone-dots` | `image-source → image-luma → halftone-screen` |
-| `halftone-cmyk` | `image-source → halftone-screen(cmyk)` |
-| `liquid-metal` | `image-source/shape → image-edge → organic-warp → chrome-relief → color-ramp` |
-| `paper-texture` | `image-source → material-noise → overlay/multiply` |
-| `water` | `image-source → organic-warp/water-ripple → glow-field(caustics)` |
-| `god-rays` | `scalar-field(rays) → radial mask → glow-field` |
-| `pulsing-border` | `perimeter-runner → glow-field` |
-| `color-panels` | `perspective-panels → color-ramp/composite` |
+| Paper Preset           | New Recipe                                                                    |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `mesh-gradient`        | `mesh-spots-gradient → organic-warp → grain`                                  |
+| `static-mesh-gradient` | `mesh-spots-gradient(static) → grain`                                         |
+| `simplex-noise`        | `scalar-field(simplex) → color-ramp`                                          |
+| `perlin-noise`         | `scalar-field(perlin/fbm) → color-ramp`                                       |
+| `neuro-noise`          | `scalar-field(tendrils) → color-ramp → glow-field`                            |
+| `swirl`                | `polar-bands → color-ramp`                                                    |
+| `spiral`               | `spiral-stripe → color-ramp`                                                  |
+| `voronoi`              | `voronoi-cells → color-ramp/glow`                                             |
+| `waves`                | `scalar-field(waves) → color-ramp`                                            |
+| `warp`                 | `dot/check pattern → organic-warp → color-ramp`                               |
+| `dithering`            | `scalar-field → dither`                                                       |
+| `image-dithering`      | `image-source → image-luma → dither`                                          |
+| `heatmap`              | `image-source → image-luma/contour → color-ramp → glow-field`                 |
+| `halftone-dots`        | `image-source → image-luma → halftone-screen`                                 |
+| `halftone-cmyk`        | `image-source → halftone-screen(cmyk)`                                        |
+| `liquid-metal`         | `image-source/shape → image-edge → organic-warp → chrome-relief → color-ramp` |
+| `paper-texture`        | `image-source → material-noise → overlay/multiply`                            |
+| `water`                | `image-source → organic-warp/water-ripple → glow-field(caustics)`             |
+| `god-rays`             | `scalar-field(rays) → radial mask → glow-field`                               |
+| `pulsing-border`       | `perimeter-runner → glow-field`                                               |
+| `color-panels`         | `perspective-panels → color-ramp/composite`                                   |
 
 **Phase 6: Implementation Order**
 Recommended order for a junior engineer:
@@ -8521,6 +8583,7 @@ lets do it
 **Tool: todowrite**
 
 **Input:**
+
 ```json
 {
   "todos": [
@@ -8604,6 +8667,7 @@ lets do it
 ```
 
 **Output:**
+
 ```
 [
   {
@@ -8691,6 +8755,7 @@ lets do it
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/_helpers.ts"
@@ -8698,16 +8763,17 @@ lets do it
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/_helpers.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition, BlendMode } from '../types'
-2: 
+2:
 3: type LayerCategory = LayerDefinition['category']
 4: type FactoryOpts = { consumesPrevPass?: boolean; defaultBlendMode?: BlendMode }
 5: type LayerInput = Omit<LayerDefinition, 'category' | 'defaultBlendMode' | 'consumesPrevPass'>
-6: 
+6:
 7: const make =
 8:   (category: LayerCategory, opts: FactoryOpts = {}) =>
 9:   (def: LayerInput): LayerDefinition => ({
@@ -8716,17 +8782,17 @@ lets do it
 12:     defaultBlendMode: opts.defaultBlendMode ?? 'normal',
 13:     consumesPrevPass: opts.consumesPrevPass,
 14:   })
-15: 
+15:
 16: export const gen = make('generator')
 17: export const distorter = make('distorter', { consumesPrevPass: true })
 18: export const fx = make('effect', { consumesPrevPass: true })
 19: export const baseFx = make('effect')
 20: export const colorFx = make('modifier')
 21: export const sampleFx = make('modifier', { consumesPrevPass: true })
-22: 
+22:
 23: export const SCREEN_P = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 24: vec2 p = (uv - 0.5) * _ar;`
-25: 
+25:
 26: export const TEX_SIZE = `vec2 texel = 1.0 / u_resolution;`
 
 (End of file - total 26 lines)
@@ -8736,6 +8802,7 @@ lets do it
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts"
@@ -8743,13 +8810,14 @@ lets do it
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { colorFx, sampleFx } from './_helpers'
-3: 
+3:
 4: export const hueShiftLayer = colorFx({
 5:   id: 'hue-shift',
 6:   name: 'Hue Shift',
@@ -8766,7 +8834,7 @@ lets do it
 17: return vec4(hsv2rgb(h), base.a);`,
 18:   },
 19: })
-20: 
+20:
 21: export const saturationLayer = colorFx({
 22:   id: 'saturation',
 23:   name: 'Saturation',
@@ -8782,7 +8850,7 @@ lets do it
 33: return vec4(mix(vec3(lum), base.rgb, {{amount}}), base.a);`,
 34:   },
 35: })
-36: 
+36:
 37: export const vibranceLayer = colorFx({
 38:   id: 'vibrance',
 39:   name: 'Vibrance',
@@ -8802,7 +8870,7 @@ lets do it
 53: return vec4(mix(vec3(lum), base.rgb, 1.0 + w), base.a);`,
 54:   },
 55: })
-56: 
+56:
 57: export const brightnessContrastLayer = colorFx({
 58:   id: 'brightness-contrast',
 59:   name: 'Brightness/Contrast',
@@ -8818,7 +8886,7 @@ lets do it
 69: return vec4(col, base.a);`,
 70:   },
 71: })
-72: 
+72:
 73: export const sharpnessLayer = sampleFx({
 74:   id: 'sharpness',
 75:   name: 'Sharpness',
@@ -8839,7 +8907,7 @@ lets do it
 90: return vec4(c + (c - blurred) * {{amount}}, 1.0);`,
 91:   },
 92: })
-93: 
+93:
 94: export const tintLayer = colorFx({
 95:   id: 'tint',
 96:   name: 'Tint',
@@ -8854,7 +8922,7 @@ lets do it
 105: return vec4(mix(base.rgb, base.rgb * {{color}} * 1.4, {{amount}}), base.a);`,
 106:   },
 107: })
-108: 
+108:
 109: export const duotoneLayer = colorFx({
 110:   id: 'duotone',
 111:   name: 'Duotone',
@@ -8871,7 +8939,7 @@ lets do it
 122: return vec4(mix({{color1}}, {{color2}}, lum), base.a);`,
 123:   },
 124: })
-125: 
+125:
 126: export const tritoneLayer = colorFx({
 127:   id: 'tritone',
 128:   name: 'Tritone',
@@ -8893,7 +8961,7 @@ lets do it
 144: return vec4(col, base.a);`,
 145:   },
 146: })
-147: 
+147:
 148: export const solarizeLayer = colorFx({
 149:   id: 'solarize',
 150:   name: 'Solarize',
@@ -8908,7 +8976,7 @@ lets do it
 159: return vec4(col, base.a);`,
 160:   },
 161: })
-162: 
+162:
 163: export const invertLayer = colorFx({
 164:   id: 'invert',
 165:   name: 'Invert',
@@ -8922,7 +8990,7 @@ lets do it
 173: return vec4(mix(base.rgb, 1.0 - base.rgb, {{amount}}), base.a);`,
 174:   },
 175: })
-176: 
+176:
 177: export const grayscaleLayer = colorFx({
 178:   id: 'grayscale',
 179:   name: 'Grayscale',
@@ -8938,7 +9006,7 @@ lets do it
 189: return vec4(mix(base.rgb, vec3(lum), {{amount}}), base.a);`,
 190:   },
 191: })
-192: 
+192:
 193: export const chromaticAberration2Layer = sampleFx({
 194:   id: 'chromatic-aberration-2',
 195:   name: 'Chromatic Aberration (Sep.)',
@@ -8960,7 +9028,7 @@ lets do it
 211: return vec4(r, g, b, 1.0);`,
 212:   },
 213: })
-214: 
+214:
 215: export const chromaFlowLayer = colorFx({
 216:   id: 'chroma-flow',
 217:   name: 'Chroma Flow',
@@ -8978,7 +9046,7 @@ lets do it
 229: return vec4(mix(base.rgb, base.rgb * tint, {{amount}}), base.a);`,
 230:   },
 231: })
-232: 
+232:
 233: // N-color stepped/smooth ramp. Reads previous-pass scalar (default: luma)
 234: // and maps to a 1..10-stop palette. The single highest-leverage atom for
 235: // reproducing Paper presets that use `colors[N]` arrays.
@@ -9048,7 +9116,7 @@ lets do it
 299: return colorRampLookup(t, {{colors}}, {{colors}}_count, {{steps}});`,
 300:   },
 301: })
-302: 
+302:
 303: // Replaces previous-pass with vec4(luma, luma, luma, 1.0) so downstream
 304: // dither/threshold/ramp consumers see a clean scalar.
 305: export const luminanceTapLayer = sampleFx({
@@ -9065,7 +9133,7 @@ lets do it
 316:   },
 317:   outputKind: 'scalar',
 318: })
-319: 
+319:
 320: // CMYK channel separation. Output mode 0 = grayscale (channel as luma);
 321: // mode 1 = tinted (full CMYK process color). Stack four with mode=1 +
 322: // halftone effects for a CMYK halftone print look.
@@ -9116,7 +9184,7 @@ lets do it
 367: return vec4(mix(vec3(1.0), tint, v), 1.0);`,
 368:   },
 369: })
-370: 
+370:
 371: export const COLOR_LAYERS: Record<string, LayerDefinition> = {
 372:   'hue-shift': hueShiftLayer,
 373:   saturation: saturationLayer,
@@ -9143,6 +9211,7 @@ lets do it
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts"
@@ -9150,15 +9219,16 @@ lets do it
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
-2: 
+2:
 3: const screenP = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 4: vec2 p = (uv - 0.5) * _ar;`
-5: 
+5:
 6: // Plasma — multi-octave layered sin/cos pattern; designer favourite for
 7: // liquid colour wash backgrounds.
 8: export const plasmaLayer: LayerDefinition = {
@@ -9192,7 +9262,7 @@ lets do it
 36: return vec4(col, 1.0);`,
 37:   },
 38: }
-39: 
+39:
 40: // Perlin Noise (3D, time as z) — classic FBM via simplex2D treated as gradient.
 41: // Reuses simplex2D helper from glsl-utils.
 42: export const perlinNoiseLayer: LayerDefinition = {
@@ -9231,7 +9301,7 @@ lets do it
 75: return vec4(mix({{color1}}, {{color2}}, n), 1.0);`,
 76:   },
 77: }
-78: 
+78:
 79: // FlowField — vector field magnitude rendered as a swirling gradient.
 80: export const flowFieldLayer: LayerDefinition = {
 81:   id: 'flow-field',
@@ -9262,7 +9332,7 @@ lets do it
 106: return vec4(mix({{color1}}, {{color2}}, v), 1.0);`,
 107:   },
 108: }
-109: 
+109:
 110: // Aurora — domain-warped trig-fold noise (Paper "neuro noise" family).
 111: // 15 iterations with exponential scale growth and an accumulating sine sum
 112: // produces tendril-like networks rather than smooth bands.
@@ -9302,7 +9372,7 @@ lets do it
 146: return vec4(col, 1.0);`,
 147:   },
 148: }
-149: 
+149:
 150: // Spiral — animated polar-coordinate spiral.
 151: export const spiralLayer: LayerDefinition = {
 152:   id: 'spiral',
@@ -9333,7 +9403,7 @@ lets do it
 177: return vec4(mix({{colorBack}}, {{colorFront}}, m), 1.0);`,
 178:   },
 179: }
-180: 
+180:
 181: // ContourLines — equipotential lines from a noise field.
 182: export const contourLinesLayer: LayerDefinition = {
 183:   id: 'contour-lines',
@@ -9361,7 +9431,7 @@ lets do it
 205: return vec4(mix({{colorBack}}, {{colorFront}}, m), 1.0);`,
 206:   },
 207: }
-208: 
+208:
 209: export const NOISE_LAYERS: Record<string, LayerDefinition> = {
 210:   plasma: plasmaLayer,
 211:   'perlin-noise': perlinNoiseLayer,
@@ -9378,6 +9448,7 @@ lets do it
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts",
@@ -9386,6 +9457,7 @@ lets do it
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts</path>
 <type>file</type>
@@ -9394,7 +9466,7 @@ lets do it
 222: float angleRad = {{angle}} * 3.14159 / 180.0;
 223: vec2 dir = mix(vec2(cos(angleRad), sin(angleRad)), normalize(center + 0.001), {{radial}});
 224: vec2 offset = dir * {{intensity}} * (1.0 + dist * {{radial}});
-225: 
+225:
 226: // Simulate chromatic shift
 227: vec3 col = vec3(
 228:   mix(base.r, base.g, offset.x * 10.0),
@@ -9404,7 +9476,7 @@ lets do it
 232: return vec4(col, base.a);`,
 233:   },
 234: }
-235: 
+235:
 236: export const glowLayer: LayerDefinition = {
 237:   id: 'glow',
 238:   name: 'Glow',
@@ -9427,7 +9499,7 @@ lets do it
 255: return vec4(col, base.a);`,
 256:   },
 257: }
-258: 
+258:
 259: export const bulgeLayer: LayerDefinition = {
 260:   id: 'bulge',
 261:   name: 'Bulge',
@@ -9452,7 +9524,7 @@ lets do it
 280: return texture(u_prevPass, distorted);`,
 281:   },
 282: }
-283: 
+283:
 284: export const colorShiftLayer: LayerDefinition = {
 285:   id: 'color-shift',
 286:   name: 'Color Shift',
@@ -9476,7 +9548,7 @@ lets do it
 304: return vec4(col, base.a);`,
 305:   },
 306: }
-307: 
+307:
 308: export const LAYER_LIBRARY: Record<string, LayerDefinition> = {
 309:   'simplex-noise': simplexNoiseLayer,
 310:   'voronoi': voronoiLayer,
@@ -9503,7 +9575,7 @@ lets do it
 331:   ...SPECIALIZED_LAYERS,
 332:   ...PAPER_SHADER_LAYERS,
 333: }
-334: 
+334:
 335: export const LAYER_CATEGORIES = {
 336:   generator: { name: 'Generators', description: 'Create base patterns' },
 337:   modifier: { name: 'Modifiers', description: 'Transform colors and values' },
@@ -9519,6 +9591,7 @@ lets do it
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/runtime-shell.ts"
@@ -9526,6 +9599,7 @@ lets do it
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/runtime-shell.ts</path>
 <type>file</type>
@@ -9544,19 +9618,19 @@ lets do it
 12: // `u_prevPass` whenever a pass reads it. Image-uniform binders (callers of
 13: // `bindUniforms`) must use TEXTURE1 and above. The `passContext.nextTextureUnit`
 14: // passed into `bindUniforms` reflects the first free unit for that pass.
-15: 
+15:
 16: export interface PipelinePass {
 17:   fragment: string
 18:   readsPrevPass: boolean
 19: }
-20: 
+20:
 21: export interface PassContext {
 22:   passIndex: number
 23:   // First texture unit available to image uniforms in this pass. 1 if the
 24:   // pass reads u_prevPass (which sits on TEXTURE0), 0 otherwise.
 25:   nextTextureUnit: number
 26: }
-27: 
+27:
 28: export interface PipelineHandle {
 29:   render(
 30:     time: number,
@@ -9566,7 +9640,7 @@ lets do it
 34:   ): void
 35:   destroy(): void
 36: }
-37: 
+37:
 38: export function createShaderPipeline(
 39:   gl: WebGL2RenderingContext,
 40:   vertexSource: string,
@@ -9588,7 +9662,7 @@ lets do it
 56:     }
 57:     return sh
 58:   }
-59: 
+59:
 60:   const programs: (WebGLProgram | null)[] = passes.map((p) => {
 61:     const vs = compile(gl.VERTEX_SHADER, vertexSource)
 62:     const fs = compile(gl.FRAGMENT_SHADER, p.fragment)
@@ -9607,19 +9681,19 @@ lets do it
 75:     }
 76:     return prog
 77:   })
-78: 
+78:
 79:   const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
 80:   const buffer = gl.createBuffer()
 81:   gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 82:   gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW)
-83: 
+83:
 84:   let texA: WebGLTexture | null = null
 85:   let texB: WebGLTexture | null = null
 86:   let fboA: WebGLFramebuffer | null = null
 87:   let fboB: WebGLFramebuffer | null = null
 88:   let fboW = 0
 89:   let fboH = 0
-90: 
+90:
 91:   function ensureFbos(w: number, h: number) {
 92:     if (w === fboW && h === fboH && texA && texB) return
 93:     if (texA) gl.deleteTexture(texA)
@@ -9649,7 +9723,7 @@ lets do it
 117:     fboB = fB
 118:     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 119:   }
-120: 
+120:
 121:   function render(
 122:     time: number,
 123:     width: number,
@@ -9658,50 +9732,50 @@ lets do it
 126:   ) {
 127:     if (passes.length === 0) return
 128:     ensureFbos(width, height)
-129: 
+129:
 130:     let read: WebGLTexture | null = texA
 131:     let writeFbo: WebGLFramebuffer | null = fboB
-132: 
+132:
 133:     if (passes[0].readsPrevPass) {
 134:       gl.bindFramebuffer(gl.FRAMEBUFFER, fboA)
 135:       gl.viewport(0, 0, width, height)
 136:       gl.clearColor(0, 0, 0, 0)
 137:       gl.clear(gl.COLOR_BUFFER_BIT)
 138:     }
-139: 
+139:
 140:     for (let i = 0; i < passes.length; i++) {
 141:       const pass = passes[i]
 142:       const prog = programs[i]
 143:       if (!prog) continue
 144:       const isLast = i === passes.length - 1
 145:       gl.useProgram(prog)
-146: 
+146:
 147:       gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 148:       const posLoc = gl.getAttribLocation(prog, 'a_position')
 149:       gl.enableVertexAttribArray(posLoc)
 150:       gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
-151: 
+151:
 152:       const uTime = gl.getUniformLocation(prog, 'u_time')
 153:       if (uTime) gl.uniform1f(uTime, time)
 154:       const uRes = gl.getUniformLocation(prog, 'u_resolution')
 155:       if (uRes) gl.uniform2f(uRes, width, height)
-156: 
+156:
 157:       if (pass.readsPrevPass) {
 158:         gl.activeTexture(gl.TEXTURE0)
 159:         gl.bindTexture(gl.TEXTURE_2D, read)
 160:         const uPrev = gl.getUniformLocation(prog, 'u_prevPass')
 161:         if (uPrev) gl.uniform1i(uPrev, 0)
 162:       }
-163: 
+163:
 164:       bindUniforms(
 165:         { passIndex: i, nextTextureUnit: pass.readsPrevPass ? 1 : 0 },
 166:         prog
 167:       )
-168: 
+168:
 169:       gl.bindFramebuffer(gl.FRAMEBUFFER, isLast ? null : writeFbo)
 170:       gl.viewport(0, 0, width, height)
 171:       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-172: 
+172:
 173:       if (!isLast) {
 174:         const justWrote = writeFbo === fboA ? texA : texB
 175:         read = justWrote
@@ -9709,7 +9783,7 @@ lets do it
 177:       }
 178:     }
 179:   }
-180: 
+180:
 181:   function destroy() {
 182:     if (texA) gl.deleteTexture(texA)
 183:     if (texB) gl.deleteTexture(texB)
@@ -9718,7 +9792,7 @@ lets do it
 186:     if (buffer) gl.deleteBuffer(buffer)
 187:     programs.forEach((p) => p && gl.deleteProgram(p))
 188:   }
-189: 
+189:
 190:   return { render, destroy }
 191: }
 
@@ -9735,6 +9809,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts"
@@ -9742,13 +9817,14 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { distorter } from './_helpers'
-3: 
+3:
 4: export const spherizeLayer = distorter({
 5:   id: 'spherize',
 6:   name: 'Spherize',
@@ -9770,7 +9846,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 22: return texture(u_prevPass, distorted);`,
 23:   },
 24: })
-25: 
+25:
 26: export const liquifyLayer = distorter({
 27:   id: 'liquify',
 28:   name: 'Liquify',
@@ -9790,7 +9866,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 42: return texture(u_prevPass, uv + vec2(dx, dy) * {{amount}});`,
 43:   },
 44: })
-45: 
+45:
 46: export const stretchLayer = distorter({
 47:   id: 'stretch',
 48:   name: 'Stretch',
@@ -9809,7 +9885,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 61: return texture(u_prevPass, c + d);`,
 62:   },
 63: })
-64: 
+64:
 65: export const twirlLayer = distorter({
 66:   id: 'twirl',
 67:   name: 'Twirl',
@@ -9833,7 +9909,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 85: return texture(u_prevPass, c + rd);`,
 86:   },
 87: })
-88: 
+88:
 89: export const swirlLayer = distorter({
 90:   id: 'swirl',
 91:   name: 'Swirl',
@@ -9855,7 +9931,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 107: return texture(u_prevPass, c + rd);`,
 108:   },
 109: })
-110: 
+110:
 111: export const concentricSpinLayer = distorter({
 112:   id: 'concentric-spin',
 113:   name: 'Concentric Spin',
@@ -9879,7 +9955,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 131: return texture(u_prevPass, c + rd);`,
 132:   },
 133: })
-134: 
+134:
 135: export const gridDistortionLayer = distorter({
 136:   id: 'grid-distortion',
 137:   name: 'Grid Distortion',
@@ -9899,7 +9975,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 151: return texture(u_prevPass, uv + offset);`,
 152:   },
 153: })
-154: 
+154:
 155: export const waveDistortionLayer = distorter({
 156:   id: 'wave-distortion',
 157:   name: 'Wave Distortion',
@@ -9922,7 +9998,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 174: return texture(u_prevPass, uv + offset);`,
 175:   },
 176: })
-177: 
+177:
 178: export const ripplesLayer = distorter({
 179:   id: 'ripples',
 180:   name: 'Ripples',
@@ -9945,7 +10021,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 197: return texture(u_prevPass, uv + normalize(d + 1e-6) * wave);`,
 198:   },
 199: })
-200: 
+200:
 201: export const shatterLayer = distorter({
 202:   id: 'shatter',
 203:   name: 'Shatter',
@@ -9964,7 +10040,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 216: return texture(u_prevPass, uv + offset);`,
 217:   },
 218: })
-219: 
+219:
 220: export const mirrorLayer = distorter({
 221:   id: 'mirror',
 222:   name: 'Mirror',
@@ -9986,7 +10062,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 238: return texture(u_prevPass, c + rotate2D(d, a));`,
 239:   },
 240: })
-241: 
+241:
 242: export const kaleidoscopeLayer = distorter({
 243:   id: 'kaleidoscope',
 244:   name: 'Kaleidoscope',
@@ -10010,7 +10086,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 262: return texture(u_prevPass, c + rd);`,
 263:   },
 264: })
-265: 
+265:
 266: export const polarCoordinatesLayer = distorter({
 267:   id: 'polar-coordinates',
 268:   name: 'Polar Coordinates',
@@ -10040,7 +10116,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 292: return texture(u_prevPass, q);`,
 293:   },
 294: })
-295: 
+295:
 296: export const perspectiveLayer = distorter({
 297:   id: 'perspective',
 298:   name: 'Perspective',
@@ -10059,7 +10135,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 311: return texture(u_prevPass, q + 0.5);`,
 312:   },
 313: })
-314: 
+314:
 315: export const pixelateLayer = distorter({
 316:   id: 'pixelate',
 317:   name: 'Pixelate',
@@ -10075,7 +10151,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 327: return texture(u_prevPass, q);`,
 328:   },
 329: })
-330: 
+330:
 331: export const glassLayer = distorter({
 332:   id: 'glass',
 333:   name: 'Glass',
@@ -10097,7 +10173,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 349: return texture(u_prevPass, uv + grad * {{amount}});`,
 350:   },
 351: })
-352: 
+352:
 353: export const glassTilesLayer = distorter({
 354:   id: 'glass-tiles',
 355:   name: 'Glass Tiles',
@@ -10119,7 +10195,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 371: return texture(u_prevPass, q2);`,
 372:   },
 373: })
-374: 
+374:
 375: export const glitchLayer = distorter({
 376:   id: 'glitch',
 377:   name: 'Glitch',
@@ -10144,7 +10220,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 396: return vec4(r, g, b, 1.0);`,
 397:   },
 398: })
-399: 
+399:
 400: export const vhsLayer = distorter({
 401:   id: 'vhs',
 402:   name: 'VHS',
@@ -10172,7 +10248,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 424: return vec4(col, 1.0);`,
 425:   },
 426: })
-427: 
+427:
 428: export const crtScreenLayer = distorter({
 429:   id: 'crt-screen',
 430:   name: 'CRT Screen',
@@ -10202,7 +10278,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 454: return vec4(col, 1.0);`,
 455:   },
 456: })
-457: 
+457:
 458: // Radial sine-wave UV displacement modulated by FBM noise. Stack over an
 459: // `image-source` (or any prev-pass) for caustic-style water surfaces.
 460: export const waterRippleLayer = distorter({
@@ -10234,7 +10310,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 486: return texture(u_prevPass, uv - push);`,
 487:   },
 488: })
-489: 
+489:
 490: export const DISTORTER_LAYERS: Record<string, LayerDefinition> = {
 491:   spherize: spherizeLayer,
 492:   liquify: liquifyLayer,
@@ -10266,6 +10342,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts"
@@ -10273,13 +10350,14 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { fx, baseFx } from './_helpers'
-3: 
+3:
 4: export const halftoneLayer = fx({
 5:   id: 'halftone',
 6:   name: 'Halftone',
@@ -10304,7 +10382,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 25: return vec4(mix({{colorBack}}, {{colorDot}}, fillDot), 1.0);`,
 26:   },
 27: })
-28: 
+28:
 29: export const ditherLayer = fx({
 30:   id: 'dither',
 31:   name: 'Dither',
@@ -10334,7 +10412,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 55: return vec4(mix({{colorDark}}, {{colorLight}}, clamp(q, 0.0, 1.0)), 1.0);`,
 56:   },
 57: })
-58: 
+58:
 59: export const posterizeLayer = baseFx({
 60:   id: 'posterize',
 61:   name: 'Posterize',
@@ -10349,7 +10427,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 70: return vec4(col, base.a);`,
 71:   },
 72: })
-73: 
+73:
 74: export const embossLayer = fx({
 75:   id: 'emboss',
 76:   name: 'Emboss',
@@ -10371,7 +10449,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 92: return vec4(vec3(v), 1.0);`,
 93:   },
 94: })
-95: 
+95:
 96: export const asciiLayer = fx({
 97:   id: 'ascii',
 98:   name: 'ASCII',
@@ -10396,7 +10474,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 117: return vec4(mix({{colorBack}}, {{colorChar}}, bar), 1.0);`,
 118:   },
 119: })
-120: 
+120:
 121: export const filmGrain2Layer = baseFx({
 122:   id: 'film-grain-2',
 123:   name: 'Film Grain (v2)',
@@ -10419,7 +10497,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 140: return vec4(base.rgb + noise * {{intensity}}, base.a);`,
 141:   },
 142: })
-143: 
+143:
 144: export const vignette2Layer = baseFx({
 145:   id: 'vignette-2',
 146:   name: 'Vignette (v2)',
@@ -10440,7 +10518,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 161: return vec4(mix(base.rgb, {{color}}, v), base.a);`,
 162:   },
 163: })
-164: 
+164:
 165: export const paperLayer = baseFx({
 166:   id: 'paper',
 167:   name: 'Paper',
@@ -10460,7 +10538,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 181: return vec4(base.rgb * w, base.a);`,
 182:   },
 183: })
-184: 
+184:
 185: export const STYLIZE_LAYERS: Record<string, LayerDefinition> = {
 186:   halftone: halftoneLayer,
 187:   dither: ditherLayer,
@@ -10479,6 +10557,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts"
@@ -10486,25 +10565,26 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts</path>
 <type>file</type>
 <content>
 1: // Shared GLSL utility functions that can be reused across layers
 2: // Each function is keyed by name for deduplication
-3: 
+3:
 4: export const GLSL_UTILS: Record<string, string> = {
 5:   // Random and hash functions
 6:   hash: `
 7: float hash(vec2 p) {
 8:   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 9: }`,
-10: 
+10:
 11:   hash2: `
 12: vec2 hash2(vec2 p) {
 13:   return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
 14: }`,
-15: 
+15:
 16:   hash3: `
 17: vec3 hash3(vec2 p) {
 18:   vec3 q = vec3(dot(p, vec2(127.1, 311.7)),
@@ -10512,13 +10592,13 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 20:                 dot(p, vec2(419.2, 371.9)));
 21:   return fract(sin(q) * 43758.5453);
 22: }`,
-23: 
+23:
 24:   // Noise functions
 25:   simplex2D: `
 26: vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 27: vec2 mod289v2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 28: vec3 permute(vec3 x) { return mod289(((x * 34.0) + 1.0) * x); }
-29: 
+29:
 30: float simplex2D(vec2 v) {
 31:   const vec4 C = vec4(0.211324865405187, 0.366025403784439,
 32:                       -0.577350269189626, 0.024390243902439);
@@ -10542,7 +10622,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 50:   g.yz = a0.yz * x12.xz + h.yz * x12.yw;
 51:   return 130.0 * dot(m, g);
 52: }`,
-53: 
+53:
 54:   // FBM (Fractal Brownian Motion)
 55:   fbm: `
 56: float fbm(vec2 p, float octaves, float lacunarity, float gain) {
@@ -10558,7 +10638,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 66:   }
 67:   return sum;
 68: }`,
-69: 
+69:
 70:   // Voronoi
 71:   voronoi: `
 72: vec3 voronoi(vec2 x, float randomness) {
@@ -10582,28 +10662,28 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 90:   }
 91:   return vec3(sqrt(minDist), minCell);
 92: }`,
-93: 
+93:
 94:   // Blend modes
 95:   blendNormal: `
 96: vec4 blendNormal(vec4 base, vec4 blend, float opacity) {
 97:   return mix(base, blend, blend.a * opacity);
 98: }`,
-99: 
+99:
 100:   blendAdd: `
 101: vec4 blendAdd(vec4 base, vec4 blend, float opacity) {
 102:   return base + blend * opacity;
 103: }`,
-104: 
+104:
 105:   blendMultiply: `
 106: vec4 blendMultiply(vec4 base, vec4 blend, float opacity) {
 107:   return mix(base, base * blend, opacity);
 108: }`,
-109: 
+109:
 110:   blendScreen: `
 111: vec4 blendScreen(vec4 base, vec4 blend, float opacity) {
 112:   return mix(base, 1.0 - (1.0 - base) * (1.0 - blend), opacity);
 113: }`,
-114: 
+114:
 115:   blendOverlay: `
 116: vec4 blendOverlay(vec4 base, vec4 blend, float opacity) {
 117:   vec4 result;
@@ -10615,7 +10695,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 123:   result.a = blend.a;
 124:   return mix(base, result, opacity);
 125: }`,
-126: 
+126:
 127:   blendSoftLight: `
 128: vec4 blendSoftLight(vec4 base, vec4 blend, float opacity) {
 129:   vec4 result;
@@ -10627,7 +10707,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 135:   result.a = blend.a;
 136:   return mix(base, result, opacity);
 137: }`,
-138: 
+138:
 139:   blendHardLight: `
 140: vec4 blendHardLight(vec4 base, vec4 blend, float opacity) {
 141:   vec4 result;
@@ -10639,27 +10719,27 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 147:   result.a = blend.a;
 148:   return mix(base, result, opacity);
 149: }`,
-150: 
+150:
 151:   // Utility functions
 152:   remap: `
 153: float remap(float value, float inMin, float inMax, float outMin, float outMax) {
 154:   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
 155: }`,
-156: 
+156:
 157:   rotate2D: `
 158: vec2 rotate2D(vec2 v, float angle) {
 159:   float s = sin(angle);
 160:   float c = cos(angle);
 161:   return vec2(c * v.x - s * v.y, s * v.x + c * v.y);
 162: }`,
-163: 
+163:
 164:   // Aspect-corrected centered UV: y in [-0.5, 0.5], x scaled by aspect.
 165:   // Use this whenever a primitive needs to look the same on any canvas shape.
 166:   screenUv: `
 167: vec2 screenUv(vec2 uv) {
 168:   return (uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
 169: }`,
-170: 
+170:
 171:   // Anti-aliased step using screen-space derivatives.
 172:   // Works in WebGL2 / GLSL ES 3.00 where fwidth is core (no extension required).
 173:   aastep: `
@@ -10667,30 +10747,30 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 175:   float afwidth = max(0.5 * fwidth(value), 1e-6);
 176:   return smoothstep(threshold - afwidth, threshold + afwidth, value);
 177: }`,
-178: 
+178:
 179:   // Smooth-min (continuous union) — k controls softness.
 180:   smin: `
 181: float smin(float a, float b, float k) {
 182:   float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
 183:   return mix(b, a, h) - k * h * (1.0 - h);
 184: }`,
-185: 
+185:
 186:   // 2D Signed-Distance Functions (Inigo Quilez canonical set).
 187:   sdCircle: `
 188: float sdCircle(vec2 p, float r) { return length(p) - r; }`,
-189: 
+189:
 190:   sdBox: `
 191: float sdBox(vec2 p, vec2 b) {
 192:   vec2 d = abs(p) - b;
 193:   return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 194: }`,
-195: 
+195:
 196:   sdRoundedBox: `
 197: float sdRoundedBox(vec2 p, vec2 b, float r) {
 198:   vec2 q = abs(p) - b + vec2(r);
 199:   return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 200: }`,
-201: 
+201:
 202:   sdEllipse: `
 203: float sdEllipse(vec2 p, vec2 ab) {
 204:   p = abs(p);
@@ -10725,7 +10805,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 233:   vec2 r = vec2(ab.x * co, ab.y * sqrt(1.0 - co * co));
 234:   return length(r - p) * sign(p.y - r.y);
 235: }`,
-236: 
+236:
 237:   sdEquilateralTriangle: `
 238: float sdEquilateralTriangle(vec2 p, float r) {
 239:   const float k = 1.7320508; // sqrt(3)
@@ -10735,14 +10815,14 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 243:   p.x -= clamp(p.x, -2.0 * r, 0.0);
 244:   return -length(p) * sign(p.y);
 245: }`,
-246: 
+246:
 247:   sdRegularPolygon: `
 248: float sdRegularPolygon(vec2 p, float r, float n) {
 249:   float an = 3.1415926 / n;
 250:   float bn = mod(atan(p.x, p.y), 2.0 * an) - an;
 251:   return length(p) * cos(bn) - r * cos(an);
 252: }`,
-253: 
+253:
 254:   sdStar: `
 255: float sdStar(vec2 p, float r, float n, float m) {
 256:   float an = 3.1415926 / n;
@@ -10755,14 +10835,14 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 263:   p += ecs * clamp(-dot(p, ecs), 0.0, r * acs.y / ecs.y);
 264:   return length(p) * sign(p.x);
 265: }`,
-266: 
+266:
 267:   sdSegment: `
 268: float sdSegment(vec2 p, vec2 a, vec2 b) {
 269:   vec2 pa = p - a, ba = b - a;
 270:   float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
 271:   return length(pa - ba * h);
 272: }`,
-273: 
+273:
 274:   sdCross: `
 275: float sdCross(vec2 p, vec2 b, float r) {
 276:   p = abs(p); p = (p.y > p.x) ? p.yx : p.xy;
@@ -10771,7 +10851,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 279:   vec2 w = (k > 0.0) ? q : vec2(b.y - p.x, -k);
 280:   return sign(k) * length(max(w, 0.0)) + r;
 281: }`,
-282: 
+282:
 283:   sdVesica: `
 284: float sdVesica(vec2 p, float r, float d) {
 285:   p = abs(p);
@@ -10780,7 +10860,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 288:     ? length(p - vec2(0.0, b))
 289:     : length(p - vec2(-d, 0.0)) - r;
 290: }`,
-291: 
+291:
 292:   // HSV conversion
 293:   rgb2hsv: `
 294: vec3 rgb2hsv(vec3 c) {
@@ -10791,17 +10871,17 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 299:   float e = 1.0e-10;
 300:   return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 301: }`,
-302: 
+302:
 303:   hsv2rgb: `
 304: vec3 hsv2rgb(vec3 c) {
 305:   vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 306:   vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
 307:   return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 308: }`,
-309: 
+309:
 310:   luma: `
 311: float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }`,
-312: 
+312:
 313:   // Paper Shaders' procedural value-noise hash. Used by Paper's mesh-gradient
 314:   // and value-noise primitives. Different distribution from our hash().
 315:   hash21: `
@@ -10810,7 +10890,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 318:   p += dot(p, p + 19.19);
 319:   return fract(p.x * p.y);
 320: }`,
-321: 
+321:
 322:   // Paper's procedural 2D-out hash. Better-distributed than two hash21 calls.
 323:   hash22: `
 324: vec2 hash22(vec2 p) {
@@ -10818,12 +10898,12 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 326:   p += dot(p, p.yx + 19.19);
 327:   return fract(vec2(p.x * p.y, p.x + p.y));
 328: }`,
-329: 
+329:
 330:   // Paper's `snoise` is byte-identical to our simplex2D — we just expose the
 331:   // Paper-canonical name so verbatim ports compile without renaming.
 332:   snoise: `
 333: float snoise(vec2 v) { return simplex2D(v); }`,
-334: 
+334:
 335:   // Sampler-helper: maps canvas-space UV in [0,1] to image-space UV, honouring
 336:   // image aspect, fit mode (0=cover, 1=contain, 2=fill), uniform scale, rotation
 337:   // (radians) and pixel-space offset. Canvas aspect comes from u_resolution.
@@ -10862,7 +10942,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 370:   c /= ratio;
 371:   return c + 0.5;
 372: }`,
-373: 
+373:
 374:   // Smooth/stepped color-ramp lookup over a fixed-size vec4 palette. Steps=0
 375:   // means smooth; steps>0 quantises the input. The fixed array length 10 must
 376:   // match RAMP_MAX in the generator emission.
@@ -10887,7 +10967,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 395:   vec4 b = colors[i1];
 396:   return mix(a, b, f);
 397: }`,
-398: 
+398:
 399:   gaussian9: `
 400: vec4 gaussian9(sampler2D src, vec2 uv, vec2 r) {
 401:   vec4 c = texture(src, uv) * 0.227;
@@ -10902,7 +10982,7 @@ At once, my lord. Let me read the remaining layer files I need, then begin imple
 410:   return c;
 411: }`,
 412: }
-413: 
+413:
 414: export const BLEND_MODE_FUNCTIONS: Record<string, string> = {
 415:   normal: 'blendNormal',
 416:   add: 'blendAdd',
@@ -10926,6 +11006,7 @@ Very good, Mr. Nickerson. I have sufficient context to begin. Let me implement t
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts",
@@ -10935,6 +11016,7 @@ Very good, Mr. Nickerson. I have sufficient context to begin. Let me implement t
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -10946,6 +11028,7 @@ Edit applied successfully.
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts",
@@ -10955,6 +11038,7 @@ Edit applied successfully.
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -10968,6 +11052,7 @@ Now add the new primitives. Let me add `scalar-field`, `mesh-spots-gradient`, `o
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts",
@@ -10977,6 +11062,7 @@ Now add the new primitives. Let me add `scalar-field`, `mesh-spots-gradient`, `o
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -10988,6 +11074,7 @@ Edit applied successfully.
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts",
@@ -10997,6 +11084,7 @@ Edit applied successfully.
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11010,6 +11098,7 @@ Now add `mesh-spots-gradient` and `organic-warp`:
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/gradients.ts"
@@ -11017,31 +11106,32 @@ Now add `mesh-spots-gradient` and `organic-warp`:
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/gradients.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
-2: 
+2:
 3: // All gradients here use 3 colors (color1 → color2 → color3) with adjustable
 4: // midpoint position. Multi-color palette ramps will land later as a separate
 5: // uniform type; 3 stops covers the common case for now.
-6: 
+6:
 7: const threeColors = (): LayerDefinition['uniforms'] => [
 8:   { name: 'color1', label: 'Color 1', type: 'vec3', default: [0.05, 0.05, 0.15], ui: { color: true } },
 9:   { name: 'color2', label: 'Color 2', type: 'vec3', default: [0.5, 0.2, 0.6], ui: { color: true } },
 10:   { name: 'color3', label: 'Color 3', type: 'vec3', default: [1.0, 0.8, 0.4], ui: { color: true } },
 11:   { name: 'midPoint', label: 'Mid Position', type: 'float', default: 0.5, ui: { min: 0.05, max: 0.95, step: 0.01 } },
 12: ]
-13: 
+13:
 14: const sampleRamp = `vec3 sampleRamp(float t, vec3 c1, vec3 c2, vec3 c3, float mid) {
 15:   if (t < mid) return mix(c1, c2, t / max(mid, 1e-4));
 16:   return mix(c2, c3, (t - mid) / max(1.0 - mid, 1e-4));
 17: }`
-18: 
+18:
 19: const screenP = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 20: vec2 p = (uv - 0.5) * _ar;`
-21: 
+21:
 22: export const linearGradientV2Layer: LayerDefinition = {
 23:   id: 'linear-gradient-v2',
 24:   name: 'Linear Gradient (3-color)',
@@ -11064,7 +11154,7 @@ Now add `mesh-spots-gradient` and `organic-warp`:
 41: return vec4(sampleRamp(t, {{color1}}, {{color2}}, {{color3}}, {{midPoint}}), 1.0);`,
 42:   },
 43: }
-44: 
+44:
 45: export const radialGradientV2Layer: LayerDefinition = {
 46:   id: 'radial-gradient-v2',
 47:   name: 'Radial Gradient (3-color)',
@@ -11088,7 +11178,7 @@ Now add `mesh-spots-gradient` and `organic-warp`:
 65: return vec4(sampleRamp(t, {{color1}}, {{color2}}, {{color3}}, {{midPoint}}), 1.0);`,
 66:   },
 67: }
-68: 
+68:
 69: export const conicGradientLayer: LayerDefinition = {
 70:   id: 'conic-gradient',
 71:   name: 'Conic Gradient',
@@ -11112,7 +11202,7 @@ Now add `mesh-spots-gradient` and `organic-warp`:
 89: return vec4(sampleRamp(t, {{color1}}, {{color2}}, {{color3}}, {{midPoint}}), 1.0);`,
 90:   },
 91: }
-92: 
+92:
 93: export const diamondGradientLayer: LayerDefinition = {
 94:   id: 'diamond-gradient',
 95:   name: 'Diamond Gradient',
@@ -11139,11 +11229,11 @@ Now add `mesh-spots-gradient` and `organic-warp`:
 116: return vec4(sampleRamp(t, {{color1}}, {{color2}}, {{color3}}, {{midPoint}}), 1.0);`,
 117:   },
 118: }
-119: 
+119:
 120: // MultiPointGradient — N animated/static color spots blended via smooth-min
 121: // distance. The mesh-gradient family. Limited to 4 spots until a true
 122: // colorRamp uniform type lands; that's plenty for designer ergonomics.
-123: 
+123:
 124: export const multiPointGradientLayer: LayerDefinition = {
 125:   id: 'multi-point-gradient',
 126:   name: 'Multi-Point Gradient',
@@ -11179,7 +11269,7 @@ Now add `mesh-spots-gradient` and `organic-warp`:
 156: return vec4(col, 1.0);`,
 157:   },
 158: }
-159: 
+159:
 160: export const GRADIENT_LAYERS: Record<string, LayerDefinition> = {
 161:   'linear-gradient-v2': linearGradientV2Layer,
 162:   'radial-gradient-v2': radialGradientV2Layer,
@@ -11199,11 +11289,13 @@ Now add `mesh-spots-gradient` and `organic-warp`:
 **Tool: edit**
 
 **Input:**
+
 ```json
 {}
 ```
 
 **Error:**
+
 ```
 Tool execution aborted
 ```
@@ -11221,6 +11313,7 @@ continue
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts",
@@ -11230,13 +11323,14 @@ continue
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { gen, SCREEN_P } from './_helpers'
-3: 
+3:
 4: export const scalarFieldLayer = gen({
 5:   id: 'scalar-field',
 6:   name: 'Scalar Field',
@@ -11268,6 +11362,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/atmospherics.ts"
@@ -11275,15 +11370,16 @@ Good, both imports are present. Now let me implement all the remaining primitive
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/atmospherics.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
-2: 
+2:
 3: const screenP = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 4: vec2 p = (uv - 0.5) * _ar;`
-5: 
+5:
 6: // Smoke — drifting layered noise; standalone generator with alpha falloff
 7: // so it composites nicely on top of other content.
 8: export const smokeLayer: LayerDefinition = {
@@ -11317,7 +11413,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 36: return vec4({{color}}, a * {{density}});`,
 37:   },
 38: }
-39: 
+39:
 40: // Fog — uniform haze that fades toward the edges.
 41: export const fogLayer: LayerDefinition = {
 42:   id: 'fog',
@@ -11342,7 +11438,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 61: return vec4({{color}}, n * edge * {{density}});`,
 62:   },
 63: }
-64: 
+64:
 65: // Beam — a soft directional light beam crossing the canvas.
 66: export const beamLayer: LayerDefinition = {
 67:   id: 'beam',
@@ -11368,7 +11464,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 87: return vec4({{color}} * a, a);`,
 88:   },
 89: }
-90: 
+90:
 91: // God Rays — polar radial rays modulated by angular noise. Drives Paper's godRays.
 92: export const godRaysLayer: LayerDefinition = {
 93:   id: 'god-rays',
@@ -11400,7 +11496,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 119: return vec4({{color}} * v, v);`,
 120:   },
 121: }
-122: 
+122:
 123: // Lens Flare — central bright spot plus a streak.
 124: export const lensFlareLayer: LayerDefinition = {
 125:   id: 'lens-flare',
@@ -11428,7 +11524,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 147: return vec4({{color}} * v, v);`,
 148:   },
 149: }
-150: 
+150:
 151: export const ATMOSPHERIC_LAYERS: Record<string, LayerDefinition> = {
 152:   smoke: smokeLayer,
 153:   fog: fogLayer,
@@ -11444,6 +11540,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/lighting.ts"
@@ -11451,13 +11548,14 @@ Good, both imports are present. Now let me implement all the remaining primitive
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/lighting.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { fx, TEX_SIZE } from './_helpers'
-3: 
+3:
 4: export const neonLayer = fx({
 5:   id: 'neon',
 6:   name: 'Neon',
@@ -11493,7 +11591,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 36: return vec4(col, 1.0);`,
 37:   },
 38: })
-39: 
+39:
 40: export const dropShadowLayer = fx({
 41:   id: 'drop-shadow',
 42:   name: 'Drop Shadow',
@@ -11527,7 +11625,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 70: return col;`,
 71:   },
 72: })
-73: 
+73:
 74: export const tiltShiftLayer = fx({
 75:   id: 'tilt-shift',
 76:   name: 'Tilt Shift',
@@ -11549,7 +11647,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 92: return gaussian9(u_prevPass, uv, texel * {{blur}} * t);`,
 93:   },
 94: })
-95: 
+95:
 96: export const fogOverlayLayer = fx({
 97:   id: 'fog-overlay',
 98:   name: 'Fog Overlay',
@@ -11569,7 +11667,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 112: return vec4(mix(src.rgb, {{color}}, w), src.a);`,
 113:   },
 114: })
-115: 
+115:
 116: export const advancedGlowLayer = fx({
 117:   id: 'advanced-glow',
 118:   name: 'Advanced Glow',
@@ -11599,7 +11697,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 142: return vec4(src.rgb + bright * {{tint}} * {{intensity}}, src.a);`,
 143:   },
 144: })
-145: 
+145:
 146: export const LIGHTING_LAYERS: Record<string, LayerDefinition> = {
 147:   neon: neonLayer,
 148:   'drop-shadow': dropShadowLayer,
@@ -11615,6 +11713,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/patterns.ts",
@@ -11624,20 +11723,21 @@ Good, both imports are present. Now let me implement all the remaining primitive
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/patterns.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
-2: 
+2:
 3: const PATTERN_DEPS = ['aastep']
-4: 
+4:
 5: const screenP = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 6: vec2 p = (uv - 0.5) * _ar;`
-7: 
+7:
 8: // Two-color pattern primitive helpers. Each pattern computes a 0..1 mask `m`
 9: // then outputs mix(color1, color2, m) with alpha = 1.
-10: 
+10:
 11: function twoColors(extra: LayerDefinition['uniforms']): LayerDefinition['uniforms'] {
 12:   return [
 13:     ...extra,
@@ -11645,7 +11745,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 15:     { name: 'color2', label: 'Color 2', type: 'vec3', default: [0.95, 0.95, 0.95], ui: { color: true } },
 16:   ]
 17: }
-18: 
+18:
 19: export const checkerboardLayer: LayerDefinition = {
 20:   id: 'checkerboard',
 21:   name: 'Checkerboard',
@@ -11667,7 +11767,7 @@ Good, both imports are present. Now let me implement all the remaining primitive
 37: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 38:   },
 39: }
-40: 
+40:
 41: export const stripesLayer: LayerDefinition = {
 42:   id: 'stripes',
 43:   name: 'Stripes',
@@ -11692,6 +11792,7 @@ Good. Now I have all the context I need. Let me implement everything in parallel
 **Tool: todowrite**
 
 **Input:**
+
 ```json
 {
   "todos": [
@@ -11755,6 +11856,7 @@ Good. Now I have all the context I need. Let me implement everything in parallel
 ```
 
 **Output:**
+
 ```
 [
   {
@@ -11822,6 +11924,7 @@ Good. Now I have all the context I need. Let me implement everything in parallel
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/gradients.ts",
@@ -11831,6 +11934,7 @@ Good. Now I have all the context I need. Let me implement everything in parallel
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11842,6 +11946,7 @@ Edit applied successfully.
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts",
@@ -11851,6 +11956,7 @@ Edit applied successfully.
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11862,6 +11968,7 @@ Edit applied successfully.
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts",
@@ -11871,6 +11978,7 @@ Edit applied successfully.
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11884,6 +11992,7 @@ Now add `polar-bands`, `spiral-stripe`, and `voronoi-cells` to noise.ts:
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts",
@@ -11893,6 +12002,7 @@ Now add `polar-bands`, `spiral-stripe`, and `voronoi-cells` to noise.ts:
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11906,6 +12016,7 @@ Now add `image-edge`, `image-contour`, `chrome-relief`, and `glow-field` to colo
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts",
@@ -11915,6 +12026,7 @@ Now add `image-edge`, `image-contour`, `chrome-relief`, and `glow-field` to colo
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11926,6 +12038,7 @@ Edit applied successfully.
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts",
@@ -11935,6 +12048,7 @@ Edit applied successfully.
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11948,6 +12062,7 @@ Now add `material-noise` and `dot-glyph-grid` to stylize.ts:
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts",
@@ -11957,6 +12072,7 @@ Now add `material-noise` and `dot-glyph-grid` to stylize.ts:
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11968,6 +12084,7 @@ Edit applied successfully.
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts",
@@ -11977,6 +12094,7 @@ Edit applied successfully.
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -11990,6 +12108,7 @@ Now register everything in the LAYER_LIBRARY:
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts",
@@ -11999,6 +12118,7 @@ Now register everything in the LAYER_LIBRARY:
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -12012,6 +12132,7 @@ Now rewrite `paper-presets.ts` with proper primitive-based recipe stacks:
 **Tool: write**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/paper-presets.ts",
@@ -12020,6 +12141,7 @@ Now rewrite `paper-presets.ts` with proper primitive-based recipe stacks:
 ```
 
 **Output:**
+
 ```
 Wrote file successfully.
 ```
@@ -12033,6 +12155,7 @@ Now update `presets.ts` to match the new fidelity type:
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts"
@@ -12040,13 +12163,14 @@ Now update `presets.ts` to match the new fidelity type:
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts</path>
 <type>file</type>
 <content>
 1: import type { BlendMode, UniformValue } from './types'
 2: import { PAPER_FLAT_PRESETS } from './paper-presets'
-3: 
+3:
 4: // Built-in preset gallery. Each preset is a layer-stack recipe; the runtime
 5: // generates fresh layer IDs on load so multiple instances don't collide.
 6: //
@@ -12059,23 +12183,23 @@ Now update `presets.ts` to match the new fidelity type:
 13: // and their fidelity tags (`exact` / `approx` / `placeholder`). The legacy
 14: // PAPER_PRESETS export below is preserved for any UI still using the old
 15: // shape; new code should consume PAPER_GROUPS / PAPER_FLAT_PRESETS instead.
-16: 
+16:
 17: export interface PresetLayer {
 18:   layerType: string
 19:   uniformValues: Record<string, UniformValue>
 20:   blendMode?: BlendMode
 21:   opacity?: number
 22: }
-23: 
+23:
 24: export interface Preset {
 25:   name: string
 26:   description: string
 27:   layers: PresetLayer[]
 28: }
-29: 
+29:
 30: export { PAPER_GROUPS, PAPER_FLAT_PRESETS } from './paper-presets'
 31: export type { PaperGroup, PaperPreset, PaperFidelity } from './paper-presets'
-32: 
+32:
 33: // New canonical preset list, derived from paper-presets.ts. Mapped to the
 34: // legacy `Preset` shape so the existing layer-stack picker UI works unchanged.
 35: export const PAPER_PRESETS: Preset[] = PAPER_FLAT_PRESETS.map((p) => ({
@@ -12083,7 +12207,7 @@ Now update `presets.ts` to match the new fidelity type:
 37:   description: `[${p.fidelity}] ${p.description}`,
 38:   layers: p.layers,
 39: }))
-40: 
+40:
 41: // Older hand-curated entries — kept as `LEGACY_PAPER_PRESETS` in case any
 42: // downstream still references them. Will be removed once the new gallery
 43: // lands in the UI.
@@ -12376,6 +12500,7 @@ Now update `presets.ts` to match the new fidelity type:
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts",
@@ -12385,6 +12510,7 @@ Now update `presets.ts` to match the new fidelity type:
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -12396,6 +12522,7 @@ Edit applied successfully.
 **Tool: edit**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts",
@@ -12405,6 +12532,7 @@ Edit applied successfully.
 ```
 
 **Output:**
+
 ```
 Edit applied successfully.
 ```
@@ -12418,6 +12546,7 @@ Now build and check for errors:
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "cd /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor && npm run build 2>&1",
@@ -12427,13 +12556,15 @@ Now build and check for errors:
 ```
 
 **Output:**
+
 ```
 
 > shader-composer@0.1.0 build
 > vite build
 
 vite v8.0.10 building client environment for production...
-[2Ktransforming...✓ 1926 modules transformed.
+[2K
+transforming...✓ 1926 modules transformed.
 rendering chunks...
 computing gzip size...
 .output/public/assets/globals-DaVbPJLj.css  115.10 kB │ gzip:  17.78 kB
@@ -12442,7 +12573,8 @@ computing gzip size...
 
 ✓ built in 458ms
 vite v8.0.10 building ssr environment for production...
-[2Ktransforming...✓ 83 modules transformed.
+[2K
+transforming...✓ 83 modules transformed.
 rendering chunks...
 computing gzip size...
 node_modules/.nitro/vite/services/ssr/assets/globals-DaVbPJLj.css                            115.10 kB │ gzip: 17.78 kB
@@ -12458,7 +12590,8 @@ node_modules/.nitro/vite/services/ssr/assets/app-D0tXICzi.js                    
 [nitro] ◐ Building [Nitro] (preset: node-server, compatibility: 2026-04-27)
 [nitro] ✔ Generated public .output/public
 vite v8.0.10 building nitro environment for production...
-[2Ktransforming...✓ 1942 modules transformed.
+[2K
+transforming...✓ 1942 modules transformed.
 ℹ Tracing dependencies:
 - tslib (2.8.1)
 ✔ Traced 1 dependencies (4 files) in 32ms.
@@ -12528,6 +12661,7 @@ Clean build. Let me verify no existing code still calls the old 4-argument `colo
 **Tool: grep**
 
 **Input:**
+
 ```json
 {
   "pattern": "colorRampLookup",
@@ -12536,6 +12670,7 @@ Clean build. Let me verify no existing code still calls the old 4-argument `colo
 ```
 
 **Output:**
+
 ```
 Found 5 matches
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts:
@@ -12564,6 +12699,7 @@ Good — only one call site, and it already uses the new signature. Let me also 
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "cd /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor && npx tsx scripts/check-generator.ts 2>&1",
@@ -12573,6 +12709,7 @@ Good — only one call site, and it already uses the new signature. Let me also 
 ```
 
 **Output:**
+
 ```
 npm warn exec The following package was not found and will be installed: tsx@4.21.0
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts:11
@@ -12591,6 +12728,7 @@ Node.js v24.11.1
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "cd /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor && npm run dev -- --port 5173 &\nsleep 4\necho \"Dev server started\"",
@@ -12600,6 +12738,7 @@ Node.js v24.11.1
 ```
 
 **Output:**
+
 ```
 
 > shader-composer@0.1.0 dev
@@ -12629,6 +12768,7 @@ The check script uses a Vite-specific `?raw` import — that's expected. The ful
 **Tool: skill**
 
 **Input:**
+
 ```json
 {
   "name": "agent-browser"
@@ -12636,7 +12776,8 @@ The check script uses a Vite-specific `?raw` import — that's expected. The ful
 ```
 
 **Output:**
-```
+
+````
 <skill_content name="agent-browser">
 # Skill: agent-browser
 
@@ -12661,7 +12802,7 @@ agent-browser fill @e2 "password123"
 agent-browser click @e3
 agent-browser wait --load networkidle
 agent-browser snapshot -i  # Check result
-```
+````
 
 ## Command Chaining
 
@@ -12936,8 +13077,9 @@ export AGENT_BROWSER_ACTION_POLICY=./policy.json
 ```
 
 Example `policy.json`:
+
 ```json
-{"default": "deny", "allow": ["navigate", "snapshot", "click", "scroll", "wait", "get"]}
+{ "default": "deny", "allow": ["navigate", "snapshot", "click", "scroll", "wait", "get"] }
 ```
 
 Auth vault operations (`auth login`, etc.) bypass action policy but domain allowlist still applies.
@@ -13049,6 +13191,7 @@ agent-browser click @e2              # Click using ref from annotated screenshot
 ```
 
 Use annotated screenshots when:
+
 - The page has unlabeled icon buttons or visual-only elements
 - You need to verify visual layout or styling
 - Canvas or chart elements are present (invisible to text snapshots)
@@ -13091,6 +13234,7 @@ agent-browser eval -b "$(echo -n 'Array.from(document.querySelectorAll("a")).map
 **Why this matters:** When the shell processes your command, inner double quotes, `!` characters (history expansion), backticks, and `$()` can all corrupt the JavaScript before it reaches agent-browser. The `--stdin` and `-b` flags bypass shell interpretation entirely.
 
 **Rules of thumb:**
+
 - Single-line, no nested quotes -> regular `eval 'expression'` with single quotes is fine
 - Nested quotes, arrow functions, template literals, or multiline -> use `eval --stdin <<'EVALEOF'`
 - Programmatic/generated scripts -> use `eval -b` with base64
@@ -13111,23 +13255,23 @@ Priority (lowest to highest): `~/.agent-browser/config.json` < `./agent-browser.
 
 ## Deep-Dive Documentation
 
-| Reference | When to Use |
-|-----------|-------------|
-| [references/commands.md](references/commands.md) | Full command reference with all options |
-| [references/snapshot-refs.md](references/snapshot-refs.md) | Ref lifecycle, invalidation rules, troubleshooting |
+| Reference                                                            | When to Use                                               |
+| -------------------------------------------------------------------- | --------------------------------------------------------- |
+| [references/commands.md](references/commands.md)                     | Full command reference with all options                   |
+| [references/snapshot-refs.md](references/snapshot-refs.md)           | Ref lifecycle, invalidation rules, troubleshooting        |
 | [references/session-management.md](references/session-management.md) | Parallel sessions, state persistence, concurrent scraping |
-| [references/authentication.md](references/authentication.md) | Login flows, OAuth, 2FA handling, state reuse |
-| [references/video-recording.md](references/video-recording.md) | Recording workflows for debugging and documentation |
-| [references/profiling.md](references/profiling.md) | Chrome DevTools profiling for performance analysis |
-| [references/proxy-support.md](references/proxy-support.md) | Proxy configuration, geo-testing, rotating proxies |
+| [references/authentication.md](references/authentication.md)         | Login flows, OAuth, 2FA handling, state reuse             |
+| [references/video-recording.md](references/video-recording.md)       | Recording workflows for debugging and documentation       |
+| [references/profiling.md](references/profiling.md)                   | Chrome DevTools profiling for performance analysis        |
+| [references/proxy-support.md](references/proxy-support.md)           | Proxy configuration, geo-testing, rotating proxies        |
 
 ## Ready-to-Use Templates
 
-| Template | Description |
-|----------|-------------|
-| [templates/form-automation.sh](templates/form-automation.sh) | Form filling with validation |
-| [templates/authenticated-session.sh](templates/authenticated-session.sh) | Login once, reuse state |
-| [templates/capture-workflow.sh](templates/capture-workflow.sh) | Content extraction with screenshots |
+| Template                                                                 | Description                         |
+| ------------------------------------------------------------------------ | ----------------------------------- |
+| [templates/form-automation.sh](templates/form-automation.sh)             | Form filling with validation        |
+| [templates/authenticated-session.sh](templates/authenticated-session.sh) | Login once, reuse state             |
+| [templates/capture-workflow.sh](templates/capture-workflow.sh)           | Content extraction with screenshots |
 
 ```bash
 ./templates/form-automation.sh https://example.com/form
@@ -13152,7 +13296,8 @@ Note: file list is sampled.
 <file>/Users/tjnickerson/.agents/skills/agent-browser/references/authentication.md</file>
 </skill_files>
 </skill_content>
-```
+
+````
 
 ---
 
@@ -13167,9 +13312,10 @@ Note: file list is sampled.
   "description": "Open editor and take annotated screenshot",
   "timeout": 30000
 }
-```
+````
 
 **Output:**
+
 ```
 ✗ Navigation failed: net::ERR_CONNECTION_REFUSED
 
@@ -13182,6 +13328,7 @@ Note: file list is sampled.
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "lsof -ti:5174 | head -3; curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/ 2>&1",
@@ -13191,6 +13338,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 000
 ```
@@ -13202,6 +13350,7 @@ Note: file list is sampled.
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "cd /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor && npm run dev -- --port 5174 > /tmp/vite-dev.log 2>&1 &\nsleep 5\ncurl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/",
@@ -13211,6 +13360,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 200
 ```
@@ -13222,6 +13372,7 @@ Note: file list is sampled.
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser open http://localhost:5174 && agent-browser wait --load networkidle && agent-browser screenshot /tmp/editor-home.png 2>&1",
@@ -13231,6 +13382,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 ✓ Shader Composer
   http://localhost:5174/
@@ -13246,6 +13398,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/tmp/editor-home.png"
@@ -13253,6 +13406,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 Image read successfully
 ```
@@ -13266,6 +13420,7 @@ Good — 53 generators showing. Let me open the preset picker and test some of t
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser snapshot -i 2>&1 | grep -i preset",
@@ -13275,6 +13430,7 @@ Good — 53 generators showing. Let me open the preset picker and test some of t
 ```
 
 **Output:**
+
 ```
 - button "Presets ▸" [ref=e3]
 
@@ -13287,6 +13443,7 @@ Good — 53 generators showing. Let me open the preset picker and test some of t
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e3 && agent-browser wait 800 && agent-browser screenshot /tmp/presets-open.png 2>&1",
@@ -13296,6 +13453,7 @@ Good — 53 generators showing. Let me open the preset picker and test some of t
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13310,6 +13468,7 @@ Good — 53 generators showing. Let me open the preset picker and test some of t
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/tmp/presets-open.png"
@@ -13317,6 +13476,7 @@ Good — 53 generators showing. Let me open the preset picker and test some of t
 ```
 
 **Output:**
+
 ```
 Image read successfully
 ```
@@ -13330,6 +13490,7 @@ Image read successfully
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser snapshot -i 2>&1 | grep -i \"mesh gradient\\|neuro\\|spiral\\|swirl\\|voronoi\" | head -20",
@@ -13339,6 +13500,7 @@ Image read successfully
 ```
 
 **Output:**
+
 ```
 - button "Mesh Gradient" [ref=e5]
 - button "Mesh Gradient · Purple" [ref=e6]
@@ -13370,6 +13532,7 @@ Image read successfully
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e5 && agent-browser wait 1200 && agent-browser screenshot /tmp/mesh-gradient.png 2>&1",
@@ -13379,6 +13542,7 @@ Image read successfully
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13393,6 +13557,7 @@ Image read successfully
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/tmp/mesh-gradient.png"
@@ -13400,6 +13565,7 @@ Image read successfully
 ```
 
 **Output:**
+
 ```
 Image read successfully
 ```
@@ -13413,6 +13579,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e10 && agent-browser wait 1200 && agent-browser screenshot /tmp/neuro-noise.png 2>&1",
@@ -13422,6 +13589,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13436,6 +13604,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e12 && agent-browser wait 1200 && agent-browser screenshot /tmp/swirl.png 2>&1",
@@ -13445,6 +13614,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13459,6 +13629,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e14 && agent-browser wait 1200 && agent-browser screenshot /tmp/spiral.png 2>&1",
@@ -13468,6 +13639,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13482,6 +13654,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e21 && agent-browser wait 1200 && agent-browser screenshot /tmp/voronoi.png 2>&1",
@@ -13491,6 +13664,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13505,6 +13679,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/tmp/neuro-noise.png"
@@ -13512,6 +13687,7 @@ Mesh Gradient renders beautifully — the pink/purple/blue blobs with organic wa
 ```
 
 **Output:**
+
 ```
 Image read successfully
 ```
@@ -13523,6 +13699,7 @@ Image read successfully
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/tmp/swirl.png"
@@ -13530,6 +13707,7 @@ Image read successfully
 ```
 
 **Output:**
+
 ```
 Image read successfully
 ```
@@ -13543,6 +13721,7 @@ The refs are stale after preset loads. Let me re-snapshot and test the remaining
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser snapshot -i 2>&1 | grep -E \"button.*Presets|button.*Neuro|button.*Swirl|button.*Spiral|button.*Simplex|button.*Voronoi\" | head -15",
@@ -13552,6 +13731,7 @@ The refs are stale after preset loads. Let me re-snapshot and test the remaining
 ```
 
 **Output:**
+
 ```
 - button "Presets ▾" [ref=e3]
 - button "Neuro Noise" [ref=e12]
@@ -13578,6 +13758,7 @@ The refs are stale after preset loads. Let me re-snapshot and test the remaining
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e12 && agent-browser wait 1000 && agent-browser screenshot /tmp/neuro-noise2.png 2>&1 && \\\nagent-browser snapshot -i 2>&1 | grep -E \"button.*Swirl|button.*Spiral|button.*Simplex|button.*Voronoi\" | head -10",
@@ -13587,6 +13768,7 @@ The refs are stale after preset loads. Let me re-snapshot and test the remaining
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13611,6 +13793,7 @@ The refs are stale after preset loads. Let me re-snapshot and test the remaining
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e14 && agent-browser wait 1000 && agent-browser screenshot /tmp/swirl2.png 2>&1 && \\\nagent-browser click @e16 && agent-browser wait 1000 && agent-browser screenshot /tmp/spiral2.png 2>&1 && \\\nagent-browser click @e18 && agent-browser wait 1000 && agent-browser screenshot /tmp/simplex2.png 2>&1",
@@ -13620,6 +13803,7 @@ The refs are stale after preset loads. Let me re-snapshot and test the remaining
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13640,6 +13824,7 @@ The refs are stale after preset loads. Let me re-snapshot and test the remaining
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/tmp/neuro-noise2.png"
@@ -13647,6 +13832,7 @@ The refs are stale after preset loads. Let me re-snapshot and test the remaining
 ```
 
 **Output:**
+
 ```
 Image read successfully
 ```
@@ -13658,6 +13844,7 @@ Image read successfully
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/tmp/swirl2.png"
@@ -13665,6 +13852,7 @@ Image read successfully
 ```
 
 **Output:**
+
 ```
 Image read successfully
 ```
@@ -13678,6 +13866,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser open http://localhost:5174 && agent-browser wait --load networkidle && \\\nagent-browser click @e3 && agent-browser wait 500 && \\\nagent-browser snapshot -i 2>&1 | grep -E \"button.*Swirl|button.*Spiral|button.*Simplex|button.*Voronoi|button.*Neuro\" | head -12",
@@ -13687,6 +13876,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 ```
 
 **Output:**
+
 ```
 ✓ Shader Composer
   http://localhost:5174/
@@ -13702,6 +13892,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser snapshot -i 2>&1 | grep -i preset",
@@ -13711,6 +13902,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 ```
 
 **Output:**
+
 ```
 - button "Presets ▸" [ref=e3]
 
@@ -13723,6 +13915,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e3 && agent-browser wait 400 && \\\nagent-browser snapshot -i 2>&1 | grep -E \"button.*(Neuro|Swirl|Spiral|Voronoi|Simplex)\" | head -15",
@@ -13732,6 +13925,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13760,6 +13954,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e10 && agent-browser wait 1200 && agent-browser screenshot /tmp/neuro-clean.png && \\\nagent-browser snapshot -i 2>&1 | grep -E \"button.*(Swirl|Spiral|Simplex|Voronoi)\" | head -10",
@@ -13769,6 +13964,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13793,6 +13989,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e12 && agent-browser wait 1200 && agent-browser screenshot /tmp/swirl-clean.png && \\\nagent-browser snapshot -i 2>&1 | grep -E \"button.*(Spiral|Simplex|Voronoi)\" | head -8",
@@ -13802,6 +13999,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13824,6 +14022,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "agent-browser click @e14 && agent-browser wait 1200 && agent-browser screenshot /tmp/spiral-clean.png && \\\nagent-browser snapshot -i 2>&1 | grep -E \"button.*(Simplex|Voronoi)\" | head -8",
@@ -13833,6 +14032,7 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 ```
 
 **Output:**
+
 ```
 ✓ Done
 ✓ Done
@@ -13853,4 +14053,3 @@ The refs are getting invalidated by layer stack changes. Let me do a clean test 
 ## Assistant (Build · Claude Sonnet 4.6 · 2.8s)
 
 ---
-

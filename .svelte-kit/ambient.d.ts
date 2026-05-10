@@ -38,13 +38,17 @@
  * The above values will be the same _even if_ different values for `ENVIRONMENT` or `PUBLIC_BASE_URL` are set at runtime, as they are statically replaced in your code with their build time values.
  */
 declare module '$env/static/private' {
+	export const ELECTRON_RUN_AS_NODE: string;
+	export const ALACRITTY_WINDOW_ID: string;
 	export const CARGO_HOME: string;
 	export const CARGO_INSTALL_ROOT: string;
+	export const COLORTERM: string;
 	export const COMMAND_MODE: string;
 	export const CPPFLAGS: string;
 	export const DOCKER_DEFAULT_PLATFORM: string;
 	export const EDITOR: string;
 	export const EH_NPM_TOKEN: string;
+	export const ELECTRON_NO_ATTACH_CONSOLE: string;
 	export const FPATH: string;
 	export const GHCR_TOKEN: string;
 	export const GITHUB_TOKEN: string;
@@ -61,9 +65,10 @@ declare module '$env/static/private' {
 	export const LOGNAME: string;
 	export const LSCOLORS: string;
 	export const LS_COLORS: string;
+	export const MACH_PORT_RENDEZVOUS_PEER_VALDATION: string;
 	export const MISE_SHELL: string;
+	export const MallocNanoZone: string;
 	export const NPM_TOKEN: string;
-	export const OLDPWD: string;
 	export const OSLogRateLimit: string;
 	export const PAGER: string;
 	export const PATH: string;
@@ -79,13 +84,26 @@ declare module '$env/static/private' {
 	export const STARSHIP_SESSION_KEY: string;
 	export const STARSHIP_SHELL: string;
 	export const STORY_NPM_TOKEN: string;
+	export const TERM: string;
+	export const TERM_PROGRAM: string;
+	export const TERM_PROGRAM_VERSION: string;
 	export const TMPDIR: string;
 	export const USER: string;
+	export const VSCODE_CLI: string;
+	export const VSCODE_CODE_CACHE_PATH: string;
+	export const VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
+	export const VSCODE_CWD: string;
+	export const VSCODE_ESM_ENTRYPOINT: string;
+	export const VSCODE_HANDLES_UNCAUGHT_ERRORS: string;
+	export const VSCODE_IPC_HOOK: string;
+	export const VSCODE_NLS_CONFIG: string;
+	export const VSCODE_PID: string;
+	export const WINDOWID: string;
 	export const XPC_FLAGS: string;
 	export const XPC_SERVICE_NAME: string;
 	export const ZED_ENVIRONMENT: string;
+	export const ZED_TERM: string;
 	export const ZSH: string;
-	export const _: string;
 	export const __CFBundleIdentifier: string;
 	export const __CF_USER_TEXT_ENCODING: string;
 	export const __MISE_DIFF: string;
@@ -93,6 +111,8 @@ declare module '$env/static/private' {
 	export const __MISE_SESSION: string;
 	export const __MISE_ZSH_CHPWD_RAN: string;
 	export const __MISE_ZSH_PRECMD_RUN: string;
+	export const VSCODE_L10N_BUNDLE_LOCATION: string;
+	export const ELECTRON_NO_ASAR: string;
 	export const NODE_ENV: string;
 }
 
@@ -180,13 +200,17 @@ declare module '$env/static/public' {
  */
 declare module '$env/dynamic/private' {
 	export const env: {
+		ELECTRON_RUN_AS_NODE: string;
+		ALACRITTY_WINDOW_ID: string;
 		CARGO_HOME: string;
 		CARGO_INSTALL_ROOT: string;
+		COLORTERM: string;
 		COMMAND_MODE: string;
 		CPPFLAGS: string;
 		DOCKER_DEFAULT_PLATFORM: string;
 		EDITOR: string;
 		EH_NPM_TOKEN: string;
+		ELECTRON_NO_ATTACH_CONSOLE: string;
 		FPATH: string;
 		GHCR_TOKEN: string;
 		GITHUB_TOKEN: string;
@@ -203,9 +227,10 @@ declare module '$env/dynamic/private' {
 		LOGNAME: string;
 		LSCOLORS: string;
 		LS_COLORS: string;
+		MACH_PORT_RENDEZVOUS_PEER_VALDATION: string;
 		MISE_SHELL: string;
+		MallocNanoZone: string;
 		NPM_TOKEN: string;
-		OLDPWD: string;
 		OSLogRateLimit: string;
 		PAGER: string;
 		PATH: string;
@@ -221,13 +246,26 @@ declare module '$env/dynamic/private' {
 		STARSHIP_SESSION_KEY: string;
 		STARSHIP_SHELL: string;
 		STORY_NPM_TOKEN: string;
+		TERM: string;
+		TERM_PROGRAM: string;
+		TERM_PROGRAM_VERSION: string;
 		TMPDIR: string;
 		USER: string;
+		VSCODE_CLI: string;
+		VSCODE_CODE_CACHE_PATH: string;
+		VSCODE_CRASH_REPORTER_PROCESS_TYPE: string;
+		VSCODE_CWD: string;
+		VSCODE_ESM_ENTRYPOINT: string;
+		VSCODE_HANDLES_UNCAUGHT_ERRORS: string;
+		VSCODE_IPC_HOOK: string;
+		VSCODE_NLS_CONFIG: string;
+		VSCODE_PID: string;
+		WINDOWID: string;
 		XPC_FLAGS: string;
 		XPC_SERVICE_NAME: string;
 		ZED_ENVIRONMENT: string;
+		ZED_TERM: string;
 		ZSH: string;
-		_: string;
 		__CFBundleIdentifier: string;
 		__CF_USER_TEXT_ENCODING: string;
 		__MISE_DIFF: string;
@@ -235,6 +273,8 @@ declare module '$env/dynamic/private' {
 		__MISE_SESSION: string;
 		__MISE_ZSH_CHPWD_RAN: string;
 		__MISE_ZSH_PRECMD_RUN: string;
+		VSCODE_L10N_BUNDLE_LOCATION: string;
+		ELECTRON_NO_ASAR: string;
 		NODE_ENV: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;

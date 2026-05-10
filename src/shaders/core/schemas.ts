@@ -158,8 +158,7 @@ export type Vec3 = [number, number, number];
 export type Vec4 = [number, number, number, number];
 
 export function zVec2(min?: number, max?: number, step = 0.01) {
-  const ui =
-    min !== undefined && max !== undefined ? { min, max, step } : { step };
+  const ui = min !== undefined && max !== undefined ? { min, max, step } : { step };
   return withMeta(z.tuple([z.number(), z.number()]), { ui });
 }
 
@@ -216,14 +215,12 @@ export function transformFields() {
 }
 
 export function zVec3(min?: number, max?: number, step = 0.01) {
-  const ui =
-    min !== undefined && max !== undefined ? { min, max, step } : { step };
+  const ui = min !== undefined && max !== undefined ? { min, max, step } : { step };
   return withMeta(z.tuple([z.number(), z.number(), z.number()]), { ui });
 }
 
 export function zVec4(min?: number, max?: number, step = 0.01) {
-  const ui =
-    min !== undefined && max !== undefined ? { min, max, step } : { step };
+  const ui = min !== undefined && max !== undefined ? { min, max, step } : { step };
   return withMeta(z.tuple([z.number(), z.number(), z.number(), z.number()]), {
     ui,
   });
@@ -269,12 +266,7 @@ export function zPalette(maxLength = 10) {
 // representable as GLSL uniforms in this system). Use `edgeMode(value)` in a
 // node's `glsl()` to get the matching int constant for `applyEdgeHandling`.
 
-export const EdgeModeSchema = z.enum([
-  "stretch",
-  "transparent",
-  "mirror",
-  "wrap",
-]);
+export const EdgeModeSchema = z.enum(["stretch", "transparent", "mirror", "wrap"]);
 export type EdgeMode = z.infer<typeof EdgeModeSchema>;
 
 export function zEdges() {
@@ -347,10 +339,7 @@ export const noImage: ImageInputValue = {
 
 export const noImageContain: ImageInputValue = { ...noImage, fit: "contain" };
 
-export function image(
-  url: string,
-  partial: Partial<ImageInputValue> = {},
-): ImageInputValue {
+export function image(url: string, partial: Partial<ImageInputValue> = {}): ImageInputValue {
   return { ...noImage, url, ...partial };
 }
 

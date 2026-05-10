@@ -8,24 +8,24 @@
 // node's own `glsl()` method emits matching uniform references through
 // `this.uniformName(...)`.
 
-import type { Node } from '@/shaders/core/node.svelte'
-import type { Scene } from '@/shaders/core/scene.svelte'
-import { sanitizeName } from '@/shaders/core/node.svelte'
+import type { Node } from "@/shaders/core/node.svelte";
+import type { Scene } from "@/shaders/core/scene.svelte";
+import { sanitizeName } from "@/shaders/core/node.svelte";
 
 export function camelCase(s: string): string {
   const parts = s
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .replace(/[^a-zA-Z0-9]+/g, " ")
     .trim()
     .split(/\s+/)
-    .filter(Boolean)
-  if (parts.length === 0) return ''
+    .filter(Boolean);
+  if (parts.length === 0) return "";
   return (
     parts[0].toLowerCase() +
     parts
       .slice(1)
       .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
-      .join('')
-  )
+      .join("")
+  );
 }
 
 /**
@@ -36,23 +36,23 @@ export function camelCase(s: string): string {
  * Idempotent — safe to call before each codegen run.
  */
 export function assignPrefixSlugs(scene: Scene): void {
-  const seen = new Set<string>()
-  const slugCount = new Map<string, number>()
-  const nodes: Node[] = []
+  const seen = new Set<string>();
+  const slugCount = new Map<string, number>();
+  const nodes: Node[] = [];
 
   for (const layer of scene.layers) {
-    if (!layer.enabled) continue
-    nodes.push(layer.source)
-    for (const fx of layer.effects) nodes.push(fx)
+    if (!layer.enabled) continue;
+    nodes.push(layer.source);
+    for (const fx of layer.effects) nodes.push(fx);
   }
-  for (const fx of scene.postEffects) nodes.push(fx)
+  for (const fx of scene.postEffects) nodes.push(fx);
 
   for (const node of nodes) {
-    if (seen.has(node.id)) continue
-    seen.add(node.id)
-    const base = camelCase(node.meta.name) || sanitizeName(node.id)
-    const used = (slugCount.get(base) ?? 0) + 1
-    slugCount.set(base, used)
-    node.prefixOverride = used > 1 ? `${base}${used}` : base
+    if (seen.has(node.id)) continue;
+    seen.add(node.id);
+    const base = camelCase(node.meta.name) || sanitizeName(node.id);
+    const used = (slugCount.get(base) ?? 0) + 1;
+    slugCount.set(base, used);
+    node.prefixOverride = used > 1 ? `${base}${used}` : base;
   }
 }

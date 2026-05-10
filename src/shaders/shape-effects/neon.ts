@@ -1,45 +1,45 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  glowIntensity: zFloat(0, 2, 0.05).default(1.0).describe('Glow Intensity'),
-  glowSize: zFloat(0, 1, 0.01).default(0.3).describe('Glow Size'),
-  flicker: zFloat(0, 1, 0.01).default(0).describe('Flicker'),
-  coreColor: zColor().default([1.0, 1.0, 1.0]).describe('Core Color'),
-  glowColor: zColor().default([1.0, 0.6, 0.2]).describe('Glow Color'),
-})
+  glowIntensity: zFloat(0, 2, 0.05).default(1.0).describe("Glow Intensity"),
+  glowSize: zFloat(0, 1, 0.01).default(0.3).describe("Glow Size"),
+  flicker: zFloat(0, 1, 0.01).default(0).describe("Flicker"),
+  coreColor: zColor().default([1.0, 1.0, 1.0]).describe("Core Color"),
+  glowColor: zColor().default([1.0, 0.6, 0.2]).describe("Glow Color"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Neon',
-  description: 'Glowing-edges neon effect',
-  color: '#facc15',
-  category: 'shape-effects',
-  defaultBlendMode: 'normal',
-}
+  name: "Neon",
+  description: "Glowing-edges neon effect",
+  color: "#facc15",
+  category: "shape-effects",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class Neon extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'neon'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
-  static readonly appliesTo = ['shape'] as const
+  static readonly typeId = "neon";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
+  static readonly appliesTo = ["shape"] as const;
 
   glsl(): GlslBlock {
-    const glowIntensity = this.uniformName('glowIntensity')
-    const glowSize = this.uniformName('glowSize')
-    const flicker = this.uniformName('flicker')
-    const coreColor = this.uniformName('coreColor')
-    const glowColor = this.uniformName('glowColor')
+    const glowIntensity = this.uniformName("glowIntensity");
+    const glowSize = this.uniformName("glowSize");
+    const flicker = this.uniformName("flicker");
+    const coreColor = this.uniformName("coreColor");
+    const glowColor = this.uniformName("glowColor");
     return {
-      dependencies: ['luma', 'gaussian13'],
+      dependencies: ["luma", "gaussian13"],
       main: `
 vec2 texel = 1.0 / u_resolution;
 float lc = luma(texture(u_prevPass, uv).rgb);
@@ -57,9 +57,9 @@ vec3 core = ${coreColor} * edge * 4.0;
 vec3 halo = ${glowColor} * blurEdge * 1.5;
 vec3 col = (core + halo) * ${glowIntensity} * flick;
 return vec4(col, 1.0);`,
-    }
+    };
   }
 }
 
-register(Neon)
-export default Neon
+register(Neon);
+export default Neon;

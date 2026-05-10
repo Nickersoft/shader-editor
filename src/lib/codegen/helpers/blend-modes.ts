@@ -2,35 +2,35 @@
 // alongside the BlendMode type in `../blend-modes.ts`; this file ships the
 // actual function bodies referenced by that map.
 
-import { helper } from './types'
+import { helper } from "./types";
 
 export const blendNormal = helper({
   code: `
 vec4 blendNormal(vec4 base, vec4 blend, float opacity) {
   return mix(base, blend, blend.a * opacity);
 }`,
-})
+});
 
 export const blendAdd = helper({
   code: `
 vec4 blendAdd(vec4 base, vec4 blend, float opacity) {
   return base + blend * opacity;
 }`,
-})
+});
 
 export const blendMultiply = helper({
   code: `
 vec4 blendMultiply(vec4 base, vec4 blend, float opacity) {
   return mix(base, base * blend, opacity);
 }`,
-})
+});
 
 export const blendScreen = helper({
   code: `
 vec4 blendScreen(vec4 base, vec4 blend, float opacity) {
   return mix(base, 1.0 - (1.0 - base) * (1.0 - blend), opacity);
 }`,
-})
+});
 
 export const blendOverlay = helper({
   code: `
@@ -44,7 +44,7 @@ vec4 blendOverlay(vec4 base, vec4 blend, float opacity) {
   result.a = blend.a;
   return mix(base, result, opacity);
 }`,
-})
+});
 
 export const blendSoftLight = helper({
   code: `
@@ -58,7 +58,7 @@ vec4 blendSoftLight(vec4 base, vec4 blend, float opacity) {
   result.a = blend.a;
   return mix(base, result, opacity);
 }`,
-})
+});
 
 export const blendHardLight = helper({
   code: `
@@ -72,4 +72,4 @@ vec4 blendHardLight(vec4 base, vec4 blend, float opacity) {
   result.a = blend.a;
   return mix(base, result, opacity);
 }`,
-})
+});

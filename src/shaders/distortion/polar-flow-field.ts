@@ -1,54 +1,51 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { edgeMode, zCenterAxis, zEdges, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { edgeMode, zCenterAxis, zEdges, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  mode: z
-    .enum(['directional', 'radial-dilate'])
-    .default('radial-dilate')
-    .describe('Mode'),
-  centerX: zCenterAxis().default(0.5).describe('Center X'),
-  centerY: zCenterAxis().default(0.5).describe('Center Y'),
-  intensity: zFloat(0, 1, 0.01).default(0.5).describe('Intensity'),
-  detail: zFloat(0, 5, 0.05).default(1.5).describe('Detail'),
-  evolutionSpeed: zFloat(0, 2, 0.05).default(0.3).describe('Evolution Speed'),
-  loopDuration: zFloat(0, 10, 0.1).default(0).describe('Loop Duration'),
-  edges: zEdges().default('transparent').describe('Edges'),
-})
+  mode: z.enum(["directional", "radial-dilate"]).default("radial-dilate").describe("Mode"),
+  centerX: zCenterAxis().default(0.5).describe("Center X"),
+  centerY: zCenterAxis().default(0.5).describe("Center Y"),
+  intensity: zFloat(0, 1, 0.01).default(0.5).describe("Intensity"),
+  detail: zFloat(0, 5, 0.05).default(1.5).describe("Detail"),
+  evolutionSpeed: zFloat(0, 2, 0.05).default(0.3).describe("Evolution Speed"),
+  loopDuration: zFloat(0, 10, 0.1).default(0).describe("Loop Duration"),
+  edges: zEdges().default("transparent").describe("Edges"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Polar Flow Field',
+  name: "Polar Flow Field",
   description:
-    'Noise-driven UV warp sampled in polar coordinates around a center; ideal for vortex, halo, and ring distortions',
-  color: '#22d3ee',
-  category: 'distortion',
-  defaultBlendMode: 'normal',
-}
+    "Noise-driven UV warp sampled in polar coordinates around a center; ideal for vortex, halo, and ring distortions",
+  color: "#22d3ee",
+  category: "distortion",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class PolarFlowField extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'polar-flow-field'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "polar-flow-field";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   structuralKey(): string {
-    return `${this.config.mode}|${this.config.edges}`
+    return `${this.config.mode}|${this.config.edges}`;
   }
 
   glsl(): GlslBlock {
-    const cx = this.uniformName('centerX')
-    const cy = this.uniformName('centerY')
-    const intensity = this.uniformName('intensity')
-    const detail = this.uniformName('detail')
-    const evolutionSpeed = this.uniformName('evolutionSpeed')
-    const loopDuration = this.uniformName('loopDuration')
+    const cx = this.uniformName("centerX");
+    const cy = this.uniformName("centerY");
+    const intensity = this.uniformName("intensity");
+    const detail = this.uniformName("detail");
+    const evolutionSpeed = this.uniformName("evolutionSpeed");
+    const loopDuration = this.uniformName("loopDuration");
 
     // Mode is a structural enum — branch at codegen time so each variant emits
     // only the noise samples it needs (scalar for radial-dilate, vec2 for
@@ -66,7 +63,7 @@ export class PolarFlowField extends EffectNode<Config, Inputs> {
     // crossfade based on p.x. The wrapped sample is used on the left half
     // where the seam lives; the raw sample is used on the right half.
     const sampleAndWarp =
-      this.config.mode === 'radial-dilate'
+      this.config.mode === "radial-dilate"
         ? `
 float seamMix = smoothstep(-0.25, 0.25, p.x);
 float n1raw  = fbm(polarA,        4.0, 1.99, 0.65);
@@ -94,16 +91,16 @@ vec2 nv2wrap = vec2(fbm(polarB_wrapped,                  4.0, 1.99, 0.65),
 vec2 nv1 = mix(nv1wrap, nv1raw, seamMix) * 0.25;
 vec2 nv2 = mix(nv2wrap, nv2raw, seamMix) * 0.25;
 vec2 nv = mix(nv1, nv2, blend);
-vec2 warpedUV = uv + nv * ${intensity} * 0.4;`
+vec2 warpedUV = uv + nv * ${intensity} * 0.4;`;
 
     return {
       dependencies: [
-        'fbm',
-        'simplex2D',
-        'pi',
-        'seamlessLoopBlend',
-        'applyEdgeHandling',
-        'unpremultiplyAlpha',
+        "fbm",
+        "simplex2D",
+        "pi",
+        "seamlessLoopBlend",
+        "applyEdgeHandling",
+        "unpremultiplyAlpha",
       ],
       main: `
 vec2 _ar = vec2(u_resolution.x / max(u_resolution.y, 1.0), 1.0);
@@ -143,9 +140,9 @@ vec2 polarB_wrapped = vec2(fract(polarB.x / seamPeriod) * seamPeriod, polarB.y);
 ${sampleAndWarp}
 
 return unpremultiplyAlpha(applyEdgeHandling(u_prevPass, warpedUV, ${edgeMode(this.config.edges)}));`,
-    }
+    };
   }
 }
 
-register(PolarFlowField)
-export default PolarFlowField
+register(PolarFlowField);
+export default PolarFlowField;

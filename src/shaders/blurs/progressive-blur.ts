@@ -1,44 +1,44 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zAngle, zCenterAxis, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zAngle, zCenterAxis, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  intensity: zFloat(0, 1, 0.01).default(0.5).describe('Intensity'),
-  angle: zAngle().default(90).describe('Angle'),
-  centerX: zCenterAxis().default(0.5).describe('Center X'),
-  centerY: zCenterAxis().default(0.5).describe('Center Y'),
-  falloff: zFloat(0, 1, 0.01).default(0.5).describe('Falloff'),
-})
+  intensity: zFloat(0, 1, 0.01).default(0.5).describe("Intensity"),
+  angle: zAngle().default(90).describe("Angle"),
+  centerX: zCenterAxis().default(0.5).describe("Center X"),
+  centerY: zCenterAxis().default(0.5).describe("Center Y"),
+  falloff: zFloat(0, 1, 0.01).default(0.5).describe("Falloff"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Progressive Blur',
-  description: 'Blur strength ramps along an axis',
-  color: '#94a3b8',
-  category: 'blurs',
-  defaultBlendMode: 'normal',
-}
+  name: "Progressive Blur",
+  description: "Blur strength ramps along an axis",
+  color: "#94a3b8",
+  category: "blurs",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class ProgressiveBlur extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'progressive-blur'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
+  static readonly typeId = "progressive-blur";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
 
   glsl(): GlslBlock {
-    const intensity = this.uniformName('intensity')
-    const angle = this.uniformName('angle')
-    const cx = this.uniformName('centerX')
-    const cy = this.uniformName('centerY')
-    const falloff = this.uniformName('falloff')
+    const intensity = this.uniformName("intensity");
+    const angle = this.uniformName("angle");
+    const cx = this.uniformName("centerX");
+    const cy = this.uniformName("centerY");
+    const falloff = this.uniformName("falloff");
     return {
-      dependencies: ['gaussian13'],
+      dependencies: ["gaussian13"],
       main: `
 vec2 texel = 1.0 / u_resolution;
 float aspect = u_resolution.x / u_resolution.y;
@@ -52,9 +52,9 @@ float r = t * ${intensity} * 100.0 * 0.36;
 vec4 h = gaussian13(u_prevPass, uv, vec2(texel.x * r, 0.0));
 vec4 v = gaussian13(u_prevPass, uv, vec2(0.0, texel.y * r));
 return (h + v) * 0.5;`,
-    }
+    };
   }
 }
 
-register(ProgressiveBlur)
-export default ProgressiveBlur
+register(ProgressiveBlur);
+export default ProgressiveBlur;

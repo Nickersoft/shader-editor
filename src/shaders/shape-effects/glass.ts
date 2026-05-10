@@ -1,47 +1,47 @@
-import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node.svelte'
-import { register } from '@/shaders/core/registry'
-import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zColor, zFloat } from '@/shaders/core/schemas'
+import { z } from "zod";
+import { EffectNode } from "@/shaders/core/node.svelte";
+import { register } from "@/shaders/core/registry";
+import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import { zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
-  refraction: zFloat(0, 1, 0.01).default(0.5).describe('Refraction'),
-  chromaticAberration: zFloat(0, 1, 0.01).default(0.3).describe('Chromatic Aberration'),
-  blur: zFloat(0, 1, 0.01).default(0.2).describe('Blur'),
-  tint: zColor().default([1.0, 1.0, 1.0]).describe('Tint'),
-  tintIntensity: zFloat(0, 1, 0.01).default(0.2).describe('Tint Intensity'),
-  fresnel: zFloat(0, 1, 0.01).default(0.3).describe('Fresnel'),
-})
+  refraction: zFloat(0, 1, 0.01).default(0.5).describe("Refraction"),
+  chromaticAberration: zFloat(0, 1, 0.01).default(0.3).describe("Chromatic Aberration"),
+  blur: zFloat(0, 1, 0.01).default(0.2).describe("Blur"),
+  tint: zColor().default([1.0, 1.0, 1.0]).describe("Tint"),
+  tintIntensity: zFloat(0, 1, 0.01).default(0.2).describe("Tint Intensity"),
+  fresnel: zFloat(0, 1, 0.01).default(0.3).describe("Fresnel"),
+});
 
-const inputs = z.object({})
+const inputs = z.object({});
 
 const meta: NodeMeta = {
-  name: 'Glass',
-  description: 'Frosted-glass refraction',
-  color: '#22d3ee',
-  category: 'shape-effects',
-  defaultBlendMode: 'normal',
-}
+  name: "Glass",
+  description: "Frosted-glass refraction",
+  color: "#22d3ee",
+  category: "shape-effects",
+  defaultBlendMode: "normal",
+};
 
-type Config = z.infer<typeof config>
-type Inputs = z.infer<typeof inputs>
+type Config = z.infer<typeof config>;
+type Inputs = z.infer<typeof inputs>;
 
 export class Glass extends EffectNode<Config, Inputs> {
-  static readonly typeId = 'glass'
-  static readonly config = config
-  static readonly inputs = inputs
-  static readonly meta = meta
-  static readonly appliesTo = ['shape'] as const
+  static readonly typeId = "glass";
+  static readonly config = config;
+  static readonly inputs = inputs;
+  static readonly meta = meta;
+  static readonly appliesTo = ["shape"] as const;
 
   glsl(): GlslBlock {
-    const refraction = this.uniformName('refraction')
-    const ca = this.uniformName('chromaticAberration')
-    const blur = this.uniformName('blur')
-    const tint = this.uniformName('tint')
-    const tintI = this.uniformName('tintIntensity')
-    const fresnel = this.uniformName('fresnel')
+    const refraction = this.uniformName("refraction");
+    const ca = this.uniformName("chromaticAberration");
+    const blur = this.uniformName("blur");
+    const tint = this.uniformName("tint");
+    const tintI = this.uniformName("tintIntensity");
+    const fresnel = this.uniformName("fresnel");
     return {
-      dependencies: ['simplex2D', 'gaussian9'],
+      dependencies: ["simplex2D", "gaussian9"],
       main: `
 vec2 q = uv * 8.0;
 float e = 0.01;
@@ -62,9 +62,9 @@ col = mix(col, col * ${tint}, ${tintI});
 float rim = clamp(length(grad) * 0.5, 0.0, 1.0);
 col += rim * ${fresnel};
 return vec4(col, sG.a);`,
-    }
+    };
   }
 }
 
-register(Glass)
-export default Glass
+register(Glass);
+export default Glass;

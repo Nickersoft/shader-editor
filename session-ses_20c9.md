@@ -9,8 +9,8 @@
 ## User
 
 i need you to study the shaders inside the shaders directory and audit the rest of the codebase to identify: a. how we can break down each
-   of these shaders into composable primitives that achieve the same effect and b. gaps in the existing code that must be patched to achieve
-   this goal 
+of these shaders into composable primitives that achieve the same effect and b. gaps in the existing code that must be patched to achieve
+this goal
 
 ---
 
@@ -21,6 +21,7 @@ Mr. Nickerson, I shall map the shader sources first, then trace how the editor c
 **Tool: skill**
 
 **Input:**
+
 ```json
 {
   "name": "threejs-shaders"
@@ -28,7 +29,8 @@ Mr. Nickerson, I shall map the shader sources first, then trace how the editor c
 ```
 
 **Output:**
-```
+
+````
 <skill_content name="threejs-shaders">
 # Skill: threejs-shaders
 
@@ -60,7 +62,7 @@ const material = new THREE.ShaderMaterial({
 
 // Update in animation loop
 material.uniforms.time.value = clock.getElapsedTime();
-```
+````
 
 ## ShaderMaterial vs RawShaderMaterial
 
@@ -678,7 +680,8 @@ Note: file list is sampled.
 
 </skill_files>
 </skill_content>
-```
+
+````
 
 ---
 
@@ -712,9 +715,10 @@ Note: file list is sampled.
     }
   ]
 }
-```
+````
 
 **Output:**
+
 ```
 [
   {
@@ -747,6 +751,7 @@ Note: file list is sampled.
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "shaders/**/*",
@@ -755,6 +760,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/.git/index
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/publish.js
@@ -863,6 +869,7 @@ Note: file list is sampled.
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "src/**/*",
@@ -871,6 +878,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts
@@ -975,6 +983,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/package.json",
@@ -984,6 +993,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/package.json</path>
 <type>file</type>
@@ -1076,6 +1086,7 @@ Note: file list is sampled.
 **Tool: grep**
 
 **Input:**
+
 ```json
 {
   "pattern": "shader|Shader|layer|Layer|compose|compile|primitive|uniform|glsl",
@@ -1085,6 +1096,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 Found 1497 matches (showing first 100)
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts:
@@ -1305,6 +1317,7 @@ The repository already contains a `shader-composer` subsystem and a copied `shad
 **Tool: task**
 
 **Input:**
+
 ```json
 {
   "description": "Analyze shader sources",
@@ -1318,6 +1331,7 @@ The repository already contains a `shader-composer` subsystem and a copied `shad
 **Tool: task**
 
 **Input:**
+
 ```json
 {
   "description": "Audit composer architecture",
@@ -1329,6 +1343,7 @@ The repository already contains a `shader-composer` subsystem and a copied `shad
 ```
 
 **Output:**
+
 ```
 task_id: ses_20c8fcf62ffe9aZOImBhXSzwFE (for resuming to continue this task if needed)
 
@@ -1352,6 +1367,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "*.ts",
@@ -1360,6 +1376,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/water.ts
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/voronoi.ts
@@ -1395,6 +1412,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/types.ts",
@@ -1404,12 +1422,13 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/types.ts</path>
 <type>file</type>
 <content>
 1: // Core types for the shader composition system
-2: 
+2:
 3: export type UniformType =
 4:   | 'float'
 5:   | 'vec2'
@@ -1427,9 +1446,9 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 17:   //   uniform vec4 NAME[arrayLength];
 18:   //   uniform int  NAME_count;        // active entries; rest are zero-padded
 19:   | 'vec4Array'
-20: 
+20:
 21: export type ImageFit = 'cover' | 'contain' | 'fill'
-22: 
+22:
 23: export interface ImageUniformValue {
 24:   // null = bind a 1×1 transparent placeholder texture; layers should treat
 25:   // this as "no image".
@@ -1446,7 +1465,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 36:   scale?: number
 37:   rotation?: number
 38: }
-39: 
+39:
 40: export interface Vec4ArrayValue {
 41:   // Each entry is [r, g, b, a] in 0..1. `length` may be < values.length;
 42:   // entries past `length` are ignored at the shader level via the _count
@@ -1454,14 +1473,14 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 44:   values: number[][]
 45:   length: number
 46: }
-47: 
+47:
 48: export type UniformValue =
 49:   | number
 50:   | number[]
 51:   | boolean
 52:   | ImageUniformValue
 53:   | Vec4ArrayValue
-54: 
+54:
 55: export interface UniformDefinition {
 56:   name: string
 57:   label: string
@@ -1479,7 +1498,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 69:     array?: { minLength?: number; maxLength?: number }
 70:   }
 71: }
-72: 
+72:
 73: export interface LayerDefinition {
 74:   id: string
 75:   name: string
@@ -1507,7 +1526,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 97:     main: string
 98:   }
 99: }
-100: 
+100:
 101: export interface LayerInstance {
 102:   id: string
 103:   layerType: string
@@ -1516,8 +1535,8 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 106:   blendMode: BlendMode
 107:   opacity: number
 108: }
-109: 
-110: export type BlendMode = 
+109:
+110: export type BlendMode =
 111:   | 'normal'
 112:   | 'add'
 113:   | 'multiply'
@@ -1525,13 +1544,13 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 115:   | 'overlay'
 116:   | 'softLight'
 117:   | 'hardLight'
-118: 
+118:
 119: export interface ShaderComposition {
 120:   name: string
 121:   layers: LayerInstance[]
 122:   resolution?: [number, number]
 123: }
-124: 
+124:
 125: export interface GeneratedPass {
 126:   // Complete fragment shader source for this pass
 127:   fragmentShader: string
@@ -1540,7 +1559,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 130:   // IDs of the layer instances that contribute to this pass (in order)
 131:   layerIds: string[]
 132: }
-133: 
+133:
 134: export interface GeneratedShader {
 135:   // Multi-pass output. Single-pass compositions yield exactly one element.
 136:   // Last pass renders to the canvas; intermediate passes render to an FBO
@@ -1572,6 +1591,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts",
@@ -1581,6 +1601,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts</path>
 <type>file</type>
@@ -1597,19 +1618,19 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 10: import { GLSL_UTILS, BLEND_MODE_FUNCTIONS } from './glsl-utils'
 11: import runtimeShellSource from './runtime-shell.ts?raw'
 12: import imageHelperSource from './export-image-helper.ts?raw'
-13: 
+13:
 14: const INLINED_RUNTIME = runtimeShellSource.replace(/^export /gm, '')
 15: const INLINED_IMAGE_HELPER = imageHelperSource.replace(/^export /gm, '')
-16: 
+16:
 17: // Default fixed length for vec4Array uniforms when LayerDefinition does not
 18: // override `arrayLength`. Mirrors RAMP_MAX in glsl-utils.colorRampLookup.
 19: export const DEFAULT_VEC4_ARRAY_LENGTH = 10
-20: 
+20:
 21: interface PassPlan {
 22:   layers: LayerInstance[]
 23:   readsPrevPass: boolean
 24: }
-25: 
+25:
 26: /**
 27:  * Generates optimized GLSL shader code from a layer composition.
 28:  * Splits the layer chain into render passes at every `consumesPrevPass`
@@ -1620,17 +1641,17 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 33:   shaderName: string = 'CustomShader'
 34: ): GeneratedShader {
 35:   const enabledLayers = layers.filter((l) => l.enabled)
-36: 
+36:
 37:   // Walk the layer list and split into passes at every consumer boundary.
 38:   const passPlans = splitIntoPasses(enabledLayers)
-39: 
+39:
 40:   // Build the global uniform list (used by runtime + exported code).
 41:   const uniforms: GeneratedShader['uniforms'] = []
 42:   for (const layer of enabledLayers) {
 43:     const def = LAYER_LIBRARY[layer.layerType]
 44:     if (!def) continue
 45:     const prefix = sanitizeName(layer.id)
-46: 
+46:
 47:     uniforms.push({
 48:       name: `u_${prefix}_opacity`,
 49:       type: 'float',
@@ -1652,24 +1673,24 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 65:       })
 66:     }
 67:   }
-68: 
+68:
 69:   // Generate one fragment shader per pass.
 70:   const passes: GeneratedPass[] = passPlans.map((plan) =>
 71:     buildPass(plan)
 72:   )
-73: 
+73:
 74:   const vertexShader = `#version 300 es
 75: precision highp float;
-76: 
+76:
 77: in vec2 a_position;
 78: out vec2 v_uv;
-79: 
+79:
 80: void main() {
 81:   v_uv = a_position * 0.5 + 0.5;
 82:   gl_Position = vec4(a_position, 0.0, 1.0);
 83: }
 84: `
-85: 
+85:
 86:   // For display purposes, concatenate all passes into one document.
 87:   const fragmentShader = passes
 88:     .map(
@@ -1679,7 +1700,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 92:         ` ===\n${p.fragmentShader}`
 93:     )
 94:     .join('\n\n')
-95: 
+95:
 96:   const typescript = generateTypeScript(uniforms, shaderName)
 97:   const reactComponent = generateReactComponent(
 98:     uniforms,
@@ -1693,7 +1714,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 106:     passes,
 107:     vertexShader
 108:   )
-109: 
+109:
 110:   return {
 111:     passes,
 112:     vertexShader,
@@ -1704,16 +1725,16 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 117:     fragmentShader,
 118:   }
 119: }
-120: 
+120:
 121: function splitIntoPasses(layers: LayerInstance[]): PassPlan[] {
 122:   const plans: PassPlan[] = []
 123:   let current: LayerInstance[] = []
 124:   let isReader = false
-125: 
+125:
 126:   for (const layer of layers) {
 127:     const def = LAYER_LIBRARY[layer.layerType]
 128:     if (!def) continue
-129: 
+129:
 130:     if (def.consumesPrevPass) {
 131:       // Close the current pass first.
 132:       plans.push({ layers: current, readsPrevPass: isReader })
@@ -1724,7 +1745,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 137:     }
 138:   }
 139:   plans.push({ layers: current, readsPrevPass: isReader })
-140: 
+140:
 141:   // Drop a leading empty pass (happens if the very first layer is a consumer
 142:   // and there is nothing below). The runtime will just bind a black texture.
 143:   if (plans.length > 1 && plans[0].layers.length === 0) {
@@ -1733,13 +1754,13 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 146:   }
 147:   return plans
 148: }
-149: 
+149:
 150: function buildPass(plan: PassPlan): GeneratedPass {
 151:   const { layers, readsPrevPass } = plan
-152: 
+152:
 153:   const dependencies = new Set<string>()
 154:   const blendModes = new Set<BlendMode>()
-155: 
+155:
 156:   for (const layer of layers) {
 157:     const def = LAYER_LIBRARY[layer.layerType]
 158:     if (!def) continue
@@ -1751,7 +1772,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 164:     const funcName = BLEND_MODE_FUNCTIONS[mode]
 165:     if (funcName) dependencies.add(funcName)
 166:   })
-167: 
+167:
 168:   // Implicit dependency expansion.
 169:   if (dependencies.has('fbm') && !dependencies.has('simplex2D')) {
 170:     dependencies.add('simplex2D')
@@ -1762,7 +1783,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 175:   if (dependencies.has('snoise') && !dependencies.has('simplex2D')) {
 176:     dependencies.add('simplex2D')
 177:   }
-178: 
+178:
 179:   const uniformDeclarations: string[] = [
 180:     'uniform float u_time;',
 181:     'uniform vec2 u_resolution;',
@@ -1774,7 +1795,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 187:   if (readsPrevPass) {
 188:     uniformDeclarations.push('uniform sampler2D u_prevPass;')
 189:   }
-190: 
+190:
 191:   for (const layer of layers) {
 192:     const def = LAYER_LIBRARY[layer.layerType]
 193:     if (!def) continue
@@ -1801,38 +1822,38 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 214:       }
 215:     }
 216:   }
-217: 
+217:
 218:   const utilFunctions: string[] = []
 219:   const sortedDeps = sortDependencies(Array.from(dependencies))
 220:   for (const dep of sortedDeps) {
 221:     if (GLSL_UTILS[dep]) utilFunctions.push(GLSL_UTILS[dep])
 222:   }
-223: 
+223:
 224:   const layerFunctions: string[] = []
 225:   const mainCalls: string[] = []
 226:   const layerHelpers = new Set<string>()
-227: 
+227:
 228:   for (let i = 0; i < layers.length; i++) {
 229:     const layer = layers[i]
 230:     const def = LAYER_LIBRARY[layer.layerType]
 231:     if (!def) continue
-232: 
+232:
 233:     const prefix = sanitizeName(layer.id)
 234:     const funcName = `layer_${prefix}`
-235: 
+235:
 236:     let mainCode = def.glsl.main
 237:     for (const uniform of def.uniforms) {
 238:       const placeholder = new RegExp(`\\{\\{${uniform.name}\\}\\}`, 'g')
 239:       mainCode = mainCode.replace(placeholder, `u_${prefix}_${uniform.name}`)
 240:     }
-241: 
+241:
 242:     if (def.glsl.functions) layerHelpers.add(def.glsl.functions.trim())
-243: 
+243:
 244:     layerFunctions.push(`
 245: vec4 ${funcName}(vec2 uv, vec4 base) {
 246: ${indent(mainCode.trim(), 2)}
 247: }`)
-248: 
+248:
 249:     const blendFunc = BLEND_MODE_FUNCTIONS[layer.blendMode] || 'blendNormal'
 250:     if (i === 0) {
 251:       // The first layer of the pass is either a generator (ignores base)
@@ -1844,48 +1865,48 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 257:       )
 258:     }
 259:   }
-260: 
+260:
 261:   const fragmentShader = `#version 300 es
 262: precision highp float;
-263: 
+263:
 264: in vec2 v_uv;
 265: out vec4 fragColor;
-266: 
+266:
 267: // Uniforms
 268: ${uniformDeclarations.join('\n')}
-269: 
+269:
 270: // Utility Functions
 271: ${utilFunctions.join('\n')}
-272: 
+272:
 273: // Layer Helpers
 274: ${Array.from(layerHelpers).join('\n')}
-275: 
+275:
 276: // Layer Functions
 277: ${layerFunctions.join('\n')}
-278: 
+278:
 279: void main() {
 280:   vec2 uv = v_uv;
-281: 
+281:
 282: ${mainCalls.length > 0 ? mainCalls.join('\n') : '  vec4 color = vec4(0.0, 0.0, 0.0, 1.0);'}
-283: 
+283:
 284:   fragColor = color;
 285: }
 286: `
-287: 
+287:
 288:   return {
 289:     fragmentShader,
 290:     readsPrevPass,
 291:     layerIds: layers.map((l) => l.id),
 292:   }
 293: }
-294: 
+294:
 295: export function sanitizeName(name: string): string {
 296:   let sanitized = name.replace(/[^a-zA-Z0-9]/g, '')
 297:   if (/^[0-9]/.test(sanitized)) sanitized = 'l' + sanitized
 298:   if (!sanitized) sanitized = 'layer'
 299:   return sanitized
 300: }
-301: 
+301:
 302: function indent(code: string, spaces: number): string {
 303:   const pad = ' '.repeat(spaces)
 304:   return code
@@ -1893,7 +1914,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 306:     .map((line) => pad + line)
 307:     .join('\n')
 308: }
-309: 
+309:
 310: function sortDependencies(deps: string[]): string[] {
 311:   const order: Record<string, number> = {
 312:     hash: 0,
@@ -1921,7 +1942,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 334:   }
 335:   return deps.sort((a, b) => (order[a] ?? 99) - (order[b] ?? 99))
 336: }
-337: 
+337:
 338: // All uniforms except runtime-managed `u_time` / `u_resolution` are exposed
 339: // as React/vanilla props. sampler2D props accept a URL string or
 340: // `{ url, fit, scale, rotation, offsetX, offsetY }`; vec4Array props accept
@@ -1929,7 +1950,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 342: function isExportableUniform(u: GeneratedShader['uniforms'][number]): boolean {
 343:   return !['u_time', 'u_resolution'].includes(u.name)
 344: }
-345: 
+345:
 346: function generateTypeScript(
 347:   uniforms: GeneratedShader['uniforms'],
 348:   shaderName: string
@@ -1944,7 +1965,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 357:       )}?: ${tsType} // default: ${defaultVal}`
 358:     })
 359:     .join('\n')
-360: 
+360:
 
 (Showing lines 1-360 of 655. Use offset=361 to continue.)
 </content>
@@ -1953,6 +1974,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts",
@@ -1962,25 +1984,26 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts</path>
 <type>file</type>
 <content>
 1: // Shared GLSL utility functions that can be reused across layers
 2: // Each function is keyed by name for deduplication
-3: 
+3:
 4: export const GLSL_UTILS: Record<string, string> = {
 5:   // Random and hash functions
 6:   hash: `
 7: float hash(vec2 p) {
 8:   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 9: }`,
-10: 
+10:
 11:   hash2: `
 12: vec2 hash2(vec2 p) {
 13:   return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
 14: }`,
-15: 
+15:
 16:   hash3: `
 17: vec3 hash3(vec2 p) {
 18:   vec3 q = vec3(dot(p, vec2(127.1, 311.7)),
@@ -1988,13 +2011,13 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 20:                 dot(p, vec2(419.2, 371.9)));
 21:   return fract(sin(q) * 43758.5453);
 22: }`,
-23: 
+23:
 24:   // Noise functions
 25:   simplex2D: `
 26: vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 27: vec2 mod289v2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 28: vec3 permute(vec3 x) { return mod289(((x * 34.0) + 1.0) * x); }
-29: 
+29:
 30: float simplex2D(vec2 v) {
 31:   const vec4 C = vec4(0.211324865405187, 0.366025403784439,
 32:                       -0.577350269189626, 0.024390243902439);
@@ -2018,7 +2041,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 50:   g.yz = a0.yz * x12.xz + h.yz * x12.yw;
 51:   return 130.0 * dot(m, g);
 52: }`,
-53: 
+53:
 54:   // FBM (Fractal Brownian Motion)
 55:   fbm: `
 56: float fbm(vec2 p, float octaves, float lacunarity, float gain) {
@@ -2034,7 +2057,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 66:   }
 67:   return sum;
 68: }`,
-69: 
+69:
 70:   // Voronoi
 71:   voronoi: `
 72: vec3 voronoi(vec2 x, float randomness) {
@@ -2058,28 +2081,28 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 90:   }
 91:   return vec3(sqrt(minDist), minCell);
 92: }`,
-93: 
+93:
 94:   // Blend modes
 95:   blendNormal: `
 96: vec4 blendNormal(vec4 base, vec4 blend, float opacity) {
 97:   return mix(base, blend, blend.a * opacity);
 98: }`,
-99: 
+99:
 100:   blendAdd: `
 101: vec4 blendAdd(vec4 base, vec4 blend, float opacity) {
 102:   return base + blend * opacity;
 103: }`,
-104: 
+104:
 105:   blendMultiply: `
 106: vec4 blendMultiply(vec4 base, vec4 blend, float opacity) {
 107:   return mix(base, base * blend, opacity);
 108: }`,
-109: 
+109:
 110:   blendScreen: `
 111: vec4 blendScreen(vec4 base, vec4 blend, float opacity) {
 112:   return mix(base, 1.0 - (1.0 - base) * (1.0 - blend), opacity);
 113: }`,
-114: 
+114:
 115:   blendOverlay: `
 116: vec4 blendOverlay(vec4 base, vec4 blend, float opacity) {
 117:   vec4 result;
@@ -2091,7 +2114,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 123:   result.a = blend.a;
 124:   return mix(base, result, opacity);
 125: }`,
-126: 
+126:
 127:   blendSoftLight: `
 128: vec4 blendSoftLight(vec4 base, vec4 blend, float opacity) {
 129:   vec4 result;
@@ -2103,7 +2126,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 135:   result.a = blend.a;
 136:   return mix(base, result, opacity);
 137: }`,
-138: 
+138:
 139:   blendHardLight: `
 140: vec4 blendHardLight(vec4 base, vec4 blend, float opacity) {
 141:   vec4 result;
@@ -2115,27 +2138,27 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 147:   result.a = blend.a;
 148:   return mix(base, result, opacity);
 149: }`,
-150: 
+150:
 151:   // Utility functions
 152:   remap: `
 153: float remap(float value, float inMin, float inMax, float outMin, float outMax) {
 154:   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
 155: }`,
-156: 
+156:
 157:   rotate2D: `
 158: vec2 rotate2D(vec2 v, float angle) {
 159:   float s = sin(angle);
 160:   float c = cos(angle);
 161:   return vec2(c * v.x - s * v.y, s * v.x + c * v.y);
 162: }`,
-163: 
+163:
 164:   // Aspect-corrected centered UV: y in [-0.5, 0.5], x scaled by aspect.
 165:   // Use this whenever a primitive needs to look the same on any canvas shape.
 166:   screenUv: `
 167: vec2 screenUv(vec2 uv) {
 168:   return (uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
 169: }`,
-170: 
+170:
 171:   // Anti-aliased step using screen-space derivatives.
 172:   // Works in WebGL2 / GLSL ES 3.00 where fwidth is core (no extension required).
 173:   aastep: `
@@ -2143,30 +2166,30 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 175:   float afwidth = max(0.5 * fwidth(value), 1e-6);
 176:   return smoothstep(threshold - afwidth, threshold + afwidth, value);
 177: }`,
-178: 
+178:
 179:   // Smooth-min (continuous union) — k controls softness.
 180:   smin: `
 181: float smin(float a, float b, float k) {
 182:   float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
 183:   return mix(b, a, h) - k * h * (1.0 - h);
 184: }`,
-185: 
+185:
 186:   // 2D Signed-Distance Functions (Inigo Quilez canonical set).
 187:   sdCircle: `
 188: float sdCircle(vec2 p, float r) { return length(p) - r; }`,
-189: 
+189:
 190:   sdBox: `
 191: float sdBox(vec2 p, vec2 b) {
 192:   vec2 d = abs(p) - b;
 193:   return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 194: }`,
-195: 
+195:
 196:   sdRoundedBox: `
 197: float sdRoundedBox(vec2 p, vec2 b, float r) {
 198:   vec2 q = abs(p) - b + vec2(r);
 199:   return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 200: }`,
-201: 
+201:
 202:   sdEllipse: `
 203: float sdEllipse(vec2 p, vec2 ab) {
 204:   p = abs(p);
@@ -2201,7 +2224,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 233:   vec2 r = vec2(ab.x * co, ab.y * sqrt(1.0 - co * co));
 234:   return length(r - p) * sign(p.y - r.y);
 235: }`,
-236: 
+236:
 237:   sdEquilateralTriangle: `
 238: float sdEquilateralTriangle(vec2 p, float r) {
 239:   const float k = 1.7320508; // sqrt(3)
@@ -2211,14 +2234,14 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 243:   p.x -= clamp(p.x, -2.0 * r, 0.0);
 244:   return -length(p) * sign(p.y);
 245: }`,
-246: 
+246:
 247:   sdRegularPolygon: `
 248: float sdRegularPolygon(vec2 p, float r, float n) {
 249:   float an = 3.1415926 / n;
 250:   float bn = mod(atan(p.x, p.y), 2.0 * an) - an;
 251:   return length(p) * cos(bn) - r * cos(an);
 252: }`,
-253: 
+253:
 254:   sdStar: `
 255: float sdStar(vec2 p, float r, float n, float m) {
 256:   float an = 3.1415926 / n;
@@ -2231,14 +2254,14 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 263:   p += ecs * clamp(-dot(p, ecs), 0.0, r * acs.y / ecs.y);
 264:   return length(p) * sign(p.x);
 265: }`,
-266: 
+266:
 267:   sdSegment: `
 268: float sdSegment(vec2 p, vec2 a, vec2 b) {
 269:   vec2 pa = p - a, ba = b - a;
 270:   float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
 271:   return length(pa - ba * h);
 272: }`,
-273: 
+273:
 274:   sdCross: `
 275: float sdCross(vec2 p, vec2 b, float r) {
 276:   p = abs(p); p = (p.y > p.x) ? p.yx : p.xy;
@@ -2247,7 +2270,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 279:   vec2 w = (k > 0.0) ? q : vec2(b.y - p.x, -k);
 280:   return sign(k) * length(max(w, 0.0)) + r;
 281: }`,
-282: 
+282:
 283:   sdVesica: `
 284: float sdVesica(vec2 p, float r, float d) {
 285:   p = abs(p);
@@ -2256,7 +2279,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 288:     ? length(p - vec2(0.0, b))
 289:     : length(p - vec2(-d, 0.0)) - r;
 290: }`,
-291: 
+291:
 292:   // HSV conversion
 293:   rgb2hsv: `
 294: vec3 rgb2hsv(vec3 c) {
@@ -2267,17 +2290,17 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 299:   float e = 1.0e-10;
 300:   return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 301: }`,
-302: 
+302:
 303:   hsv2rgb: `
 304: vec3 hsv2rgb(vec3 c) {
 305:   vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 306:   vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
 307:   return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 308: }`,
-309: 
+309:
 310:   luma: `
 311: float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }`,
-312: 
+312:
 313:   // Paper Shaders' procedural value-noise hash. Used by Paper's mesh-gradient
 314:   // and value-noise primitives. Different distribution from our hash().
 315:   hash21: `
@@ -2286,7 +2309,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 318:   p += dot(p, p + 19.19);
 319:   return fract(p.x * p.y);
 320: }`,
-321: 
+321:
 322:   // Paper's procedural 2D-out hash. Better-distributed than two hash21 calls.
 323:   hash22: `
 324: vec2 hash22(vec2 p) {
@@ -2294,12 +2317,12 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 326:   p += dot(p, p.yx + 19.19);
 327:   return fract(vec2(p.x * p.y, p.x + p.y));
 328: }`,
-329: 
+329:
 330:   // Paper's `snoise` is byte-identical to our simplex2D — we just expose the
 331:   // Paper-canonical name so verbatim ports compile without renaming.
 332:   snoise: `
 333: float snoise(vec2 v) { return simplex2D(v); }`,
-334: 
+334:
 335:   // Paper's noise-texture lookups. The runtime always binds a 256×256 RGB
 336:   // noise PNG to `u_noiseTexture` (TEXTURE15), so any layer that depends on
 337:   // these helpers gets a stable, well-distributed sample without per-layer
@@ -2310,12 +2333,12 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 342: float noiseTextureRandomR(vec2 p) {
 343:   return texture(u_noiseTexture, floor(p) / 100.0 + 0.5).r;
 344: }`,
-345: 
+345:
 346:   noiseTextureRandomGB: `
 347: vec2 noiseTextureRandomGB(vec2 p) {
 348:   return texture(u_noiseTexture, floor(p) / 100.0 + 0.5).gb;
 349: }`,
-350: 
+350:
 351:   // Sampler-helper: maps canvas-space UV in [0,1] to image-space UV, honouring
 352:   // image aspect, fit mode (0=cover, 1=contain, 2=fill), uniform scale, rotation
 353:   // (radians) and pixel-space offset. Canvas aspect comes from u_resolution.
@@ -2334,6 +2357,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts",
@@ -2343,6 +2367,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts</path>
 <type>file</type>
@@ -2361,14 +2386,14 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 12: import { STYLIZE_LAYERS } from './stylize'
 13: import { SPECIALIZED_LAYERS } from './specialized'
 14: import { PAPER_SHADER_LAYERS } from './paper-shaders'
-15: 
+15:
 16: // Re-export new primitives for direct use in presets
 17: export { scalarFieldLayer, polarBandsLayer, spiralStripeLayer, voronoiCellsLayer, metaballsLayer, dotOrbitLayer } from './noise'
 18: export { meshSpotsGradientLayer } from './gradients'
 19: export { organicWarpLayer } from './distorters'
 20: export { imageEdgeLayer, imageContourLayer, chromeReliefLayer, glowFieldLayer } from './color'
 21: export { materialNoiseLayer, dotGlyphGridLayer } from './stylize'
-22: 
+22:
 23: export const simplexNoiseLayer: LayerDefinition = {
 24:   id: 'simplex-noise',
 25:   name: 'Simplex Noise',
@@ -2395,7 +2420,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 46: return vec4(col, 1.0);`,
 47:   },
 48: }
-49: 
+49:
 50: export const voronoiLayer: LayerDefinition = {
 51:   id: 'voronoi',
 52:   name: 'Voronoi',
@@ -2421,7 +2446,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 72: return vec4(col, 1.0);`,
 73:   },
 74: }
-75: 
+75:
 76: export const linearGradientLayer: LayerDefinition = {
 77:   id: 'linear-gradient',
 78:   name: 'Linear Gradient',
@@ -2449,7 +2474,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 100: return vec4(col, 1.0);`,
 101:   },
 102: }
-103: 
+103:
 104: export const radialGradientLayer: LayerDefinition = {
 105:   id: 'radial-gradient',
 106:   name: 'Radial Gradient',
@@ -2476,7 +2501,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 127: return vec4(col, 1.0);`,
 128:   },
 129: }
-130: 
+130:
 131: export const wavesLayer: LayerDefinition = {
 132:   id: 'waves',
 133:   name: 'Waves',
@@ -2504,7 +2529,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 155: return vec4(col, 1.0);`,
 156:   },
 157: }
-158: 
+158:
 159: export const vignetteLayer: LayerDefinition = {
 160:   id: 'vignette',
 161:   name: 'Vignette',
@@ -2528,7 +2553,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 179: return vec4(vigColor, base.a);`,
 180:   },
 181: }
-182: 
+182:
 183: export const grainLayer: LayerDefinition = {
 184:   id: 'grain',
 185:   name: 'Film Grain',
@@ -2557,7 +2582,7 @@ At once, Mr. Nickerson. I will continue in read-only audit mode: no file edits, 
 208: return vec4(col, base.a);`,
 209:   },
 210: }
-211: 
+211:
 212: export const chromaticAberrationLayer: LayerDefinition = {
 213:   id: 'chromatic-aberration',
 214:   name: 'Chromatic Aberration',
@@ -2581,6 +2606,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts",
@@ -2590,6 +2616,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts</path>
 <type>file</type>
@@ -2622,7 +2649,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 386:   c /= ratio;
 387:   return c + 0.5;
 388: }`,
-389: 
+389:
 390:   // Smooth/stepped color-ramp lookup over a fixed-size vec4 palette.
 391:   // steps=0 → smooth, steps>0 → quantised globally.
 392:   // stepsPerColor>0 → quantise within each color segment.
@@ -2657,7 +2684,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 421:   vec4 b = colors[i1];
 422:   return mix(a, b, f);
 423: }`,
-424: 
+424:
 425:   gaussian9: `
 426: vec4 gaussian9(sampler2D src, vec2 uv, vec2 r) {
 427:   vec4 c = texture(src, uv) * 0.227;
@@ -2672,7 +2699,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 436:   return c;
 437: }`,
 438: }
-439: 
+439:
 440: export const BLEND_MODE_FUNCTIONS: Record<string, string> = {
 441:   normal: 'blendNormal',
 442:   add: 'blendAdd',
@@ -2690,6 +2717,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts",
@@ -2699,6 +2727,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts</path>
 <type>file</type>
@@ -2706,7 +2735,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 361:   return `export interface ${shaderName}Props {
 362: ${propsInterface}
 363: }
-364: 
+364:
 365: export const ${shaderName.toLowerCase()}Defaults: Required<${shaderName}Props> = {
 366: ${exportable
 367:   .map((u) => `  ${camelCase(u.name)}: ${formatDefault(u.default, u.type)},`)
@@ -2714,7 +2743,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 369: }
 370: `
 371: }
-372: 
+372:
 373: function generateReactComponent(
 374:   uniforms: GeneratedShader['uniforms'],
 375:   shaderName: string,
@@ -2733,7 +2762,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 388:   const ensureLines = samplerUniforms
 389:     .map((u) => `    imageCacheRef.current?.ensure(${camelCase(u.name)})`)
 390:     .join('\n')
-391: 
+391:
 392:   const escapedVertex = escape(vertexShader)
 393:   const passSources = passes
 394:     .map(
@@ -2741,15 +2770,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 396:         `  { fragment: \`${escape(p.fragmentShader)}\`, readsPrevPass: ${p.readsPrevPass} },`
 397:     )
 398:     .join('\n')
-399: 
+399:
 400:   return `'use client'
-401: 
+401:
 402: import { useEffect, useRef } from 'react'
-403: 
+403:
 404: ${INLINED_RUNTIME}
-405: 
+405:
 406: ${INLINED_IMAGE_HELPER}
-407: 
+407:
 408: interface ${shaderName}Props {
 409: ${propUniforms
 410:   .map((u) => `  ${camelCase(u.name)}?: ${uniformTypeToTS(u.type)}`)
@@ -2757,13 +2786,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 412:   className?: string
 413:   style?: React.CSSProperties
 414: }
-415: 
+415:
 416: const VERTEX_SHADER = \`${escapedVertex}\`
-417: 
+417:
 418: const PASSES: PipelinePass[] = [
 419: ${passSources}
 420: ]
-421: 
+421:
 422: export function ${shaderName}({
 423: ${propsWithDefaults}
 424:     className,
@@ -2771,19 +2800,19 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 426:   }: ${shaderName}Props) {
 427:   const canvasRef = useRef<HTMLCanvasElement>(null)
 428:   const imageCacheRef = useRef<ImageCache | null>(null)
-429: 
+429:
 430:   useEffect(() => {
 431:     const canvas = canvasRef.current
 432:     if (!canvas) return
 433:     const gl = canvas.getContext('webgl2', { alpha: false, antialias: true, premultipliedAlpha: false })
 434:     if (!gl) { console.error('WebGL2 not supported'); return }
-435: 
+435:
 436:     const pipeline = createShaderPipeline(gl, VERTEX_SHADER, PASSES)
 437:     imageCacheRef.current = createImageCache(gl)
-438: 
+438:
 439:     const startTime = performance.now()
 440:     let raf = 0
-441: 
+441:
 442:     function frame() {
 443:       const dpr = window.devicePixelRatio || 1
 444:       const w = canvas!.clientWidth * dpr
@@ -2792,18 +2821,18 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 447:         canvas!.width = w; canvas!.height = h
 448:       }
 449:       const time = (performance.now() - startTime) / 1000
-450: 
+450:
 451:       pipeline.render(time, w, h, (ctx, prog) => {
 452:         let _u = ctx.nextTextureUnit
 453:         const imageCache = imageCacheRef.current!
 454:         void imageCache; void _u
 455: ${bindLines}
 456:       })
-457: 
+457:
 458:       raf = requestAnimationFrame(frame)
 459:     }
 460:     frame()
-461: 
+461:
 462:     return () => {
 463:       cancelAnimationFrame(raf)
 464:       pipeline.destroy()
@@ -2811,14 +2840,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 466:       imageCacheRef.current = null
 467:     }
 468:   }, [${propsList.join(', ')}])
-469: 
+469:
 470:   // Kick off image loads whenever a sampler prop changes. The animation
 471:   // loop picks up newly loaded textures on the next frame automatically.
 472:   useEffect(() => {
 473:     if (!imageCacheRef.current) return
 474: ${ensureLines || '    // no sampler2D props'}
 475:   }, [${samplerUniforms.map((u) => camelCase(u.name)).join(', ')}])
-476: 
+476:
 477:   return (
 478:     <canvas
 479:       ref={canvasRef}
@@ -2829,7 +2858,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 484: }
 485: `
 486: }
-487: 
+487:
 488: function generateVanillaJs(
 489:   uniforms: GeneratedShader['uniforms'],
 490:   shaderName: string,
@@ -2845,55 +2874,55 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 500:         `  { fragment: \`${escape(p.fragmentShader)}\`, readsPrevPass: ${p.readsPrevPass} },`
 501:     )
 502:     .join('\n')
-503: 
+503:
 504:   const optionsType = propUniforms
 505:     .map((u) => `  ${camelCase(u.name)}?: ${uniformTypeToTS(u.type)}`)
 506:     .join('\n')
-507: 
+507:
 508:   const accessExpr = (u: GeneratedShader['uniforms'][number]): string =>
 509:     `(options.${camelCase(u.name)} ?? ${formatDefault(u.default, u.type)})`
-510: 
+510:
 511:   const bindLines = propUniforms
 512:     .map((u) => '      ' + emitUniformBind(u, accessExpr(u)))
 513:     .join('\n')
 514:   const ensureLines = samplerUniforms
 515:     .map((u) => `  imageCache.ensure(${accessExpr(u)})`)
 516:     .join('\n')
-517: 
+517:
 518:   return `/**
 519:  * ${shaderName} - Multi-pass WebGL2 shader
 520:  * Generated by Shader Composer
 521:  */
-522: 
+522:
 523: ${INLINED_RUNTIME}
-524: 
+524:
 525: ${INLINED_IMAGE_HELPER}
-526: 
+526:
 527: const VERTEX_SHADER = \`${escapedVertex}\`
-528: 
+528:
 529: const PASSES: PipelinePass[] = [
 530: ${passSources}
 531: ]
-532: 
+532:
 533: export interface ${shaderName}Options {
 534: ${optionsType}
 535: }
-536: 
+536:
 537: export function create${shaderName}(canvas: HTMLCanvasElement, options: ${shaderName}Options = {}) {
 538:   const gl = canvas.getContext('webgl2', { alpha: false, antialias: true, premultipliedAlpha: false })
 539:   if (!gl) throw new Error('WebGL2 not supported')
-540: 
+540:
 541:   const pipeline = createShaderPipeline(gl, VERTEX_SHADER, PASSES)
 542:   const imageCache = createImageCache(gl)
-543: 
+543:
 544:   function ensureImages() {
 545: ${ensureLines || '    // no sampler2D options'}
 546:   }
 547:   ensureImages()
-548: 
+548:
 549:   const startTime = performance.now()
 550:   let animationId = 0
-551: 
+551:
 552:   function frame() {
 553:     const dpr = window.devicePixelRatio || 1
 554:     const w = canvas.clientWidth * dpr
@@ -2908,7 +2937,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 563:     animationId = requestAnimationFrame(frame)
 564:   }
 565:   frame()
-566: 
+566:
 567:   return {
 568:     update(newOptions: Partial<${shaderName}Options>) {
 569:       Object.assign(options, newOptions)
@@ -2923,7 +2952,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 578: }
 579: `
 580: }
-581: 
+581:
 582: function uniformTypeToTS(type: UniformType): string {
 583:   switch (type) {
 584:     case 'float':
@@ -2945,7 +2974,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 600:       return 'number'
 601:   }
 602: }
-603: 
+603:
 604: function formatDefault(value: unknown, type: UniformType): string {
 605:   if (type === 'vec4Array') {
 606:     const v = value as { values?: number[][] } | undefined
@@ -2960,7 +2989,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 615:   if (typeof value === 'object' && value !== null) return 'undefined'
 616:   return String(value)
 617: }
-618: 
+618:
 619: // Emit a single statement that binds one uniform from the prop expression
 620: // `expr`. The emitted code expects `gl`, `prog`, `_u` (next texture unit),
 621: // and `imageCache` to be in scope. Mutates `_u` for sampler2D.
@@ -2990,11 +3019,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 645:     }
 646:   }
 647: }
-648: 
+648:
 649: function camelCase(str: string): string {
 650:   return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
 651: }
-652: 
+652:
 653: function escape(s: string): string {
 654:   return s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')
 655: }
@@ -3006,6 +3035,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts",
@@ -3015,6 +3045,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts</path>
 <type>file</type>
@@ -3030,7 +3061,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 229: float angleRad = {{angle}} * 3.14159 / 180.0;
 230: vec2 dir = mix(vec2(cos(angleRad), sin(angleRad)), normalize(center + 0.001), {{radial}});
 231: vec2 offset = dir * {{intensity}} * (1.0 + dist * {{radial}});
-232: 
+232:
 233: // Simulate chromatic shift
 234: vec3 col = vec3(
 235:   mix(base.r, base.g, offset.x * 10.0),
@@ -3040,7 +3071,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 239: return vec4(col, base.a);`,
 240:   },
 241: }
-242: 
+242:
 243: export const glowLayer: LayerDefinition = {
 244:   id: 'glow',
 245:   name: 'Glow',
@@ -3063,7 +3094,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 262: return vec4(col, base.a);`,
 263:   },
 264: }
-265: 
+265:
 266: export const bulgeLayer: LayerDefinition = {
 267:   id: 'bulge',
 268:   name: 'Bulge',
@@ -3088,7 +3119,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 287: return texture(u_prevPass, distorted);`,
 288:   },
 289: }
-290: 
+290:
 291: export const colorShiftLayer: LayerDefinition = {
 292:   id: 'color-shift',
 293:   name: 'Color Shift',
@@ -3112,7 +3143,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 311: return vec4(col, base.a);`,
 312:   },
 313: }
-314: 
+314:
 315: export const LAYER_LIBRARY: Record<string, LayerDefinition> = {
 316:   'simplex-noise': simplexNoiseLayer,
 317:   'voronoi': voronoiLayer,
@@ -3139,7 +3170,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 338:   ...SPECIALIZED_LAYERS,
 339:   ...PAPER_SHADER_LAYERS,
 340: }
-341: 
+341:
 342: export const LAYER_CATEGORIES = {
 343:   generator: { name: 'Generators', description: 'Create base patterns' },
 344:   modifier: { name: 'Modifiers', description: 'Transform colors and values' },
@@ -3155,6 +3186,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/types.ts",
@@ -3164,6 +3196,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/types.ts</path>
 <type>file</type>
@@ -3179,6 +3212,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-utils.ts",
@@ -3188,6 +3222,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-utils.ts</path>
 <type>file</type>
@@ -3197,14 +3232,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 3: #define TWO_PI 6.28318530718
 4: #define PI 3.14159265358979323846
 5: `;
-6: 
+6:
 7: // language=GLSL
 8: export const rotation2 = `
 9: vec2 rotate(vec2 uv, float th) {
 10:   return mat2(cos(th), sin(th), -sin(th), cos(th)) * uv;
 11: }
 12: `;
-13: 
+13:
 14: // language=GLSL
 15: export const proceduralHash11 = `
 16:   float hash11(float p) {
@@ -3213,7 +3248,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 19:     return fract(p * p);
 20:   }
 21: `;
-22: 
+22:
 23: // language=GLSL
 24: export const proceduralHash21 = `
 25:   float hash21(vec2 p) {
@@ -3222,7 +3257,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 28:     return fract(p.x * p.y);
 29:   }
 30: `;
-31: 
+31:
 32: // language=GLSL
 33: export const proceduralHash22 = `
 34:   vec2 hash22(vec2 p) {
@@ -3231,7 +3266,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 37:     return fract(vec2(p.x * p.y, p.x + p.y));
 38:   }
 39: `;
-40: 
+40:
 41: // language=GLSL
 42: export const textureRandomizerR = `
 43:   float randomR(vec2 p) {
@@ -3239,7 +3274,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 45:     return texture(u_noiseTexture, fract(uv)).r;
 46:   }
 47: `;
-48: 
+48:
 49: // language=GLSL
 50: export const textureRandomizerGB = `
 51:   vec2 randomGB(vec2 p) {
@@ -3247,12 +3282,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 53:     return texture(u_noiseTexture, fract(uv)).gb;
 54:   }
 55: `;
-56: 
+56:
 57: // language=GLSL
 58: export const colorBandingFix = `
 59:   color += 1. / 256. * (fract(sin(dot(.014 * gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453123) - .5);
 60: `;
-61: 
+61:
 62: // language=GLSL
 63: export const simplexNoise = `
 64: vec3 permute(vec3 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
@@ -3283,14 +3318,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 89:   return 130.0 * dot(m, g);
 90: }
 91: `;
-92: 
+92:
 93: // language=GLSL
 94: export const fiberNoise = `
 95: float fiberRandom(vec2 p) {
 96:   vec2 uv = floor(p) / 100.;
 97:   return texture(u_noiseTexture, fract(uv)).b;
 98: }
-99: 
+99:
 100: float fiberValueNoise(vec2 st) {
 101:   vec2 i = floor(st);
 102:   vec2 f = fract(st);
@@ -3303,7 +3338,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 109:   float x2 = mix(c, d, u.x);
 110:   return mix(x1, x2, u.y);
 111: }
-112: 
+112:
 113: float fiberNoiseFbm(in vec2 n, vec2 seedOffset) {
 114:   float total = 0.0, amplitude = 1.;
 115:   for (int i = 0; i < 4; i++) {
@@ -3314,7 +3349,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 120:   }
 121:   return total;
 122: }
-123: 
+123:
 124: float fiberNoise(vec2 uv, vec2 seedOffset) {
 125:   float epsilon = 0.001;
 126:   float n1 = fiberNoiseFbm(uv + vec2(epsilon, 0.0), seedOffset);
@@ -3332,6 +3367,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-color-spaces.ts",
@@ -3341,6 +3377,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-color-spaces.ts</path>
 <type>file</type>
@@ -3349,23 +3386,23 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2:   rgb: 0,
 3:   oklch: 1,
 4: } as const;
-5: 
+5:
 6: export type ShaderColorSpace = keyof typeof ShaderColorSpaces;
-7: 
+7:
 8: export const declareOklchTransforms = `
-9: 
+9:
 10: // magic numbers (and magic could be better tbh)
 11: #define OKLCH_CHROMA_THRESHOLD .001
 12: #define OKLCH_HUE_NEUTRALIZER - 2.
-13: 
+13:
 14: vec3 srgbToLinear(vec3 srgb) {
 15:   return pow(srgb, vec3(2.2));
 16: }
-17: 
+17:
 18: vec3 linearToSrgb(vec3 linear) {
 19:   return pow(linear, vec3(1.0 / 2.2));
 20: }
-21: 
+21:
 22: vec3 LrgbToOklab(vec3 rgb) {
 23:   float L = pow(0.4122214708 * rgb.r + 0.5363325363 * rgb.g + 0.0514459929 * rgb.b, 1.0 / 3.0);
 24:   float M = pow(0.2119034982 * rgb.r + 0.6806995451 * rgb.g + 0.1073969566 * rgb.b, 1.0 / 3.0);
@@ -3376,27 +3413,27 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 29:     0.0259040371 * L + 0.7827717662 * M - 0.808675766 * S
 30:   );
 31: }
-32: 
+32:
 33: vec3 OklabToLrgb(vec3 oklab) {
 34:   float L = oklab.x;
 35:   float a = oklab.y;
 36:   float b = oklab.z;
-37: 
+37:
 38:   float l_ = L + 0.3963377774 * a + 0.2158037573 * b;
 39:   float m_ = L - 0.1055613458 * a - 0.0638541728 * b;
 40:   float s_ = L - 0.0894841775 * a - 1.291485548 * b;
-41: 
+41:
 42:   float l = l_ * l_ * l_;
 43:   float m = m_ * m_ * m_;
 44:   float s = s_ * s_ * s_;
-45: 
+45:
 46:   return vec3(
 47:     4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
 48:     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
 49:     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s
 50:   );
 51: }
-52: 
+52:
 53: vec3 oklabToOklch(vec3 oklab) {
 54:   float C = length(oklab.yz);
 55:   float H = atan(oklab.z, oklab.y);
@@ -3405,26 +3442,26 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 58:   }
 59:   return vec3(oklab.x, C, H);
 60: }
-61: 
+61:
 62: vec3 oklchToOklab(vec3 oklch) {
 63:   float a = oklch.y * cos(oklch.z);
 64:   float b = oklch.y * sin(oklch.z);
 65:   return vec3(oklch.x, a, b);
 66: }
-67: 
+67:
 68: float mixHue(float h1, float h2, float mixer) {
 69:   float delta = mod(h2 - h1 + PI, TWO_PI) - PI;
 70:   return h1 + mixer * delta;
 71: }
-72: 
+72:
 73: vec3 srgbToOklab(vec3 rgb) {
 74:   return oklabToOklch(LrgbToOklab(srgbToLinear(rgb)));
 75: }
-76: 
+76:
 77: vec3 oklabToSrgb(vec3 oklab) {
 78:   return linearToSrgb(OklabToLrgb(oklchToOklab(oklab)));
 79: }
-80: 
+80:
 81: vec3 mixOklabVector(vec3 color1, vec3 color2, float mixer) {
 82:   color1.x = mix(color1.x, color2.x, mixer);
 83:   color1.y = mix(color1.y, color2.y, mixer);
@@ -3442,6 +3479,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/vertex-shader.ts",
@@ -3451,6 +3489,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/vertex-shader.ts</path>
 <type>file</type>
@@ -3459,9 +3498,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: // language=GLSL
 3: export const vertexShaderSource = `#version 300 es
 4: precision mediump float;
-5: 
+5:
 6: layout(location = 0) in vec4 a_position;
-7: 
+7:
 8: uniform vec2 u_resolution;
 9: uniform float u_pixelRatio;
 10: uniform float u_imageAspectRatio;
@@ -3474,7 +3513,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 17: uniform float u_rotation;
 18: uniform float u_offsetX;
 19: uniform float u_offsetY;
-20: 
+20:
 21: out vec2 v_objectUV;
 22: out vec2 v_objectBoxSize;
 23: out vec2 v_responsiveUV;
@@ -3482,7 +3521,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 25: out vec2 v_patternUV;
 26: out vec2 v_patternBoxSize;
 27: out vec2 v_imageUV;
-28: 
+28:
 29: vec3 getBoxSize(float boxRatio, vec2 givenBoxSize) {
 30:   vec2 box = vec2(0.);
 31:   // fit = none
@@ -3496,10 +3535,10 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 39:   box.y = box.x / boxRatio;
 40:   return vec3(box, noFitBoxWidth);
 41: }
-42: 
+42:
 43: void main() {
 44:   gl_Position = a_position;
-45: 
+45:
 46:   vec2 uv = gl_Position.xy * .5;
 47:   vec2 boxOrigin = vec2(.5 - u_originX, u_originY - .5);
 48:   vec2 givenBoxSize = vec2(u_worldWidth, u_worldHeight);
@@ -3507,28 +3546,28 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 50:   float r = u_rotation * 3.14159265358979323846 / 180.;
 51:   mat2 graphicRotation = mat2(cos(r), sin(r), -sin(r), cos(r));
 52:   vec2 graphicOffset = vec2(-u_offsetX, u_offsetY);
-53: 
-54: 
+53:
+54:
 55:   // ===================================================
-56: 
+56:
 57:   float fixedRatio = 1.;
 58:   vec2 fixedRatioBoxGivenSize = vec2(
 59:   (u_worldWidth == 0.) ? u_resolution.x : givenBoxSize.x,
 60:   (u_worldHeight == 0.) ? u_resolution.y : givenBoxSize.y
 61:   );
-62: 
+62:
 63:   v_objectBoxSize = getBoxSize(fixedRatio, fixedRatioBoxGivenSize).xy;
 64:   vec2 objectWorldScale = u_resolution.xy / v_objectBoxSize;
-65: 
+65:
 66:   v_objectUV = uv;
 67:   v_objectUV *= objectWorldScale;
 68:   v_objectUV += boxOrigin * (objectWorldScale - 1.);
 69:   v_objectUV += graphicOffset;
 70:   v_objectUV /= u_scale;
 71:   v_objectUV = graphicRotation * v_objectUV;
-72: 
+72:
 73:   // ===================================================
-74: 
+74:
 75:   v_responsiveBoxGivenSize = vec2(
 76:   (u_worldWidth == 0.) ? u_resolution.x : givenBoxSize.x,
 77:   (u_worldHeight == 0.) ? u_resolution.y : givenBoxSize.y
@@ -3536,13 +3575,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 79:   float responsiveRatio = v_responsiveBoxGivenSize.x / v_responsiveBoxGivenSize.y;
 80:   vec2 responsiveBoxSize = getBoxSize(responsiveRatio, v_responsiveBoxGivenSize).xy;
 81:   vec2 responsiveBoxScale = u_resolution.xy / responsiveBoxSize;
-82: 
+82:
 83:   #ifdef ADD_HELPERS
 84:   v_responsiveHelperBox = uv;
 85:   v_responsiveHelperBox *= responsiveBoxScale;
 86:   v_responsiveHelperBox += boxOrigin * (responsiveBoxScale - 1.);
 87:   #endif
-88: 
+88:
 89:   v_responsiveUV = uv;
 90:   v_responsiveUV *= responsiveBoxScale;
 91:   v_responsiveUV += boxOrigin * (responsiveBoxScale - 1.);
@@ -3551,21 +3590,21 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 94:   v_responsiveUV.x *= responsiveRatio;
 95:   v_responsiveUV = graphicRotation * v_responsiveUV;
 96:   v_responsiveUV.x /= responsiveRatio;
-97: 
+97:
 98:   // ===================================================
-99: 
+99:
 100:   float patternBoxRatio = givenBoxSize.x / givenBoxSize.y;
 101:   vec2 patternBoxGivenSize = vec2(
 102:   (u_worldWidth == 0.) ? u_resolution.x : givenBoxSize.x,
 103:   (u_worldHeight == 0.) ? u_resolution.y : givenBoxSize.y
 104:   );
 105:   patternBoxRatio = patternBoxGivenSize.x / patternBoxGivenSize.y;
-106: 
+106:
 107:   vec3 boxSizeData = getBoxSize(patternBoxRatio, patternBoxGivenSize);
 108:   v_patternBoxSize = boxSizeData.xy;
 109:   float patternBoxNoFitBoxWidth = boxSizeData.z;
 110:   vec2 patternBoxScale = u_resolution.xy / v_patternBoxSize;
-111: 
+111:
 112:   v_patternUV = uv;
 113:   v_patternUV += graphicOffset / patternBoxScale;
 114:   v_patternUV += boxOrigin;
@@ -3582,9 +3621,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 125:   // x100 is a default multiplier between vertex and fragmant shaders
 126:   // we use it to avoid UV presision issues
 127:   v_patternUV *= .01;
-128: 
+128:
 129:   // ===================================================
-130: 
+130:
 131:   vec2 imageBoxSize;
 132:   if (u_fit == 1.) { // contain
 133:     imageBoxSize.x = min(u_resolution.x / u_imageAspectRatio, u_resolution.y) * u_imageAspectRatio;
@@ -3595,7 +3634,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 138:   }
 139:   imageBoxSize.y = imageBoxSize.x / u_imageAspectRatio;
 140:   vec2 imageBoxScale = u_resolution.xy / imageBoxSize;
-141: 
+141:
 142:   v_imageUV = uv;
 143:   v_imageUV *= imageBoxScale;
 144:   v_imageUV += boxOrigin * (imageBoxScale - 1.);
@@ -3604,7 +3643,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 147:   v_imageUV.x *= u_imageAspectRatio;
 148:   v_imageUV = graphicRotation * v_imageUV;
 149:   v_imageUV.x /= u_imageAspectRatio;
-150: 
+150:
 151:   v_imageUV += .5;
 152:   v_imageUV.y = 1. - v_imageUV.y;
 153: }`;
@@ -3620,6 +3659,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/color-panels.ts",
@@ -3629,6 +3669,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/color-panels.ts</path>
 <type>file</type>
@@ -3637,11 +3678,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { declarePI, colorBandingFix } from '../shader-utils.js';
-5: 
+5:
 6: export const colorPanelsMeta = {
 7:   maxColorCount: 7,
 8: } as const;
-9: 
+9:
 10: /**
 11:  * Pseudo-3D semi-transparent panels rotating around a central axis
 12:  *
@@ -3678,14 +3719,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 43:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 44:  *
 45:  */
-46: 
+46:
 47: // language=GLSL
 48: export const colorPanelsFragmentShader: string = `#version 300 es
 49: precision lowp float;
-50: 
+50:
 51: uniform float u_time;
 52: uniform mediump float u_scale;
-53: 
+53:
 54: uniform vec4 u_colors[${ colorPanelsMeta.maxColorCount }];
 55: uniform float u_colorsCount;
 56: uniform vec4 u_colorBack;
@@ -3698,78 +3739,78 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 63: uniform float u_fadeIn;
 64: uniform float u_fadeOut;
 65: uniform float u_gradient;
-66: 
+66:
 67: in vec2 v_objectUV;
-68: 
+68:
 69: out vec4 fragColor;
-70: 
+70:
 71: ${ declarePI }
-72: 
+72:
 73: const float zLimit = .5;
-74: 
+74:
 75: vec2 getPanel(float angle, vec2 uv, float invLength, float aa) {
 76:   float sinA = sin(angle);
 77:   float cosA = cos(angle);
-78: 
+78:
 79:   float denom = sinA - uv.y * cosA;
 80:   if (abs(denom) < .01) return vec2(0.);
-81: 
+81:
 82:   float z = uv.y / denom;
-83: 
+83:
 84:   if (z <= 0. || z > zLimit) return vec2(0.);
-85: 
+85:
 86:   float zRatio = z / zLimit;
 87:   float panelMap = 1. - zRatio;
 88:   float x = uv.x * (cosA * z + 1.) * invLength;
-89: 
+89:
 90:   float zOffset = zRatio - .5;
 91:   float left = -.5 + zOffset * u_angle1;
 92:   float right = .5 - zOffset * u_angle2;
 93:   float blurX = aa + 2. * panelMap * u_blur;
-94: 
+94:
 95:   float leftEdge1 = left - blurX;
 96:   float leftEdge2 = left + .25 * blurX;
 97:   float rightEdge1 = right - .25 * blurX;
 98:   float rightEdge2 = right + blurX;
-99: 
+99:
 100:   float panel = smoothstep(leftEdge1, leftEdge2, x) * (1.0 - smoothstep(rightEdge1, rightEdge2, x));
 101:   panel *= mix(0., panel, smoothstep(0., .01 / max(u_scale, 1e-6), panelMap));
-102: 
+102:
 103:   float midScreen = abs(sinA);
 104:   if (u_edges == true) {
 105:     panelMap = mix(.99, panelMap, panel * clamp(panelMap / (.15 * (1. - pow(midScreen, .1))), 0.0, 1.0));
 106:   } else if (midScreen < .07) {
 107:     panel *= (midScreen * 15.);
 108:   }
-109: 
+109:
 110:   return vec2(panel, panelMap);
 111: }
-112: 
+112:
 113: vec4 blendColor(vec4 colorA, float panelMask, float panelMap) {
 114:   float fade = 1. - smoothstep(.97 - .97 * u_fadeIn, 1., panelMap);
-115: 
+115:
 116:   fade *= smoothstep(-.2 * (1. - u_fadeOut), u_fadeOut, panelMap);
-117: 
+117:
 118:   vec3 blendedRGB = mix(vec3(0.), colorA.rgb, fade);
 119:   float blendedAlpha = mix(0., colorA.a, fade);
-120: 
+120:
 121:   return vec4(blendedRGB, blendedAlpha) * panelMask;
 122: }
-123: 
+123:
 124: void main() {
 125:   vec2 uv = v_objectUV;
 126:   uv *= 1.25;
-127: 
+127:
 128:   float t = .02 * u_time;
 129:   t = fract(t);
 130:   bool reverseTime = (t < 0.5);
-131: 
+131:
 132:   vec3 color = vec3(0.);
 133:   float opacity = 0.;
-134: 
+134:
 135:   float aa = .005 / u_scale;
 136:   int colorsCount = int(u_colorsCount);
-137: 
+137:
 138:   vec4 premultipliedColors[${ colorPanelsMeta.maxColorCount }];
 139:   for (int i = 0; i < ${ colorPanelsMeta.maxColorCount }; i++) {
 140:     if (i >= colorsCount) break;
@@ -3777,12 +3818,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 142:     c.rgb *= c.a;
 143:     premultipliedColors[i] = c;
 144:   }
-145: 
+145:
 146:   float invLength = 1.5 / max(u_length, .001);
-147: 
+147:
 148:   float totalColorWeight = 0.;
 149:   int panelsNumber = 12;
-150: 
+150:
 151:   float densityNormalizer = 1.;
 152:   if (colorsCount == 4) {
 153:     panelsNumber = 16;
@@ -3794,34 +3835,34 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 159:     panelsNumber = 14;
 160:     densityNormalizer = 1.17;
 161:   }
-162: 
+162:
 163:   float fPanelsNumber = float(panelsNumber);
-164: 
+164:
 165:   float totalPanelsShape = 0.;
 166:   float panelGrad = 1. - clamp(u_gradient, 0., 1.);
-167: 
+167:
 168:   for (int set = 0; set < 2; set++) {
 169:     bool isForward = (set == 0 && !reverseTime) || (set == 1 && reverseTime);
 170:     if (!isForward) continue;
-171: 
+171:
 172:     for (int i = 0; i <= 20; i++) {
 173:       if (i >= panelsNumber) break;
-174: 
+174:
 175:       int idx = panelsNumber - 1 - i;
-176: 
+176:
 177:       float offset = float(idx) / fPanelsNumber;
 178:       if (set == 1) {
 179:         offset += .5;
 180:       }
-181: 
+181:
 182:       float densityFract = densityNormalizer * fract(t + offset);
 183:       float angleNorm = densityFract / u_density;
 184:       if (densityFract >= .5 || angleNorm >= .3) continue;
-185: 
+185:
 186:       float smoothDensity = clamp((.5 - densityFract) / .1, 0., 1.) * clamp(densityFract / .01, 0., 1.);
 187:       float smoothAngle = clamp((.3 - angleNorm) / .05, 0., 1.);
 188:       if (smoothDensity * smoothAngle < .001) continue;
-189: 
+189:
 190:       if (angleNorm > .5) {
 191:         angleNorm = 0.5;
 192:       }
@@ -3829,67 +3870,67 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 194:       if (panel[0] <= .001) continue;
 195:       float panelMask = panel[0] * smoothDensity * smoothAngle;
 196:       float panelMap = panel[1];
-197: 
+197:
 198:       int colorIdx = idx % colorsCount;
 199:       int nextColorIdx = (idx + 1) % colorsCount;
-200: 
+200:
 201:       vec4 colorA = premultipliedColors[colorIdx];
 202:       vec4 colorB = premultipliedColors[nextColorIdx];
-203: 
+203:
 204:       colorA = mix(colorA, colorB, max(0., smoothstep(.0, .45, panelMap) - panelGrad));
 205:       vec4 blended = blendColor(colorA, panelMask, panelMap);
 206:       color = blended.rgb + color * (1. - blended.a);
 207:       opacity = blended.a + opacity * (1. - blended.a);
 208:     }
-209: 
-210: 
+209:
+210:
 211:     for (int i = 0; i <= 20; i++) {
 212:       if (i >= panelsNumber) break;
-213: 
+213:
 214:       int idx = panelsNumber - 1 - i;
-215: 
+215:
 216:       float offset = float(idx) / fPanelsNumber;
 217:       if (set == 0) {
 218:         offset += .5;
 219:       }
-220: 
+220:
 221:       float densityFract = densityNormalizer * fract(-t + offset);
 222:       float angleNorm = -densityFract / u_density;
 223:       if (densityFract >= .5 || angleNorm < -.3) continue;
-224: 
+224:
 225:       float smoothDensity = clamp((.5 - densityFract) / .1, 0., 1.) * clamp(densityFract / .01, 0., 1.);
 226:       float smoothAngle = clamp((angleNorm + .3) / .05, 0., 1.);
 227:       if (smoothDensity * smoothAngle < .001) continue;
-228: 
+228:
 229:       vec2 panel = getPanel(angleNorm * TWO_PI + PI, uv, invLength, aa);
 230:       float panelMask = panel[0] * smoothDensity * smoothAngle;
 231:       if (panelMask <= .001) continue;
 232:       float panelMap = panel[1];
-233: 
+233:
 234:       int colorIdx = (colorsCount - (idx % colorsCount)) % colorsCount;
 235:       if (colorIdx < 0) colorIdx += colorsCount;
 236:       int nextColorIdx = (colorIdx + 1) % colorsCount;
-237: 
+237:
 238:       vec4 colorA = premultipliedColors[colorIdx];
 239:       vec4 colorB = premultipliedColors[nextColorIdx];
-240: 
+240:
 241:       colorA = mix(colorA, colorB, max(0., smoothstep(.0, .45, panelMap) - panelGrad));
 242:       vec4 blended = blendColor(colorA, panelMask, panelMap);
 243:       color = blended.rgb + color * (1. - blended.a);
 244:       opacity = blended.a + opacity * (1. - blended.a);
 245:     }
 246:   }
-247: 
+247:
 248:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 249:   color = color + bgColor * (1.0 - opacity);
 250:   opacity = opacity + u_colorBack.a * (1.0 - opacity);
-251: 
+251:
 252:   ${ colorBandingFix }
-253: 
+253:
 254:   fragColor = vec4(color, opacity);
 255: }
 256: `;
-257: 
+257:
 258: export interface ColorPanelsUniforms extends ShaderSizingUniforms {
 259:   u_colors: vec4[];
 260:   u_colorsCount: number;
@@ -3901,6 +3942,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/dithering.ts",
@@ -3910,6 +3952,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/dithering.ts</path>
 <type>file</type>
@@ -3920,7 +3963,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 4:   type ShaderSizingUniforms,
 5: } from '../shader-sizing.js';
 6: import { simplexNoise, declarePI, proceduralHash11, proceduralHash21 } from '../shader-utils.js';
-7: 
+7:
 8: /**
 9:  * Animated 2-color dithering over multiple pattern sources (noise, warp, dots, waves, ripple, swirl, sphere).
 10:  *
@@ -3949,13 +3992,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 33:  * - u_pxSize (float): Pixel size of dithering grid (0.5 to 20)
 34:  *
 35:  * */
-36: 
+36:
 37: // language=GLSL
 38: export const ditheringFragmentShader: string = `#version 300 es
 39: precision mediump float;
-40: 
+40:
 41: uniform float u_time;
-42: 
+42:
 43: uniform vec2 u_resolution;
 44: uniform float u_pixelRatio;
 45: uniform float u_originX;
@@ -3967,27 +4010,27 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 51: uniform float u_rotation;
 52: uniform float u_offsetX;
 53: uniform float u_offsetY;
-54: 
+54:
 55: uniform float u_pxSize;
 56: uniform vec4 u_colorBack;
 57: uniform vec4 u_colorFront;
 58: uniform float u_shape;
 59: uniform float u_type;
-60: 
+60:
 61: out vec4 fragColor;
-62: 
+62:
 63: ${ simplexNoise }
 64: ${ declarePI }
 65: ${ proceduralHash11 }
 66: ${ proceduralHash21 }
-67: 
+67:
 68: float getSimplexNoise(vec2 uv, float t) {
 69:   float noise = .5 * snoise(uv - vec2(0., .3 * t));
 70:   noise += .5 * snoise(2. * uv + vec2(0., .32 * t));
-71: 
+71:
 72:   return noise;
 73: }
-74: 
+74:
 75: const int bayer2x2[4] = int[4](0, 2, 3, 1);
 76: const int bayer4x4[16] = int[16](
 77: 0, 8, 2, 10,
@@ -3995,7 +4038,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 79: 3, 11, 1, 9,
 80: 15, 7, 13, 5
 81: );
-82: 
+82:
 83: const int bayer8x8[64] = int[64](
 84: 0, 32, 8, 40, 2, 34, 10, 42,
 85: 48, 16, 56, 24, 50, 18, 58, 26,
@@ -4006,11 +4049,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 90: 15, 47, 7, 39, 13, 45, 5, 37,
 91: 63, 31, 55, 23, 61, 29, 53, 21
 92: );
-93: 
+93:
 94: float getBayerValue(vec2 uv, int size) {
 95:   ivec2 pos = ivec2(fract(uv / float(size)) * float(size));
 96:   int index = pos.y * size + pos.x;
-97: 
+97:
 98:   if (size == 2) {
 99:     return float(bayer2x2[index]) / 4.0;
 100:   } else if (size == 4) {
@@ -4020,33 +4063,33 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 104:   }
 105:   return 0.0;
 106: }
-107: 
-108: 
+107:
+108:
 109: void main() {
 110:   float t = .5 * u_time;
-111: 
+111:
 112:   float pxSize = u_pxSize * u_pixelRatio;
 113:   vec2 pxSizeUV = gl_FragCoord.xy - .5 * u_resolution;
 114:   pxSizeUV /= pxSize;
 115:   vec2 canvasPixelizedUV = (floor(pxSizeUV) + .5) * pxSize;
 116:   vec2 normalizedUV = canvasPixelizedUV / u_resolution;
-117: 
+117:
 118:   vec2 ditheringNoiseUV = canvasPixelizedUV;
 119:   vec2 shapeUV = normalizedUV;
-120: 
+120:
 121:   vec2 boxOrigin = vec2(.5 - u_originX, u_originY - .5);
 122:   vec2 givenBoxSize = vec2(u_worldWidth, u_worldHeight);
 123:   givenBoxSize = max(givenBoxSize, vec2(1.)) * u_pixelRatio;
 124:   float r = u_rotation * PI / 180.;
 125:   mat2 graphicRotation = mat2(cos(r), sin(r), -sin(r), cos(r));
 126:   vec2 graphicOffset = vec2(-u_offsetX, u_offsetY);
-127: 
+127:
 128:   float patternBoxRatio = givenBoxSize.x / givenBoxSize.y;
 129:   vec2 boxSize = vec2(
 130:   (u_worldWidth == 0.) ? u_resolution.x : givenBoxSize.x,
 131:   (u_worldHeight == 0.) ? u_resolution.y : givenBoxSize.y
 132:   );
-133:   
+133:
 134:   if (u_shape > 3.5) {
 135:     vec2 objectBoxSize = vec2(0.);
 136:     // fit = none
@@ -4058,7 +4101,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 142:     }
 143:     objectBoxSize.y = objectBoxSize.x;
 144:     vec2 objectWorldScale = u_resolution.xy / objectBoxSize;
-145: 
+145:
 146:     shapeUV *= objectWorldScale;
 147:     shapeUV += boxOrigin * (objectWorldScale - 1.);
 148:     shapeUV += vec2(-u_offsetX, u_offsetY);
@@ -4076,7 +4119,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 160:     }
 161:     patternBoxSize.y = patternBoxSize.x / patternBoxRatio;
 162:     vec2 patternWorldScale = u_resolution.xy / patternBoxSize;
-163: 
+163:
 164:     shapeUV += vec2(-u_offsetX, u_offsetY) / patternWorldScale;
 165:     shapeUV += boxOrigin;
 166:     shapeUV -= boxOrigin / patternWorldScale;
@@ -4091,76 +4134,76 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 175:     shapeUV -= boxOrigin;
 176:     shapeUV += .5;
 177:   }
-178: 
+178:
 179:   float shape = 0.;
 180:   if (u_shape < 1.5) {
 181:     // Simplex noise
 182:     shapeUV *= .001;
-183: 
+183:
 184:     shape = 0.5 + 0.5 * getSimplexNoise(shapeUV, t);
 185:     shape = smoothstep(0.3, 0.9, shape);
-186: 
+186:
 187:   } else if (u_shape < 2.5) {
 188:     // Warp
 189:     shapeUV *= .003;
-190: 
+190:
 191:     for (float i = 1.0; i < 6.0; i++) {
 192:       shapeUV.x += 0.6 / i * cos(i * 2.5 * shapeUV.y + t);
 193:       shapeUV.y += 0.6 / i * cos(i * 1.5 * shapeUV.x + t);
 194:     }
-195: 
+195:
 196:     shape = .15 / max(0.001, abs(sin(t - shapeUV.y - shapeUV.x)));
 197:     shape = smoothstep(0.02, 1., shape);
-198: 
+198:
 199:   } else if (u_shape < 3.5) {
 200:     // Dots
 201:     shapeUV *= .05;
-202: 
+202:
 203:     float stripeIdx = floor(2. * shapeUV.x / TWO_PI);
 204:     float rand = hash11(stripeIdx * 10.);
 205:     rand = sign(rand - .5) * pow(.1 + abs(rand), .4);
 206:     shape = sin(shapeUV.x) * cos(shapeUV.y - 5. * rand * t);
 207:     shape = pow(abs(shape), 6.);
-208: 
+208:
 209:   } else if (u_shape < 4.5) {
 210:     // Sine wave
 211:     shapeUV *= 4.;
-212: 
+212:
 213:     float wave = cos(.5 * shapeUV.x - 2. * t) * sin(1.5 * shapeUV.x + t) * (.75 + .25 * cos(3. * t));
 214:     shape = 1. - smoothstep(-1., 1., shapeUV.y + wave);
-215: 
+215:
 216:   } else if (u_shape < 5.5) {
 217:     // Ripple
-218: 
+218:
 219:     float dist = length(shapeUV);
 220:     float waves = sin(pow(dist, 1.7) * 7. - 3. * t) * .5 + .5;
 221:     shape = waves;
-222: 
+222:
 223:   } else if (u_shape < 6.5) {
 224:     // Swirl
-225: 
+225:
 226:     float l = length(shapeUV);
 227:     float angle = 6. * atan(shapeUV.y, shapeUV.x) + 4. * t;
 228:     float twist = 1.2;
 229:     float offset = 1. / pow(max(l, 1e-6), twist) + angle / TWO_PI;
 230:     float mid = smoothstep(0., 1., pow(l, twist));
 231:     shape = mix(0., fract(offset), mid);
-232: 
+232:
 233:   } else {
 234:     // Sphere
 235:     shapeUV *= 2.;
-236: 
+236:
 237:     float d = 1. - pow(length(shapeUV), 2.);
 238:     vec3 pos = vec3(shapeUV, sqrt(max(0., d)));
 239:     vec3 lightPos = normalize(vec3(cos(1.5 * t), .8, sin(1.25 * t)));
 240:     shape = .5 + .5 * dot(lightPos, pos);
 241:     shape *= step(0., d);
 242:   }
-243: 
-244: 
+243:
+244:
 245:   int type = int(floor(u_type));
 246:   float dithering = 0.0;
-247: 
+247:
 248:   switch (type) {
 249:     case 1: {
 250:       dithering = step(hash21(ditheringNoiseUV), shape);
@@ -4182,6 +4225,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/dot-grid.ts",
@@ -4191,13 +4235,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/dot-grid.ts</path>
 <type>file</type>
 <content>
 1: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 2: import { declarePI, simplexNoise } from '../shader-utils.js';
-3: 
+3:
 4: /**
 5:  * Static grid pattern made of circles, diamonds, squares or triangles.
 6:  *
@@ -4230,11 +4275,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 33:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 34:  *
 35:  */
-36: 
+36:
 37: // language=GLSL
 38: export const dotGridFragmentShader: string = `#version 300 es
 39: precision mediump float;
-40: 
+40:
 41: uniform vec4 u_colorBack;
 42: uniform vec4 u_colorFill;
 43: uniform vec4 u_colorStroke;
@@ -4245,39 +4290,39 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 48: uniform float u_sizeRange;
 49: uniform float u_opacityRange;
 50: uniform float u_shape;
-51: 
+51:
 52: in vec2 v_patternUV;
-53: 
+53:
 54: out vec4 fragColor;
-55: 
+55:
 56: ${ declarePI }
 57: ${ simplexNoise }
-58: 
+58:
 59: float polygon(vec2 p, float N, float rot) {
 60:   float a = atan(p.x, p.y) + rot;
 61:   float r = TWO_PI / float(N);
-62: 
+62:
 63:   return cos(floor(.5 + a / r) * r - a) * length(p);
 64: }
-65: 
+65:
 66: void main() {
-67: 
+67:
 68:   // x100 is a default multiplier between vertex and fragmant shaders
 69:   // we use it to avoid UV presision issues
 70:   vec2 shape_uv = 100. * v_patternUV;
-71: 
+71:
 72:   vec2 gap = max(abs(vec2(u_gapX, u_gapY)), vec2(1e-6));
 73:   vec2 grid = fract(shape_uv / gap) + 1e-4;
 74:   vec2 grid_idx = floor(shape_uv / gap);
 75:   float sizeRandomizer = .5 + .8 * snoise(2. * vec2(grid_idx.x * 100., grid_idx.y));
 76:   float opacity_randomizer = .5 + .7 * snoise(2. * vec2(grid_idx.y, grid_idx.x));
-77: 
+77:
 78:   vec2 center = vec2(0.5) - 1e-3;
 79:   vec2 p = (grid - center) * vec2(u_gapX, u_gapY);
-80: 
+80:
 81:   float baseSize = u_dotSize * (1. - sizeRandomizer * u_sizeRange);
 82:   float strokeWidth = u_strokeWidth * (1. - sizeRandomizer * u_sizeRange);
-83: 
+83:
 84:   float dist;
 85:   if (u_shape < 0.5) {
 86:     // Circle
@@ -4298,33 +4343,33 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 101:     p.y -= .75 * baseSize;
 102:     dist = polygon(p, 3., 1e-3);
 103:   }
-104: 
+104:
 105:   float edgeWidth = fwidth(dist);
 106:   float shapeOuter = 1. - smoothstep(baseSize - edgeWidth, baseSize + edgeWidth, dist - strokeWidth);
 107:   float shapeInner = 1. - smoothstep(baseSize - edgeWidth, baseSize + edgeWidth, dist);
 108:   float stroke = shapeOuter - shapeInner;
-109: 
+109:
 110:   float dotOpacity = max(0., 1. - opacity_randomizer * u_opacityRange);
 111:   stroke *= dotOpacity;
 112:   shapeInner *= dotOpacity;
-113: 
+113:
 114:   stroke *= u_colorStroke.a;
 115:   shapeInner *= u_colorFill.a;
-116: 
+116:
 117:   vec3 color = vec3(0.);
 118:   color += stroke * u_colorStroke.rgb;
 119:   color += shapeInner * u_colorFill.rgb;
 120:   color += (1. - shapeInner - stroke) * u_colorBack.rgb * u_colorBack.a;
-121: 
+121:
 122:   float opacity = 0.;
 123:   opacity += stroke;
 124:   opacity += shapeInner;
 125:   opacity += (1. - opacity) * u_colorBack.a;
-126: 
+126:
 127:   fragColor = vec4(color, opacity);
 128: }
 129: `;
-130: 
+130:
 131: export interface DotGridUniforms extends ShaderSizingUniforms {
 132:   u_colorBack: [number, number, number, number];
 133:   u_colorFill: [number, number, number, number];
@@ -4337,7 +4382,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 140:   u_opacityRange: number;
 141:   u_shape: (typeof DotGridShapes)[DotGridShape];
 142: }
-143: 
+143:
 144: export interface DotGridParams extends ShaderSizingParams {
 145:   colorBack?: string;
 146:   colorFill?: string;
@@ -4350,14 +4395,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 153:   opacityRange?: number;
 154:   shape?: DotGridShape;
 155: }
-156: 
+156:
 157: export const DotGridShapes = {
 158:   circle: 0,
 159:   diamond: 1,
 160:   square: 2,
 161:   triangle: 3,
 162: } as const;
-163: 
+163:
 164: export type DotGridShape = keyof typeof DotGridShapes;
 
 (End of file - total 164 lines)
@@ -4367,6 +4412,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/dot-orbit.ts",
@@ -4376,6 +4422,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/dot-orbit.ts</path>
 <type>file</type>
@@ -4384,11 +4431,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { declarePI, rotation2, textureRandomizerR, textureRandomizerGB } from '../shader-utils.js';
-5: 
+5:
 6: export const dotOrbitMeta = {
 7:   maxColorCount: 10,
 8: } as const;
-9: 
+9:
 10: /**
 11:  * Animated multi-color dots pattern with each dot orbiting around its cell center.
 12:  * Supports up to 10 colors and various shape and motion controls.
@@ -4421,15 +4468,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 39:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 40:  *
 41:  */
-42: 
+42:
 43: // language=GLSL
 44: export const dotOrbitFragmentShader: string = `#version 300 es
 45: precision mediump float;
-46: 
+46:
 47: uniform float u_time;
-48: 
+48:
 49: uniform sampler2D u_noiseTexture;
-50: 
+50:
 51: uniform vec4 u_colorBack;
 52: uniform vec4 u_colors[${ dotOrbitMeta.maxColorCount }];
 53: uniform float u_colorsCount;
@@ -4437,23 +4484,23 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 55: uniform float u_size;
 56: uniform float u_sizeRange;
 57: uniform float u_spreading;
-58: 
+58:
 59: in vec2 v_patternUV;
-60: 
+60:
 61: out vec4 fragColor;
-62: 
+62:
 63: ${ declarePI }
 64: ${ rotation2 }
 65: ${ textureRandomizerR }
 66: ${ textureRandomizerGB }
-67: 
-68: 
+67:
+68:
 69: vec3 voronoiShape(vec2 uv, float time) {
 70:   vec2 i_uv = floor(uv);
 71:   vec2 f_uv = fract(uv);
-72: 
+72:
 73:   float spreading = .25 * clamp(u_spreading, 0., 1.);
-74: 
+74:
 75:   float minDist = 1.;
 76:   vec2 randomizer = vec2(0.);
 77:   for (int y = -1; y <= 1; y++) {
@@ -4472,31 +4519,31 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 90:       }
 91:     }
 92:   }
-93: 
+93:
 94:   return vec3(minDist, randomizer);
 95: }
-96: 
+96:
 97: void main() {
-98: 
+98:
 99:   vec2 shape_uv = v_patternUV;
 100:   shape_uv *= 1.5;
-101: 
+101:
 102:   const float firstFrameOffset = -10.;
 103:   float t = u_time + firstFrameOffset;
-104: 
+104:
 105:   vec3 voronoi = voronoiShape(shape_uv, t) + 1e-4;
-106: 
+106:
 107:   float radius = .25 * clamp(u_size, 0., 1.) - .5 * clamp(u_sizeRange, 0., 1.) * voronoi[2];
 108:   float dist = voronoi[0];
 109:   float edgeWidth = fwidth(dist);
 110:   float dots = 1. - smoothstep(radius - edgeWidth, radius + edgeWidth, dist);
-111: 
+111:
 112:   float shape = voronoi[1];
-113: 
+113:
 114:   float mixer = shape * (u_colorsCount - 1.);
 115:   mixer = (shape - .5 / u_colorsCount) * u_colorsCount;
 116:   float steps = max(1., u_stepsPerColor);
-117: 
+117:
 118:   vec4 gradient = u_colors[0];
 119:   gradient.rgb *= gradient.a;
 120:   for (int i = 1; i < ${ dotOrbitMeta.maxColorCount }; i++) {
@@ -4507,7 +4554,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 125:     c.rgb *= c.a;
 126:     gradient = mix(gradient, c, localT);
 127:   }
-128: 
+128:
 129:   if ((mixer < 0.) || (mixer > (u_colorsCount - 1.))) {
 130:     float localT = mixer + 1.;
 131:     if (mixer > (u_colorsCount - 1.)) {
@@ -4520,18 +4567,18 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 138:     cLast.rgb *= cLast.a;
 139:     gradient = mix(cLast, cFst, localT);
 140:   }
-141: 
+141:
 142:   vec3 color = gradient.rgb * dots;
 143:   float opacity = gradient.a * dots;
-144: 
+144:
 145:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 146:   color = color + bgColor * (1. - opacity);
 147:   opacity = opacity + u_colorBack.a * (1. - opacity);
-148: 
+148:
 149:   fragColor = vec4(color, opacity);
 150: }
 151: `;
-152: 
+152:
 153: export interface DotOrbitUniforms extends ShaderSizingUniforms {
 154:   u_colorBack: [number, number, number, number];
 155:   u_colors: vec4[];
@@ -4542,7 +4589,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 160:   u_stepsPerColor: number;
 161:   u_noiseTexture?: HTMLImageElement;
 162: }
-163: 
+163:
 164: export interface DotOrbitParams extends ShaderSizingParams, ShaderMotionParams {
 165:   colorBack?: string;
 166:   colors?: string[];
@@ -4559,6 +4606,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/fluted-glass.ts",
@@ -4568,6 +4616,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/fluted-glass.ts</path>
 <type>file</type>
@@ -4575,7 +4624,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { declarePI, rotation2, proceduralHash21 } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * Fluted glass image filter that transforms an image into streaked, ribbed distortions,
 7:  * giving a mix of clarity and obscurity.
@@ -4623,22 +4672,22 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 49:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 50:  *
 51:  */
-52: 
+52:
 53: // language=GLSL
 54: export const flutedGlassFragmentShader: string = `#version 300 es
 55: precision mediump float;
-56: 
+56:
 57: uniform vec2 u_resolution;
 58: uniform float u_pixelRatio;
 59: uniform float u_rotation;
-60: 
+60:
 61: uniform vec4 u_colorBack;
 62: uniform vec4 u_colorShadow;
 63: uniform vec4 u_colorHighlight;
-64: 
+64:
 65: uniform sampler2D u_image;
 66: uniform float u_imageAspectRatio;
-67: 
+67:
 68: uniform float u_size;
 69: uniform float u_shadows;
 70: uniform float u_angle;
@@ -4656,15 +4705,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 82: uniform float u_marginBottom;
 83: uniform float u_grainMixer;
 84: uniform float u_grainOverlay;
-85: 
+85:
 86: in vec2 v_imageUV;
-87: 
+87:
 88: out vec4 fragColor;
-89: 
+89:
 90: ${ declarePI }
 91: ${ rotation2 }
 92: ${ proceduralHash21 }
-93: 
+93:
 94: float valueNoise(vec2 st) {
 95:   vec2 i = floor(st);
 96:   vec2 f = fract(st);
@@ -4677,7 +4726,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 103:   float x2 = mix(c, d, u.x);
 104:   return mix(x1, x2, u.y);
 105: }
-106: 
+106:
 107: float getUvFrame(vec2 uv, float softness) {
 108:   float aax = 2. * fwidth(uv.x);
 109:   float aay = 2. * fwidth(uv.y);
@@ -4687,7 +4736,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 113:   float top    = 1. - smoothstep(1. - softness - aay, 1., uv.y);
 114:   return left * right * bottom * top;
 115: }
-116: 
+116:
 117: const int MAX_RADIUS = 50;
 118: vec4 samplePremultiplied(sampler2D tex, vec2 uv) {
 119:   vec4 c = texture(tex, uv);
@@ -4697,59 +4746,59 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 123: vec4 getBlur(sampler2D tex, vec2 uv, vec2 texelSize, vec2 dir, float sigma) {
 124:   if (sigma <= .5) return texture(tex, uv);
 125:   int radius = int(min(float(MAX_RADIUS), ceil(3.0 * sigma)));
-126: 
+126:
 127:   float twoSigma2 = 2.0 * sigma * sigma;
 128:   float gaussianNorm = 1.0 / sqrt(TWO_PI * sigma * sigma);
-129: 
+129:
 130:   vec4 sum = samplePremultiplied(tex, uv) * gaussianNorm;
 131:   float weightSum = gaussianNorm;
-132: 
+132:
 133:   for (int i = 1; i <= MAX_RADIUS; i++) {
 134:     if (i > radius) break;
-135: 
+135:
 136:     float x = float(i);
 137:     float w = exp(-(x * x) / twoSigma2) * gaussianNorm;
-138: 
+138:
 139:     vec2 offset = dir * texelSize * x;
 140:     vec4 s1 = samplePremultiplied(tex, uv + offset);
 141:     vec4 s2 = samplePremultiplied(tex, uv - offset);
-142: 
+142:
 143:     sum += (s1 + s2) * w;
 144:     weightSum += 2.0 * w;
 145:   }
-146: 
+146:
 147:   vec4 result = sum / weightSum;
 148:   if (result.a > 0.) {
 149:     result.rgb /= result.a;
 150:   }
-151: 
+151:
 152:   return result;
 153: }
-154: 
+154:
 155: vec2 rotateAspect(vec2 p, float a, float aspect) {
 156:   p.x *= aspect;
 157:   p = rotate(p, a);
 158:   p.x /= aspect;
 159:   return p;
 160: }
-161: 
+161:
 162: float smoothFract(float x) {
 163:   float f = fract(x);
 164:   float w = fwidth(x);
-165: 
+165:
 166:   float edge = abs(f - 0.5) - 0.5;
 167:   float band = smoothstep(-w, w, edge);
-168: 
+168:
 169:   return mix(f, 1.0 - f, band);
 170: }
-171: 
+171:
 172: void main() {
-173: 
+173:
 174:   float patternRotation = -u_angle * PI / 180.;
 175:   float patternSize = mix(200., 5., u_size);
-176: 
+176:
 177:   vec2 uv = v_imageUV;
-178: 
+178:
 179:   vec2 uvMask = gl_FragCoord.xy / u_resolution.xy;
 180:   vec2 sw = vec2(.005);
 181:   vec4 margins = vec4(u_marginLeft, u_marginTop, u_marginRight, u_marginBottom);
@@ -4770,11 +4819,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 196:   smoothstep(margins[1] - 2. * sw.y, margins[1], uvMask.y) *
 197:   smoothstep(margins[3] - 2. * sw.y, margins[3], 1.0 - uvMask.y);
 198:   float maskStrokeInner = maskInner - mask;
-199: 
+199:
 200:   uv -= .5;
 201:   uv *= patternSize;
 202:   uv = rotateAspect(uv, patternRotation, u_imageAspectRatio);
-203: 
+203:
 204:   float curve = 0.;
 205:   float patternY = uv.y / u_imageAspectRatio;
 206:   if (u_shape > 4.5) {
@@ -4792,14 +4841,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 218:   } else {
 219:     // lines
 220:   }
-221: 
+221:
 222:   vec2 UvToFract = uv + curve;
 223:   vec2 fractOrigUV = fract(uv);
 224:   vec2 floorOrigUV = floor(uv);
-225: 
+225:
 226:   float x = smoothFract(UvToFract.x);
 227:   float xNonSmooth = fract(UvToFract.x) + .0001;
-228: 
+228:
 229:   float highlightsWidth = 2. * max(.001, fwidth(UvToFract.x));
 230:   highlightsWidth += 2. * maskStrokeInner;
 231:   float highlights = smoothstep(0., highlightsWidth, xNonSmooth);
@@ -4808,21 +4857,21 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 234:   highlights *= u_highlights;
 235:   highlights = clamp(highlights, 0., 1.);
 236:   highlights *= mask;
-237: 
+237:
 238:   float shadows = pow(x, 1.3);
 239:   float distortion = 0.;
 240:   float fadeX = 1.;
 241:   float frameFade = 0.;
-242: 
+242:
 243:   float aa = fwidth(xNonSmooth);
 244:   aa = max(aa, fwidth(uv.x));
 245:   aa = max(aa, fwidth(UvToFract.x));
 246:   aa = max(aa, .0001);
-247: 
+247:
 248:   if (u_distortionShape == 1.) {
 249:     distortion = -pow(1.5 * x, 3.);
 250:     distortion += (.5 - u_shift);
-251: 
+251:
 252:     frameFade = pow(1.5 * x, 3.);
 253:     aa = max(.2, aa);
 254:     aa += mix(.2, 0., u_size);
@@ -4831,7 +4880,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 257:   } else if (u_distortionShape == 2.) {
 258:     distortion = 2. * pow(x, 2.);
 259:     distortion -= (.5 + u_shift);
-260: 
+260:
 
 (Showing lines 1-260 of 453. Use offset=261 to continue.)
 </content>
@@ -4840,6 +4889,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/gem-smoke.ts",
@@ -4849,6 +4899,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/gem-smoke.ts</path>
 <type>file</type>
@@ -4857,11 +4908,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import type { ShaderSizingParams, ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { rotation2, declarePI } from '../shader-utils.js';
-5: 
+5:
 6: export const gemSmokeMeta = {
 7:   maxColorCount: 6,
 8: } as const;
-9: 
+9:
 10: /**
 11:  * Animated color fields placed over uploaded logo shape; gives the illusion of smoky noise
 12:  * behind the glassy shape.
@@ -4902,31 +4953,31 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 47:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 48:  *
 49:  */
-50: 
+50:
 51: // language=GLSL
 52: export const gemSmokeFragmentShader: string = `#version 300 es
 53: precision mediump float;
-54: 
+54:
 55: in mediump vec2 v_imageUV;
 56: in mediump vec2 v_objectUV;
 57: in mediump vec2 v_responsiveUV;
 58: in mediump vec2 v_responsiveBoxGivenSize;
 59: out vec4 fragColor;
-60: 
+60:
 61: // Image
 62: uniform sampler2D u_image;
 63: uniform float u_imageAspectRatio;
-64: 
+64:
 65: // Canvas
 66: uniform vec2 u_resolution;
 67: uniform float u_time;
-68: 
+68:
 69: // Colors
 70: uniform vec4 u_colors[${gemSmokeMeta.maxColorCount}];
 71: uniform float u_colorsCount;
 72: uniform vec4 u_colorBack;
 73: uniform vec4 u_colorInner;
-74: 
+74:
 75: // Effect controls
 76: uniform float u_innerDistortion;
 77: uniform float u_outerDistortion;
@@ -4935,14 +4986,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 80: uniform float u_offset;
 81: uniform float u_angle;
 82: uniform float u_size;
-83: 
+83:
 84: // Shape controls
 85: uniform float u_shape;
 86: uniform bool u_isImage;
-87: 
+87:
 88: ${ declarePI }
 89: ${ rotation2 }
-90: 
+90:
 91: // 9x9 Gaussian blur on R and G channels
 92: vec2 gaussBlur9x9RG(sampler2D tex, vec2 uv, vec2 dudx, vec2 dudy, float radius) {
 93:   vec2 texel = 1.0 / vec2(textureSize(tex, 0));
@@ -4950,7 +5001,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 95:   // Pascal's row 8: sum = 256, 2D norm = 65536
 96:   const float k[9] = float[9](1.0, 8.0, 28.0, 56.0, 70.0, 56.0, 28.0, 8.0, 1.0);
 97:   vec2 sum = vec2(0.0);
-98: 
+98:
 99:   for (int j = -4; j <= 4; ++j) {
 100:     float wy = k[j + 4];
 101:     for (int i = -4; i <= 4; ++i) {
@@ -4959,30 +5010,30 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 104:       sum += w * texture(tex, uv + off).rg;
 105:     }
 106:   }
-107: 
+107:
 108:   return sum / 65536.0;
 109: }
-110: 
+110:
 111: float sst(float a, float b, float x) {
 112:   return smoothstep(a, b, x);
 113: }
-114: 
+114:
 115: void main() {
 116:   float time = u_time;
-117: 
+117:
 118:   float roundness = 0.;
 119:   float imgAlpha = 0.;
-120: 
+120:
 121:   if (u_isImage == true) {
 122:     // Image sampling (UV scaled inward to account for padding)
 123:     vec2 imageUV = v_imageUV;
 124:     imageUV -= .5;
 125:     imageUV *= .95;
 126:     imageUV += .5;
-127: 
+127:
 128:     vec2 dudx = dFdx(v_imageUV);
 129:     vec2 dudy = dFdy(v_imageUV);
-130: 
+130:
 131:     // Blurred image: x = roundness, y = alpha
 132:     vec2 blurred = gaussBlur9x9RG(u_image, imageUV, dudx, dudy, 10.);
 133:     roundness = 1. - blurred.x;
@@ -4998,7 +5049,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 143:     vec2 uv = v_objectUV + .5;
 144:     uv.y = 1. - uv.y;
 145:     float edge = 0.;
-146: 
+146:
 147:     if (u_shape < 1.) {
 148:       // full-fill on canvas
 149:       vec2 borderUV = v_responsiveUV + .5;
@@ -5018,7 +5069,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 163:       // daisy
 164:       vec2 shapeUV = uv - .5;
 165:       shapeUV *= 1.68;
-166: 
+166:
 167:       float r = length(shapeUV) * 2.;
 168:       float a = atan(shapeUV.y, shapeUV.x) + .2;
 169:       r *= (1. + .05 * sin(3. * a + 2. * time));
@@ -5056,63 +5107,63 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 201:       edge = 1. - smoothstep(.65, .9, edge);
 202:       edge = pow(edge, 4.);
 203:     }
-204: 
+204:
 205:     imgAlpha = 1. - smoothstep(.9 - 2. * fwidth(edge), .9, edge);
 206:     roundness = 1. - edge;
 207:   }
-208: 
+208:
 209: // Smoke UV setup
 210:   vec2 smokeUV = v_objectUV;
 211:   smokeUV = rotate(smokeUV, u_angle * PI / 180.);
 212:   smokeUV *= mix(4., 1., u_size);
-213: 
+213:
 214:   // Two swirl paths: inner (shape-masked) and outer (free), each with independent distortion
 215:   vec2 innerUV = smokeUV;
 216:   vec2 outerUV = smokeUV;
-217: 
+217:
 218:   // Vertical displacement — applied independently to inner and outer
 219:   innerUV.y += u_innerDistortion * (1. - sst(0., 1., length(.4 * innerUV)));
 220:   innerUV.y -= .4 * u_innerDistortion;
 221:   innerUV.y += .7 * u_offset * roundness;
-222: 
+222:
 223:   outerUV.y += u_outerDistortion * (1. - sst(0., 1., length(.4 * outerUV)));
 224:   outerUV.y -= .4 * u_outerDistortion;
-225: 
+225:
 226:   float innerSwirl = u_innerDistortion * roundness;
 227:   float outerSwirl = u_outerDistortion;
-228: 
+228:
 229:   for (int i = 1; i < 5; i++) {
 230:     float fi = float(i);
-231: 
+231:
 232:     float stretchIn = max(length(dFdx(innerUV)), length(dFdy(innerUV)));
 233:     float dampenIn = 1. / (1. + stretchIn * 8.);
 234:     float sIn = innerSwirl * dampenIn;
 235:     innerUV.x += sIn / fi * cos(time + fi * 2.9 * innerUV.y);
 236:     innerUV.y += sIn / fi * cos(time + fi * 1.5 * innerUV.x);
-237: 
+237:
 238:     float stretchOut = max(length(dFdx(outerUV)), length(dFdy(outerUV)));
 239:     float dampenOut = 1. / (1. + stretchOut * 8.);
 240:     float sOut = outerSwirl * dampenOut;
 241:     outerUV.x += sOut / fi * cos(time + fi * 2.9 * outerUV.y);
 242:     outerUV.y += sOut / fi * cos(time + fi * 1.5 * outerUV.x);
 243:   }
-244: 
+244:
 245:   // Smoke shapes from swirl fields
 246:   float innerShape = exp(-1.5 * dot(innerUV, innerUV));
 247:   float outerShape = exp(-1.5 * dot(outerUV, outerUV));
-248: 
+248:
 249:   // Visibility masks
 250:   float outerMask = pow(u_outerGlow, 2.) * (1. - imgAlpha);
 251:   float innerMask = (.01 + .99 * u_innerGlow) * imgAlpha;
-252: 
+252:
 253:   innerShape *= innerMask;
 254:   outerShape *= outerMask;
-255: 
+255:
 256:   // Color gradient
 257:   float mixer = (innerShape + outerShape) * u_colorsCount;
 258:   vec4 gradient = u_colors[0];
 259:   gradient.rgb *= gradient.a;
-260: 
+260:
 
 (Showing lines 1-260 of 787. Use offset=261 to continue.)
 </content>
@@ -5125,6 +5176,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/color-panels.ts",
@@ -5134,6 +5186,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/color-panels.ts</path>
 <type>file</type>
@@ -5149,7 +5202,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 269:   u_density: number;
 270:   u_gradient: number;
 271: }
-272: 
+272:
 273: export interface ColorPanelsParams extends ShaderSizingParams, ShaderMotionParams {
 274:   colors?: string[];
 275:   colorBack?: string;
@@ -5171,6 +5224,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/dithering.ts",
@@ -5180,30 +5234,31 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/dithering.ts</path>
 <type>file</type>
 <content>
 261:   }
-262: 
+262:
 263:   dithering -= .5;
 264:   float res = step(.5, shape + dithering);
-265: 
+265:
 266:   vec3 fgColor = u_colorFront.rgb * u_colorFront.a;
 267:   float fgOpacity = u_colorFront.a;
 268:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 269:   float bgOpacity = u_colorBack.a;
-270: 
+270:
 271:   vec3 color = fgColor * res;
 272:   float opacity = fgOpacity * res;
-273: 
+273:
 274:   color += bgColor * (1. - opacity);
 275:   opacity += bgOpacity * (1. - opacity);
-276: 
+276:
 277:   fragColor = vec4(color, opacity);
 278: }
 279: `;
-280: 
+280:
 281: export interface DitheringUniforms extends ShaderSizingUniforms {
 282:   u_colorBack: [number, number, number, number];
 283:   u_colorFront: [number, number, number, number];
@@ -5211,7 +5266,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 285:   u_type: (typeof DitheringTypes)[DitheringType];
 286:   u_pxSize: number;
 287: }
-288: 
+288:
 289: export interface DitheringParams extends ShaderSizingParams, ShaderMotionParams {
 290:   colorBack?: string;
 291:   colorFront?: string;
@@ -5219,7 +5274,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 293:   type?: DitheringType;
 294:   size?: number;
 295: }
-296: 
+296:
 297: export const DitheringShapes = {
 298:   simplex: 1,
 299:   warp: 2,
@@ -5229,16 +5284,16 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 303:   swirl: 6,
 304:   sphere: 7,
 305: } as const;
-306: 
+306:
 307: export type DitheringShape = keyof typeof DitheringShapes;
-308: 
+308:
 309: export const DitheringTypes = {
 310:   'random': 1,
 311:   '2x2': 2,
 312:   '4x4': 3,
 313:   '8x8': 4,
 314: } as const;
-315: 
+315:
 316: export type DitheringType = keyof typeof DitheringTypes;
 
 (End of file - total 316 lines)
@@ -5248,6 +5303,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/fluted-glass.ts",
@@ -5257,6 +5313,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/fluted-glass.ts</path>
 <type>file</type>
@@ -5271,13 +5328,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 268:     distortion = pow(2. * (xNonSmooth - .5), 6.);
 269:     distortion -= .25;
 270:     distortion -= u_shift;
-271: 
+271:
 272:     frameFade = 1. - 2. * pow(abs(x - .4), 2.);
 273:     aa = .15;
 274:     aa += mix(.1, 0., u_size);
 275:     fadeX = smoothstep(0., aa, xNonSmooth) * smoothstep(1., 1. - aa, xNonSmooth);
 276:     frameFade = mix(1., frameFade, fadeX);
-277: 
+277:
 278:   } else if (u_distortionShape == 4.) {
 279:     x = xNonSmooth;
 280:     distortion = sin((x + .25) * TWO_PI);
@@ -5290,16 +5347,16 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 287:     distortion += .33;
 288:     distortion -= 3. * u_shift;
 289:     distortion *= .33;
-290: 
+290:
 291:     frameFade = .3 * (smoothstep(.0, 1., x));
 292:     shadows = pow(x, 2.5);
-293: 
+293:
 294:     aa = max(.1, aa);
 295:     aa += mix(.1, 0., u_size);
 296:     fadeX = smoothstep(0., aa, xNonSmooth) * smoothstep(1., 1. - aa, xNonSmooth);
 297:     distortion *= fadeX;
 298:   }
-299: 
+299:
 300:   vec2 dudx = dFdx(v_imageUV);
 301:   vec2 dudy = dFdy(v_imageUV);
 302:   vec2 grainUV = v_imageUV - .5;
@@ -5309,41 +5366,41 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 306:   grain = smoothstep(.4, .7, grain);
 307:   grain *= u_grainMixer;
 308:   distortion = mix(distortion, 0., grain);
-309: 
+309:
 310:   shadows = min(shadows, 1.);
 311:   shadows += maskStrokeInner;
 312:   shadows *= mask;
 313:   shadows = min(shadows, 1.);
 314:   shadows *= pow(u_shadows, 2.);
 315:   shadows = clamp(shadows, 0., 1.);
-316: 
+316:
 317:   distortion *= 3. * u_distortion;
 318:   frameFade *= u_distortion;
-319: 
+319:
 320:   fractOrigUV.x += distortion;
 321:   floorOrigUV = rotateAspect(floorOrigUV, -patternRotation, u_imageAspectRatio);
 322:   fractOrigUV = rotateAspect(fractOrigUV, -patternRotation, u_imageAspectRatio);
-323: 
+323:
 324:   uv = (floorOrigUV + fractOrigUV) / patternSize;
 325:   uv += pow(maskStroke, 4.);
-326: 
+326:
 327:   uv += vec2(.5);
-328: 
+328:
 329:   uv = mix(v_imageUV, uv, smoothstep(0., .7, mask));
 330:   float blur = mix(0., 50., u_blur);
 331:   blur = mix(0., blur, smoothstep(.5, 1., mask));
-332: 
+332:
 333:   float edgeDistortion = mix(.0, .04, u_edges);
 334:   edgeDistortion += .06 * frameFade * u_edges;
 335:   edgeDistortion *= mask;
 336:   float frame = getUvFrame(uv, edgeDistortion);
-337: 
+337:
 338:   float stretch = 1. - smoothstep(0., .5, xNonSmooth) * smoothstep(1., 1. - .5, xNonSmooth);
 339:   stretch = pow(stretch, 2.);
 340:   stretch *= mask;
 341:   stretch *= getUvFrame(uv, .1 + .05 * mask * frameFade);
 342:   uv.y = mix(uv.y, .5, u_stretch * stretch);
-343: 
+343:
 344:   vec4 image = getBlur(u_image, uv, 1. / u_resolution / u_pixelRatio, vec2(0., 1.), blur);
 345:   image.rgb *= image.a;
 346:   vec4 backColor = u_colorBack;
@@ -5351,41 +5408,41 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 348:   vec4 highlightColor = u_colorHighlight;
 349:   highlightColor.rgb *= highlightColor.a;
 350:   vec4 shadowColor = u_colorShadow;
-351: 
+351:
 352:   vec3 color = highlightColor.rgb * highlights;
 353:   float opacity = highlightColor.a * highlights;
-354: 
+354:
 355:   shadows = mix(shadows * shadowColor.a, 0., highlights);
 356:   color = mix(color, shadowColor.rgb * shadowColor.a, .5 * shadows);
 357:   color += .5 * pow(shadows, .5) * shadowColor.rgb;
 358:   opacity += shadows;
 359:   color = clamp(color, vec3(0.), vec3(1.));
 360:   opacity = clamp(opacity, 0., 1.);
-361: 
+361:
 362:   color += image.rgb * (1. - opacity) * frame;
 363:   opacity += image.a * (1. - opacity) * frame;
-364: 
+364:
 365:   color += backColor.rgb * (1. - opacity);
 366:   opacity += backColor.a * (1. - opacity);
-367: 
+367:
 368:   float grainOverlay = valueNoise(rotate(grainUV, 1.) + vec2(3.));
 369:   grainOverlay = mix(grainOverlay, valueNoise(rotate(grainUV, 2.) + vec2(-1.)), .5);
 370:   grainOverlay = pow(grainOverlay, 1.3);
-371: 
+371:
 372:   float grainOverlayV = grainOverlay * 2. - 1.;
 373:   vec3 grainOverlayColor = vec3(step(0., grainOverlayV));
 374:   float grainOverlayStrength = u_grainOverlay * abs(grainOverlayV);
 375:   grainOverlayStrength = pow(grainOverlayStrength, .8);
 376:   grainOverlayStrength *= mask;
 377:   color = mix(color, grainOverlayColor, .35 * grainOverlayStrength);
-378: 
+378:
 379:   opacity += .5 * grainOverlayStrength;
 380:   opacity = clamp(opacity, 0., 1.);
-381: 
+381:
 382:   fragColor = vec4(color, opacity);
 383: }
 384: `;
-385: 
+385:
 386: export interface FlutedGlassUniforms extends ShaderSizingUniforms {
 387:   u_image: HTMLImageElement | string | undefined;
 388:   u_colorBack: [number, number, number, number];
@@ -5410,7 +5467,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 407:   u_grainOverlay: number;
 408:   u_noiseTexture?: HTMLImageElement;
 409: }
-410: 
+410:
 411: export interface FlutedGlassParams extends ShaderSizingParams, ShaderMotionParams {
 412:   image?: HTMLImageElement | string;
 413:   colorBack?: string;
@@ -5435,7 +5492,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 432:   grainMixer?: number;
 433:   grainOverlay?: number;
 434: }
-435: 
+435:
 436: export const GlassGridShapes = {
 437:   lines: 1,
 438:   linesIrregular: 2,
@@ -5443,7 +5500,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 440:   zigzag: 4,
 441:   pattern: 5,
 442: } as const;
-443: 
+443:
 444: export const GlassDistortionShapes = {
 445:   prism: 1,
 446:   lens: 2,
@@ -5451,7 +5508,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 448:   cascade: 4,
 449:   flat: 5,
 450: } as const;
-451: 
+451:
 452: export type GlassDistortionShape = keyof typeof GlassDistortionShapes;
 453: export type GlassGridShape = keyof typeof GlassGridShapes;
 
@@ -5462,6 +5519,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/gem-smoke.ts",
@@ -5471,6 +5529,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/gem-smoke.ts</path>
 <type>file</type>
@@ -5478,39 +5537,39 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 261:   float smokeMask = 0.;
 262:   for (int i = 1; i < ${gemSmokeMeta.maxColorCount + 1}; i++) {
 263:     if (i > int(u_colorsCount)) break;
-264: 
+264:
 265:     float m = sst(0., 1., clamp(mixer - float(i - 1), 0., 1.));
 266:     if (i == 1) smokeMask = m;
-267: 
+267:
 268:     vec4 c = u_colors[i - 1];
 269:     c.rgb *= c.a;
 270:     gradient = mix(gradient, c, m);
 271:   }
-272: 
+272:
 273:   // Compositing (premultiplied alpha, front-to-back)
 274:   vec3 color = gradient.rgb * smokeMask;
 275:   float opacity = gradient.a * smokeMask;
-276: 
+276:
 277:   float innerOpacity = u_colorInner.a * imgAlpha;
 278:   vec3 innerColor = u_colorInner.rgb * innerOpacity;
 279:   color += innerColor * (1.0 - opacity);
 280:   opacity += innerOpacity * (1.0 - opacity);
-281: 
+281:
 282:   vec3 backColor = u_colorBack.rgb * u_colorBack.a;
 283:   color += backColor * (1.0 - opacity);
 284:   opacity += u_colorBack.a * (1.0 - opacity);
-285: 
+285:
 286:   fragColor = vec4(color, opacity);
 287: }
 288: `;
-289: 
+289:
 290: // Configuration for Poisson solver
 291: export const POISSON_CONFIG_OPTIMIZED = {
 292:   measurePerformance: false, // Set to true to see performance metrics
 293:   workingSize: 512, // Size to solve Poisson at (will upscale to original size)
 294:   iterations: 32, // SOR converges ~2-20x faster than standard Gauss-Seidel
 295: };
-296: 
+296:
 297: // Precomputed pixel data for sparse processing
 298: interface SparsePixelData {
 299:   interiorPixels: Uint32Array; // Indices of interior pixels
@@ -5520,29 +5579,29 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 303:   // Layout: [east, west, north, south] for each pixel
 304:   neighborIndices: Int32Array;
 305: }
-306: 
+306:
 307: export function toProcessedGemSmoke(file: File | string): Promise<{ imageData: ImageData; pngBlob: Blob }> {
 308:   const canvas = document.createElement('canvas');
 309:   const ctx = canvas.getContext('2d');
 310:   const isBlob = typeof file === 'string' && file.startsWith('blob:');
-311: 
+311:
 312:   return new Promise((resolve, reject) => {
 313:     if (!file || !ctx) {
 314:       reject(new Error('Invalid file or canvas context'));
 315:       return;
 316:     }
-317: 
+317:
 318:     const blobContentTypePromise = isBlob && fetch(file).then((res) => res.headers.get('Content-Type'));
 319:     const img = new Image();
 320:     img.crossOrigin = 'anonymous';
 321:     const totalStartTime = performance.now();
-322: 
+322:
 323:     img.onload = async () => {
 324:       // Force SVG to load at a high fidelity size if it's an SVG
 325:       let isSVG;
-326: 
+326:
 327:       const blobContentType = await blobContentTypePromise;
-328: 
+328:
 329:       if (blobContentType) {
 330:         isSVG = blobContentType === 'image/svg+xml';
 331:       } else if (typeof file === 'string') {
@@ -5550,15 +5609,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 333:       } else {
 334:         isSVG = file.type === 'image/svg+xml';
 335:       }
-336: 
+336:
 337:       let originalWidth = img.width || img.naturalWidth;
 338:       let originalHeight = img.height || img.naturalHeight;
-339: 
+339:
 340:       if (isSVG) {
 341:         // Scale SVG to max dimension while preserving aspect ratio
 342:         const svgMaxSize = 4096;
 343:         const aspectRatio = originalWidth / originalHeight;
-344: 
+344:
 345:         if (originalWidth > originalHeight) {
 346:           originalWidth = svgMaxSize;
 347:           originalHeight = svgMaxSize / aspectRatio;
@@ -5566,20 +5625,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 349:           originalHeight = svgMaxSize;
 350:           originalWidth = svgMaxSize * aspectRatio;
 351:         }
-352: 
+352:
 353:         img.width = originalWidth;
 354:         img.height = originalHeight;
 355:       }
-356: 
+356:
 357:       // Always scale to working resolution for consistency
 358:       const minDimension = Math.min(originalWidth, originalHeight);
 359:       const targetSize = POISSON_CONFIG_OPTIMIZED.workingSize;
-360: 
+360:
 361:       // Calculate scale to fit within workingSize
 362:       const scaleFactor = targetSize / minDimension;
 363:       const width = Math.round(originalWidth * scaleFactor);
 364:       const height = Math.round(originalHeight * scaleFactor);
-365: 
+365:
 366:       if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 367:         console.log(`[Processing Mode]`);
 368:         console.log(`  Original: ${originalWidth}×${originalHeight}`);
@@ -5588,30 +5647,30 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 371:           console.log(`  Speedup: ~${Math.round(1 / (scaleFactor * scaleFactor))}×`);
 372:         }
 373:       }
-374: 
+374:
 375:       canvas.width = originalWidth;
 376:       canvas.height = originalHeight;
-377: 
+377:
 378:       const paddingSize = 0.025;
 379:       const padX = Math.ceil(width * paddingSize);
 380:       const padY = Math.ceil(height * paddingSize);
 381:       const imgW = width - 2 * padX;
 382:       const imgH = height - 2 * padY;
-383: 
+383:
 384:       // ── 1. Shape canvas (working res): image centered with padding ──
 385:       const shapeCanvas = document.createElement('canvas');
 386:       shapeCanvas.width = width;
 387:       shapeCanvas.height = height;
-388: 
+388:
 389:       const shapeCtx = shapeCanvas.getContext('2d')!;
 390:       shapeCtx.drawImage(img, padX, padY, imgW, imgH);
-391: 
+391:
 392:       // 1) Build optimized masks using TypedArrays
 393:       const startMask = performance.now();
-394: 
+394:
 395:       const shapeImageData = shapeCtx.getImageData(0, 0, width, height);
 396:       const data = shapeImageData.data;
-397: 
+397:
 398:       // Use Uint8Array for masks (1 byte per pixel vs 8+ bytes for boolean array)
 399:       const shapeMask = new Uint8Array(width * height);
 400:       const boundaryMask = new Uint8Array(width * height);
@@ -5627,6 +5686,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/gem-smoke.ts",
@@ -5636,11 +5696,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/gem-smoke.ts</path>
 <type>file</type>
 <content>
-401: 
+401:
 402:       // First pass: identify shape pixels
 403:       let shapePixelCount = 0;
 404:       for (let i = 0, idx = 0; i < data.length; i += 4, idx++) {
@@ -5649,20 +5710,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 407:         shapeMask[idx] = isShape;
 408:         shapePixelCount += isShape;
 409:       }
-410: 
+410:
 411:       // 2) Optimized boundary detection using sparse approach
 412:       // Only check shape pixels, not all pixels
 413:       const boundaryIndices: number[] = [];
 414:       const interiorIndices: number[] = [];
-415: 
+415:
 416:       for (let y = 0; y < height; y++) {
 417:         for (let x = 0; x < width; x++) {
 418:           const idx = y * width + x;
 419:           if (!shapeMask[idx]) continue;
-420: 
+420:
 421:           // Check if pixel is on boundary (optimized: early exit)
 422:           let isBoundary = false;
-423: 
+423:
 424:           // Check 4-connected neighbors first (most common case)
 425:           if (x === 0 || x === width - 1 || y === 0 || y === height - 1) {
 426:             isBoundary = true;
@@ -5678,7 +5739,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 436:               !shapeMask[idx + width - 1] || // bottom-left
 437:               !shapeMask[idx + width + 1]; // bottom-right
 438:           }
-439: 
+439:
 440:           if (isBoundary) {
 441:             boundaryMask[idx] = 1;
 442:             boundaryIndices.push(idx);
@@ -5687,7 +5748,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 445:           }
 446:         }
 447:       }
-448: 
+448:
 449:       if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 450:         console.log(`[Mask Building] Time: ${(performance.now() - startMask).toFixed(2)}ms`);
 451:         console.log(
@@ -5696,7 +5757,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 454:         console.log(`  Interior pixels: ${interiorIndices.length}`);
 455:         console.log(`  Boundary pixels: ${boundaryIndices.length}`);
 456:       }
-457: 
+457:
 458:       // 3) Precompute sparse data structure for solver
 459:       const sparseData = buildSparseData(
 460:         shapeMask,
@@ -5706,37 +5767,37 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 464:         width,
 465:         height
 466:       );
-467: 
+467:
 468:       // 4) Solve Poisson equation with optimized sparse solver
 469:       const startSolve = performance.now();
 470:       const u = solvePoissonSparse(sparseData, shapeMask, boundaryMask, width, height);
-471: 
+471:
 472:       if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 473:         console.log(`[Poisson Solve] Time: ${(performance.now() - startSolve).toFixed(2)}ms`);
 474:       }
-475: 
+475:
 476:       // 5) Generate output image
 477:       let maxVal = 0;
 478:       let finalImageData: ImageData;
-479: 
+479:
 480:       // Only check shape pixels for max value
 481:       for (let i = 0; i < interiorIndices.length; i++) {
 482:         const idx = interiorIndices[i]!;
 483:         if (u[idx]! > maxVal) maxVal = u[idx]!;
 484:       }
-485: 
+485:
 486:       // Create roundness image at working resolution
 487:       const tempCanvas = document.createElement('canvas');
 488:       tempCanvas.width = width;
 489:       tempCanvas.height = height;
 490:       const tempCtx = tempCanvas.getContext('2d')!;
-491: 
+491:
 492:       const tempImg = tempCtx.createImageData(width, height);
 493:       for (let y = 0; y < height; y++) {
 494:         for (let x = 0; x < width; x++) {
 495:           const idx = y * width + x;
 496:           const px = idx * 4;
-497: 
+497:
 498:           if (!shapeMask[idx]) {
 499:             tempImg.data[px] = 255;
 500:             tempImg.data[px + 1] = 255;
@@ -5753,15 +5814,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 511:         }
 512:       }
 513:       tempCtx.putImageData(tempImg, 0, 0);
-514: 
+514:
 515:       // Upscale to original resolution with smooth interpolation
 516:       ctx.imageSmoothingEnabled = true;
 517:       ctx.imageSmoothingQuality = 'high';
 518:       ctx.drawImage(tempCanvas, 0, 0, width, height, 0, 0, originalWidth, originalHeight);
-519: 
+519:
 520:       // Now get the upscaled image data for final output
 521:       const outImg = ctx.getImageData(0, 0, originalWidth, originalHeight);
-522: 
+522:
 523:       // Re-apply edges from original resolution with anti-aliasing
 524:       // This ensures edges are pixel-perfect while roundness is smooth
 525:       const origPadX = Math.ceil(originalWidth * paddingSize);
@@ -5772,7 +5833,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 530:       const originalCtx = originalCanvas.getContext('2d')!;
 531:       originalCtx.drawImage(img, origPadX, origPadY, originalWidth - 2 * origPadX, originalHeight - 2 * origPadY);
 532:       const originalData = originalCtx.getImageData(0, 0, originalWidth, originalHeight);
-533: 
+533:
 534:       // Process each pixel: Red channel = roundness, Alpha channel = original alpha
 535:       for (let i = 0; i < outImg.data.length; i += 4) {
 536:         const a = originalData.data[i + 3]!;
@@ -5789,12 +5850,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 547:           outImg.data[i] = upscaledAlpha === 0 ? 0 : outImg.data[i]!; // roundness or 0
 548:           outImg.data[i + 1] = a; // original alpha
 549:         }
-550: 
+550:
 551:         // Unused channels fixed
 552:         outImg.data[i + 2] = 255;
 553:         outImg.data[i + 3] = 255;
 554:       }
-555: 
+555:
 556:       ctx.putImageData(outImg, 0, 0);
 557:       finalImageData = outImg;
 558:       canvas.toBlob((blob) => {
@@ -5802,7 +5863,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 560:           reject(new Error('Failed to create PNG blob'));
 561:           return;
 562:         }
-563: 
+563:
 564:         if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 565:           const totalTime = performance.now() - totalStartTime;
 566:           console.log(`[Total Processing Time] ${totalTime.toFixed(2)}ms`);
@@ -5814,19 +5875,19 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 572:             );
 573:           }
 574:         }
-575: 
+575:
 576:         resolve({
 577:           imageData: finalImageData,
 578:           pngBlob: blob,
 579:         });
 580:       }, 'image/png');
 581:     };
-582: 
+582:
 583:     img.onerror = () => reject(new Error('Failed to load image'));
 584:     img.src = typeof file === 'string' ? file : URL.createObjectURL(file);
 585:   });
 586: }
-587: 
+587:
 588: function buildSparseData(
 589:   shapeMask: Uint8Array,
 590:   boundaryMask: Uint8Array,
@@ -5836,17 +5897,17 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 594:   height: number
 595: ): SparsePixelData {
 596:   const pixelCount = interiorPixels.length;
-597: 
+597:
 598:   // Build neighbor indices for sparse processing
 599:   // For each interior pixel, store indices of its 4 neighbors
 600:   // Use -1 for out-of-bounds or non-shape neighbors
 601:   const neighborIndices = new Int32Array(pixelCount * 4);
-602: 
+602:
 603:   for (let i = 0; i < pixelCount; i++) {
 604:     const idx = interiorPixels[i]!;
 605:     const x = idx % width;
 606:     const y = Math.floor(idx / width);
-607: 
+607:
 608:     // East neighbor
 609:     neighborIndices[i * 4 + 0] = x < width - 1 && shapeMask[idx + 1] ? idx + 1 : -1;
 610:     // West neighbor
@@ -5856,7 +5917,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 614:     // South neighbor
 615:     neighborIndices[i * 4 + 3] = y < height - 1 && shapeMask[idx + width] ? idx + width : -1;
 616:   }
-617: 
+617:
 618:   return {
 619:     interiorPixels,
 620:     boundaryPixels,
@@ -5864,7 +5925,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 622:     neighborIndices,
 623:   };
 624: }
-625: 
+625:
 626: function solvePoissonSparse(
 627:   sparseData: SparsePixelData,
 628:   shapeMask: Uint8Array,
@@ -5874,29 +5935,29 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 632: ): Float32Array {
 633:   // This controls how smooth the falloff roundness will be and extend into the shape
 634:   const ITERATIONS = POISSON_CONFIG_OPTIMIZED.iterations;
-635: 
+635:
 636:   // Keep C constant - only iterations control roundness spread
 637:   const C = 0.01;
-638: 
+638:
 639:   const u = new Float32Array(width * height);
 640:   const { interiorPixels, neighborIndices, pixelCount } = sparseData;
-641: 
+641:
 642:   // Performance tracking
 643:   const startTime = performance.now();
-644: 
+644:
 645:   // Red-Black SOR for better symmetry with fewer iterations
 646:   // omega between 1.8-1.95 typically gives best convergence for Poisson
 647:   const omega = 1.9;
-648: 
+648:
 649:   // Pre-classify pixels as red or black for efficient processing
 650:   const redPixels: number[] = [];
 651:   const blackPixels: number[] = [];
-652: 
+652:
 653:   for (let i = 0; i < pixelCount; i++) {
 654:     const idx = interiorPixels[i]!;
 655:     const x = idx % width;
 656:     const y = Math.floor(idx / width);
-657: 
+657:
 658:     if ((x + y) % 2 === 0) {
 659:       redPixels.push(i);
 660:     } else {
@@ -5908,6 +5969,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/god-rays.ts",
@@ -5917,6 +5979,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/god-rays.ts</path>
 <type>file</type>
@@ -5925,11 +5988,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { declarePI, rotation2, textureRandomizerR, colorBandingFix, proceduralHash11 } from '../shader-utils.js';
-5: 
+5:
 6: export const godRaysMeta = {
 7:   maxColorCount: 5,
 8: } as const;
-9: 
+9:
 10: /**
 11:  * Animated rays of light radiating from the center, blended with up to 5 colors.
 12:  *
@@ -5966,31 +6029,31 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 43:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 44:  *
 45:  */
-46: 
+46:
 47: // language=GLSL
 48: export const godRaysFragmentShader: string = `#version 300 es
 49: precision mediump float;
-50: 
+50:
 51: uniform float u_time;
-52: 
+52:
 53: uniform sampler2D u_noiseTexture;
-54: 
+54:
 55: uniform vec4 u_colorBack;
 56: uniform vec4 u_colorBloom;
 57: uniform vec4 u_colors[${ godRaysMeta.maxColorCount }];
 58: uniform float u_colorsCount;
-59: 
+59:
 60: uniform float u_density;
 61: uniform float u_spotty;
 62: uniform float u_midSize;
 63: uniform float u_midIntensity;
 64: uniform float u_intensity;
 65: uniform float u_bloom;
-66: 
+66:
 67: in vec2 v_objectUV;
-68: 
+68:
 69: out vec4 fragColor;
-70: 
+70:
 71: ${ declarePI }
 72: ${ rotation2 }
 73: ${ textureRandomizerR }
@@ -6006,9 +6069,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 83:   float x2 = mix(c, d, u.x);
 84:   return mix(x1, x2, u.y);
 85: }
-86: 
+86:
 87: ${ proceduralHash11 }
-88: 
+88:
 89: float raysShape(vec2 uv, float r, float freq, float intensity, float radius) {
 90:   float a = atan(uv.y, uv.x);
 91:   vec2 left = vec2(a * freq, r);
@@ -6018,75 +6081,75 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 95:   float shape = mix(n_right, n_left, smoothstep(-.15, .15, uv.x));
 96:   return shape;
 97: }
-98: 
+98:
 99: void main() {
 100:   vec2 shape_uv = v_objectUV;
-101: 
+101:
 102:   float t = .2 * u_time;
-103: 
+103:
 104:   float radius = length(shape_uv);
 105:   float spots = 6.5 * abs(u_spotty);
-106: 
+106:
 107:   float intensity = 4. - 3. * clamp(u_intensity, 0., 1.);
-108: 
+108:
 109:   float delta = 1. - smoothstep(0., 1., radius);
-110: 
+110:
 111:   float midSize = 10. * abs(u_midSize);
 112:   float ms_lo = 0.02 * midSize;
 113:   float ms_hi = max(midSize, 1e-6);
 114:   float middleShape = pow(u_midIntensity, 0.3) * (1. - smoothstep(ms_lo, ms_hi, 3.0 * radius));
 115:   middleShape = pow(middleShape, 5.0);
-116: 
+116:
 117:   vec3 accumColor = vec3(0.0);
 118:   float accumAlpha = 0.0;
-119: 
+119:
 120:   for (int i = 0; i < ${ godRaysMeta.maxColorCount }; i++) {
 121:     if (i >= int(u_colorsCount)) break;
-122: 
+122:
 123:     vec2 rotatedUV = rotate(shape_uv, float(i) + 1.0);
-124: 
+124:
 125:     float r1 = radius * (1.0 + 0.4 * float(i)) - 3.0 * t;
 126:     float r2 = 0.5 * radius * (1.0 + spots) - 2.0 * t;
 127:     float density = 6. * u_density + step(.5, u_density) * pow(4.5 * (u_density - .5), 4.);
 128:     float f = mix(1.0, 3.0 + 0.5 * float(i), hash11(float(i) * 15.)) * density;
-129: 
+129:
 130:     float ray = raysShape(rotatedUV, r1, 5.0 * f, intensity, radius);
 131:     ray *= raysShape(rotatedUV, r2, 4.0 * f, intensity, radius);
 132:     ray += (1. + 4. * ray) * middleShape;
 133:     ray = clamp(ray, 0.0, 1.0);
-134: 
+134:
 135:     float srcAlpha = u_colors[i].a * ray;
 136:     vec3 srcColor = u_colors[i].rgb * srcAlpha;
-137: 
+137:
 138:     vec3 alphaBlendColor = accumColor + (1.0 - accumAlpha) * srcColor;
 139:     float alphaBlendAlpha = accumAlpha + (1.0 - accumAlpha) * srcAlpha;
-140: 
+140:
 141:     vec3 addBlendColor = accumColor + srcColor;
 142:     float addBlendAlpha = accumAlpha + srcAlpha;
-143: 
+143:
 144:     accumColor = mix(alphaBlendColor, addBlendColor, u_bloom);
 145:     accumAlpha = mix(alphaBlendAlpha, addBlendAlpha, u_bloom);
 146:   }
-147: 
+147:
 148:   float overlayAlpha = u_colorBloom.a;
 149:   vec3 overlayColor = u_colorBloom.rgb * overlayAlpha;
-150: 
+150:
 151:   vec3 colorWithOverlay = accumColor + accumAlpha * overlayColor;
 152:   accumColor = mix(accumColor, colorWithOverlay, u_bloom);
-153: 
+153:
 154:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
-155: 
+155:
 156:   vec3 color = accumColor + (1. - accumAlpha) * bgColor;
 157:   float opacity = accumAlpha + (1. - accumAlpha) * u_colorBack.a;
 158:   color = clamp(color, 0., 1.);
 159:   opacity = clamp(opacity, 0., 1.);
-160: 
+160:
 161:   ${ colorBandingFix }
-162: 
+162:
 163:   fragColor = vec4(color, opacity);
 164: }
 165: `;
-166: 
+166:
 167: export interface GodRaysUniforms extends ShaderSizingUniforms {
 168:   u_colorBack: [number, number, number, number];
 169:   u_colorBloom: [number, number, number, number];
@@ -6100,7 +6163,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 177:   u_bloom: number;
 178:   u_noiseTexture?: HTMLImageElement;
 179: }
-180: 
+180:
 181: export interface GodRaysParams extends ShaderSizingParams, ShaderMotionParams {
 182:   colorBack?: string;
 183:   colorBloom?: string;
@@ -6120,6 +6183,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/grain-gradient.ts",
@@ -6129,6 +6193,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/grain-gradient.ts</path>
 <type>file</type>
@@ -6146,11 +6211,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 11:   textureRandomizerR,
 12:   proceduralHash11,
 13: } from '../shader-utils.js';
-14: 
+14:
 15: export const grainGradientMeta = {
 16:   maxColorCount: 7,
 17: } as const;
-18: 
+18:
 19: /**
 20:  * Multi-color gradients with grainy, noise-textured distortion available in 7 animated abstract forms.
 21:  *
@@ -6198,17 +6263,17 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 63:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 64:  *
 65:  */
-66: 
+66:
 67: // language=GLSL
 68: export const grainGradientFragmentShader: string = `#version 300 es
 69: precision lowp float;
-70: 
+70:
 71: uniform mediump float u_time;
 72: uniform mediump vec2 u_resolution;
 73: uniform mediump float u_pixelRatio;
-74: 
+74:
 75: uniform sampler2D u_noiseTexture;
-76: 
+76:
 77: uniform vec4 u_colorBack;
 78: uniform vec4 u_colors[${ grainGradientMeta.maxColorCount }];
 79: uniform float u_colorsCount;
@@ -6216,30 +6281,30 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 81: uniform float u_intensity;
 82: uniform float u_noise;
 83: uniform float u_shape;
-84: 
+84:
 85: uniform mediump float u_originX;
 86: uniform mediump float u_originY;
 87: uniform mediump float u_worldWidth;
 88: uniform mediump float u_worldHeight;
 89: uniform mediump float u_fit;
-90: 
+90:
 91: uniform mediump float u_scale;
 92: uniform mediump float u_rotation;
 93: uniform mediump float u_offsetX;
 94: uniform mediump float u_offsetY;
-95: 
+95:
 96: in vec2 v_objectUV;
 97: in vec2 v_patternUV;
 98: in vec2 v_objectBoxSize;
 99: in vec2 v_patternBoxSize;
-100: 
+100:
 101: out vec4 fragColor;
-102: 
+102:
 103: ${ declarePI }
 104: ${ simplexNoise }
 105: ${ rotation2 }
 106: ${ textureRandomizerR }
-107: 
+107:
 108: float valueNoiseR(vec2 st) {
 109:   vec2 i = floor(st);
 110:   vec2 f = fract(st);
@@ -6272,9 +6337,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 137:   }
 138:   return total;
 139: }
-140: 
+140:
 141: ${ proceduralHash11 }
-142: 
+142:
 143: vec2 truchet(vec2 uv, float idx){
 144:   idx = fract(((idx - .5) * 2.));
 145:   if (idx > 0.75) {
@@ -6286,25 +6351,25 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 151:   }
 152:   return uv;
 153: }
-154: 
+154:
 155: void main() {
-156: 
+156:
 157:   const float firstFrameOffset = 7.;
 158:   float t = .1 * (u_time + firstFrameOffset);
-159: 
+159:
 160:   vec2 shape_uv = vec2(0.);
 161:   vec2 grain_uv = vec2(0.);
-162: 
+162:
 163:   float r = u_rotation * PI / 180.;
 164:   float cr = cos(r);
 165:   float sr = sin(r);
 166:   mat2 graphicRotation = mat2(cr, sr, -sr, cr);
 167:   vec2 graphicOffset = vec2(-u_offsetX, u_offsetY);
-168: 
+168:
 169:   if (u_shape > 3.5) {
 170:     shape_uv = v_objectUV;
 171:     grain_uv = shape_uv;
-172: 
+172:
 173:     // apply inverse transform to grain_uv so it respects the originXY
 174:     grain_uv = transpose(graphicRotation) * grain_uv;
 175:     grain_uv *= u_scale;
@@ -6314,7 +6379,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 179:   } else {
 180:     shape_uv = .5 * v_patternUV;
 181:     grain_uv = 100. * v_patternUV;
-182: 
+182:
 183:     // apply inverse transform to grain_uv so it respects the originXY
 184:     grain_uv = transpose(graphicRotation) * grain_uv;
 185:     grain_uv *= u_scale;
@@ -6334,84 +6399,84 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 199:     grain_uv -= graphicOffset / patternBoxScale;
 200:     grain_uv *= 1.6;
 201:   }
-202: 
-203: 
+202:
+203:
 204:   float shape = 0.;
-205: 
+205:
 206:   if (u_shape < 1.5) {
 207:     // Sine wave
-208: 
+208:
 209:     float wave = cos(.5 * shape_uv.x - 4. * t) * sin(1.5 * shape_uv.x + 2. * t) * (.75 + .25 * cos(6. * t));
 210:     shape = 1. - smoothstep(-1., 1., shape_uv.y + wave);
-211: 
+211:
 212:   } else if (u_shape < 2.5) {
 213:     // Grid (dots)
-214: 
+214:
 215:     float stripeIdx = floor(2. * shape_uv.x / TWO_PI);
 216:     float rand = hash11(stripeIdx * 100.);
 217:     rand = sign(rand - .5) * pow(4. * abs(rand), .3);
 218:     shape = sin(shape_uv.x) * cos(shape_uv.y - 5. * rand * t);
 219:     shape = pow(abs(shape), 4.);
-220: 
+220:
 221:   } else if (u_shape < 3.5) {
 222:     // Truchet pattern
-223: 
+223:
 224:     float n2 = valueNoiseR(shape_uv * .4 - 3.75 * t);
 225:     shape_uv.x += 10.;
 226:     shape_uv *= .6;
-227: 
+227:
 228:     vec2 tile = truchet(fract(shape_uv), randomR(floor(shape_uv)));
-229: 
+229:
 230:     float distance1 = length(tile);
 231:     float distance2 = length(tile - vec2(1.));
-232: 
+232:
 233:     n2 -= .5;
 234:     n2 *= .1;
 235:     shape = smoothstep(.2, .55, distance1 + n2) * (1. - smoothstep(.45, .8, distance1 - n2));
 236:     shape += smoothstep(.2, .55, distance2 + n2) * (1. - smoothstep(.45, .8, distance2 - n2));
-237: 
+237:
 238:     shape = pow(shape, 1.5);
-239: 
+239:
 240:   } else if (u_shape < 4.5) {
 241:     // Corners
-242: 
+242:
 243:     shape_uv *= .6;
 244:     vec2 outer = vec2(.5);
-245: 
+245:
 246:     vec2 bl = smoothstep(vec2(0.), outer, shape_uv + vec2(.1 + .1 * sin(3. * t), .2 - .1 * sin(5.25 * t)));
 247:     vec2 tr = smoothstep(vec2(0.), outer, 1. - shape_uv);
 248:     shape = 1. - bl.x * bl.y * tr.x * tr.y;
-249: 
+249:
 250:     shape_uv = -shape_uv;
 251:     bl = smoothstep(vec2(0.), outer, shape_uv + vec2(.1 + .1 * sin(3. * t), .2 - .1 * cos(5.25 * t)));
 252:     tr = smoothstep(vec2(0.), outer, 1. - shape_uv);
 253:     shape -= bl.x * bl.y * tr.x * tr.y;
-254: 
+254:
 255:     shape = 1. - smoothstep(0., 1., shape);
-256: 
+256:
 257:   } else if (u_shape < 5.5) {
 258:     // Ripple
-259: 
+259:
 260:     shape_uv *= 2.;
 261:     float dist = length(.4 * shape_uv);
 262:     float waves = sin(pow(dist, 1.2) * 5. - 3. * t) * .5 + .5;
 263:     shape = waves;
-264: 
+264:
 265:   } else if (u_shape < 6.5) {
 266:     // Blob
-267: 
+267:
 268:     t *= 2.;
-269: 
+269:
 270:     vec2 f1_traj = .25 * vec2(1.3 * sin(t), .2 + 1.3 * cos(.6 * t + 4.));
 271:     vec2 f2_traj = .2 * vec2(1.2 * sin(-t), 1.3 * sin(1.6 * t));
 272:     vec2 f3_traj = .25 * vec2(1.7 * cos(-.6 * t), cos(-1.6 * t));
 273:     vec2 f4_traj = .3 * vec2(1.4 * cos(.8 * t), 1.2 * sin(-.6 * t - 3.));
-274: 
+274:
 275:     shape = .5 * pow(1. - clamp(0., 1., length(shape_uv + f1_traj)), 5.);
 276:     shape += .5 * pow(1. - clamp(0., 1., length(shape_uv + f2_traj)), 5.);
 277:     shape += .5 * pow(1. - clamp(0., 1., length(shape_uv + f3_traj)), 5.);
 278:     shape += .5 * pow(1. - clamp(0., 1., length(shape_uv + f4_traj)), 5.);
-279: 
+279:
 280:     shape = smoothstep(.0, .9, shape);
 
 (Showing lines 1-280 of 370. Use offset=281 to continue.)
@@ -6421,6 +6486,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/halftone-cmyk.ts",
@@ -6430,6 +6496,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/halftone-cmyk.ts</path>
 <type>file</type>
@@ -6437,7 +6504,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { declarePI } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * CMYK halftone printing effect applied to images with customizable dot patterns
 7:  * and ink colors for each channel (Cyan, Magenta, Yellow, Black).
@@ -6485,14 +6552,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 49:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 50:  *
 51:  */
-52: 
+52:
 53: // language=GLSL
 54: export const halftoneCmykFragmentShader: string = `#version 300 es
 55: precision mediump float;
-56: 
+56:
 57: uniform sampler2D u_image;
 58: uniform float u_imageAspectRatio;
-59: 
+59:
 60: uniform vec4 u_colorBack;
 61: uniform vec4 u_colorC;
 62: uniform vec4 u_colorM;
@@ -6516,23 +6583,23 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 80: uniform float u_gainK;
 81: uniform float u_type;
 82: uniform sampler2D u_noiseTexture;
-83: 
+83:
 84: in vec2 v_imageUV;
 85: out vec4 fragColor;
-86: 
+86:
 87: const float shiftC = -.5;
 88: const float shiftM = -.25;
 89: const float shiftY = .2;
 90: const float shiftK = 0.;
-91: 
+91:
 92: // Precomputed sin/cos for rotation angles (15°, 75°, 0°, 45°)
 93: const float cosC = 0.9659258;  const float sinC = 0.2588190;   // 15°
 94: const float cosM = 0.2588190;  const float sinM = 0.9659258;   // 75°
 95: const float cosY = 1.0;        const float sinY = 0.0;         // 0°
 96: const float cosK = 0.7071068;  const float sinK = 0.7071068;   // 45°
-97: 
+97:
 98: ${ declarePI }
-99: 
+99:
 100: vec2 randomRG(vec2 p) {
 101:   vec2 uv = floor(p) / 100. + .5;
 102:   return texture(u_noiseTexture, fract(uv)).rg;
@@ -6542,11 +6609,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 106:   p3 += dot(p3, p3.yzx + 19.19);
 107:   return fract(vec3(p3.x * p3.y, p3.y * p3.z, p3.z * p3.x));
 108: }
-109: 
+109:
 110: float sst(float edge0, float edge1, float x) {
 111:   return smoothstep(edge0, edge1, x);
 112: }
-113: 
+113:
 114: vec3 valueNoise3(vec2 st) {
 115:   vec2 i = floor(st);
 116:   vec2 f = fract(st);
@@ -6559,16 +6626,16 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 123:   vec3 x2 = mix(c, d, u.x);
 124:   return mix(x1, x2, u.y);
 125: }
-126: 
+126:
 127: float getUvFrame(vec2 uv, vec2 pad) {
 128:   float left   = smoothstep(-pad.x, 0., uv.x);
 129:   float right  = smoothstep(1. + pad.x, 1., uv.x);
 130:   float bottom = smoothstep(-pad.y, 0., uv.y);
 131:   float top    = smoothstep(1. + pad.y, 1., uv.y);
-132: 
+132:
 133:   return left * right * bottom * top;
 134: }
-135: 
+135:
 136: vec4 RGBAtoCMYK(vec4 rgba) {
 137:   float k = 1. - max(max(rgba.r, rgba.g), rgba.b);
 138:   float denom = 1. - k;
@@ -6578,11 +6645,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 142:   }
 143:   return vec4(cmy, k) * rgba.a;
 144: }
-145: 
+145:
 146: vec3 applyContrast(vec3 rgb) {
 147:   return clamp((rgb - 0.5) * u_contrast + 0.5, 0.0, 1.0);
 148: }
-149: 
+149:
 150: // Single-component CMYK extractors with contrast built-in, alpha-aware
 151: float getCyan(vec4 rgba) {
 152:   vec3 c = clamp((rgba.rgb - 0.5) * u_contrast + 0.5, 0.0, 1.0);
@@ -6603,20 +6670,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 167:   vec3 c = clamp((rgba.rgb - 0.5) * u_contrast + 0.5, 0.0, 1.0);
 168:   return (1. - max(max(c.r, c.g), c.b)) * rgba.a;
 169: }
-170: 
+170:
 171: vec2 cellCenterPos(vec2 uv, vec2 cellOffset, float channelIdx) {
 172:   vec2 cellCenter = floor(uv) + .5 + cellOffset;
 173:   return cellCenter + (randomRG(cellCenter + channelIdx * 50.) - .5) * u_gridNoise;
 174: }
-175: 
+175:
 176: vec2 gridToImageUV(vec2 cellCenter, float cosA, float sinA, float shift, vec2 pad) {
 177:   vec2 uvGrid = mat2(cosA, -sinA, sinA, cosA) * (cellCenter - shift);
 178:   return uvGrid * pad + 0.5;
 179: }
-180: 
+180:
 181: void colorMask(vec2 pos, vec2 cellCenter, float rad, float transparency, float grain, float channelAddon, float channelgain, float generalComp, bool isJoined, inout float outMask) {
 182:   float dist = length(pos - cellCenter);
-183: 
+183:
 184:   float radius = rad;
 185:   radius *= (1. + generalComp);
 186:   radius += (.15 + channelgain * radius);
@@ -6624,7 +6691,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 188:   radius = mix(0., radius, transparency);
 189:   radius += channelAddon;
 190:   radius *= (1. - grain);
-191: 
+191:
 192:   float mask = 1. - sst(0., radius, dist);
 193:   if (isJoined) {
 194:     // ink or sharp (joined)
@@ -6633,59 +6700,59 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 197:     // dots (separate)
 198:     mask = sst(.5 - .5 * u_softness, .51 + .49 * u_softness, mask);
 199:   }
-200: 
+200:
 201:   mask *= mix(1., mix(.5, 1., 1.5 * radius), u_softness);
 202:   outMask += mask;
 203: }
-204: 
+204:
 205: vec3 applyInk(vec3 paper, vec3 inkColor, float cov) {
 206:   vec3 inkEffect = mix(vec3(1.0), inkColor, clamp(cov, 0.0, 1.0));
 207:   return paper * inkEffect;
 208: }
-209: 
+209:
 210: void main() {
 211:   vec2 uv = v_imageUV;
-212: 
+212:
 213:   float cellsPerSide = mix(400.0, 7.0, pow(u_size, 0.7));
 214:   float cellSizeY = 1.0 / cellsPerSide;
 215:   vec2 pad = cellSizeY * vec2(1.0 / u_imageAspectRatio, 1.0);
 216:   vec2 uvGrid = (uv - .5) / pad;
 217:   float insideImageBox = getUvFrame(uv, pad);
-218: 
+218:
 219:   float generalComp = .1 * u_softness + .1 * u_gridNoise + .1 * (1. - step(0.5, u_type)) * (1.5 - u_softness);
-220: 
+220:
 221:   vec2 uvC = mat2(cosC, sinC, -sinC, cosC) * uvGrid + shiftC;
 222:   vec2 uvM = mat2(cosM, sinM, -sinM, cosM) * uvGrid + shiftM;
 223:   vec2 uvY = mat2(cosY, sinY, -sinY, cosY) * uvGrid + shiftY;
 224:   vec2 uvK = mat2(cosK, sinK, -sinK, cosK) * uvGrid + shiftK;
-225: 
+225:
 226:   vec2 grainSize = mix(2000., 200., u_grainSize) * vec2(1., 1. / u_imageAspectRatio);
 227:   vec2 grainUV = (v_imageUV - .5) * grainSize + .5;
 228:   vec3 noiseValues = valueNoise3(grainUV);
 229:   float grain = sst(.55, 1., noiseValues.r);
 230:   grain *= u_grainMixer;
-231: 
+231:
 232:   vec4 outMask = vec4(0.);
 233:   bool isJoined = u_type > 0.5;
-234: 
+234:
 235:   if (u_type < 1.5) {
 236:     // dots or ink: per-cell color sampling
 237:     for (int dy = -1; dy <= 1; dy++) {
 238:       for (int dx = -1; dx <= 1; dx++) {
 239:         vec2 cellOffset = vec2(float(dx), float(dy));
-240: 
+240:
 241:         vec2 cellCenterC = cellCenterPos(uvC, cellOffset, 0.);
 242:         vec4 texC = texture(u_image, gridToImageUV(cellCenterC, cosC, sinC, shiftC, pad));
 243:         colorMask(uvC, cellCenterC, getCyan(texC), insideImageBox * texC.a, grain, u_floodC, u_gainC, generalComp, isJoined, outMask[0]);
-244: 
+244:
 245:         vec2 cellCenterM = cellCenterPos(uvM, cellOffset, 1.);
 246:         vec4 texM = texture(u_image, gridToImageUV(cellCenterM, cosM, sinM, shiftM, pad));
 247:         colorMask(uvM, cellCenterM, getMagenta(texM), insideImageBox * texM.a, grain, u_floodM, u_gainM, generalComp, isJoined, outMask[1]);
-248: 
+248:
 249:         vec2 cellCenterY = cellCenterPos(uvY, cellOffset, 2.);
 250:         vec4 texY = texture(u_image, gridToImageUV(cellCenterY, cosY, sinY, shiftY, pad));
 251:         colorMask(uvY, cellCenterY, getYellow(texY), insideImageBox * texY.a, grain, u_floodY, u_gainY, generalComp, isJoined, outMask[2]);
-252: 
+252:
 253:         vec2 cellCenterK = cellCenterPos(uvK, cellOffset, 3.);
 254:         vec4 texK = texture(u_image, gridToImageUV(cellCenterK, cosK, sinK, shiftK, pad));
 255:         colorMask(uvK, cellCenterK, getBlack(texK), insideImageBox * texK.a, grain, u_floodK, u_gainK, generalComp, isJoined, outMask[3]);
@@ -6700,7 +6767,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 264:     for (int dy = -1; dy <= 1; dy++) {
 265:       for (int dx = -1; dx <= 1; dx++) {
 266:         vec2 cellOffset = vec2(float(dx), float(dy));
-267: 
+267:
 268:         colorMask(uvC, cellCenterPos(uvC, cellOffset, 0.), cmykOriginal.x, insideImageBox, grain, u_floodC, u_gainC, generalComp, isJoined, outMask[0]);
 269:         colorMask(uvM, cellCenterPos(uvM, cellOffset, 1.), cmykOriginal.y, insideImageBox, grain, u_floodM, u_gainM, generalComp, isJoined, outMask[1]);
 270:         colorMask(uvY, cellCenterPos(uvY, cellOffset, 2.), cmykOriginal.z, insideImageBox, grain, u_floodY, u_gainY, generalComp, isJoined, outMask[2]);
@@ -6708,9 +6775,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 272:       }
 273:     }
 274:   }
-275: 
+275:
 276:   float shape;
-277: 
+277:
 278:   float C = outMask[0];
 279:   float M = outMask[1];
 280:   float Y = outMask[2];
@@ -6722,6 +6789,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/halftone-dots.ts",
@@ -6731,6 +6799,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/halftone-dots.ts</path>
 <type>file</type>
@@ -6738,7 +6807,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { declarePI, rotation2, proceduralHash21 } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * A halftone-dot image filter featuring customizable grids, color palettes, and dot styles.
 7:  *
@@ -6776,23 +6845,23 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 39:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 40:  *
 41:  */
-42: 
+42:
 43: // language=GLSL
 44: export const halftoneDotsFragmentShader: string = `#version 300 es
 45: precision mediump float;
-46: 
+46:
 47: uniform float u_rotation;
-48: 
+48:
 49: uniform float u_time;
-50: 
+50:
 51: uniform vec4 u_colorFront;
 52: uniform vec4 u_colorBack;
 53: uniform float u_radius;
 54: uniform float u_contrast;
-55: 
+55:
 56: uniform sampler2D u_image;
 57: uniform float u_imageAspectRatio;
-58: 
+58:
 59: uniform float u_size;
 60: uniform float u_grainMixer;
 61: uniform float u_grainOverlay;
@@ -6801,15 +6870,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 64: uniform bool u_originalColors;
 65: uniform bool u_inverted;
 66: uniform float u_type;
-67: 
+67:
 68: in vec2 v_imageUV;
-69: 
+69:
 70: out vec4 fragColor;
-71: 
+71:
 72: ${ declarePI }
 73: ${ rotation2 }
 74: ${ proceduralHash21 }
-75: 
+75:
 76: float valueNoise(vec2 st) {
 77:   vec2 i = floor(st);
 78:   vec2 f = fract(st);
@@ -6822,34 +6891,34 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 85:   float x2 = mix(c, d, u.x);
 86:   return mix(x1, x2, u.y);
 87: }
-88: 
+88:
 89: float lst(float edge0, float edge1, float x) {
 90:   return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 91: }
-92: 
+92:
 93: float sst(float edge0, float edge1, float x) {
 94:   return smoothstep(edge0, edge1, x);
 95: }
-96: 
+96:
 97: float getCircle(vec2 uv, float r, float baseR) {
 98:   r = mix(.25 * baseR, 0., r);
 99:   float d = length(uv - .5);
 100:   float aa = fwidth(d);
 101:   return 1. - smoothstep(r - aa, r + aa, d);
 102: }
-103: 
+103:
 104: float getCell(vec2 uv) {
 105:   float insideX = step(0.0, uv.x) * (1.0 - step(1.0, uv.x));
 106:   float insideY = step(0.0, uv.y) * (1.0 - step(1.0, uv.y));
 107:   return insideX * insideY;
 108: }
-109: 
+109:
 110: float getCircleWithHole(vec2 uv, float r, float baseR) {
 111:   float cell = getCell(uv);
-112: 
+112:
 113:   r = mix(.75 * baseR, 0., r);
 114:   float rMod = mod(r, .5);
-115: 
+115:
 116:   float d = length(uv - .5);
 117:   float aa = fwidth(d);
 118:   float circle = 1. - smoothstep(rMod - aa, rMod + aa, d);
@@ -6859,7 +6928,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 122:     return cell - circle;
 123:   }
 124: }
-125: 
+125:
 126: float getGooeyBall(vec2 uv, float r, float baseR) {
 127:   float d = length(uv - .5);
 128:   float sizeRadius = .3;
@@ -6868,11 +6937,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 131:   }
 132:   sizeRadius = mix(sizeRadius * baseR, 0., r);
 133:   d = 1. - sst(0., sizeRadius, d);
-134: 
+134:
 135:   d = pow(d, 2. + baseR);
 136:   return d;
 137: }
-138: 
+138:
 139: float getSoftBall(vec2 uv, float r, float baseR) {
 140:   float d = length(uv - .5);
 141:   float sizeRadius = clamp(baseR, 0., 1.);
@@ -6882,22 +6951,22 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 145:   d = pow(d, 4. + 3. * powRadius);
 146:   return d;
 147: }
-148: 
+148:
 149: float getUvFrame(vec2 uv, vec2 pad) {
 150:   float aa = 0.0001;
-151: 
+151:
 152:   float left   = smoothstep(-pad.x, -pad.x + aa, uv.x);
 153:   float right  = smoothstep(1.0 + pad.x, 1.0 + pad.x - aa, uv.x);
 154:   float bottom = smoothstep(-pad.y, -pad.y + aa, uv.y);
 155:   float top    = smoothstep(1.0 + pad.y, 1.0 + pad.y - aa, uv.y);
-156: 
+156:
 157:   return left * right * bottom * top;
 158: }
-159: 
+159:
 160: float sigmoid(float x, float k) {
 161:   return 1.0 / (1.0 + exp(-k * (x - 0.5)));
 162: }
-163: 
+163:
 164: float getLumAtPx(vec2 uv, float contrast) {
 165:   vec4 tex = texture(u_image, uv);
 166:   vec3 color = vec3(
@@ -6910,19 +6979,19 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 173:   lum = u_inverted ? (1. - lum) : lum;
 174:   return lum;
 175: }
-176: 
+176:
 177: float getLumBall(vec2 p, vec2 pad, vec2 inCellOffset, float contrast, float baseR, float stepSize, out vec4 ballColor) {
 178:   p += inCellOffset;
 179:   vec2 uv_i = floor(p);
 180:   vec2 uv_f = fract(p);
 181:   vec2 samplingUV = (uv_i + .5 - inCellOffset) * pad + vec2(.5);
 182:   float outOfFrame = getUvFrame(samplingUV, pad * stepSize);
-183: 
+183:
 184:   float lum = getLumAtPx(samplingUV, contrast);
 185:   ballColor = texture(u_image, samplingUV);
 186:   ballColor.rgb *= ballColor.a;
 187:   ballColor *= outOfFrame;
-188: 
+188:
 189:   float ball = 0.;
 190:   if (u_type == 0.) {
 191:     // classic
@@ -6937,13 +7006,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 200:     // soft
 201:     ball = getSoftBall(uv_f, lum, baseR);
 202:   }
-203: 
+203:
 204:   return ball * outOfFrame;
 205: }
-206: 
-207: 
+206:
+207:
 208: void main() {
-209: 
+209:
 210:   float stepMultiplier = 1.;
 211:   if (u_type == 0.) {
 212:     // classic
@@ -6952,7 +7021,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 215:     // gooey & soft
 216:     stepMultiplier = 6.;
 217:   }
-218: 
+218:
 219:   float cellsPerSide = mix(300., 7., pow(u_size, .7));
 220:   cellsPerSide /= stepMultiplier;
 221:   float cellSizeY = 1. / cellsPerSide;
@@ -6961,29 +7030,29 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 224:     // gooey diagonal grid works differently
 225:     pad *= .7;
 226:   }
-227: 
+227:
 228:   vec2 uv = v_imageUV;
 229:   uv -= vec2(.5);
 230:   uv /= pad;
-231: 
+231:
 232:   float contrast = mix(0., 15., pow(u_contrast, 1.5));
 233:   float baseRadius = u_radius;
 234:   if (u_originalColors == true) {
 235:     contrast = mix(.1, 4., pow(u_contrast, 2.));
 236:     baseRadius = 2. * pow(.5 * u_radius, .3);
 237:   }
-238: 
+238:
 239:   float totalShape = 0.;
 240:   vec3 totalColor = vec3(0.);
 241:   float totalOpacity = 0.;
-242: 
+242:
 243:   vec4 ballColor;
 244:   float shape;
 245:   float stepSize = 1. / stepMultiplier;
 246:   for (float x = -0.5; x < 0.5; x += stepSize) {
 247:     for (float y = -0.5; y < 0.5; y += stepSize) {
 248:       vec2 offset = vec2(x, y);
-249: 
+249:
 250:       if (u_grid == 1.) {
 251:         float rowIndex = floor((y + .5) / stepSize);
 252:         float colIndex = floor((x + .5) / stepSize);
@@ -7003,16 +7072,16 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 266:           }
 267:         }
 268:       }
-269: 
+269:
 270:       shape = getLumBall(uv, pad, offset, contrast, baseRadius, stepSize, ballColor);
 271:       totalColor   += ballColor.rgb * shape;
 272:       totalShape   += shape;
 273:       totalOpacity += shape;
 274:     }
 275:   }
-276: 
+276:
 277:   const float eps = 1e-4;
-278: 
+278:
 279:   totalColor /= max(totalShape, eps);
 280:   totalOpacity /= max(totalShape, eps);
 
@@ -7023,6 +7092,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/heatmap.ts",
@@ -7032,6 +7102,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/heatmap.ts</path>
 <type>file</type>
@@ -7039,11 +7110,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { vec4 } from '../types.js';
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import type { ShaderSizingParams, ShaderSizingUniforms } from '../shader-sizing.js';
-4: 
+4:
 5: export const heatmapMeta = {
 6:   maxColorCount: 10,
 7: } as const;
-8: 
+8:
 9: /**
 10:  * A glowing gradient of colors flowing through an input shape.
 11:  * The effect creates a smoothly animated wave of intensity across the image.
@@ -7080,32 +7151,32 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 42:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 43:  *
 44:  */
-45: 
+45:
 46: // language=GLSL
 47: export const heatmapFragmentShader: string = `#version 300 es
 48: precision highp float;
-49: 
+49:
 50: in mediump vec2 v_imageUV;
 51: in mediump vec2 v_objectUV;
 52: out vec4 fragColor;
-53: 
+53:
 54: uniform sampler2D u_image;
 55: uniform float u_time;
 56: uniform mediump float u_imageAspectRatio;
-57: 
+57:
 58: uniform vec4 u_colorBack;
 59: uniform vec4 u_colors[${ heatmapMeta.maxColorCount }];
 60: uniform float u_colorsCount;
-61: 
+61:
 62: uniform float u_angle;
 63: uniform float u_noise;
 64: uniform float u_innerGlow;
 65: uniform float u_outerGlow;
 66: uniform float u_contour;
-67: 
+67:
 68: #define TWO_PI 6.28318530718
 69: #define PI 3.14159265358979323846
-70: 
+70:
 71: float getImgFrame(vec2 uv, float th) {
 72:   float frame = 1.;
 73:   frame *= smoothstep(0., th, uv.y);
@@ -7114,31 +7185,31 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 76:   frame *= 1. - smoothstep(1. - th, 1., uv.x);
 77:   return frame;
 78: }
-79: 
+79:
 80: float circle(vec2 uv, vec2 c, vec2 r) {
 81:   return 1. - smoothstep(r[0], r[1], length(uv - c));
 82: }
-83: 
+83:
 84: float lst(float edge0, float edge1, float x) {
 85:   return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 86: }
-87: 
+87:
 88: float sst(float edge0, float edge1, float x) {
 89:   return smoothstep(edge0, edge1, x);
 90: }
-91: 
+91:
 92: float shadowShape(vec2 uv, float t, float contour) {
 93:   vec2 scaledUV = uv;
-94: 
+94:
 95:   // base shape tranjectory
 96:   float posY = mix(-1., 2., t);
-97: 
+97:
 98:   // scaleX when it's moving down
 99:   scaledUV.y -= .5;
 100:   float mainCircleScale = sst(0., .8, posY) * lst(1.4, .9, posY);
 101:   scaledUV *= vec2(1., 1. + 1.5 * mainCircleScale);
 102:   scaledUV.y += .5;
-103: 
+103:
 104:   // base shape
 105:   float innerR = .4;
 106:   float outerR = 1. - .3 * (sst(.1, .2, t) * (1. - sst(.2, .5, t)));
@@ -7146,7 +7217,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 108:   float shapeSizing = sst(.2, .3, t) * sst(.6, .3, t);
 109:   s = pow(s, 1.4);
 110:   s *= 1.2;
-111: 
+111:
 112:   // flat gradient to take over the shadow shape
 113:   float topFlattener = 0.;
 114:   {
@@ -7157,7 +7228,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 119:     float topFlattenerMixer = (1. - sst(.0, .3, pos));
 120:     s = mix(topFlattener, s, topFlattenerMixer);
 121:   }
-122: 
+122:
 123:   // apple right circle
 124:   {
 125:     float visibility = sst(.6, .7, t) * (1. - sst(.8, .9, t));
@@ -7166,7 +7237,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 128:     rightCircle *= visibility;
 129:     s = mix(s, 0., rightCircle);
 130:   }
-131: 
+131:
 132:   // apple top circle
 133:   {
 134:     float topCircle = circle(uv, vec2(.5, .19), vec2(.05, .25));
@@ -7175,84 +7246,84 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 137:     topCircle *= visibility;
 138:     s = mix(s, 0., topCircle);
 139:   }
-140: 
+140:
 141:   float leafMask = circle(uv, vec2(.53, .13), vec2(.08, .19));
 142:   leafMask = mix(leafMask, 0., 1. - sst(.4, .54, uv.x));
 143:   leafMask = mix(0., leafMask, sst(.0, .2, uv.y));
 144:   leafMask *= (sst(.5, 1.1, posY) * sst(1.5, 1.3, posY));
 145:   s += leafMask;
-146: 
+146:
 147:   // apple bottom circle
 148:   {
 149:     float visibility = sst(.0, .4, t) * (1. - sst(.6, .8, t));
 150:     s = mix(s, 0., visibility * circle(uv, vec2(.52, .92), vec2(.09, .25)));
 151:   }
-152: 
+152:
 153:   // random balls that are invisible if apple logo is selected
 154:   {
 155:     float pos = sst(.0, .6, t) * (1. - sst(.6, 1., t));
 156:     s = mix(s, .5, circle(uv, vec2(.0, 1.2 - .5 * pos), vec2(.1, .3)));
 157:     s = mix(s, .0, circle(uv, vec2(1., .5 + .5 * pos), vec2(.1, .3)));
-158: 
+158:
 159:     s = mix(s, 1., circle(uv, vec2(.95, .2 + .2 * sst(.3, .4, t) * sst(.7, .5, t)), vec2(.07, .22)));
 160:     s = mix(s, 1., circle(uv, vec2(.95, .2 + .2 * sst(.3, .4, t) * (1. - sst(.5, .7, t))), vec2(.07, .22)));
 161:     s /= max(1e-4, sst(1., .85, uv.y));
 162:   }
-163: 
+163:
 164:   s = clamp(0., 1., s);
 165:   return s;
 166: }
-167: 
+167:
 168: float blurEdge3x3(sampler2D tex, vec2 uv, vec2 dudx, vec2 dudy, float radius, float centerSample) {
 169:   vec2 texel = 1.0 / vec2(textureSize(tex, 0));
 170:   vec2 r = radius * texel;
-171: 
+171:
 172:   float w1 = 1.0, w2 = 2.0, w4 = 4.0;
 173:   float norm = 16.0;
 174:   float sum = w4 * centerSample;
-175: 
+175:
 176:   sum += w2 * textureGrad(tex, uv + vec2(0.0, -r.y), dudx, dudy).g;
 177:   sum += w2 * textureGrad(tex, uv + vec2(0.0, r.y), dudx, dudy).g;
 178:   sum += w2 * textureGrad(tex, uv + vec2(-r.x, 0.0), dudx, dudy).g;
 179:   sum += w2 * textureGrad(tex, uv + vec2(r.x, 0.0), dudx, dudy).g;
-180: 
+180:
 181:   sum += w1 * textureGrad(tex, uv + vec2(-r.x, -r.y), dudx, dudy).g;
 182:   sum += w1 * textureGrad(tex, uv + vec2(r.x, -r.y), dudx, dudy).g;
 183:   sum += w1 * textureGrad(tex, uv + vec2(-r.x, r.y), dudx, dudy).g;
 184:   sum += w1 * textureGrad(tex, uv + vec2(r.x, r.y), dudx, dudy).g;
-185: 
+185:
 186:   return sum / norm;
 187: }
-188: 
+188:
 189: void main() {
 190:   vec2 uv = v_objectUV + .5;
 191:   uv.y = 1. - uv.y;
-192: 
+192:
 193:   vec2 imgUV = v_imageUV;
 194:   imgUV -= .5;
 195:   imgUV *= 0.5714285714285714;
 196:   imgUV += .5;
 197:   float imgSoftFrame = getImgFrame(imgUV, .03);
-198: 
+198:
 199:   vec4 img = texture(u_image, imgUV);
 200:   vec2 dudx = dFdx(imgUV);
 201:   vec2 dudy = dFdy(imgUV);
-202: 
+202:
 203:   if (img.a == 0.) {
 204:     fragColor = u_colorBack;
 205:     return;
 206:   }
-207: 
+207:
 208:   float t = .1 * u_time;
 209:   t -= .3;
-210: 
+210:
 211:   float tCopy = t + 1. / 3.;
 212:   float tCopy2 = t + 2. / 3.;
-213: 
+213:
 214:   t = mod(t, 1.);
 215:   tCopy = mod(tCopy, 1.);
 216:   tCopy2 = mod(tCopy2, 1.);
-217: 
+217:
 218:   vec2 animationUV = imgUV - vec2(.5);
 219:   float angle = -u_angle * PI / 180.;
 220:   float cosA = cos(angle);
@@ -7261,37 +7332,37 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 223:   animationUV.x * cosA - animationUV.y * sinA,
 224:   animationUV.x * sinA + animationUV.y * cosA
 225:   ) + vec2(.5);
-226: 
+226:
 227:   float shape = img[0];
-228: 
+228:
 229:   img[1] = blurEdge3x3(u_image, imgUV, dudx, dudy, 8., img[1]);
-230: 
+230:
 231:   float outerBlur = 1. - mix(1., img[1], shape);
 232:   float innerBlur = mix(img[1], 0., shape);
 233:   float contour = mix(img[2], 0., shape);
-234: 
+234:
 235:   outerBlur *= imgSoftFrame;
-236: 
+236:
 237:   float shadow = shadowShape(animationUV, t, innerBlur);
 238:   float shadowCopy = shadowShape(animationUV, tCopy, innerBlur);
 239:   float shadowCopy2 = shadowShape(animationUV, tCopy2, innerBlur);
-240: 
+240:
 241:   float inner = .8 + .8 * innerBlur;
 242:   inner = mix(inner, 0., shadow);
 243:   inner = mix(inner, 0., shadowCopy);
 244:   inner = mix(inner, 0., shadowCopy2);
-245: 
+245:
 246:   inner *= mix(0., 2., u_innerGlow);
-247: 
+247:
 248:   inner += (u_contour * 2.) * contour;
 249:   inner = min(1., inner);
 250:   inner *= (1. - shape);
-251: 
+251:
 252:   float outer = 0.;
 253:   {
 254:     t *= 3.;
 255:     t = mod(t - .1, 1.);
-256: 
+256:
 257:     outer = .9 * pow(outerBlur, .8);
 258:     float y = mod(animationUV.y - t, 1.);
 259:     float animatedMask = sst(.3, .65, y) * (1. - sst(.65, 1., y));
@@ -7300,12 +7371,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 262:     outer *= mix(0., 5., pow(u_outerGlow, 2.));
 263:     outer *= imgSoftFrame;
 264:   }
-265: 
+265:
 266:   inner = pow(inner, 1.2);
 267:   float heat = clamp(inner + outer, 0., 1.);
-268: 
+268:
 269:   heat += (.005 + .35 * u_noise) * (fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453123) - .5);
-270: 
+270:
 271:   float mixer = heat * u_colorsCount;
 272:   vec4 gradient = u_colors[0];
 273:   gradient.rgb *= gradient.a;
@@ -7328,6 +7399,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/grain-gradient.ts",
@@ -7337,16 +7409,17 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/grain-gradient.ts</path>
 <type>file</type>
 <content>
 281:     float edge = smoothstep(.25, .3, shape);
 282:     shape = mix(.0, shape, edge);
-283: 
+283:
 284:   } else {
 285:     // Sphere
-286: 
+286:
 287:     shape_uv *= 2.;
 288:     float d = 1. - pow(length(shape_uv), 2.);
 289:     vec3 pos = vec3(shape_uv, sqrt(max(d, 0.)));
@@ -7354,7 +7427,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 291:     shape = .5 + .5 * dot(lightPos, pos);
 292:     shape *= step(0., d);
 293:   }
-294: 
+294:
 295:   float baseNoise = snoise(grain_uv * .5);
 296:   vec4 fbmVals = fbmR(
 297:   .002 * grain_uv + 10.,
@@ -7365,41 +7438,41 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 302:   float grainDist = baseNoise * snoise(grain_uv * .2) - fbmVals.x - fbmVals.y;
 303:   float rawNoise = .75 * baseNoise - fbmVals.w - fbmVals.z;
 304:   float noise = clamp(rawNoise, 0., 1.);
-305: 
+305:
 306:   shape += u_intensity * 2. / u_colorsCount * (grainDist + .5);
 307:   shape += u_noise * 10. / u_colorsCount * noise;
-308: 
+308:
 309:   float aa = fwidth(shape);
-310: 
+310:
 311:   shape = clamp(shape - .5 / u_colorsCount, 0., 1.);
 312:   float totalShape = smoothstep(0., u_softness + 2. * aa, clamp(shape * u_colorsCount, 0., 1.));
 313:   float mixer = shape * (u_colorsCount - 1.);
-314: 
+314:
 315:   int cntStop = int(u_colorsCount) - 1;
 316:   vec4 gradient = u_colors[0];
 317:   gradient.rgb *= gradient.a;
 318:   for (int i = 1; i < ${ grainGradientMeta.maxColorCount }; i++) {
 319:     if (i > cntStop) break;
-320: 
+320:
 321:     float localT = clamp(mixer - float(i - 1), 0., 1.);
 322:     localT = smoothstep(.5 - .5 * u_softness - aa, .5 + .5 * u_softness + aa, localT);
-323: 
+323:
 324:     vec4 c = u_colors[i];
 325:     c.rgb *= c.a;
 326:     gradient = mix(gradient, c, localT);
 327:   }
-328: 
+328:
 329:   vec3 color = gradient.rgb * totalShape;
 330:   float opacity = gradient.a * totalShape;
-331: 
+331:
 332:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 333:   color = color + bgColor * (1.0 - opacity);
 334:   opacity = opacity + u_colorBack.a * (1.0 - opacity);
-335: 
+335:
 336:   fragColor = vec4(color, opacity);
 337: }
 338: `;
-339: 
+339:
 340: export interface GrainGradientUniforms extends ShaderSizingUniforms {
 341:   u_colorBack: [number, number, number, number];
 342:   u_colors: vec4[];
@@ -7410,7 +7483,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 347:   u_shape: (typeof GrainGradientShapes)[GrainGradientShape];
 348:   u_noiseTexture?: HTMLImageElement;
 349: }
-350: 
+350:
 351: export interface GrainGradientParams extends ShaderSizingParams, ShaderMotionParams {
 352:   colorBack?: string;
 353:   colors?: string[];
@@ -7419,7 +7492,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 356:   noise?: number;
 357:   shape?: GrainGradientShape;
 358: }
-359: 
+359:
 360: export const GrainGradientShapes = {
 361:   wave: 1,
 362:   dots: 2,
@@ -7429,7 +7502,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 366:   blob: 6,
 367:   sphere: 7,
 368: };
-369: 
+369:
 370: export type GrainGradientShape = keyof typeof GrainGradientShapes;
 
 (End of file - total 370 lines)
@@ -7439,6 +7512,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/halftone-cmyk.ts",
@@ -7448,12 +7522,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/halftone-cmyk.ts</path>
 <type>file</type>
 <content>
 281:   float K = outMask[3];
-282: 
+282:
 283:   if (isJoined) {
 284:     // ink or sharp: apply threshold for joined dots
 285:     float th = .5;
@@ -7464,43 +7539,43 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 290:     Y = smoothstep(th - sLeft - fwidth(Y), th + sRight, Y);
 291:     K = smoothstep(th - sLeft - fwidth(K), th + sRight, K);
 292:   }
-293: 
+293:
 294:   C *= u_colorC.a;
 295:   M *= u_colorM.a;
 296:   Y *= u_colorY.a;
 297:   K *= u_colorK.a;
-298: 
+298:
 299:   vec3 ink = vec3(1.);
 300:   ink = applyInk(ink, u_colorK.rgb, K);
 301:   ink = applyInk(ink, u_colorC.rgb, C);
 302:   ink = applyInk(ink, u_colorM.rgb, M);
 303:   ink = applyInk(ink, u_colorY.rgb, Y);
-304: 
+304:
 305:   shape = clamp(max(max(C, M), max(Y, K)), 0., 1.);
-306: 
+306:
 307:   vec3 color = u_colorBack.rgb * u_colorBack.a;
-308: 
+308:
 309:   float opacity = u_colorBack.a;
 310:   color = mix(color, ink, shape);
 311:   opacity += shape;
 312:   opacity = clamp(opacity, 0., 1.);
-313: 
+313:
 314:   float grainOverlay = mix(noiseValues.g, noiseValues.b, .5);
 315:   grainOverlay = pow(grainOverlay, 1.3);
-316: 
+316:
 317:   float grainOverlayV = grainOverlay * 2. - 1.;
 318:   vec3 grainOverlayColor = vec3(step(0., grainOverlayV));
 319:   float grainOverlayStrength = u_grainOverlay * abs(grainOverlayV);
 320:   grainOverlayStrength = pow(grainOverlayStrength, .8);
 321:   color = mix(color, grainOverlayColor, .5 * grainOverlayStrength);
-322: 
+322:
 323:   opacity += .5 * grainOverlayStrength;
 324:   opacity = clamp(opacity, 0., 1.);
-325: 
+325:
 326:   fragColor = vec4(color, opacity);
 327: }
 328: `;
-329: 
+329:
 330: export interface HalftoneCmykUniforms extends ShaderSizingUniforms {
 331:   u_image: HTMLImageElement | string | undefined;
 332:   u_noiseTexture?: HTMLImageElement;
@@ -7526,7 +7601,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 352:   u_gainK: number;
 353:   u_type: (typeof HalftoneCmykTypes)[HalftoneCmykType];
 354: }
-355: 
+355:
 356: export interface HalftoneCmykParams extends ShaderSizingParams, ShaderMotionParams {
 357:   image?: HTMLImageElement | string;
 358:   colorBack?: string;
@@ -7551,15 +7626,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 377:   gainK?: number;
 378:   type?: HalftoneCmykType;
 379: }
-380: 
+380:
 381: export const HalftoneCmykTypes = {
 382:   dots: 0,
 383:   ink: 1,
 384:   sharp: 2,
 385: } as const;
-386: 
+386:
 387: export type HalftoneCmykType = keyof typeof HalftoneCmykTypes;
-388: 
+388:
 
 (End of file - total 388 lines)
 </content>
@@ -7568,6 +7643,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/halftone-dots.ts",
@@ -7577,11 +7653,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/halftone-dots.ts</path>
 <type>file</type>
 <content>
-281: 
+281:
 282:   float finalShape = 0.;
 283:   if (u_type == 0.) {
 284:     finalShape = min(1., totalShape);
@@ -7594,7 +7671,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 291:   } else if (u_type == 3.) {
 292:     finalShape = totalShape;
 293:   }
-294: 
+294:
 295:   vec2 grainSize = mix(2000., 200., u_grainSize) * vec2(1., 1. / u_imageAspectRatio);
 296:   vec2 grainUV = v_imageUV - .5;
 297:   grainUV *= grainSize;
@@ -7603,14 +7680,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 300:   grain = smoothstep(.55, .7 + .2 * u_grainMixer, grain);
 301:   grain *= u_grainMixer;
 302:   finalShape = mix(finalShape, 0., grain);
-303: 
+303:
 304:   vec3 color = vec3(0.);
 305:   float opacity = 0.;
-306: 
+306:
 307:   if (u_originalColors == true) {
 308:     color = totalColor * finalShape;
 309:     opacity = totalOpacity * finalShape;
-310: 
+310:
 311:     vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 312:     color = color + bgColor * (1. - opacity);
 313:     opacity = opacity + u_colorBack.a * (1. - opacity);
@@ -7619,30 +7696,30 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 316:     float fgOpacity = u_colorFront.a;
 317:     vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 318:     float bgOpacity = u_colorBack.a;
-319: 
+319:
 320:     color = fgColor * finalShape;
 321:     opacity = fgOpacity * finalShape;
 322:     color += bgColor * (1. - opacity);
 323:     opacity += bgOpacity * (1. - opacity);
 324:   }
-325: 
+325:
 326:   float grainOverlay = valueNoise(rotate(grainUV, 1.) + vec2(3.));
 327:   grainOverlay = mix(grainOverlay, valueNoise(rotate(grainUV, 2.) + vec2(-1.)), .5);
 328:   grainOverlay = pow(grainOverlay, 1.3);
-329: 
+329:
 330:   float grainOverlayV = grainOverlay * 2. - 1.;
 331:   vec3 grainOverlayColor = vec3(step(0., grainOverlayV));
 332:   float grainOverlayStrength = u_grainOverlay * abs(grainOverlayV);
 333:   grainOverlayStrength = pow(grainOverlayStrength, .8);
 334:   color = mix(color, grainOverlayColor, .5 * grainOverlayStrength);
-335: 
+335:
 336:   opacity += .5 * grainOverlayStrength;
 337:   opacity = clamp(opacity, 0., 1.);
-338: 
+338:
 339:   fragColor = vec4(color, opacity);
 340: }
 341: `;
-342: 
+342:
 343: export interface HalftoneDotsUniforms extends ShaderSizingUniforms {
 344:   u_image: HTMLImageElement | string | undefined;
 345:   u_colorFront: [number, number, number, number];
@@ -7658,7 +7735,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 355:   u_grainSize: number;
 356:   u_type: (typeof HalftoneDotsTypes)[HalftoneDotsType];
 357: }
-358: 
+358:
 359: export interface HalftoneDotsParams extends ShaderSizingParams, ShaderMotionParams {
 360:   image?: HTMLImageElement | string;
 361:   colorFront?: string;
@@ -7674,21 +7751,21 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 371:   grainSize?: number;
 372:   type?: HalftoneDotsType;
 373: }
-374: 
+374:
 375: export const HalftoneDotsTypes = {
 376:   classic: 0,
 377:   gooey: 1,
 378:   holes: 2,
 379:   soft: 3,
 380: } as const;
-381: 
+381:
 382: export type HalftoneDotsType = keyof typeof HalftoneDotsTypes;
-383: 
+383:
 384: export const HalftoneDotsGrids = {
 385:   square: 0,
 386:   hex: 1,
 387: } as const;
-388: 
+388:
 389: export type HalftoneDotsGrid = keyof typeof HalftoneDotsGrids;
 
 (End of file - total 389 lines)
@@ -7698,6 +7775,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/heatmap.ts",
@@ -7707,6 +7785,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/heatmap.ts</path>
 <type>file</type>
@@ -7715,37 +7794,37 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 282:     c.rgb *= c.a;
 283:     gradient = mix(gradient, c, m);
 284:   }
-285: 
+285:
 286:   vec3 color = gradient.rgb * outerShape;
 287:   float opacity = gradient.a * outerShape;
-288: 
+288:
 289:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 290:   color = color + bgColor * (1.0 - opacity);
 291:   opacity = opacity + u_colorBack.a * (1.0 - opacity);
-292: 
+292:
 293:   color += .02 * (fract(sin(dot(uv + 1., vec2(12.9898, 78.233))) * 43758.5453123) - .5);
-294: 
+294:
 295:   fragColor = vec4(color, opacity);
 296: }
 297: `;
-298: 
+298:
 299: export function toProcessedHeatmap(file: File | string): Promise<{ blob: Blob }> {
 300:   const canvas = document.createElement('canvas');
 301:   const canvasSize = 1000;
-302: 
+302:
 303:   return new Promise((resolve, reject) => {
 304:     const image = new Image();
 305:     image.crossOrigin = 'anonymous';
-306: 
+306:
 307:     image.addEventListener('load', () => {
 308:       if (typeof file === 'string' ? file.endsWith('.svg') : file.type === 'image/svg+xml') {
 309:         // Force SVG to load at a high fidelity size if it's an SVG
 310:         image.width = canvasSize;
 311:         image.height = canvasSize;
 312:       }
-313: 
+313:
 314:       const ratio = image.naturalWidth / image.naturalHeight;
-315: 
+315:
 316:       const maxBlur = Math.floor(canvasSize * 0.15);
 317:       const padding = Math.ceil(maxBlur * 2.5);
 318:       let imgWidth = canvasSize;
@@ -7755,24 +7834,24 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 322:       } else {
 323:         imgWidth = Math.floor(canvasSize * ratio);
 324:       }
-325: 
+325:
 326:       canvas.width = imgWidth + 2 * padding;
 327:       canvas.height = imgHeight + 2 * padding;
-328: 
+328:
 329:       const ctx = canvas.getContext('2d', { willReadFrequently: true });
 330:       if (!ctx) {
 331:         throw new Error('Failed to get canvas 2d context');
 332:       }
-333: 
+333:
 334:       // 1) Draw original image once, no filters
 335:       ctx.fillStyle = 'white';
 336:       ctx.fillRect(0, 0, canvas.width, canvas.height);
 337:       ctx.drawImage(image, padding, padding, imgWidth, imgHeight);
-338: 
+338:
 339:       const { width, height } = canvas;
 340:       const srcImageData = ctx.getImageData(0, 0, width, height);
 341:       const src = srcImageData.data; // RGBA
-342: 
+342:
 343:       // 2) Build grayscale array (luma)
 344:       const totalPixels = width * height;
 345:       const gray = new Uint8ClampedArray(totalPixels);
@@ -7784,20 +7863,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 351:         // Standard luma conversion
 352:         gray[i] = (0.299 * r + 0.587 * g + 0.114 * b) | 0;
 353:       }
-354: 
+354:
 355:       // 3) Blur grayscale for each "filter" you previously used
 356:       const bigBlurRadius = maxBlur;
 357:       const innerBlurRadius = Math.max(1, Math.round(0.12 * maxBlur));
 358:       const contourRadius = 5;
-359: 
+359:
 360:       const bigBlurGray = multiPassBlurGray(gray, width, height, bigBlurRadius, 3);
 361:       const innerBlurGray = multiPassBlurGray(gray, width, height, innerBlurRadius, 3);
 362:       const contourGray = multiPassBlurGray(gray, width, height, contourRadius, 1);
-363: 
+363:
 364:       // 4) Combine into final ImageData
 365:       const processedImageData = ctx.createImageData(width, height);
 366:       const dst = processedImageData.data;
-367: 
+367:
 368:       for (let i = 0; i < totalPixels; i++) {
 369:         const px = i * 4;
 370:         dst[px] = contourGray[i] ?? 0;
@@ -7805,9 +7884,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 372:         dst[px + 2] = innerBlurGray[i] ?? 0;
 373:         dst[px + 3] = 255;
 374:       }
-375: 
+375:
 376:       ctx.putImageData(processedImageData, 0, 0);
-377: 
+377:
 378:       canvas.toBlob((blob) => {
 379:         if (!blob) {
 380:           reject(new Error('Failed to create PNG blob'));
@@ -7816,15 +7895,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 383:         resolve({ blob });
 384:       }, 'image/png');
 385:     });
-386: 
+386:
 387:     image.addEventListener('error', () => {
 388:       reject(new Error('Failed to load image'));
 389:     });
-390: 
+390:
 391:     image.src = typeof file === 'string' ? file : URL.createObjectURL(file);
 392:   });
 393: }
-394: 
+394:
 395: /**
 396:  * Fast box blur for grayscale images using an integral image.
 397:  * gray: Uint8ClampedArray of length width * height
@@ -7834,10 +7913,10 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 401:   if (radius <= 0) {
 402:     return gray.slice();
 403:   }
-404: 
+404:
 405:   const out = new Uint8ClampedArray(width * height);
 406:   const integral = new Uint32Array(width * height);
-407: 
+407:
 408:   // Build integral image
 409:   for (let y = 0; y < height; y++) {
 410:     let rowSum = 0;
@@ -7848,7 +7927,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 415:       integral[idx] = rowSum + (y > 0 ? (integral[idx - width] ?? 0) : 0);
 416:     }
 417:   }
-418: 
+418:
 419:   // Blur using integral image
 420:   for (let y = 0; y < height; y++) {
 421:     const y1 = Math.max(0, y - radius);
@@ -7856,26 +7935,26 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 423:     for (let x = 0; x < width; x++) {
 424:       const x1 = Math.max(0, x - radius);
 425:       const x2 = Math.min(width - 1, x + radius);
-426: 
+426:
 427:       const idxA = y2 * width + x2;
 428:       const idxB = y2 * width + (x1 - 1);
 429:       const idxC = (y1 - 1) * width + x2;
 430:       const idxD = (y1 - 1) * width + (x1 - 1);
-431: 
+431:
 432:       const A = integral[idxA] ?? 0;
 433:       const B = x1 > 0 ? (integral[idxB] ?? 0) : 0;
 434:       const C = y1 > 0 ? (integral[idxC] ?? 0) : 0;
 435:       const D = x1 > 0 && y1 > 0 ? (integral[idxD] ?? 0) : 0;
-436: 
+436:
 437:       const sum = A - B - C + D;
 438:       const area = (x2 - x1 + 1) * (y2 - y1 + 1);
 439:       out[y * width + x] = Math.round(sum / area);
 440:     }
 441:   }
-442: 
+442:
 443:   return out;
 444: }
-445: 
+445:
 446: function multiPassBlurGray(
 447:   gray: Uint8ClampedArray,
 448:   width: number,
@@ -7886,18 +7965,18 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 453:   if (radius <= 0 || passes <= 1) {
 454:     return blurGray(gray, width, height, radius);
 455:   }
-456: 
+456:
 457:   let input = gray;
 458:   let tmp: Uint8ClampedArray = gray;
-459: 
+459:
 460:   for (let p = 0; p < passes; p++) {
 461:     tmp = blurGray(input, width, height, radius);
 462:     input = tmp;
 463:   }
-464: 
+464:
 465:   return tmp;
 466: }
-467: 
+467:
 468: export interface HeatmapUniforms extends ShaderSizingUniforms {
 469:   u_image: HTMLImageElement | string;
 470:   u_contour: number;
@@ -7909,7 +7988,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 476:   u_colors: vec4[];
 477:   u_colorsCount: number;
 478: }
-479: 
+479:
 480: export interface HeatmapParams extends ShaderSizingParams, ShaderMotionParams {
 481:   image: HTMLImageElement | string;
 482:   contour?: number;
@@ -7928,6 +8007,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/image-dithering.ts",
@@ -7937,6 +8017,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/image-dithering.ts</path>
 <type>file</type>
@@ -7944,7 +8025,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { proceduralHash21, declarePI } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * A dithering image filter with support for 4 dithering modes and multiple color palettes
 7:  * (2-color, 3-color, and multicolor options, using either predefined colors or colors sampled
@@ -7979,11 +8060,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 36:  * - u_colorSteps (float): Number of colors to use, applies to both color modes (1 to 7)
 37:  *
 38:  */
-39: 
+39:
 40: // language=GLSL
 41: export const imageDitheringFragmentShader: string = `#version 300 es
 42: precision mediump float;
-43: 
+43:
 44: uniform vec2 u_resolution;
 45: uniform float u_pixelRatio;
 46: uniform float u_originX;
@@ -7991,48 +8072,48 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 48: uniform float u_worldWidth;
 49: uniform float u_worldHeight;
 50: uniform float u_fit;
-51: 
+51:
 52: uniform float u_scale;
 53: uniform float u_rotation;
 54: uniform float u_offsetX;
 55: uniform float u_offsetY;
-56: 
+56:
 57: uniform vec4 u_colorFront;
 58: uniform vec4 u_colorBack;
 59: uniform vec4 u_colorHighlight;
-60: 
+60:
 61: uniform sampler2D u_image;
 62: uniform float u_imageAspectRatio;
-63: 
+63:
 64: uniform float u_type;
 65: uniform float u_pxSize;
 66: uniform bool u_originalColors;
 67: uniform bool u_inverted;
 68: uniform float u_colorSteps;
-69: 
+69:
 70: out vec4 fragColor;
-71: 
-72: 
+71:
+72:
 73: ${ proceduralHash21 }
 74: ${ declarePI }
-75: 
+75:
 76: float getUvFrame(vec2 uv, vec2 pad) {
 77:   float aa = 0.0001;
-78: 
+78:
 79:   float left   = smoothstep(-pad.x, -pad.x + aa, uv.x);
 80:   float right  = smoothstep(1.0 + pad.x, 1.0 + pad.x - aa, uv.x);
 81:   float bottom = smoothstep(-pad.y, -pad.y + aa, uv.y);
 82:   float top    = smoothstep(1.0 + pad.y, 1.0 + pad.y - aa, uv.y);
-83: 
+83:
 84:   return left * right * bottom * top;
 85: }
-86: 
+86:
 87: vec2 getImageUV(vec2 uv) {
 88:   vec2 boxOrigin = vec2(.5 - u_originX, u_originY - .5);
 89:   float r = u_rotation * PI / 180.;
 90:   mat2 graphicRotation = mat2(cos(r), sin(r), -sin(r), cos(r));
 91:   vec2 graphicOffset = vec2(-u_offsetX, u_offsetY);
-92: 
+92:
 93:   vec2 imageBoxSize;
 94:   if (u_fit == 1.) { // contain
 95:     imageBoxSize.x = min(u_resolution.x / u_imageAspectRatio, u_resolution.y) * u_imageAspectRatio;
@@ -8043,7 +8124,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 100:   }
 101:   imageBoxSize.y = imageBoxSize.x / u_imageAspectRatio;
 102:   vec2 imageBoxScale = u_resolution.xy / imageBoxSize;
-103: 
+103:
 104:   vec2 imageUV = uv;
 105:   imageUV *= imageBoxScale;
 106:   imageUV += boxOrigin * (imageBoxScale - 1.);
@@ -8052,13 +8133,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 109:   imageUV.x *= u_imageAspectRatio;
 110:   imageUV = graphicRotation * imageUV;
 111:   imageUV.x /= u_imageAspectRatio;
-112: 
+112:
 113:   imageUV += .5;
 114:   imageUV.y = 1. - imageUV.y;
-115: 
+115:
 116:   return imageUV;
 117: }
-118: 
+118:
 119: const int bayer2x2[4] = int[4](0, 2, 3, 1);
 120: const int bayer4x4[16] = int[16](
 121: 0, 8, 2, 10,
@@ -8066,7 +8147,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 123: 3, 11, 1, 9,
 124: 15, 7, 13, 5
 125: );
-126: 
+126:
 127: const int bayer8x8[64] = int[64](
 128: 0, 32, 8, 40, 2, 34, 10, 42,
 129: 48, 16, 56, 24, 50, 18, 58, 26,
@@ -8077,11 +8158,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 134: 15, 47, 7, 39, 13, 45, 5, 37,
 135: 63, 31, 55, 23, 61, 29, 53, 21
 136: );
-137: 
+137:
 138: float getBayerValue(vec2 uv, int size) {
 139:   ivec2 pos = ivec2(fract(uv / float(size)) * float(size));
 140:   int index = pos.y * size + pos.x;
-141: 
+141:
 142:   if (size == 2) {
 143:     return float(bayer2x2[index]) / 4.0;
 144:   } else if (size == 4) {
@@ -8091,27 +8172,27 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 148:   }
 149:   return 0.0;
 150: }
-151: 
-152: 
+151:
+152:
 153: void main() {
-154: 
+154:
 155:   float pxSize = u_pxSize * u_pixelRatio;
 156:   vec2 pxSizeUV = gl_FragCoord.xy - .5 * u_resolution;
 157:   pxSizeUV /= pxSize;
 158:   vec2 canvasPixelizedUV = (floor(pxSizeUV) + .5) * pxSize;
 159:   vec2 normalizedUV = canvasPixelizedUV / u_resolution;
-160: 
+160:
 161:   vec2 imageUV = getImageUV(normalizedUV);
 162:   vec2 ditheringNoiseUV = canvasPixelizedUV;
 163:   vec4 image = texture(u_image, imageUV);
 164:   float frame = getUvFrame(imageUV, pxSize / u_resolution);
-165: 
+165:
 166:   int type = int(floor(u_type));
 167:   float dithering = 0.0;
-168: 
+168:
 169:   float lum = dot(vec3(.2126, .7152, .0722), image.rgb);
 170:   lum = u_inverted ? (1. - lum) : lum;
-171: 
+171:
 172:   switch (type) {
 173:     case 1: {
 174:       dithering = step(hash21(ditheringNoiseUV), lum);
@@ -8126,22 +8207,22 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 183:     dithering = getBayerValue(pxSizeUV, 8);
 184:     break;
 185:   }
-186: 
+186:
 187:   float colorSteps = max(floor(u_colorSteps), 1.);
 188:   vec3 color = vec3(0.0);
 189:   float opacity = 1.;
-190: 
+190:
 191:   dithering -= .5;
 192:   float brightness = clamp(lum + dithering / colorSteps, 0.0, 1.0);
 193:   brightness = mix(0.0, brightness, frame);
 194:   brightness = mix(0.0, brightness, image.a);
 195:   float quantLum = floor(brightness * colorSteps + 0.5) / colorSteps;
 196:   quantLum = mix(0.0, quantLum, frame);
-197: 
+197:
 198:   if (u_originalColors == true) {
 199:     vec3 normColor = image.rgb / max(lum, 0.001);
 200:     color = normColor * quantLum;
-201: 
+201:
 202:     float quantAlpha = floor(image.a * colorSteps + 0.5) / colorSteps;
 203:     opacity = mix(quantLum, 1., quantAlpha);
 204:   } else {
@@ -8151,20 +8232,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 208:     float bgOpacity = u_colorBack.a;
 209:     vec3 hlColor = u_colorHighlight.rgb * u_colorHighlight.a;
 210:     float hlOpacity = u_colorHighlight.a;
-211: 
+211:
 212:     fgColor = mix(fgColor, hlColor, step(1.02 - .02 * u_colorSteps, brightness));
 213:     fgOpacity = mix(fgOpacity, hlOpacity, step(1.02 - .02 * u_colorSteps, brightness));
-214: 
+214:
 215:     color = fgColor * quantLum;
 216:     opacity = fgOpacity * quantLum;
 217:     color += bgColor * (1.0 - opacity);
 218:     opacity += bgOpacity * (1.0 - opacity);
 219:   }
-220: 
+220:
 221:   fragColor = vec4(color, opacity);
 222: }
 223: `;
-224: 
+224:
 225: export interface ImageDitheringUniforms extends ShaderSizingUniforms {
 226:   u_image: HTMLImageElement | string;
 227:   u_colorFront: [number, number, number, number];
@@ -8176,7 +8257,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 233:   u_originalColors: boolean;
 234:   u_inverted: boolean;
 235: }
-236: 
+236:
 237: export interface ImageDitheringParams extends ShaderSizingParams, ShaderMotionParams {
 238:   image: HTMLImageElement | string;
 239:   colorFront?: string;
@@ -8188,14 +8269,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 245:   originalColors?: boolean;
 246:   inverted?: boolean;
 247: }
-248: 
+248:
 249: export const DitheringTypes = {
 250:   'random': 1,
 251:   '2x2': 2,
 252:   '4x4': 3,
 253:   '8x8': 4,
 254: } as const;
-255: 
+255:
 256: export type DitheringType = keyof typeof DitheringTypes;
 
 (End of file - total 256 lines)
@@ -8205,6 +8286,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/liquid-metal.ts",
@@ -8214,6 +8296,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/liquid-metal.ts</path>
 <type>file</type>
@@ -8221,7 +8304,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { declarePI, rotation2, simplexNoise, colorBandingFix } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * Futuristic liquid metal material applied to uploaded logo or abstract shape.
 7:  * Fluid motion imitation applied over user image with animated stripe pattern
@@ -8265,20 +8348,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 45:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 46:  *
 47:  */
-48: 
+48:
 49: // language=GLSL
 50: export const liquidMetalFragmentShader: string = `#version 300 es
 51: precision mediump float;
-52: 
+52:
 53: uniform sampler2D u_image;
 54: uniform float u_imageAspectRatio;
-55: 
+55:
 56: uniform vec2 u_resolution;
 57: uniform float u_time;
-58: 
+58:
 59: uniform vec4 u_colorBack;
 60: uniform vec4 u_colorTint;
-61: 
+61:
 62: uniform float u_softness;
 63: uniform float u_repetition;
 64: uniform float u_shiftRed;
@@ -8286,49 +8369,49 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 66: uniform float u_distortion;
 67: uniform float u_contour;
 68: uniform float u_angle;
-69: 
+69:
 70: uniform float u_shape;
 71: uniform bool u_isImage;
-72: 
+72:
 73: in vec2 v_objectUV;
 74: in vec2 v_responsiveUV;
 75: in vec2 v_responsiveBoxGivenSize;
 76: in vec2 v_imageUV;
-77: 
+77:
 78: out vec4 fragColor;
-79: 
+79:
 80: ${ declarePI }
 81: ${ rotation2 }
 82: ${ simplexNoise }
-83: 
+83:
 84: float getColorChanges(float c1, float c2, float stripe_p, vec3 w, float blur, float bump, float tint) {
-85: 
+85:
 86:   float ch = mix(c2, c1, smoothstep(.0, 2. * blur, stripe_p));
-87: 
+87:
 88:   float border = w[0];
 89:   ch = mix(ch, c2, smoothstep(border, border + 2. * blur, stripe_p));
-90: 
+90:
 91:   if (u_isImage == true) {
 92:     bump = smoothstep(.2, .8, bump);
 93:   }
 94:   border = w[0] + .4 * (1. - bump) * w[1];
 95:   ch = mix(ch, c1, smoothstep(border, border + 2. * blur, stripe_p));
-96: 
+96:
 97:   border = w[0] + .5 * (1. - bump) * w[1];
 98:   ch = mix(ch, c2, smoothstep(border, border + 2. * blur, stripe_p));
-99: 
+99:
 100:   border = w[0] + w[1];
 101:   ch = mix(ch, c1, smoothstep(border, border + 2. * blur, stripe_p));
-102: 
+102:
 103:   float gradient_t = (stripe_p - w[0] - w[1]) / w[2];
 104:   float gradient = mix(c1, c2, smoothstep(0., 1., gradient_t));
 105:   ch = mix(ch, gradient, smoothstep(border, border + .5 * blur, stripe_p));
-106: 
+106:
 107:   // Tint color is applied with color burn blending
 108:   ch = mix(ch, 1. - min(1., (1. - ch) / max(tint, 0.0001)), u_colorTint.a);
 109:   return ch;
 110: }
-111: 
+111:
 112: float getImgFrame(vec2 uv, float th) {
 113:   float frame = 1.;
 114:   frame *= smoothstep(0., th, uv.y);
@@ -8337,51 +8420,51 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 117:   frame *= 1.0 - smoothstep(1. - th, 1., uv.x);
 118:   return frame;
 119: }
-120: 
+120:
 121: float blurEdge3x3(sampler2D tex, vec2 uv, vec2 dudx, vec2 dudy, float radius, float centerSample) {
 122:   vec2 texel = 1.0 / vec2(textureSize(tex, 0));
 123:   vec2 r = radius * texel;
-124: 
+124:
 125:   float w1 = 1.0, w2 = 2.0, w4 = 4.0;
 126:   float norm = 16.0;
 127:   float sum = w4 * centerSample;
-128: 
+128:
 129:   sum += w2 * textureGrad(tex, uv + vec2(0.0, -r.y), dudx, dudy).r;
 130:   sum += w2 * textureGrad(tex, uv + vec2(0.0, r.y), dudx, dudy).r;
 131:   sum += w2 * textureGrad(tex, uv + vec2(-r.x, 0.0), dudx, dudy).r;
 132:   sum += w2 * textureGrad(tex, uv + vec2(r.x, 0.0), dudx, dudy).r;
-133: 
+133:
 134:   sum += w1 * textureGrad(tex, uv + vec2(-r.x, -r.y), dudx, dudy).r;
 135:   sum += w1 * textureGrad(tex, uv + vec2(r.x, -r.y), dudx, dudy).r;
 136:   sum += w1 * textureGrad(tex, uv + vec2(-r.x, r.y), dudx, dudy).r;
 137:   sum += w1 * textureGrad(tex, uv + vec2(r.x, r.y), dudx, dudy).r;
-138: 
+138:
 139:   return sum / norm;
 140: }
-141: 
+141:
 142: float lst(float edge0, float edge1, float x) {
 143:   return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 144: }
-145: 
+145:
 146: void main() {
-147: 
+147:
 148:   const float firstFrameOffset = 2.8;
 149:   float t = .3 * (u_time + firstFrameOffset);
-150: 
+150:
 151:   vec2 uv = v_imageUV;
 152:   vec2 dudx = dFdx(v_imageUV);
 153:   vec2 dudy = dFdy(v_imageUV);
 154:   vec4 img = textureGrad(u_image, uv, dudx, dudy);
-155: 
+155:
 156:   if (u_isImage == false) {
 157:     uv = v_objectUV + .5;
 158:     uv.y = 1. - uv.y;
 159:   }
-160: 
+160:
 161:   float cycleWidth = u_repetition;
 162:   float edge = 0.;
 163:   float contOffset = 1.;
-164: 
+164:
 165:   vec2 rotatedUV = uv - vec2(.5);
 166:   float angle = (-u_angle + 70.) * PI / 180.;
 167:   float cosA = cos(angle);
@@ -8390,7 +8473,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 170:   rotatedUV.x * cosA - rotatedUV.y * sinA,
 171:   rotatedUV.x * sinA + rotatedUV.y * cosA
 172:   ) + vec2(.5);
-173: 
+173:
 174:   if (u_isImage == true) {
 175:     float edgeRaw = img.r;
 176:     edge = blurEdge3x3(u_image, uv, dudx, dudy, 6., edgeRaw);
@@ -8408,7 +8491,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 188:       maskX = pow(maskX, .25);
 189:       maskY = pow(maskY, .25);
 190:       edge = clamp(1. - maskX * maskY, 0., 1.);
-191: 
+191:
 192:       uv = v_responsiveUV;
 193:       if (ratio > 1.) {
 194:         uv.y /= ratio;
@@ -8417,10 +8500,10 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 197:       }
 198:       uv += .5;
 199:       uv.y = 1. - uv.y;
-200: 
+200:
 201:       cycleWidth *= 2.;
 202:       contOffset = 1.5;
-203: 
+203:
 204:     } else if (u_shape < 2.) {
 205:       // circle
 206:       vec2 shapeUV = uv - .5;
@@ -8430,17 +8513,17 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 210:       // daisy
 211:       vec2 shapeUV = uv - .5;
 212:       shapeUV *= 1.68;
-213: 
+213:
 214:       float r = length(shapeUV) * 2.;
 215:       float a = atan(shapeUV.y, shapeUV.x) + .2;
 216:       r *= (1. + .05 * sin(3. * a + 2. * t));
 217:       float f = abs(cos(a * 3.));
 218:       edge = smoothstep(f, f + .7, r);
 219:       edge *= edge;
-220: 
+220:
 221:       uv *= .8;
 222:       cycleWidth *= 1.6;
-223: 
+223:
 224:     } else if (u_shape < 4.) {
 225:       // diamond
 226:       vec2 shapeUV = uv - .5;
@@ -8472,11 +8555,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 252:       edge = 1. - smoothstep(.65, .9, edge);
 253:       edge = pow(edge, 4.);
 254:     }
-255: 
+255:
 256:     edge = mix(smoothstep(.9 - 2. * fwidth(edge), .9, edge), edge, smoothstep(0.0, 0.4, u_contour));
-257: 
+257:
 258:   }
-259: 
+259:
 260:   float opacity = 0.;
 261:   if (u_isImage == true) {
 262:     opacity = img.g;
@@ -8490,34 +8573,34 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 270:       edge = 1.8 * pow(edge, 1.5);
 271:     }
 272:   }
-273: 
+273:
 274:   float diagBLtoTR = rotatedUV.x - rotatedUV.y;
 275:   float diagTLtoBR = rotatedUV.x + rotatedUV.y;
-276: 
+276:
 277:   vec3 color = vec3(0.);
 278:   vec3 color1 = vec3(.98, 0.98, 1.);
 279:   vec3 color2 = vec3(.1, .1, .1 + .1 * smoothstep(.7, 1.3, diagTLtoBR));
-280: 
+280:
 281:   vec2 grad_uv = uv - .5;
-282: 
+282:
 283:   float dist = length(grad_uv + vec2(0., .2 * diagBLtoTR));
 284:   grad_uv = rotate(grad_uv, (.25 - .2 * diagBLtoTR) * PI);
 285:   float direction = grad_uv.x;
-286: 
+286:
 287:   float bump = pow(1.8 * dist, 1.2);
 288:   bump = 1. - bump;
 289:   bump *= pow(uv.y, .3);
-290: 
-291: 
+290:
+291:
 292:   float thin_strip_1_ratio = .12 / cycleWidth * (1. - .4 * bump);
 293:   float thin_strip_2_ratio = .07 / cycleWidth * (1. + .4 * bump);
 294:   float wide_strip_ratio = (1. - thin_strip_1_ratio - thin_strip_2_ratio);
-295: 
+295:
 296:   float thin_strip_1_width = cycleWidth * thin_strip_1_ratio;
 297:   float thin_strip_2_width = cycleWidth * thin_strip_2_ratio;
-298: 
+298:
 299:   float noise = snoise(uv - t);
-300: 
+300:
 
 (Showing lines 1-300 of 839. Use offset=301 to continue.)
 </content>
@@ -8530,6 +8613,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/liquid-metal.ts",
@@ -8539,46 +8623,47 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/liquid-metal.ts</path>
 <type>file</type>
 <content>
 301:   edge += (1. - edge) * u_distortion * noise;
-302: 
+302:
 303:   direction += diagBLtoTR;
 304:   float contour = 0.;
 305:   direction -= 2. * noise * diagBLtoTR * (smoothstep(0., 1., edge) * (1.0 - smoothstep(0., 1., edge)));
 306:   direction *= mix(1., 1. - edge, smoothstep(.5, 1., u_contour));
 307:   direction -= 1.7 * edge * smoothstep(.5, 1., u_contour);
 308:   direction += .2 * pow(u_contour, 4.) * (1.0 - smoothstep(0., 1., edge));
-309: 
+309:
 310:   bump *= clamp(pow(uv.y, .1), .3, 1.);
 311:   direction *= (.1 + (1.1 - edge) * bump);
-312: 
+312:
 313:   direction *= (.4 + .6 * (1.0 - smoothstep(.5, 1., edge)));
 314:   direction += .18 * (smoothstep(.1, .2, uv.y) * (1.0 - smoothstep(.2, .4, uv.y)));
 315:   direction += .03 * (smoothstep(.1, .2, 1. - uv.y) * (1.0 - smoothstep(.2, .4, 1. - uv.y)));
-316: 
+316:
 317:   direction *= (.5 + .5 * pow(uv.y, 2.));
 318:   direction *= cycleWidth;
 319:   direction -= t;
-320: 
-321: 
+320:
+321:
 322:   float colorDispersion = (1. - bump);
 323:   colorDispersion = clamp(colorDispersion, 0., 1.);
 324:   float dispersionRed = colorDispersion;
 325:   dispersionRed += .03 * bump * noise;
 326:   dispersionRed += 5. * (smoothstep(-.1, .2, uv.y) * (1.0 - smoothstep(.1, .5, uv.y))) * (smoothstep(.4, .6, bump) * (1.0 - smoothstep(.4, 1., bump)));
 327:   dispersionRed -= diagBLtoTR;
-328: 
+328:
 329:   float dispersionBlue = colorDispersion;
 330:   dispersionBlue *= 1.3;
 331:   dispersionBlue += (smoothstep(0., .4, uv.y) * (1.0 - smoothstep(.1, .8, uv.y))) * (smoothstep(.4, .6, bump) * (1.0 - smoothstep(.4, .8, bump)));
 332:   dispersionBlue -= .2 * edge;
-333: 
+333:
 334:   dispersionRed *= (u_shiftRed / 20.);
 335:   dispersionBlue *= (u_shiftBlue / 20.);
-336: 
+336:
 337:   float blur = 0.;
 338:   float rExtraBlur = 0.;
 339:   float gExtraBlur = 0.;
@@ -8592,7 +8677,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 347:   } else {
 348:     blur = u_softness / 15. + .3 * contour;
 349:   }
-350: 
+350:
 351:   vec3 w = vec3(thin_strip_1_width, thin_strip_2_width, wide_strip_ratio);
 352:   w[1] -= .02 * smoothstep(.0, 1., edge + bump);
 353:   float stripe_r = fract(direction + dispersionRed);
@@ -8601,27 +8686,27 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 356:   float g = getColorChanges(color1.g, color2.g, stripe_g, w, blur + fwidth(stripe_g) + gExtraBlur, bump, u_colorTint.g);
 357:   float stripe_b = fract(direction - dispersionBlue);
 358:   float b = getColorChanges(color1.b, color2.b, stripe_b, w, blur + fwidth(stripe_b), bump, u_colorTint.b);
-359: 
+359:
 360:   color = vec3(r, g, b);
 361:   color *= opacity;
-362: 
+362:
 363:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 364:   color = color + bgColor * (1. - opacity);
 365:   opacity = opacity + u_colorBack.a * (1. - opacity);
-366: 
+366:
 367:   ${ colorBandingFix }
-368: 
+368:
 369:   fragColor = vec4(color, opacity);
 370: }
 371: `;
-372: 
+372:
 373: // Configuration for Poisson solver
 374: export const POISSON_CONFIG_OPTIMIZED = {
 375:   measurePerformance: false, // Set to true to see performance metrics
 376:   workingSize: 512, // Size to solve Poisson at (will upscale to original size)
 377:   iterations: 40, // SOR converges ~2-20x faster than standard Gauss-Seidel
 378: };
-379: 
+379:
 380: // Precomputed pixel data for sparse processing
 381: interface SparsePixelData {
 382:   interiorPixels: Uint32Array; // Indices of interior pixels
@@ -8631,29 +8716,29 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 386:   // Layout: [east, west, north, south] for each pixel
 387:   neighborIndices: Int32Array;
 388: }
-389: 
+389:
 390: export function toProcessedLiquidMetal(file: File | string): Promise<{ imageData: ImageData; pngBlob: Blob }> {
 391:   const canvas = document.createElement('canvas');
 392:   const ctx = canvas.getContext('2d');
 393:   const isBlob = typeof file === 'string' && file.startsWith('blob:');
-394: 
+394:
 395:   return new Promise((resolve, reject) => {
 396:     if (!file || !ctx) {
 397:       reject(new Error('Invalid file or canvas context'));
 398:       return;
 399:     }
-400: 
+400:
 401:     const blobContentTypePromise = isBlob && fetch(file).then((res) => res.headers.get('Content-Type'));
 402:     const img = new Image();
 403:     img.crossOrigin = 'anonymous';
 404:     const totalStartTime = performance.now();
-405: 
+405:
 406:     img.onload = async () => {
 407:       // Force SVG to load at a high fidelity size if it's an SVG
 408:       let isSVG;
-409: 
+409:
 410:       const blobContentType = await blobContentTypePromise;
-411: 
+411:
 412:       if (blobContentType) {
 413:         isSVG = blobContentType === 'image/svg+xml';
 414:       } else if (typeof file === 'string') {
@@ -8661,15 +8746,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 416:       } else {
 417:         isSVG = file.type === 'image/svg+xml';
 418:       }
-419: 
+419:
 420:       let originalWidth = img.width || img.naturalWidth;
 421:       let originalHeight = img.height || img.naturalHeight;
-422: 
+422:
 423:       if (isSVG) {
 424:         // Scale SVG to max dimension while preserving aspect ratio
 425:         const svgMaxSize = 4096;
 426:         const aspectRatio = originalWidth / originalHeight;
-427: 
+427:
 428:         if (originalWidth > originalHeight) {
 429:           originalWidth = svgMaxSize;
 430:           originalHeight = svgMaxSize / aspectRatio;
@@ -8677,20 +8762,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 432:           originalHeight = svgMaxSize;
 433:           originalWidth = svgMaxSize * aspectRatio;
 434:         }
-435: 
+435:
 436:         img.width = originalWidth;
 437:         img.height = originalHeight;
 438:       }
-439: 
+439:
 440:       // Always scale to working resolution for consistency
 441:       const minDimension = Math.min(originalWidth, originalHeight);
 442:       const targetSize = POISSON_CONFIG_OPTIMIZED.workingSize;
-443: 
+443:
 444:       // Calculate scale to fit within workingSize
 445:       const scaleFactor = targetSize / minDimension;
 446:       const width = Math.round(originalWidth * scaleFactor);
 447:       const height = Math.round(originalHeight * scaleFactor);
-448: 
+448:
 449:       if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 450:         console.log(`[Processing Mode]`);
 451:         console.log(`  Original: ${originalWidth}×${originalHeight}`);
@@ -8699,28 +8784,28 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 454:           console.log(`  Speedup: ~${Math.round(1 / (scaleFactor * scaleFactor))}×`);
 455:         }
 456:       }
-457: 
+457:
 458:       canvas.width = originalWidth;
 459:       canvas.height = originalHeight;
-460: 
+460:
 461:       // Use a smaller canvas for shape detection and Poisson solving
 462:       const shapeCanvas = document.createElement('canvas');
 463:       shapeCanvas.width = width;
 464:       shapeCanvas.height = height;
-465: 
+465:
 466:       const shapeCtx = shapeCanvas.getContext('2d')!;
 467:       shapeCtx.drawImage(img, 0, 0, width, height);
-468: 
+468:
 469:       // 1) Build optimized masks using TypedArrays
 470:       const startMask = performance.now();
-471: 
+471:
 472:       const shapeImageData = shapeCtx.getImageData(0, 0, width, height);
 473:       const data = shapeImageData.data;
-474: 
+474:
 475:       // Use Uint8Array for masks (1 byte per pixel vs 8+ bytes for boolean array)
 476:       const shapeMask = new Uint8Array(width * height);
 477:       const boundaryMask = new Uint8Array(width * height);
-478: 
+478:
 479:       // First pass: identify shape pixels
 480:       let shapePixelCount = 0;
 481:       for (let i = 0, idx = 0; i < data.length; i += 4, idx++) {
@@ -8729,20 +8814,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 484:         shapeMask[idx] = isShape;
 485:         shapePixelCount += isShape;
 486:       }
-487: 
+487:
 488:       // 2) Optimized boundary detection using sparse approach
 489:       // Only check shape pixels, not all pixels
 490:       const boundaryIndices: number[] = [];
 491:       const interiorIndices: number[] = [];
-492: 
+492:
 493:       for (let y = 0; y < height; y++) {
 494:         for (let x = 0; x < width; x++) {
 495:           const idx = y * width + x;
 496:           if (!shapeMask[idx]) continue;
-497: 
+497:
 498:           // Check if pixel is on boundary (optimized: early exit)
 499:           let isBoundary = false;
-500: 
+500:
 501:           // Check 4-connected neighbors first (most common case)
 502:           if (x === 0 || x === width - 1 || y === 0 || y === height - 1) {
 503:             isBoundary = true;
@@ -8758,7 +8843,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 513:               !shapeMask[idx + width - 1] || // bottom-left
 514:               !shapeMask[idx + width + 1]; // bottom-right
 515:           }
-516: 
+516:
 517:           if (isBoundary) {
 518:             boundaryMask[idx] = 1;
 519:             boundaryIndices.push(idx);
@@ -8767,7 +8852,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 522:           }
 523:         }
 524:       }
-525: 
+525:
 526:       if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 527:         console.log(`[Mask Building] Time: ${(performance.now() - startMask).toFixed(2)}ms`);
 528:         console.log(
@@ -8776,7 +8861,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 531:         console.log(`  Interior pixels: ${interiorIndices.length}`);
 532:         console.log(`  Boundary pixels: ${boundaryIndices.length}`);
 533:       }
-534: 
+534:
 535:       // 3) Precompute sparse data structure for solver
 536:       const sparseData = buildSparseData(
 537:         shapeMask,
@@ -8786,19 +8871,19 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 541:         width,
 542:         height
 543:       );
-544: 
+544:
 545:       // 4) Solve Poisson equation with optimized sparse solver
 546:       const startSolve = performance.now();
 547:       const u = solvePoissonSparse(sparseData, shapeMask, boundaryMask, width, height);
-548: 
+548:
 549:       if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 550:         console.log(`[Poisson Solve] Time: ${(performance.now() - startSolve).toFixed(2)}ms`);
 551:       }
-552: 
+552:
 553:       // 5) Generate output image
 554:       let maxVal = 0;
 555:       let finalImageData: ImageData;
-556: 
+556:
 557:       // Only check shape pixels for max value
 558:       for (let i = 0; i < interiorIndices.length; i++) {
 559:         const idx = interiorIndices[i]!;
@@ -8811,6 +8896,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/mesh-gradient.ts",
@@ -8820,6 +8906,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/mesh-gradient.ts</path>
 <type>file</type>
@@ -8831,11 +8918,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 5:   type ShaderSizingUniforms,
 6: } from '../shader-sizing.js';
 7: import { declarePI, rotation2, proceduralHash21 } from '../shader-utils.js';
-8: 
+8:
 9: export const meshGradientMeta = {
 10:   maxColorCount: 10,
 11: } as const;
-12: 
+12:
 13: /**
 14:  * A flowing composition of color spots, moving along distinct trajectories
 15:  * and transformed by organic distortion.
@@ -8866,28 +8953,28 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 40:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 41:  *
 42:  */
-43: 
+43:
 44: // language=GLSL
 45: export const meshGradientFragmentShader: string = `#version 300 es
 46: precision mediump float;
-47: 
+47:
 48: uniform float u_time;
-49: 
+49:
 50: uniform vec4 u_colors[${meshGradientMeta.maxColorCount}];
 51: uniform float u_colorsCount;
-52: 
+52:
 53: uniform float u_distortion;
 54: uniform float u_swirl;
 55: uniform float u_grainMixer;
 56: uniform float u_grainOverlay;
-57: 
+57:
 58: in vec2 v_objectUV;
 59: out vec4 fragColor;
-60: 
+60:
 61: ${declarePI}
 62: ${rotation2}
 63: ${proceduralHash21}
-64: 
+64:
 65: float valueNoise(vec2 st) {
 66:   vec2 i = floor(st);
 67:   vec2 f = fract(st);
@@ -8900,86 +8987,86 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 74:   float x2 = mix(c, d, u.x);
 75:   return mix(x1, x2, u.y);
 76: }
-77: 
+77:
 78: float noise(vec2 n, vec2 seedOffset) {
 79:   return valueNoise(n + seedOffset);
 80: }
-81: 
+81:
 82: vec2 getPosition(int i, float t) {
 83:   float a = float(i) * .37;
 84:   float b = .6 + fract(float(i) / 3.) * .9;
 85:   float c = .8 + fract(float(i + 1) / 4.);
-86: 
+86:
 87:   float x = sin(t * b + a);
 88:   float y = cos(t * c + a * 1.5);
-89: 
+89:
 90:   return .5 + .5 * vec2(x, y);
 91: }
-92: 
+92:
 93: void main() {
 94:   vec2 uv = v_objectUV;
 95:   uv += .5;
 96:   vec2 grainUV = uv * 1000.;
-97: 
+97:
 98:   float grain = noise(grainUV, vec2(0.));
 99:   float mixerGrain = .4 * u_grainMixer * (grain - .5);
-100: 
+100:
 101:   const float firstFrameOffset = 41.5;
 102:   float t = .5 * (u_time + firstFrameOffset);
-103: 
+103:
 104:   float radius = smoothstep(0., 1., length(uv - .5));
 105:   float center = 1. - radius;
 106:   for (float i = 1.; i <= 2.; i++) {
 107:     uv.x += u_distortion * center / i * sin(t + i * .4 * smoothstep(.0, 1., uv.y)) * cos(.2 * t + i * 2.4 * smoothstep(.0, 1., uv.y));
 108:     uv.y += u_distortion * center / i * cos(t + i * 2. * smoothstep(.0, 1., uv.x));
 109:   }
-110: 
+110:
 111:   vec2 uvRotated = uv;
 112:   uvRotated -= vec2(.5);
 113:   float angle = 3. * u_swirl * radius;
 114:   uvRotated = rotate(uvRotated, -angle);
 115:   uvRotated += vec2(.5);
-116: 
+116:
 117:   vec3 color = vec3(0.);
 118:   float opacity = 0.;
 119:   float totalWeight = 0.;
-120: 
+120:
 121:   for (int i = 0; i < ${meshGradientMeta.maxColorCount}; i++) {
 122:     if (i >= int(u_colorsCount)) break;
-123: 
+123:
 124:     vec2 pos = getPosition(i, t) + mixerGrain;
 125:     vec3 colorFraction = u_colors[i].rgb * u_colors[i].a;
 126:     float opacityFraction = u_colors[i].a;
-127: 
+127:
 128:     float dist = length(uvRotated - pos);
-129: 
+129:
 130:     dist = pow(dist, 3.5);
 131:     float weight = 1. / (dist + 1e-3);
 132:     color += colorFraction * weight;
 133:     opacity += opacityFraction * weight;
 134:     totalWeight += weight;
 135:   }
-136: 
+136:
 137:   color /= max(1e-4, totalWeight);
 138:   opacity /= max(1e-4, totalWeight);
-139: 
+139:
 140:   float grainOverlay = valueNoise(rotate(grainUV, 1.) + vec2(3.));
 141:   grainOverlay = mix(grainOverlay, valueNoise(rotate(grainUV, 2.) + vec2(-1.)), .5);
 142:   grainOverlay = pow(grainOverlay, 1.3);
-143: 
+143:
 144:   float grainOverlayV = grainOverlay * 2. - 1.;
 145:   vec3 grainOverlayColor = vec3(step(0., grainOverlayV));
 146:   float grainOverlayStrength = u_grainOverlay * abs(grainOverlayV);
 147:   grainOverlayStrength = pow(grainOverlayStrength, .8);
 148:   color = mix(color, grainOverlayColor, .35 * grainOverlayStrength);
-149: 
+149:
 150:   opacity += .5 * grainOverlayStrength;
 151:   opacity = clamp(opacity, 0., 1.);
-152: 
+152:
 153:   fragColor = vec4(color, opacity);
 154: }
 155: `;
-156: 
+156:
 157: export interface MeshGradientUniforms extends ShaderSizingUniforms {
 158:   u_colors: vec4[];
 159:   u_colorsCount: number;
@@ -8988,7 +9075,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 162:   u_grainMixer: number;
 163:   u_grainOverlay: number;
 164: }
-165: 
+165:
 166: export interface MeshGradientParams extends ShaderSizingParams, ShaderMotionParams {
 167:   colors?: string[];
 168:   distortion?: number;
@@ -9004,6 +9091,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/metaballs.ts",
@@ -9013,6 +9101,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/metaballs.ts</path>
 <type>file</type>
@@ -9021,12 +9110,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { declarePI, textureRandomizerR, colorBandingFix } from '../shader-utils.js';
-5: 
+5:
 6: export const metaballsMeta = {
 7:   maxColorCount: 8,
 8:   maxBallsCount: 20,
 9: } as const;
-10: 
+10:
 11: /**
 12:  * Up to 20 colored gooey balls moving around the center and merging into smooth organic shapes.
 13:  *
@@ -9056,26 +9145,26 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 37:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 38:  *
 39:  */
-40: 
+40:
 41: // language=GLSL
 42: export const metaballsFragmentShader: string = `#version 300 es
 43: precision mediump float;
-44: 
+44:
 45: uniform float u_time;
-46: 
+46:
 47: uniform sampler2D u_noiseTexture;
-48: 
+48:
 49: uniform vec4 u_colorBack;
 50: uniform vec4 u_colors[${ metaballsMeta.maxColorCount }];
 51: uniform float u_colorsCount;
 52: uniform float u_size;
 53: uniform float u_sizeRange;
 54: uniform float u_count;
-55: 
+55:
 56: in vec2 v_objectUV;
-57: 
+57:
 58: out vec4 fragColor;
-59: 
+59:
 60: ${ declarePI }
 61: ${ textureRandomizerR }
 62: float noise(float x) {
@@ -9086,75 +9175,75 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 67:   vec2 p1 = vec2(i + 1.0, 0.0);
 68:   return mix(randomR(p0), randomR(p1), u);
 69: }
-70: 
+70:
 71: float getBallShape(vec2 uv, vec2 c, float p) {
 72:   float s = .5 * length(uv - c);
 73:   s = 1. - clamp(s, 0., 1.);
 74:   s = pow(s, p);
 75:   return s;
 76: }
-77: 
+77:
 78: void main() {
 79:   vec2 shape_uv = v_objectUV;
-80: 
+80:
 81:   shape_uv += .5;
-82: 
+82:
 83:   const float firstFrameOffset = 2503.4;
 84:   float t = .2 * (u_time + firstFrameOffset);
-85: 
+85:
 86:   vec3 totalColor = vec3(0.);
 87:   float totalShape = 0.;
 88:   float totalOpacity = 0.;
-89: 
+89:
 90:   for (int i = 0; i < ${ metaballsMeta.maxBallsCount }; i++) {
 91:     if (i >= int(ceil(u_count))) break;
-92: 
+92:
 93:     float idxFract = float(i) / float(${ metaballsMeta.maxBallsCount });
 94:     float angle = TWO_PI * idxFract;
-95: 
+95:
 96:     float speed = 1. - .2 * idxFract;
 97:     float noiseX = noise(angle * 10. + float(i) + t * speed);
 98:     float noiseY = noise(angle * 20. + float(i) - t * speed);
-99: 
+99:
 100:     vec2 pos = vec2(.5) + 1e-4 + .9 * (vec2(noiseX, noiseY) - .5);
-101: 
+101:
 102:     int safeIndex = i % int(u_colorsCount + 0.5);
 103:     vec4 ballColor = u_colors[safeIndex];
 104:     ballColor.rgb *= ballColor.a;
-105: 
+105:
 106:     float sizeFrac = 1.;
 107:     if (float(i) > floor(u_count - 1.)) {
 108:       sizeFrac *= fract(u_count);
 109:     }
-110: 
+110:
 111:     float shape = getBallShape(shape_uv, pos, 45. - 30. * u_size * sizeFrac);
 112:     shape *= pow(u_size, .2);
 113:     shape = smoothstep(0., 1., shape);
-114: 
+114:
 115:     totalColor += ballColor.rgb * shape;
 116:     totalShape += shape;
 117:     totalOpacity += ballColor.a * shape;
 118:   }
-119: 
+119:
 120:   totalColor /= max(totalShape, 1e-4);
 121:   totalOpacity /= max(totalShape, 1e-4);
-122: 
+122:
 123:   float edge_width = fwidth(totalShape);
 124:   float finalShape = smoothstep(.4, .4 + edge_width, totalShape);
-125: 
+125:
 126:   vec3 color = totalColor * finalShape;
 127:   float opacity = totalOpacity * finalShape;
-128: 
+128:
 129:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 130:   color = color + bgColor * (1. - opacity);
 131:   opacity = opacity + u_colorBack.a * (1. - opacity);
-132: 
+132:
 133:   ${ colorBandingFix }
-134: 
+134:
 135:   fragColor = vec4(color, opacity);
 136: }
 137: `;
-138: 
+138:
 139: export interface MetaballsUniforms extends ShaderSizingUniforms {
 140:   u_colorBack: [number, number, number, number];
 141:   u_colors: vec4[];
@@ -9163,7 +9252,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 144:   u_size: number;
 145:   u_noiseTexture?: HTMLImageElement;
 146: }
-147: 
+147:
 148: export interface MetaballsParams extends ShaderSizingParams, ShaderMotionParams {
 149:   colorBack?: string;
 150:   colors?: string[];
@@ -9178,6 +9267,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/neuro-noise.ts",
@@ -9187,6 +9277,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/neuro-noise.ts</path>
 <type>file</type>
@@ -9194,7 +9285,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { rotation2, colorBandingFix } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * A glowing, web-like structure of fluid lines and soft intersections.
 7:  * Great for creating atmospheric, organic-yet-futuristic visuals.
@@ -9227,32 +9318,32 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 34:  *
 35:  * Original algorithm: https://x.com/zozuar/status/1625182758745128981/
 36:  */
-37: 
+37:
 38: // language=GLSL
 39: export const neuroNoiseFragmentShader: string = `#version 300 es
 40: precision mediump float;
-41: 
+41:
 42: uniform float u_time;
 43: uniform vec2 u_resolution;
 44: uniform float u_pixelRatio;
-45: 
+45:
 46: uniform vec4 u_colorFront;
 47: uniform vec4 u_colorMid;
 48: uniform vec4 u_colorBack;
 49: uniform float u_brightness;
 50: uniform float u_contrast;
-51: 
+51:
 52: in vec2 v_patternUV;
-53: 
+53:
 54: out vec4 fragColor;
-55: 
+55:
 56: ${ rotation2 }
-57: 
+57:
 58: float neuroShape(vec2 uv, float t) {
 59:   vec2 sine_acc = vec2(0.);
 60:   vec2 res = vec2(0.);
 61:   float scale = 8.;
-62: 
+62:
 63:   for (int j = 0; j < 15; j++) {
 64:     uv = rotate(uv, 1.);
 65:     sine_acc = rotate(sine_acc, 1.);
@@ -9263,41 +9354,41 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 70:   }
 71:   return res.x + res.y;
 72: }
-73: 
+73:
 74: void main() {
 75:   vec2 shape_uv = v_patternUV;
 76:   shape_uv *= .13;
-77: 
+77:
 78:   float t = .5 * u_time;
-79: 
+79:
 80:   float noise = neuroShape(shape_uv, t);
-81: 
+81:
 82:   noise = (1. + u_brightness) * noise * noise;
 83:   noise = pow(noise, .7 + 6. * u_contrast);
 84:   noise = min(1.4, noise);
-85: 
+85:
 86:   float blend = smoothstep(0.7, 1.4, noise);
-87: 
+87:
 88:   vec4 frontC = u_colorFront;
 89:   frontC.rgb *= frontC.a;
 90:   vec4 midC = u_colorMid;
 91:   midC.rgb *= midC.a;
 92:   vec4 blendFront = mix(midC, frontC, blend);
-93: 
+93:
 94:   float safeNoise = max(noise, 0.0);
 95:   vec3 color = blendFront.rgb * safeNoise;
 96:   float opacity = clamp(blendFront.a * safeNoise, 0., 1.);
-97: 
+97:
 98:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 99:   color = color + bgColor * (1. - opacity);
 100:   opacity = opacity + u_colorBack.a * (1. - opacity);
-101: 
+101:
 102:   ${ colorBandingFix }
-103: 
+103:
 104:   fragColor = vec4(color, opacity);
 105: }
 106: `;
-107: 
+107:
 108: export interface NeuroNoiseUniforms extends ShaderSizingUniforms {
 109:   u_colorFront: [number, number, number, number];
 110:   u_colorMid: [number, number, number, number];
@@ -9305,7 +9396,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 112:   u_brightness: number;
 113:   u_contrast: number;
 114: }
-115: 
+115:
 116: export interface NeuroNoiseParams extends ShaderSizingParams, ShaderMotionParams {
 117:   colorFront?: string;
 118:   colorMid?: string;
@@ -9321,6 +9412,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/paper-texture.ts",
@@ -9330,6 +9422,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/paper-texture.ts</path>
 <type>file</type>
@@ -9337,7 +9430,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { rotation2, declarePI, fiberNoise, textureRandomizerR } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * A static texture built from multiple noise layers, usable for realistic paper and cardboard surfaces.
 7:  * Can be used as an image filter or as a standalone texture.
@@ -9380,20 +9473,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 44:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 45:  *
 46:  */
-47: 
+47:
 48: // language=GLSL
 49: export const paperTextureFragmentShader: string = `#version 300 es
 50: precision mediump float;
-51: 
+51:
 52: uniform vec2 u_resolution;
 53: uniform float u_pixelRatio;
-54: 
+54:
 55: uniform vec4 u_colorFront;
 56: uniform vec4 u_colorBack;
-57: 
+57:
 58: uniform sampler2D u_image;
 59: uniform float u_imageAspectRatio;
-60: 
+60:
 61: uniform float u_contrast;
 62: uniform float u_roughness;
 63: uniform float u_fiber;
@@ -9405,25 +9498,25 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 69: uniform float u_drops;
 70: uniform float u_seed;
 71: uniform float u_fade;
-72: 
+72:
 73: uniform sampler2D u_noiseTexture;
-74: 
+74:
 75: in vec2 v_imageUV;
-76: 
+76:
 77: out vec4 fragColor;
-78: 
+78:
 79: float getUvFrame(vec2 uv) {
 80:   float aax = 2. * fwidth(uv.x);
 81:   float aay = 2. * fwidth(uv.y);
-82: 
+82:
 83:   float left   = smoothstep(0., aax, uv.x);
 84:   float right = 1. - smoothstep(1. - aax, 1., uv.x);
 85:   float bottom = smoothstep(0., aay, uv.y);
 86:   float top = 1. - smoothstep(1. - aay, 1., uv.y);
-87: 
+87:
 88:   return left * right * bottom * top;
 89: }
-90: 
+90:
 91: ${ declarePI }
 92: ${ rotation2 }
 93: ${ textureRandomizerR }
@@ -9448,8 +9541,8 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 112:   }
 113:   return total;
 114: }
-115: 
-116: 
+115:
+116:
 117: float randomG(vec2 p) {
 118:   vec2 uv = floor(p) / 50. + .5;
 119:   return texture(u_noiseTexture, fract(uv)).g;
@@ -9468,9 +9561,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 132:   }
 133:   return o / 3.;
 134: }
-135: 
+135:
 136: ${ fiberNoise }
-137: 
+137:
 138: vec2 randomGB(vec2 p) {
 139:   vec2 uv = floor(p) / 50. + .5;
 140:   return texture(u_noiseTexture, fract(uv)).gb;
@@ -9496,8 +9589,8 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 160: float crumplesShape(vec2 uv) {
 161:   return crumpledNoise(uv * .25, 16.) * crumpledNoise(uv * .5, 2.);
 162: }
-163: 
-164: 
+163:
+164:
 165: vec2 folds(vec2 uv) {
 166:   vec3 pp = vec3(0.);
 167:   float l = 9.;
@@ -9508,7 +9601,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 172:     vec2 p = vec2(cos(an), sin(an)) * rand.y;
 173:     float dist = distance(uv, p);
 174:     l = min(l, dist);
-175: 
+175:
 176:     if (l == dist) {
 177:       pp.xy = (uv - p.xy);
 178:       pp.z = dist;
@@ -9516,7 +9609,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 180:   }
 181:   return mix(pp.xy, vec2(0.), pow(pp.z, .25));
 182: }
-183: 
+183:
 184: float drops(vec2 uv) {
 185:   vec2 iDropsUV = floor(uv);
 186:   vec2 fDropsUV = fract(uv);
@@ -9533,93 +9626,93 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 197:   }
 198:   return 1. - smoothstep(.05, .09, pow(dropsMinDist, .5));
 199: }
-200: 
+200:
 201: float lst(float edge0, float edge1, float x) {
 202:   return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 203: }
-204: 
+204:
 205: void main() {
-206: 
+206:
 207:   vec2 imageUV = v_imageUV;
 208:   vec2 patternUV = v_imageUV - .5;
 209:   patternUV = 5. * (patternUV * vec2(u_imageAspectRatio, 1.));
-210: 
+210:
 211:   vec2 roughnessUv = 1.5 * (gl_FragCoord.xy - .5 * u_resolution) / u_pixelRatio;
 212:   float roughness = roughness(roughnessUv + vec2(1., 0.)) - roughness(roughnessUv - vec2(1., 0.));
-213: 
+213:
 214:   vec2 crumplesUV = fract(patternUV * .02 / u_crumpleSize - u_seed) * 32.;
 215:   float crumples = u_crumples * (crumplesShape(crumplesUV + vec2(.05, 0.)) - crumplesShape(crumplesUV));
-216: 
+216:
 217:   vec2 fiberUV = 2. / u_fiberSize * patternUV;
 218:   float fiber = fiberNoise(fiberUV, vec2(0.));
 219:   fiber = .5 * u_fiber * (fiber - 1.);
-220: 
+220:
 221:   vec2 normal = vec2(0.);
 222:   vec2 normalImage = vec2(0.);
-223: 
+223:
 224:   vec2 foldsUV = patternUV * .12;
 225:   foldsUV = rotate(foldsUV, 4. * u_seed);
 226:   vec2 w = folds(foldsUV);
 227:   foldsUV = rotate(foldsUV + .007 * cos(u_seed), .01 * sin(u_seed));
 228:   vec2 w2 = folds(foldsUV);
-229: 
+229:
 230:   float drops = u_drops * drops(patternUV * 2.);
-231: 
+231:
 232:   float fade = u_fade * fbm(.17 * patternUV + 10. * u_seed);
 233:   fade = clamp(8. * fade * fade * fade, 0., 1.);
-234: 
+234:
 235:   w = mix(w, vec2(0.), fade);
 236:   w2 = mix(w2, vec2(0.), fade);
 237:   crumples = mix(crumples, 0., fade);
 238:   drops = mix(drops, 0., fade);
 239:   fiber *= mix(1., .5, fade);
 240:   roughness *= mix(1., .5, fade);
-241: 
+241:
 242:   normal.xy += u_folds * min(5. * u_contrast, 1.) * 4. * max(vec2(0.), w + w2);
 243:   normalImage.xy += u_folds * 2. * w;
-244: 
+244:
 245:   normal.xy += crumples;
 246:   normalImage.xy += 1.5 * crumples;
-247: 
+247:
 248:   normal.xy += 3. * drops;
 249:   normalImage.xy += .2 * drops;
-250: 
+250:
 251:   normal.xy += u_roughness * 1.5 * roughness;
 252:   normal.xy += fiber;
-253: 
+253:
 254:   normalImage += u_roughness * .75 * roughness;
 255:   normalImage += .2 * fiber;
-256: 
+256:
 257:   vec3 lightPos = vec3(1., 2., 1.);
 258:   float res = dot(normalize(vec3(normal, 9.5 - 9. * pow(u_contrast, .1))), normalize(lightPos));
-259: 
+259:
 260:   vec3 fgColor = u_colorFront.rgb * u_colorFront.a;
 261:   float fgOpacity = u_colorFront.a;
 262:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 263:   float bgOpacity = u_colorBack.a;
-264: 
+264:
 265:   imageUV += .02 * normalImage;
 266:   float frame = getUvFrame(imageUV);
 267:   vec4 image = texture(u_image, imageUV);
 268:   image.rgb += .6 * pow(u_contrast, .4) * (res - .7);
-269: 
+269:
 270:   frame *= image.a;
-271: 
+271:
 272:   vec3 color = fgColor * res;
 273:   float opacity = fgOpacity * res;
-274: 
+274:
 275:   color += bgColor * (1. - opacity);
 276:   opacity += bgOpacity * (1. - opacity);
 277:   opacity = mix(opacity, 1., frame);
-278: 
+278:
 279:   color -= .007 * drops;
-280: 
+280:
 281:   color.rgb = mix(color, image.rgb, frame);
-282: 
+282:
 283:   fragColor = vec4(color, opacity);
 284: }
 285: `;
-286: 
+286:
 287: export interface PaperTextureUniforms extends ShaderSizingUniforms {
 288:   u_image: HTMLImageElement | string | undefined;
 289:   u_noiseTexture?: HTMLImageElement;
@@ -9642,6 +9735,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/perlin-noise.ts",
@@ -9651,6 +9745,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/perlin-noise.ts</path>
 <type>file</type>
@@ -9658,7 +9753,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { declarePI, colorBandingFix, proceduralHash11, proceduralHash21 } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * Classic animated 3D Perlin noise with exposed controls.
 7:  * Original algorithm: https://www.shadertoy.com/view/NlSGDz
@@ -9690,13 +9785,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 33:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 34:  *
 35:  */
-36: 
+36:
 37: // language=GLSL
 38: export const perlinNoiseFragmentShader: string = `#version 300 es
 39: precision mediump float;
-40: 
+40:
 41: uniform float u_time;
-42: 
+42:
 43: uniform vec4 u_colorFront;
 44: uniform vec4 u_colorBack;
 45: uniform float u_proportion;
@@ -9704,24 +9799,24 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 47: uniform float u_octaveCount;
 48: uniform float u_persistence;
 49: uniform float u_lacunarity;
-50: 
+50:
 51: in vec2 v_patternUV;
-52: 
+52:
 53: out vec4 fragColor;
-54: 
+54:
 55: ${ declarePI }
 56: ${ proceduralHash11 }
 57: ${ proceduralHash21 }
-58: 
+58:
 59: float hash31(vec3 p) {
 60:   p = fract(p * 0.3183099) + 0.1;
 61:   p += dot(p, p.yzx + 19.19);
 62:   return fract(p.x * (p.y + p.z));
 63: }
-64: 
+64:
 65: vec3 gradientPredefined(float hash) {
 66:   int idx = int(hash * 12.0) % 12;
-67: 
+67:
 68:   if (idx == 0) return vec3(1, 1, 0);
 69:   if (idx == 1) return vec3(-1, 1, 0);
 70:   if (idx == 2) return vec3(1, -1, 0);
@@ -9735,29 +9830,29 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 78:   if (idx == 10) return vec3(0, 1, -1);
 79:   return vec3(0, -1, -1);// idx == 11
 80: }
-81: 
+81:
 82: float interpolateSafe(float v000, float v001, float v010, float v011,
 83: float v100, float v101, float v110, float v111, vec3 t) {
 84:   t = clamp(t, 0.0, 1.0);
-85: 
+85:
 86:   float v00 = mix(v000, v100, t.x);
 87:   float v01 = mix(v001, v101, t.x);
 88:   float v10 = mix(v010, v110, t.x);
 89:   float v11 = mix(v011, v111, t.x);
-90: 
+90:
 91:   float v0 = mix(v00, v10, t.y);
 92:   float v1 = mix(v01, v11, t.y);
-93: 
+93:
 94:   return mix(v0, v1, t.z);
 95: }
-96: 
+96:
 97: vec3 fade(vec3 t) {
 98:   return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
 99: }
-100: 
+100:
 101: float perlinNoise(vec3 position, float seed) {
 102:   position += vec3(seed * 127.1, seed * 311.7, seed * 74.7);
-103: 
+103:
 104:   vec3 i = floor(position);
 105:   vec3 f = fract(position);
 106:   float h000 = hash31(i);
@@ -9784,18 +9879,18 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 127:   float v101 = dot(g101, f - vec3(1, 0, 1));
 128:   float v110 = dot(g110, f - vec3(1, 1, 0));
 129:   float v111 = dot(g111, f - vec3(1, 1, 1));
-130: 
+130:
 131:   vec3 u = fade(f);
 132:   return interpolateSafe(v000, v001, v010, v011, v100, v101, v110, v111, u);
 133: }
-134: 
+134:
 135: float p_noise(vec3 position, int octaveCount, float persistence, float lacunarity) {
 136:   float value = 0.0;
 137:   float amplitude = 1.0;
 138:   float frequency = 10.0;
 139:   float maxValue = 0.0;
 140:   octaveCount = clamp(octaveCount, 1, 8);
-141: 
+141:
 142:   for (int i = 0; i < octaveCount; i++) {
 143:     float seed = float(i) * 0.7319;
 144:     value += perlinNoise(position * frequency, seed) * amplitude;
@@ -9805,29 +9900,29 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 148:   }
 149:   return value;
 150: }
-151: 
+151:
 152: float get_max_amp(float persistence, float octaveCount) {
 153:   persistence = clamp(persistence * 0.999, 0.0, 0.999);
 154:   octaveCount = clamp(octaveCount, 1.0, 8.0);
-155: 
+155:
 156:   if (abs(persistence - 1.0) < 0.001) {
 157:     return octaveCount;
 158:   }
-159: 
+159:
 160:   return (1.0 - pow(persistence, octaveCount)) / max(1e-4, (1.0 - persistence));
 161: }
-162: 
+162:
 163: void main() {
 164:   vec2 uv = v_patternUV;
 165:   uv *= .5;
-166: 
+166:
 167:   float t = .2 * u_time;
-168: 
+168:
 169:   vec3 p = vec3(uv, t);
-170: 
+170:
 171:   float octCount = floor(u_octaveCount);
 172:   float noise = p_noise(p, int(octCount), u_persistence, u_lacunarity);
-173: 
+173:
 174:   float max_amp = get_max_amp(u_persistence, octCount);
 175:   float noise_normalized = clamp((noise + max_amp) / max(1e-4, (2. * max_amp)) + (u_proportion - .5), 0.0, 1.0);
 176:   float sharpness = clamp(u_softness, 0., 1.);
@@ -9837,24 +9932,24 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 180:   .5 + .5 * sharpness + smooth_w,
 181:   noise_normalized
 182:   );
-183: 
+183:
 184:   vec3 fgColor = u_colorFront.rgb * u_colorFront.a;
 185:   float fgOpacity = u_colorFront.a;
 186:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 187:   float bgOpacity = u_colorBack.a;
-188: 
+188:
 189:   vec3 color = fgColor * res;
 190:   float opacity = fgOpacity * res;
-191: 
+191:
 192:   color += bgColor * (1. - opacity);
 193:   opacity += bgOpacity * (1. - opacity);
-194: 
+194:
 195:   ${ colorBandingFix }
-196: 
+196:
 197:   fragColor = vec4(color, opacity);
 198: }
 199: `;
-200: 
+200:
 201: export interface PerlinNoiseUniforms extends ShaderSizingUniforms {
 202:   u_colorFront: [number, number, number, number];
 203:   u_colorBack: [number, number, number, number];
@@ -9864,7 +9959,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 207:   u_persistence: number;
 208:   u_lacunarity: number;
 209: }
-210: 
+210:
 211: export interface PerlinNoiseParams extends ShaderSizingParams, ShaderMotionParams {
 212:   colorFront?: string;
 213:   colorBack?: string;
@@ -9886,6 +9981,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/paper-texture.ts",
@@ -9895,6 +9991,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/paper-texture.ts</path>
 <type>file</type>
@@ -9902,7 +9999,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 301:   u_drops: number;
 302:   u_seed: number;
 303: }
-304: 
+304:
 305: export interface PaperTextureParams extends ShaderSizingParams, ShaderMotionParams {
 306:   image?: HTMLImageElement | string;
 307:   colorFront?: string;
@@ -9927,6 +10024,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/liquid-metal.ts",
@@ -9936,24 +10034,25 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/liquid-metal.ts</path>
 <type>file</type>
 <content>
 561:       }
-562: 
+562:
 563:       // Create gradient image at working resolution
 564:       const tempCanvas = document.createElement('canvas');
 565:       tempCanvas.width = width;
 566:       tempCanvas.height = height;
 567:       const tempCtx = tempCanvas.getContext('2d')!;
-568: 
+568:
 569:       const tempImg = tempCtx.createImageData(width, height);
 570:       for (let y = 0; y < height; y++) {
 571:         for (let x = 0; x < width; x++) {
 572:           const idx = y * width + x;
 573:           const px = idx * 4;
-574: 
+574:
 575:           if (!shapeMask[idx]) {
 576:             tempImg.data[px] = 255;
 577:             tempImg.data[px + 1] = 255;
@@ -9970,15 +10069,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 588:         }
 589:       }
 590:       tempCtx.putImageData(tempImg, 0, 0);
-591: 
+591:
 592:       // Upscale to original resolution with smooth interpolation
 593:       ctx.imageSmoothingEnabled = true;
 594:       ctx.imageSmoothingQuality = 'high';
 595:       ctx.drawImage(tempCanvas, 0, 0, width, height, 0, 0, originalWidth, originalHeight);
-596: 
+596:
 597:       // Now get the upscaled image data for final output
 598:       const outImg = ctx.getImageData(0, 0, originalWidth, originalHeight);
-599: 
+599:
 600:       // Re-apply edges from original resolution with anti-aliasing
 601:       // This ensures edges are pixel-perfect while gradient is smooth
 602:       const originalCanvas = document.createElement('canvas');
@@ -9989,7 +10088,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 607:       // originalCtx.fillRect(0, 0, originalWidth, originalHeight);
 608:       originalCtx.drawImage(img, 0, 0, originalWidth, originalHeight);
 609:       const originalData = originalCtx.getImageData(0, 0, originalWidth, originalHeight);
-610: 
+610:
 611:       // Process each pixel: Red channel = gradient, Alpha channel = original alpha
 612:       for (let i = 0; i < outImg.data.length; i += 4) {
 613:         const a = originalData.data[i + 3]!;
@@ -10006,12 +10105,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 624:           outImg.data[i] = upscaledAlpha === 0 ? 0 : outImg.data[i]!; // gradient or 0
 625:           outImg.data[i + 1] = a; // original alpha
 626:         }
-627: 
+627:
 628:         // Unused channels fixed
 629:         outImg.data[i + 2] = 255;
 630:         outImg.data[i + 3] = 255;
 631:       }
-632: 
+632:
 633:       ctx.putImageData(outImg, 0, 0);
 634:       finalImageData = outImg;
 635:       canvas.toBlob((blob) => {
@@ -10019,7 +10118,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 637:           reject(new Error('Failed to create PNG blob'));
 638:           return;
 639:         }
-640: 
+640:
 641:         if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 642:           const totalTime = performance.now() - totalStartTime;
 643:           console.log(`[Total Processing Time] ${totalTime.toFixed(2)}ms`);
@@ -10031,19 +10130,19 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 649:             );
 650:           }
 651:         }
-652: 
+652:
 653:         resolve({
 654:           imageData: finalImageData,
 655:           pngBlob: blob,
 656:         });
 657:       }, 'image/png');
 658:     };
-659: 
+659:
 660:     img.onerror = () => reject(new Error('Failed to load image'));
 661:     img.src = typeof file === 'string' ? file : URL.createObjectURL(file);
 662:   });
 663: }
-664: 
+664:
 665: function buildSparseData(
 666:   shapeMask: Uint8Array,
 667:   boundaryMask: Uint8Array,
@@ -10053,17 +10152,17 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 671:   height: number
 672: ): SparsePixelData {
 673:   const pixelCount = interiorPixels.length;
-674: 
+674:
 675:   // Build neighbor indices for sparse processing
 676:   // For each interior pixel, store indices of its 4 neighbors
 677:   // Use -1 for out-of-bounds or non-shape neighbors
 678:   const neighborIndices = new Int32Array(pixelCount * 4);
-679: 
+679:
 680:   for (let i = 0; i < pixelCount; i++) {
 681:     const idx = interiorPixels[i]!;
 682:     const x = idx % width;
 683:     const y = Math.floor(idx / width);
-684: 
+684:
 685:     // East neighbor
 686:     neighborIndices[i * 4 + 0] = x < width - 1 && shapeMask[idx + 1] ? idx + 1 : -1;
 687:     // West neighbor
@@ -10073,7 +10172,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 691:     // South neighbor
 692:     neighborIndices[i * 4 + 3] = y < height - 1 && shapeMask[idx + width] ? idx + width : -1;
 693:   }
-694: 
+694:
 695:   return {
 696:     interiorPixels,
 697:     boundaryPixels,
@@ -10081,7 +10180,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 699:     neighborIndices,
 700:   };
 701: }
-702: 
+702:
 703: function solvePoissonSparse(
 704:   sparseData: SparsePixelData,
 705:   shapeMask: Uint8Array,
@@ -10091,24 +10190,24 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 709: ): Float32Array {
 710:   // This controls how smooth the falloff gradient will be and extend into the shape
 711:   const ITERATIONS = POISSON_CONFIG_OPTIMIZED.iterations;
-712: 
+712:
 713:   // Keep C constant - only iterations control gradient spread
 714:   const C = 0.01;
-715: 
+715:
 716:   const u = new Float32Array(width * height);
 717:   const { interiorPixels, neighborIndices, pixelCount } = sparseData;
-718: 
+718:
 719:   // Performance tracking
 720:   const startTime = performance.now();
-721: 
+721:
 722:   // Red-Black SOR for better symmetry with fewer iterations
 723:   // omega between 1.8-1.95 typically gives best convergence for Poisson
 724:   const omega = 1.9;
-725: 
+725:
 726:   // Pre-classify pixels as red or black for efficient processing
 727:   const redPixels: number[] = [];
 728:   const blackPixels: number[] = [];
-729: 
+729:
 730:   for (let i = 0; i < pixelCount; i++) {
 
 (Showing lines 561-730 of 839. Use offset=731 to continue.)
@@ -10118,6 +10217,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/pulsing-border.ts",
@@ -10127,6 +10227,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/pulsing-border.ts</path>
 <type>file</type>
@@ -10135,12 +10236,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { declarePI, textureRandomizerGB, colorBandingFix } from '../shader-utils.js';
-5: 
+5:
 6: export const pulsingBorderMeta = {
 7:   maxColorCount: 5,
 8:   maxSpots: 4,
 9: } as const;
-10: 
+10:
 11: /**
 12:  * Luminous trails of color merging into a glowing gradient contour.
 13:  *
@@ -10185,13 +10286,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 52:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 53:  *
 54:  */
-55: 
+55:
 56: // language=GLSL
 57: export const pulsingBorderFragmentShader: string = `#version 300 es
 58: precision lowp float;
-59: 
+59:
 60: uniform float u_time;
-61: 
+61:
 62: uniform vec4 u_colorBack;
 63: uniform vec4 u_colors[${ pulsingBorderMeta.maxColorCount }];
 64: uniform float u_colorsCount;
@@ -10210,28 +10311,28 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 77: uniform float u_pulse;
 78: uniform float u_smoke;
 79: uniform float u_smokeSize;
-80: 
+80:
 81: uniform sampler2D u_noiseTexture;
-82: 
+82:
 83: in vec2 v_responsiveUV;
 84: in vec2 v_responsiveBoxGivenSize;
 85: in vec2 v_patternUV;
-86: 
+86:
 87: out vec4 fragColor;
-88: 
+88:
 89: ${ declarePI }
-90: 
+90:
 91: float beat(float time) {
 92:   float first = pow(abs(sin(time * TWO_PI)), 10.);
 93:   float second = pow(abs(sin((time - .15) * TWO_PI)), 10.);
-94: 
+94:
 95:   return clamp(first + 0.6 * second, 0.0, 1.0);
 96: }
-97: 
+97:
 98: float sst(float edge0, float edge1, float x) {
 99:   return smoothstep(edge0, edge1, x);
 100: }
-101: 
+101:
 102: float roundedBox(vec2 uv, vec2 halfSize, float distance, float cornerDistance, float thickness, float softness) {
 103:   float borderDistance = abs(distance);
 104:   float aa = 2. * fwidth(distance);
@@ -10247,9 +10348,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 114:   border += cornerFade;
 115:   return border;
 116: }
-117: 
+117:
 118: ${ textureRandomizerGB }
-119: 
+119:
 120: float randomG(vec2 p) {
 121:   vec2 uv = floor(p) / 100. + .5;
 122:   return texture(u_noiseTexture, fract(uv)).g;
@@ -10266,28 +10367,28 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 133:   float x2 = mix(c, d, u.x);
 134:   return mix(x1, x2, u.y);
 135: }
-136: 
+136:
 137: void main() {
 138:   const float firstFrameOffset = 109.;
 139:   float t = 1.2 * (u_time + firstFrameOffset);
-140: 
+140:
 141:   vec2 borderUV = v_responsiveUV;
 142:   float pulse = u_pulse * beat(.18 * u_time);
-143: 
+143:
 144:   float canvasRatio = v_responsiveBoxGivenSize.x / v_responsiveBoxGivenSize.y;
 145:   vec2 halfSize = vec2(.5);
 146:   borderUV.x *= max(canvasRatio, 1.);
 147:   borderUV.y /= min(canvasRatio, 1.);
 148:   halfSize.x *= max(canvasRatio, 1.);
 149:   halfSize.y /= min(canvasRatio, 1.);
-150: 
+150:
 151:   float mL = u_marginLeft;
 152:   float mR = u_marginRight;
 153:   float mT = u_marginTop;
 154:   float mB = u_marginBottom;
 155:   float mX = mL + mR;
 156:   float mY = mT + mB;
-157: 
+157:
 158:   if (u_aspectRatio > 0.) {
 159:     float shapeRatio = canvasRatio * (1. - mX) / max(1. - mY, 1e-6);
 160:     float freeX = shapeRatio > 1. ? (1. - mX) * (1. - 1. / max(abs(shapeRatio), 1e-6)) : 0.;
@@ -10299,31 +10400,31 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 166:     mX = mL + mR;
 167:     mY = mT + mB;
 168:   }
-169: 
+169:
 170:   float thickness = .5 * u_thickness * min(halfSize.x, halfSize.y);
-171: 
+171:
 172:   halfSize.x *= (1. - mX);
 173:   halfSize.y *= (1. - mY);
-174: 
+174:
 175:   vec2 centerShift = vec2(
 176:   (mL - mR) * max(canvasRatio, 1.) * 0.5,
 177:   (mB - mT) / min(canvasRatio, 1.) * 0.5
 178:   );
-179: 
+179:
 180:   borderUV -= centerShift;
 181:   halfSize -= mix(thickness, 0., u_softness);
-182: 
+182:
 183:   float radius = mix(0., min(halfSize.x, halfSize.y), u_roundness);
 184:   vec2 d = abs(borderUV) - halfSize + radius;
 185:   float outsideDistance = length(max(d, .0001)) - radius;
 186:   float insideDistance = min(max(d.x, d.y), .0001);
 187:   float cornerDistance = abs(min(max(d.x, d.y) - .45 * radius, .0));
 188:   float distance = outsideDistance + insideDistance;
-189: 
+189:
 190:   float borderThickness = mix(thickness, 3. * thickness, u_softness);
 191:   float border = roundedBox(borderUV, halfSize, distance, cornerDistance, borderThickness, u_softness);
 192:   border = pow(border, 1. + u_softness);
-193: 
+193:
 194:   vec2 smokeUV = .3 * u_smokeSize * v_patternUV;
 195:   float smoke = clamp(3. * valueNoise(2.7 * smokeUV + .5 * t), 0., 1.);
 196:   smoke -= valueNoise(3.4 * smokeUV - .5 * t);
@@ -10335,77 +10436,77 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 202:   smoke *= mix(1., pulse, u_pulse);
 203:   smoke = clamp(smoke, 0., 1.);
 204:   border += smoke;
-205: 
+205:
 206:   border = clamp(border, 0., 1.);
-207: 
+207:
 208:   vec3 blendColor = vec3(0.);
 209:   float blendAlpha = 0.;
 210:   vec3 addColor = vec3(0.);
 211:   float addAlpha = 0.;
-212: 
+212:
 213:   float bloom = 4. * u_bloom;
 214:   float intensity = 1. + (1. + 4. * u_softness) * u_intensity;
-215: 
+215:
 216:   float angle = atan(borderUV.y, borderUV.x) / TWO_PI;
-217: 
+217:
 218:   for (int colorIdx = 0; colorIdx < ${ pulsingBorderMeta.maxColorCount }; colorIdx++) {
 219:     if (colorIdx >= int(u_colorsCount)) break;
 220:     float colorIdxF = float(colorIdx);
-221: 
+221:
 222:     vec3 c = u_colors[colorIdx].rgb * u_colors[colorIdx].a;
 223:     float a = u_colors[colorIdx].a;
-224: 
+224:
 225:     for (int spotIdx = 0; spotIdx < ${ pulsingBorderMeta.maxSpots }; spotIdx++) {
 226:       if (spotIdx >= int(u_spots)) break;
 227:       float spotIdxF = float(spotIdx);
-228: 
+228:
 229:       vec2 randVal = randomGB(vec2(spotIdxF * 10. + 2., 40. + colorIdxF));
-230: 
+230:
 231:       float time = (.1 + .15 * abs(sin(spotIdxF * (2. + colorIdxF)) * cos(spotIdxF * (2. + 2.5 * colorIdxF)))) * t + randVal.x * 3.;
 232:       time *= mix(1., -1., step(.5, randVal.y));
-233: 
+233:
 234:       float mask = .5 + .5 * mix(
 235:       sin(t + spotIdxF * (5. - 1.5 * colorIdxF)),
 236:       cos(t + spotIdxF * (3. + 1.3 * colorIdxF)),
 237:       step(mod(colorIdxF, 2.), .5)
 238:       );
-239: 
+239:
 240:       float p = clamp(2. * u_pulse - randVal.x, 0., 1.);
 241:       mask = mix(mask, pulse, p);
-242: 
+242:
 243:       float atg1 = fract(angle + time);
 244:       float spotSize = .05 + .6 * pow(u_spotSize, 2.) + .05 * randVal.x;
 245:       spotSize = mix(spotSize, .1, p);
 246:       float sector = sst(.5 - spotSize, .5, atg1) * (1. - sst(.5, .5 + spotSize, atg1));
-247: 
+247:
 248:       sector *= mask;
 249:       sector *= border;
 250:       sector *= intensity;
 251:       sector = clamp(sector, 0., 1.);
-252: 
+252:
 253:       vec3 srcColor = c * sector;
 254:       float srcAlpha = a * sector;
-255: 
+255:
 256:       blendColor += ((1. - blendAlpha) * srcColor);
 257:       blendAlpha = blendAlpha + (1. - blendAlpha) * srcAlpha;
 258:       addColor += srcColor;
 259:       addAlpha += srcAlpha;
 260:     }
 261:   }
-262: 
+262:
 263:   vec3 accumColor = mix(blendColor, addColor, bloom);
 264:   float accumAlpha = mix(blendAlpha, addAlpha, bloom);
 265:   accumAlpha = clamp(accumAlpha, 0., 1.);
-266: 
+266:
 267:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 268:   vec3 color = accumColor + (1. - accumAlpha) * bgColor;
 269:   float opacity = accumAlpha + (1. - accumAlpha) * u_colorBack.a;
-270: 
+270:
 271:   ${ colorBandingFix }
-272: 
+272:
 273:   fragColor = vec4(color, opacity);
 274: }`;
-275: 
+275:
 276: export interface PulsingBorderUniforms extends ShaderSizingUniforms {
 277:   u_colorBack: [number, number, number, number];
 278:   u_colors: vec4[];
@@ -10419,6 +10520,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/simplex-noise.ts",
@@ -10428,6 +10530,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/simplex-noise.ts</path>
 <type>file</type>
@@ -10436,11 +10539,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { simplexNoise, colorBandingFix } from '../shader-utils.js';
-5: 
+5:
 6: export const simplexNoiseMeta = {
 7:   maxColorCount: 10,
 8: } as const;
-9: 
+9:
 10: /**
 11:  * A multi-color gradient mapped into smooth, animated curves built as a combination of 2 Simplex noises.
 12:  *
@@ -10469,32 +10572,32 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 35:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 36:  *
 37:  */
-38: 
+38:
 39: // language=GLSL
 40: export const simplexNoiseFragmentShader: string = `#version 300 es
 41: precision mediump float;
-42: 
+42:
 43: uniform float u_time;
 44: uniform float u_scale;
-45: 
+45:
 46: uniform vec4 u_colors[${ simplexNoiseMeta.maxColorCount }];
 47: uniform float u_colorsCount;
 48: uniform float u_stepsPerColor;
 49: uniform float u_softness;
-50: 
+50:
 51: in vec2 v_patternUV;
-52: 
+52:
 53: out vec4 fragColor;
-54: 
+54:
 55: ${ simplexNoise }
-56: 
+56:
 57: float getNoise(vec2 uv, float t) {
 58:   float noise = .5 * snoise(uv - vec2(0., .3 * t));
 59:   noise += .5 * snoise(2. * uv + vec2(0., .32 * t));
-60: 
+60:
 61:   return noise;
 62: }
-63: 
+63:
 64: float steppedSmooth(float m, float steps, float softness) {
 65:   float stepT = floor(m * steps) / steps;
 66:   float f = m * steps - floor(m * steps);
@@ -10502,37 +10605,37 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 68:   float smoothed = smoothstep(.5 - softness, min(1., .5 + softness + fw), f);
 69:   return stepT + smoothed / steps;
 70: }
-71: 
+71:
 72: void main() {
 73:   vec2 shape_uv = v_patternUV;
 74:   shape_uv *= .1;
-75: 
+75:
 76:   float t = .2 * u_time;
-77: 
+77:
 78:   float shape = .5 + .5 * getNoise(shape_uv, t);
-79: 
+79:
 80:   bool u_extraSides = true;
-81: 
+81:
 82:   float mixer = shape * (u_colorsCount - 1.);
 83:   if (u_extraSides == true) {
 84:     mixer = (shape - .5 / u_colorsCount) * u_colorsCount;
 85:   }
-86: 
+86:
 87:   float steps = max(1., u_stepsPerColor);
-88: 
+88:
 89:   vec4 gradient = u_colors[0];
 90:   gradient.rgb *= gradient.a;
 91:   for (int i = 1; i < ${ simplexNoiseMeta.maxColorCount }; i++) {
 92:     if (i >= int(u_colorsCount)) break;
-93: 
+93:
 94:     float localM = clamp(mixer - float(i - 1), 0., 1.);
 95:     localM = steppedSmooth(localM, steps, .5 * u_softness);
-96: 
+96:
 97:     vec4 c = u_colors[i];
 98:     c.rgb *= c.a;
 99:     gradient = mix(gradient, c, localM);
 100:   }
-101: 
+101:
 102:   if (u_extraSides == true) {
 103:     if ((mixer < 0.) || (mixer > (u_colorsCount - 1.))) {
 104:       float localM = mixer + 1.;
@@ -10547,23 +10650,23 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 113:       gradient = mix(cLast, cFst, localM);
 114:     }
 115:   }
-116: 
+116:
 117:   vec3 color = gradient.rgb;
 118:   float opacity = gradient.a;
-119: 
+119:
 120:   ${ colorBandingFix }
-121: 
+121:
 122:   fragColor = vec4(color, opacity);
 123: }
 124: `;
-125: 
+125:
 126: export interface SimplexNoiseUniforms extends ShaderSizingUniforms {
 127:   u_colors: vec4[];
 128:   u_colorsCount: number;
 129:   u_stepsPerColor: number;
 130:   u_softness: number;
 131: }
-132: 
+132:
 133: export interface SimplexNoiseParams extends ShaderSizingParams, ShaderMotionParams {
 134:   colors?: string[];
 135:   stepsPerColor?: number;
@@ -10577,6 +10680,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/smoke-ring.ts",
@@ -10586,6 +10690,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/smoke-ring.ts</path>
 <type>file</type>
@@ -10594,12 +10699,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { declarePI, textureRandomizerR, colorBandingFix } from '../shader-utils.js';
-5: 
+5:
 6: export const smokeRingMeta = {
 7:   maxColorCount: 10,
 8:   maxNoiseIterations: 8,
 9: } as const;
-10: 
+10:
 11: /**
 12:  * Radial multi-colored gradient shaped with layered noise for a natural, smoky aesthetic.
 13:  *
@@ -10633,29 +10738,29 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 41:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 42:  *
 43:  */
-44: 
+44:
 45: // language=GLSL
 46: export const smokeRingFragmentShader: string = `#version 300 es
 47: precision mediump float;
-48: 
+48:
 49: uniform float u_time;
-50: 
+50:
 51: uniform sampler2D u_noiseTexture;
-52: 
+52:
 53: uniform vec4 u_colorBack;
 54: uniform vec4 u_colors[${ smokeRingMeta.maxColorCount }];
 55: uniform float u_colorsCount;
-56: 
+56:
 57: uniform float u_thickness;
 58: uniform float u_radius;
 59: uniform float u_innerShape;
 60: uniform float u_noiseScale;
 61: uniform float u_noiseIterations;
-62: 
+62:
 63: in vec2 v_objectUV;
-64: 
+64:
 65: out vec4 fragColor;
-66: 
+66:
 67: ${ declarePI }
 68: ${ textureRandomizerR }
 69: float valueNoise(vec2 st) {
@@ -10683,7 +10788,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 91:   }
 92:   return total;
 93: }
-94: 
+94:
 95: float getNoise(vec2 uv, vec2 pUv, float t) {
 96:   vec2 pUvLeft = pUv + .03 * t;
 97:   float period = max(abs(u_noiseScale * TWO_PI), 1e-6);
@@ -10691,44 +10796,44 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 99:   vec2 noise = fbm(pUvLeft, pUvRight);
 100:   return mix(noise.y, noise.x, smoothstep(-.25, .25, uv.x));
 101: }
-102: 
+102:
 103: float getRingShape(vec2 uv) {
 104:   float radius = u_radius;
 105:   float thickness = u_thickness;
-106: 
+106:
 107:   float distance = length(uv);
 108:   float ringValue = 1. - smoothstep(radius, radius + thickness, distance);
 109:   ringValue *= smoothstep(radius - pow(u_innerShape, 3.) * thickness, radius, distance);
-110: 
+110:
 111:   return ringValue;
 112: }
-113: 
+113:
 114: void main() {
 115:   vec2 shape_uv = v_objectUV;
-116: 
+116:
 117:   float t = u_time;
-118: 
+118:
 119:   float cycleDuration = 3.;
 120:   float period2 = 2.0 * cycleDuration;
 121:   float localTime1 = fract((0.1 * t + cycleDuration) / period2) * period2;
 122:   float localTime2 = fract((0.1 * t) / period2) * period2;
 123:   float timeBlend = .5 + .5 * sin(.1 * t * PI / cycleDuration - .5 * PI);
-124: 
+124:
 125:   float atg = atan(shape_uv.y, shape_uv.x) + .001;
 126:   float l = length(shape_uv);
 127:   float radialOffset = .5 * l - inversesqrt(max(1e-4, l));
 128:   vec2 polar_uv1 = vec2(atg, localTime1 - radialOffset) * u_noiseScale;
 129:   vec2 polar_uv2 = vec2(atg, localTime2 - radialOffset) * u_noiseScale;
-130:   
+130:
 131:   float noise1 = getNoise(shape_uv, polar_uv1, t);
 132:   float noise2 = getNoise(shape_uv, polar_uv2, t);
-133: 
+133:
 134:   float noise = mix(noise1, noise2, timeBlend);
-135: 
+135:
 136:   shape_uv *= (.8 + 1.2 * noise);
-137: 
+137:
 138:   float ringShape = getRingShape(shape_uv);
-139: 
+139:
 140:   float mixer = ringShape * ringShape * (u_colorsCount - 1.);
 141:   int idxLast = int(u_colorsCount) - 1;
 142:   vec4 gradient = u_colors[idxLast];
@@ -10739,20 +10844,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 147:     c.rgb *= c.a;
 148:     gradient = mix(gradient, c, localT);
 149:   }
-150: 
+150:
 151:   vec3 color = gradient.rgb * ringShape;
 152:   float opacity = gradient.a * ringShape;
-153: 
+153:
 154:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 155:   color = color + bgColor * (1. - opacity);
 156:   opacity = opacity + u_colorBack.a * (1. - opacity);
-157: 
+157:
 158:   ${ colorBandingFix }
-159: 
+159:
 160:   fragColor = vec4(color, opacity);
 161: }
 162: `;
-163: 
+163:
 164: export interface SmokeRingUniforms extends ShaderSizingUniforms {
 165:   u_colorBack: [number, number, number, number];
 166:   u_colors: vec4[];
@@ -10764,7 +10869,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 172:   u_noiseIterations: number;
 173:   u_noiseTexture?: HTMLImageElement;
 174: }
-175: 
+175:
 176: export interface SmokeRingParams extends ShaderSizingParams, ShaderMotionParams {
 177:   colorBack?: string;
 178:   colors?: string[];
@@ -10782,6 +10887,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/spiral.ts",
@@ -10791,6 +10897,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/spiral.ts</path>
 <type>file</type>
@@ -10798,7 +10905,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { simplexNoise, declarePI, colorBandingFix } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * A single-colored animated spiral that morphs across a wide range of shapes -
 7:  * from crisp, thin-lined geometry to flowing whirlpool forms and wavy, abstract rings.
@@ -10833,13 +10940,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 36:  * - u_softness (float): Color transition sharpness, 0 = hard edge, 1 = smooth gradient (0 to 1)
 37:  *
 38:  */
-39: 
+39:
 40: // language=GLSL
 41: export const spiralFragmentShader: string = `#version 300 es
 42: precision mediump float;
-43: 
+43:
 44: uniform float u_time;
-45: 
+45:
 46: uniform vec4 u_colorBack;
 47: uniform vec4 u_colorFront;
 48: uniform float u_density;
@@ -10850,62 +10957,62 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 53: uniform float u_noise;
 54: uniform float u_noiseFrequency;
 55: uniform float u_softness;
-56: 
+56:
 57: in vec2 v_patternUV;
-58: 
+58:
 59: out vec4 fragColor;
-60: 
+60:
 61: ${ declarePI }
 62: ${ simplexNoise }
-63: 
+63:
 64: void main() {
 65:   vec2 uv = 2. * v_patternUV;
-66: 
+66:
 67:   float t = u_time;
 68:   float l = length(uv);
 69:   float density = clamp(u_density, 0., 1.);
 70:   l = pow(max(l, 1e-6), density);
 71:   float angle = atan(uv.y, uv.x) - t;
 72:   float angleNormalised = angle / TWO_PI;
-73: 
+73:
 74:   angleNormalised += .125 * u_noise * snoise(16. * pow(u_noiseFrequency, 3.) * uv);
-75: 
+75:
 76:   float offset = l + angleNormalised;
 77:   offset -= u_distortion * (sin(4. * l - .5 * t) * cos(PI + l + .5 * t));
 78:   float stripe = fract(offset);
-79: 
+79:
 80:   float shape = 2. * abs(stripe - .5);
 81:   float width = 1. - clamp(u_strokeWidth, .005 * u_strokeTaper, 1.);
-82: 
-83: 
+82:
+83:
 84:   float wCap = mix(width, (1. - stripe) * (1. - step(.5, stripe)), (1. - clamp(l, 0., 1.)));
 85:   width = mix(width, wCap, u_strokeCap);
 86:   width *= (1. - clamp(u_strokeTaper, 0., 1.) * l);
-87: 
+87:
 88:   float fw = fwidth(offset);
 89:   float fwMult = 4. - 3. * (smoothstep(.05, .4, 2. * u_strokeWidth) * smoothstep(.05, .4, 2. * (1. - u_strokeWidth)));
 90:   float pixelSize = mix(fwMult * fw, fwidth(shape), clamp(fw, 0., 1.));
 91:   pixelSize = mix(pixelSize, .002, u_strokeCap * (1. - clamp(l, 0., 1.)));
-92: 
+92:
 93:   float res = smoothstep(width - pixelSize - u_softness, width + pixelSize + u_softness, shape);
-94: 
+94:
 95:   vec3 fgColor = u_colorFront.rgb * u_colorFront.a;
 96:   float fgOpacity = u_colorFront.a;
 97:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 98:   float bgOpacity = u_colorBack.a;
-99: 
+99:
 100:   vec3 color = fgColor * res;
 101:   float opacity = fgOpacity * res;
-102: 
+102:
 103:   color += bgColor * (1. - opacity);
 104:   opacity += bgOpacity * (1. - opacity);
-105: 
+105:
 106:   ${ colorBandingFix }
-107: 
+107:
 108:   fragColor = vec4(color, opacity);
 109: }
 110: `;
-111: 
+111:
 112: export interface SpiralUniforms extends ShaderSizingUniforms {
 113:   u_colorBack: [number, number, number, number];
 114:   u_colorFront: [number, number, number, number];
@@ -10918,7 +11025,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 121:   u_noiseFrequency: number;
 122:   u_softness: number;
 123: }
-124: 
+124:
 125: export interface SpiralParams extends ShaderSizingParams, ShaderMotionParams {
 126:   colorBack?: string;
 127:   colorFront?: string;
@@ -10943,6 +11050,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/pulsing-border.ts",
@@ -10952,6 +11060,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/pulsing-border.ts</path>
 <type>file</type>
@@ -10972,7 +11081,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 294:   u_smokeSize: number;
 295:   u_noiseTexture?: HTMLImageElement;
 296: }
-297: 
+297:
 298: export interface PulsingBorderParams extends ShaderSizingParams, ShaderMotionParams {
 299:   colorBack?: string;
 300:   colors?: string[];
@@ -10993,12 +11102,12 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 315:   smoke?: number;
 316:   smokeSize?: number;
 317: }
-318: 
+318:
 319: export const PulsingBorderAspectRatios = {
 320:   auto: 0,
 321:   square: 1,
 322: } as const;
-323: 
+323:
 324: export type PulsingBorderAspectRatio = keyof typeof PulsingBorderAspectRatios;
 
 (End of file - total 324 lines)
@@ -11008,6 +11117,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/static-mesh-gradient.ts",
@@ -11017,6 +11127,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/static-mesh-gradient.ts</path>
 <type>file</type>
@@ -11028,11 +11139,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 5:   type ShaderSizingUniforms,
 6: } from '../shader-sizing.js';
 7: import { declarePI, rotation2, proceduralHash21 } from '../shader-utils.js';
-8: 
+8:
 9: export const staticMeshGradientMeta = {
 10:   maxColorCount: 10,
 11: } as const;
-12: 
+12:
 13: /**
 14:  * Multi-point mesh gradient with up to 10 color spots, enhanced by two-direction warping,
 15:  * adjustable blend sharpness, and grain controls.
@@ -11066,14 +11177,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 43:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 44:  *
 45:  */
-46: 
+46:
 47: // language=GLSL
 48: export const staticMeshGradientFragmentShader: string = `#version 300 es
 49: precision mediump float;
-50: 
+50:
 51: uniform vec4 u_colors[${ staticMeshGradientMeta.maxColorCount }];
 52: uniform float u_colorsCount;
-53: 
+53:
 54: uniform float u_positions;
 55: uniform float u_waveX;
 56: uniform float u_waveXShift;
@@ -11082,14 +11193,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 59: uniform float u_mixing;
 60: uniform float u_grainMixer;
 61: uniform float u_grainOverlay;
-62: 
+62:
 63: in vec2 v_objectUV;
 64: out vec4 fragColor;
-65: 
+65:
 66: ${ declarePI }
 67: ${ rotation2 }
 68: ${ proceduralHash21 }
-69: 
+69:
 70: float valueNoise(vec2 st) {
 71:   vec2 i = floor(st);
 72:   vec2 f = fract(st);
@@ -11102,56 +11213,56 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 79:   float x2 = mix(c, d, u.x);
 80:   return mix(x1, x2, u.y);
 81: }
-82: 
+82:
 83: float noise(vec2 n, vec2 seedOffset) {
 84:   return valueNoise(n + seedOffset);
 85: }
-86: 
+86:
 87: vec2 getPosition(int i, float t) {
 88:   float a = float(i) * .37;
 89:   float b = .6 + mod(float(i), 3.) * .3;
 90:   float c = .8 + mod(float(i + 1), 4.) * 0.25;
-91: 
+91:
 92:   float x = sin(t * b + a);
 93:   float y = cos(t * c + a * 1.5);
-94: 
+94:
 95:   return .5 + .5 * vec2(x, y);
 96: }
-97: 
+97:
 98: void main() {
 99:   vec2 uv = v_objectUV;
 100:   uv += .5;
 101:   vec2 grainUV = uv * 1000.;
-102: 
+102:
 103:   float grain = noise(grainUV, vec2(0.));
 104:   float mixerGrain = .4 * u_grainMixer * (grain - .5);
-105: 
+105:
 106:   float radius = smoothstep(0., 1., length(uv - .5));
 107:   float center = 1. - radius;
 108:   for (float i = 1.; i <= 2.; i++) {
 109:     uv.x += u_waveX * center / i * cos(TWO_PI * u_waveXShift + i * 2. * smoothstep(.0, 1., uv.y));
 110:     uv.y += u_waveY * center / i * cos(TWO_PI * u_waveYShift + i * 2. * smoothstep(.0, 1., uv.x));
 111:   }
-112: 
+112:
 113:   vec3 color = vec3(0.);
 114:   float opacity = 0.;
 115:   float totalWeight = 0.;
 116:   float positionSeed = 25. + .33 * u_positions;
-117: 
+117:
 118:   for (int i = 0; i < ${ staticMeshGradientMeta.maxColorCount }; i++) {
 119:     if (i >= int(u_colorsCount)) break;
-120: 
+120:
 121:     vec2 pos = getPosition(i, positionSeed) + mixerGrain;
 122:     float dist = length(uv - pos);
 123:     dist = length(uv - pos);
-124: 
+124:
 125:     vec3 colorFraction = u_colors[i].rgb * u_colors[i].a;
 126:     float opacityFraction = u_colors[i].a;
-127: 
+127:
 128:     float mixing = pow(u_mixing, .7);
 129:     float power = mix(2., 1., mixing);
 130:     dist = pow(dist, power);
-131: 
+131:
 132:     float w = 1. / (dist + 1e-3);
 133:     float baseSharpness = mix(.0, 8., clamp(w, 0., 1.));
 134:     float sharpness = mix(baseSharpness, 1., mixing);
@@ -11160,27 +11271,27 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 137:     opacity += opacityFraction * w;
 138:     totalWeight += w;
 139:   }
-140: 
+140:
 141:   color /= max(1e-4, totalWeight);
 142:   opacity /= max(1e-4, totalWeight);
-143: 
+143:
 144:   float grainOverlay = valueNoise(rotate(grainUV, 1.) + vec2(3.));
 145:   grainOverlay = mix(grainOverlay, valueNoise(rotate(grainUV, 2.) + vec2(-1.)), .5);
 146:   grainOverlay = pow(grainOverlay, 1.3);
-147: 
+147:
 148:   float grainOverlayV = grainOverlay * 2. - 1.;
 149:   vec3 grainOverlayColor = vec3(step(0., grainOverlayV));
 150:   float grainOverlayStrength = u_grainOverlay * abs(grainOverlayV);
 151:   grainOverlayStrength = pow(grainOverlayStrength, .8);
 152:   color = mix(color, grainOverlayColor, .35 * grainOverlayStrength);
-153: 
+153:
 154:   opacity += .5 * grainOverlayStrength;
 155:   opacity = clamp(opacity, 0., 1.);
-156: 
+156:
 157:   fragColor = vec4(color, opacity);
 158: }
 159: `;
-160: 
+160:
 161: export interface StaticMeshGradientUniforms extends ShaderSizingUniforms {
 162:   u_colors: vec4[];
 163:   u_colorsCount: number;
@@ -11193,7 +11304,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 170:   u_grainMixer: number;
 171:   u_grainOverlay: number;
 172: }
-173: 
+173:
 174: export interface StaticMeshGradientParams extends ShaderSizingParams, ShaderMotionParams {
 175:   colors?: string[];
 176:   positions?: number;
@@ -11213,6 +11324,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/static-radial-gradient.ts",
@@ -11222,6 +11334,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/static-radial-gradient.ts</path>
 <type>file</type>
@@ -11233,11 +11346,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 5:   type ShaderSizingUniforms,
 6: } from '../shader-sizing.js';
 7: import { declarePI, rotation2, proceduralHash21 } from '../shader-utils.js';
-8: 
+8:
 9: export const staticRadialGradientMeta = {
 10:   maxColorCount: 10,
 11: } as const;
-12: 
+12:
 13: /**
 14:  * Radial gradient with up to 10 blended colors, featuring advanced mixing modes, focal point controls,
 15:  * shape distortion, and grain effects.
@@ -11274,15 +11387,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 46:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 47:  *
 48:  */
-49: 
+49:
 50: // language=GLSL
 51: export const staticRadialGradientFragmentShader: string = `#version 300 es
 52: precision mediump float;
-53: 
+53:
 54: uniform vec4 u_colorBack;
 55: uniform vec4 u_colors[${ staticRadialGradientMeta.maxColorCount }];
 56: uniform float u_colorsCount;
-57: 
+57:
 58: uniform float u_radius;
 59: uniform float u_focalDistance;
 60: uniform float u_focalAngle;
@@ -11293,14 +11406,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 65: uniform float u_distortionFreq;
 66: uniform float u_grainMixer;
 67: uniform float u_grainOverlay;
-68: 
+68:
 69: in vec2 v_objectUV;
 70: out vec4 fragColor;
-71: 
+71:
 72: ${ declarePI }
 73: ${ rotation2 }
 74: ${ proceduralHash21 }
-75: 
+75:
 76: float valueNoise(vec2 st) {
 77:   vec2 i = floor(st);
 78:   vec2 f = fract(st);
@@ -11313,52 +11426,52 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 85:   float x2 = mix(c, d, u.x);
 86:   return mix(x1, x2, u.y);
 87: }
-88: 
+88:
 89: float noise(vec2 n, vec2 seedOffset) {
 90:   return valueNoise(n + seedOffset);
 91: }
-92: 
+92:
 93: vec2 getPosition(int i, float t) {
 94:   float a = float(i) * .37;
 95:   float b = .6 + mod(float(i), 3.) * .3;
 96:   float c = .8 + mod(float(i + 1), 4.) * 0.25;
-97: 
+97:
 98:   float x = sin(t * b + a);
 99:   float y = cos(t * c + a * 1.5);
-100: 
+100:
 101:   return .5 + .5 * vec2(x, y);
 102: }
-103: 
+103:
 104: void main() {
 105:   vec2 uv = 2. * v_objectUV;
 106:   vec2 grainUV = uv * 1000.;
-107: 
+107:
 108:   vec2 center = vec2(0.);
 109:   float angleRad = -radians(u_focalAngle + 90.);
 110:   vec2 focalPoint = vec2(cos(angleRad), sin(angleRad)) * u_focalDistance;
 111:   float radius = u_radius;
-112: 
+112:
 113:   vec2 c_to_uv = uv - center;
 114:   vec2 f_to_uv = uv - focalPoint;
 115:   vec2 f_to_c = center - focalPoint;
 116:   float r = length(c_to_uv);
-117: 
+117:
 118:   float fragAngle = atan(c_to_uv.y, c_to_uv.x);
 119:   float angleDiff = fract((fragAngle - angleRad + PI) / TWO_PI) * TWO_PI - PI;
-120: 
+120:
 121:   float halfAngle = acos(clamp(radius / max(u_focalDistance, 1e-4), 0.0, 1.0));
 122:   float e0 = 0.6 * PI, e1 = halfAngle;
 123:   float lo = min(e0, e1), hi = max(e0, e1);
 124:   float s  = smoothstep(lo, hi, abs(angleDiff));
 125:   float isInSector = (e1 >= e0) ? (1.0 - s) : s;
-126: 
+126:
 127:   float a = dot(f_to_uv, f_to_uv);
 128:   float b = -2.0 * dot(f_to_uv, f_to_c);
 129:   float c = dot(f_to_c, f_to_c) - radius * radius;
-130: 
+130:
 131:   float discriminant = b * b - 4.0 * a * c;
 132:   float t = 1.0;
-133: 
+133:
 134:   if (discriminant >= 0.0) {
 135:     float sqrtD = sqrt(discriminant);
 136:     float div = max(1e-4, 2.0 * a);
@@ -11367,40 +11480,40 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 139:     t = max(t0, t1);
 140:     if (t < 0.0) t = 0.0;
 141:   }
-142: 
+142:
 143:   float dist = length(f_to_uv);
 144:   float normalized = dist / max(1e-4, length(f_to_uv * t));
 145:   float shape = clamp(normalized, 0.0, 1.0);
-146: 
+146:
 147:   float falloffMapped = mix(.2 + .8 * max(0., u_falloff + 1.), mix(1., 15., u_falloff * u_falloff), step(.0, u_falloff));
-148: 
+148:
 149:   float falloffExp = mix(falloffMapped, 1., shape);
 150:   shape = pow(shape, falloffExp);
 151:   shape = 1. - clamp(shape, 0., 1.);
-152: 
-153: 
+152:
+153:
 154:   float outerMask = .002;
 155:   float outer = 1.0 - smoothstep(radius - outerMask, radius + outerMask, r);
 156:   outer = mix(outer, 1., isInSector);
-157: 
+157:
 158:   shape = mix(0., shape, outer);
 159:   shape *= 1. - smoothstep(radius - .01, radius, r);
-160: 
+160:
 161:   float angle = atan(f_to_uv.y, f_to_uv.x);
 162:   shape -= pow(u_distortion, 2.) * shape * pow(abs(sin(PI * clamp(length(f_to_uv) - 0.2 + u_distortionShift, 0.0, 1.0))), 4.0) * (sin(u_distortionFreq * angle) + cos(floor(0.65 * u_distortionFreq) * angle));
-163: 
+163:
 164:   float grain = noise(grainUV, vec2(0.));
 165:   float mixerGrain = .4 * u_grainMixer * (grain - .5);
-166: 
+166:
 167:   float mixer = shape * u_colorsCount + mixerGrain;
 168:   vec4 gradient = u_colors[0];
 169:   gradient.rgb *= gradient.a;
-170: 
+170:
 171:   float outerShape = 0.;
 172:   for (int i = 1; i < ${ staticRadialGradientMeta.maxColorCount + 1 }; i++) {
 173:     if (i > int(u_colorsCount)) break;
 174:     float mLinear = clamp(mixer - float(i - 1), 0.0, 1.0);
-175: 
+175:
 176:     float aa = fwidth(mLinear);
 177:     float width = min(u_mixing, 0.5);
 178:     float t = clamp((mLinear - (0.5 - width - aa)) / (2. * width + 2. * aa), 0., 1.);
@@ -11408,43 +11521,43 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 180:     float m = t < 0.5
 181:       ? 0.5 * pow(2. * t, p)
 182:       : 1. - 0.5 * pow(2. * (1. - t), p);
-183: 
+183:
 184:     float quadBlend = clamp((u_mixing - 0.5) * 2., 0., 1.);
 185:     m = mix(m, m * m, 0.5 * quadBlend);
-186:     
+186:
 187:     if (i == 1) {
 188:       outerShape = m;
 189:     }
-190: 
+190:
 191:     vec4 c = u_colors[i - 1];
 192:     c.rgb *= c.a;
 193:     gradient = mix(gradient, c, m);
 194:   }
-195: 
+195:
 196:   vec3 color = gradient.rgb * outerShape;
 197:   float opacity = gradient.a * outerShape;
-198: 
+198:
 199:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 200:   color = color + bgColor * (1.0 - opacity);
 201:   opacity = opacity + u_colorBack.a * (1.0 - opacity);
-202: 
+202:
 203:   float grainOverlay = valueNoise(rotate(grainUV, 1.) + vec2(3.));
 204:   grainOverlay = mix(grainOverlay, valueNoise(rotate(grainUV, 2.) + vec2(-1.)), .5);
 205:   grainOverlay = pow(grainOverlay, 1.3);
-206: 
+206:
 207:   float grainOverlayV = grainOverlay * 2. - 1.;
 208:   vec3 grainOverlayColor = vec3(step(0., grainOverlayV));
 209:   float grainOverlayStrength = u_grainOverlay * abs(grainOverlayV);
 210:   grainOverlayStrength = pow(grainOverlayStrength, .8);
 211:   color = mix(color, grainOverlayColor, .35 * grainOverlayStrength);
-212: 
+212:
 213:   opacity += .5 * grainOverlayStrength;
 214:   opacity = clamp(opacity, 0., 1.);
-215: 
+215:
 216:   fragColor = vec4(color, opacity);
 217: }
 218: `;
-219: 
+219:
 220: export interface StaticRadialGradientUniforms extends ShaderSizingUniforms {
 221:   u_colorBack: [number, number, number, number];
 222:   u_colors: vec4[];
@@ -11460,7 +11573,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 232:   u_grainMixer: number;
 233:   u_grainOverlay: number;
 234: }
-235: 
+235:
 236: export interface StaticRadialGradientParams extends ShaderSizingParams, ShaderMotionParams {
 237:   colorBack?: string;
 238:   colors?: string[];
@@ -11483,6 +11596,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/swirl.ts",
@@ -11492,6 +11606,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/swirl.ts</path>
 <type>file</type>
@@ -11500,11 +11615,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { simplexNoise, declarePI, rotation2, colorBandingFix } from '../shader-utils.js';
-5: 
+5:
 6: export const swirlMeta = {
 7:   maxColorCount: 10,
 8: } as const;
-9: 
+9:
 10: /**
 11:  * Animated bands of color twisting and bending, producing spirals, arcs, and flowing circular patterns.
 12:  *
@@ -11538,13 +11653,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 40:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 41:  *
 42:  */
-43: 
+43:
 44: // language=GLSL
 45: export const swirlFragmentShader: string = `#version 300 es
 46: precision mediump float;
-47: 
+47:
 48: uniform float u_time;
-49: 
+49:
 50: uniform vec4 u_colorBack;
 51: uniform vec4 u_colors[${ swirlMeta.maxColorCount }];
 52: uniform float u_colorsCount;
@@ -11555,79 +11670,79 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 57: uniform float u_softness;
 58: uniform float u_noise;
 59: uniform float u_noiseFrequency;
-60: 
+60:
 61: in vec2 v_objectUV;
-62: 
+62:
 63: out vec4 fragColor;
-64: 
+64:
 65: ${ declarePI }
 66: ${ simplexNoise }
 67: ${ rotation2 }
-68: 
+68:
 69: void main() {
 70:   vec2 shape_uv = v_objectUV;
-71: 
+71:
 72:   float l = length(shape_uv);
 73:   l = max(1e-4, l);
-74: 
+74:
 75:   float t = u_time;
-76: 
+76:
 77:   float angle = ceil(u_bandCount) * atan(shape_uv.y, shape_uv.x) + t;
 78:   float angle_norm = angle / TWO_PI;
-79: 
+79:
 80:   float twist = 3. * clamp(u_twist, 0., 1.);
 81:   float offset = pow(l, -twist) + angle_norm;
-82: 
+82:
 83:   float shape = fract(offset);
 84:   shape = 1. - abs(2. * shape - 1.);
 85:   shape += u_noise * snoise(15. * pow(u_noiseFrequency, 2.) * shape_uv);
-86: 
+86:
 87:   float mid = smoothstep(.2, .2 + .8 * u_center, pow(l, twist));
 88:   shape = mix(0., shape, mid);
-89: 
+89:
 90:   float proportion = clamp(u_proportion, 0., 1.);
 91:   float exponent = mix(.25, 1., proportion * 2.);
 92:   exponent = mix(exponent, 10., max(0., proportion * 2. - 1.));
 93:   shape = pow(shape, exponent);
-94: 
+94:
 95:   float mixer = shape * u_colorsCount;
 96:   vec4 gradient = u_colors[0];
 97:   gradient.rgb *= gradient.a;
-98: 
+98:
 99:   float outerShape = 0.;
 100:   for (int i = 1; i < ${ swirlMeta.maxColorCount + 1 }; i++) {
 101:     if (i > int(u_colorsCount)) break;
-102: 
+102:
 103:     float m = clamp(mixer - float(i - 1), 0., 1.);
 104:     float aa = fwidth(m);
 105:     m = smoothstep(.5 - .5 * u_softness - aa, .5 + .5 * u_softness + aa, m);
-106: 
+106:
 107:     if (i == 1) {
 108:       outerShape = m;
 109:     }
-110: 
+110:
 111:     vec4 c = u_colors[i - 1];
 112:     c.rgb *= c.a;
 113:     gradient = mix(gradient, c, m);
 114:   }
-115: 
+115:
 116:   float midAA = .1 * fwidth(pow(l, -twist));
 117:   float outerMid = smoothstep(.2, .2 + midAA, pow(l, twist));
 118:   outerShape = mix(0., outerShape, outerMid);
-119: 
+119:
 120:   vec3 color = gradient.rgb * outerShape;
 121:   float opacity = gradient.a * outerShape;
-122: 
+122:
 123:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 124:   color = color + bgColor * (1.0 - opacity);
 125:   opacity = opacity + u_colorBack.a * (1.0 - opacity);
-126: 
+126:
 127:   ${ colorBandingFix }
-128: 
+128:
 129:   fragColor = vec4(color, opacity);
 130: }
 131: `;
-132: 
+132:
 133: export interface SwirlUniforms extends ShaderSizingUniforms {
 134:   u_colorBack: [number, number, number, number];
 135:   u_colors: vec4[];
@@ -11640,7 +11755,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 142:   u_noiseFrequency: number;
 143:   u_noise: number;
 144: }
-145: 
+145:
 146: export interface SwirlParams extends ShaderSizingParams, ShaderMotionParams {
 147:   colorBack?: string;
 148:   colors?: string[];
@@ -11660,6 +11775,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/voronoi.ts",
@@ -11669,6 +11785,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/voronoi.ts</path>
 <type>file</type>
@@ -11677,11 +11794,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { declarePI, textureRandomizerGB } from '../shader-utils.js';
-5: 
+5:
 6: export const voronoiMeta = {
 7:   maxColorCount: 5,
 8: } as const;
-9: 
+9:
 10: /**
 11:  * Anti-aliased animated Voronoi pattern with smooth and customizable edges.
 12:  *
@@ -11720,42 +11837,42 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 45:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 46:  *
 47:  */
-48: 
+48:
 49: // language=GLSL
 50: export const voronoiFragmentShader: string = `#version 300 es
 51: precision mediump float;
-52: 
+52:
 53: uniform float u_time;
-54: 
+54:
 55: uniform float u_scale;
-56: 
+56:
 57: uniform sampler2D u_noiseTexture;
-58: 
+58:
 59: uniform vec4 u_colors[${ voronoiMeta.maxColorCount }];
 60: uniform float u_colorsCount;
-61: 
+61:
 62: uniform float u_stepsPerColor;
 63: uniform vec4 u_colorGlow;
 64: uniform vec4 u_colorGap;
 65: uniform float u_distortion;
 66: uniform float u_gap;
 67: uniform float u_glow;
-68: 
+68:
 69: in vec2 v_patternUV;
-70: 
+70:
 71: out vec4 fragColor;
-72: 
+72:
 73: ${ declarePI }
 74: ${ textureRandomizerGB }
-75: 
+75:
 76: vec4 voronoi(vec2 x, float t) {
 77:   vec2 ip = floor(x);
 78:   vec2 fp = fract(x);
-79: 
+79:
 80:   vec2 mg, mr;
 81:   float md = 8.;
 82:   float rand = 0.;
-83: 
+83:
 84:   for (int j = -1; j <= 1; j++) {
 85:     for (int i = -1; i <= 1; i++) {
 86:       vec2 g = vec2(float(i), float(j));
@@ -11764,7 +11881,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 89:       o = .5 + u_distortion * sin(t + TWO_PI * o);
 90:       vec2 r = g + o - fp;
 91:       float d = dot(r, r);
-92: 
+92:
 93:       if (d < md) {
 94:         md = d;
 95:         mr = r;
@@ -11773,7 +11890,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 98:       }
 99:     }
 100:   }
-101: 
+101:
 102:   md = 8.;
 103:   for (int j = -2; j <= 2; j++) {
 104:     for (int i = -2; i <= 2; i++) {
@@ -11786,23 +11903,23 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 111:       }
 112:     }
 113:   }
-114: 
+114:
 115:   return vec4(md, mr, rand);
 116: }
-117: 
+117:
 118: void main() {
 119:   vec2 shape_uv = v_patternUV;
 120:   shape_uv *= 1.25;
-121: 
+121:
 122:   float t = u_time;
-123: 
+123:
 124:   vec4 voronoiRes = voronoi(shape_uv, t);
-125: 
+125:
 126:   float shape = clamp(voronoiRes.w, 0., 1.);
 127:   float mixer = shape * (u_colorsCount - 1.);
 128:   mixer = (shape - .5 / u_colorsCount) * u_colorsCount;
 129:   float steps = max(1., u_stepsPerColor);
-130: 
+130:
 131:   vec4 gradient = u_colors[0];
 132:   gradient.rgb *= gradient.a;
 133:   for (int i = 1; i < ${ voronoiMeta.maxColorCount }; i++) {
@@ -11813,7 +11930,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 138:     c.rgb *= c.a;
 139:     gradient = mix(gradient, c, localT);
 140:   }
-141: 
+141:
 142:   if ((mixer < 0.) || (mixer > (u_colorsCount - 1.))) {
 143:     float localT = mixer + 1.;
 144:     if (mixer > (u_colorsCount - 1.)) {
@@ -11826,27 +11943,27 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 151:     cLast.rgb *= cLast.a;
 152:     gradient = mix(cLast, cFst, localT);
 153:   }
-154: 
+154:
 155:   vec3 cellColor = gradient.rgb;
 156:   float cellOpacity = gradient.a;
-157: 
+157:
 158:   float glows = length(voronoiRes.yz * u_glow);
 159:   glows = pow(glows, 1.5);
-160: 
+160:
 161:   vec3 color = mix(cellColor, u_colorGlow.rgb * u_colorGlow.a, u_colorGlow.a * glows);
 162:   float opacity = cellOpacity + u_colorGlow.a * glows;
-163: 
+163:
 164:   float edge = voronoiRes.x;
 165:   float smoothEdge = .02 / (2. * u_scale) * (1. + .5 * u_gap);
 166:   edge = smoothstep(u_gap - smoothEdge, u_gap + smoothEdge, edge);
-167: 
+167:
 168:   color = mix(u_colorGap.rgb * u_colorGap.a, color, edge);
 169:   opacity = mix(u_colorGap.a, opacity, edge);
-170: 
+170:
 171:   fragColor = vec4(color, opacity);
 172: }
 173: `;
-174: 
+174:
 175: export interface VoronoiUniforms extends ShaderSizingUniforms {
 176:   u_colors: vec4[];
 177:   u_colorsCount: number;
@@ -11858,7 +11975,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 183:   u_glow: number;
 184:   u_noiseTexture?: HTMLImageElement;
 185: }
-186: 
+186:
 187: export interface VoronoiParams extends ShaderSizingParams, ShaderMotionParams {
 188:   colors?: string[];
 189:   stepsPerColor?: number;
@@ -11876,6 +11993,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/warp.ts",
@@ -11885,6 +12003,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/warp.ts</path>
 <type>file</type>
@@ -11893,11 +12012,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 4: import { declarePI, rotation2, colorBandingFix } from '../shader-utils.js';
-5: 
+5:
 6: export const warpMeta = {
 7:   maxColorCount: 10,
 8: } as const;
-9: 
+9:
 10: /**
 11:  * Animated color fields warped by noise and swirls, applied over base patterns
 12:  * (checks, stripes, or split edge). Blends up to 10 colors with adjustable distribution,
@@ -11934,16 +12053,16 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 43:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 44:  *
 45:  */
-46: 
+46:
 47: // language=GLSL
 48: export const warpFragmentShader: string = `#version 300 es
 49: precision mediump float;
-50: 
+50:
 51: uniform float u_time;
 52: uniform float u_scale;
-53: 
+53:
 54: uniform sampler2D u_noiseTexture;
-55: 
+55:
 56: uniform vec4 u_colors[${ warpMeta.maxColorCount }];
 57: uniform float u_colorsCount;
 58: uniform float u_proportion;
@@ -11953,11 +12072,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 62: uniform float u_distortion;
 63: uniform float u_swirl;
 64: uniform float u_swirlIterations;
-65: 
+65:
 66: in vec2 v_patternUV;
-67: 
+67:
 68: out vec4 fragColor;
-69: 
+69:
 70: ${ declarePI }
 71: ${ rotation2 }
 72: float randomG(vec2 p) {
@@ -11976,21 +12095,21 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 85:   float x2 = mix(c, d, u.x);
 86:   return mix(x1, x2, u.y);
 87: }
-88: 
-89: 
+88:
+89:
 90: void main() {
 91:   vec2 uv = v_patternUV;
 92:   uv *= .5;
-93: 
+93:
 94:   const float firstFrameOffset = 118.;
 95:   float t = 0.0625 * (u_time + firstFrameOffset);
-96: 
+96:
 97:   float n1 = valueNoise(uv * 1. + t);
 98:   float n2 = valueNoise(uv * 2. - t);
 99:   float angle = n1 * TWO_PI;
 100:   uv.x += 4. * u_distortion * n2 * cos(angle);
 101:   uv.y += 4. * u_distortion * n2 * sin(angle);
-102: 
+102:
 103:   float swirl = u_swirl;
 104:   for (int i = 1; i <= 20; i++) {
 105:     if (i >= int(u_swirlIterations)) break;
@@ -11999,9 +12118,9 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 108:     uv.x += swirl / iFloat * cos(t + iFloat * 1.5 * uv.y);
 109:     uv.y += swirl / iFloat * cos(t + iFloat * 1. * uv.x);
 110:   }
-111: 
+111:
 112:   float proportion = clamp(u_proportion, 0., 1.);
-113: 
+113:
 114:   float shape = 0.;
 115:   if (u_shape < .5) {
 116:     vec2 checksShape_uv = uv * (.5 + 3.5 * u_shapeScale);
@@ -12018,7 +12137,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 127:     float e1 = 0.55 + shapeScaling;
 128:     shape = smoothstep(min(e0, e1), max(e0, e1), 1.0 - uv.y + 0.3 * (proportion - 0.5));
 129:   }
-130: 
+130:
 131:   float mixer = shape * (u_colorsCount - 1.);
 132:   vec4 gradient = u_colors[0];
 133:   gradient.rgb *= gradient.a;
@@ -12026,28 +12145,28 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 135:   for (int i = 1; i < ${ warpMeta.maxColorCount }; i++) {
 136:     if (i >= int(u_colorsCount)) break;
 137:     float m = clamp(mixer - float(i - 1), 0.0, 1.0);
-138: 
+138:
 139:     float localMixerStart = floor(m);
 140:     float softness = .5 * u_softness + fwidth(m);
 141:     float smoothed = smoothstep(max(0., .5 - softness - aa), min(1., .5 + softness + aa), m - localMixerStart);
 142:     float stepped = localMixerStart + smoothed;
-143: 
+143:
 144:     m = mix(stepped, m, u_softness);
-145: 
+145:
 146:     vec4 c = u_colors[i];
 147:     c.rgb *= c.a;
 148:     gradient = mix(gradient, c, m);
 149:   }
-150: 
+150:
 151:   vec3 color = gradient.rgb;
 152:   float opacity = gradient.a;
-153: 
+153:
 154:   ${ colorBandingFix }
-155: 
+155:
 156:   fragColor = vec4(color, opacity);
 157: }
 158: `;
-159: 
+159:
 160: export interface WarpUniforms extends ShaderSizingUniforms {
 161:   u_colors: vec4[];
 162:   u_colorsCount: number;
@@ -12060,7 +12179,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 169:   u_swirlIterations: number;
 170:   u_noiseTexture?: HTMLImageElement;
 171: }
-172: 
+172:
 173: export interface WarpParams extends ShaderSizingParams, ShaderMotionParams {
 174:   colors?: string[];
 175:   rotation?: number;
@@ -12072,13 +12191,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 181:   swirl?: number;
 182:   swirlIterations?: number;
 183: }
-184: 
+184:
 185: export const WarpPatterns = {
 186:   checks: 0,
 187:   stripes: 1,
 188:   edge: 2,
 189: } as const;
-190: 
+190:
 191: export type WarpPattern = keyof typeof WarpPatterns;
 
 (End of file - total 191 lines)
@@ -12092,6 +12211,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/water.ts",
@@ -12101,6 +12221,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/water.ts</path>
 <type>file</type>
@@ -12108,7 +12229,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { declarePI, rotation2, simplexNoise } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * Water-like surface distortion with natural caustic realism. Works as an image filter or standalone animated texture.
 7:  *
@@ -12143,50 +12264,50 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 36:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 37:  *
 38:  */
-39: 
+39:
 40: // language=GLSL
 41: export const waterFragmentShader: string = `#version 300 es
 42: precision mediump float;
-43: 
+43:
 44: uniform float u_time;
-45: 
+45:
 46: uniform vec4 u_colorBack;
 47: uniform vec4 u_colorHighlight;
-48: 
+48:
 49: uniform sampler2D u_image;
 50: uniform float u_imageAspectRatio;
-51: 
+51:
 52: uniform float u_size;
 53: uniform float u_highlights;
 54: uniform float u_layering;
 55: uniform float u_edges;
 56: uniform float u_caustic;
 57: uniform float u_waves;
-58: 
+58:
 59: in vec2 v_imageUV;
-60: 
+60:
 61: out vec4 fragColor;
-62: 
+62:
 63: ${ declarePI }
 64: ${ rotation2 }
 65: ${ simplexNoise }
-66: 
+66:
 67: float getUvFrame(vec2 uv) {
 68:   float aax = 2. * fwidth(uv.x);
 69:   float aay = 2. * fwidth(uv.y);
-70: 
+70:
 71:   float left   = smoothstep(0., aax, uv.x);
 72:   float right = 1.0 - smoothstep(1. - aax, 1., uv.x);
 73:   float bottom = smoothstep(0., aay, uv.y);
 74:   float top = 1.0 - smoothstep(1. - aay, 1., uv.y);
-75: 
+75:
 76:   return left * right * bottom * top;
 77: }
-78: 
+78:
 79: mat2 rotate2D(float r) {
 80:   return mat2(cos(r), sin(r), -sin(r), cos(r));
 81: }
-82: 
+82:
 83: float getCausticNoise(vec2 uv, float t, float scale) {
 84:   vec2 n = vec2(.1);
 85:   vec2 N = vec2(.1);
@@ -12201,60 +12322,60 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 94:   }
 95:   return (N.x + N.y + 1.);
 96: }
-97: 
+97:
 98: void main() {
 99:   vec2 imageUV = v_imageUV;
 100:   vec2 patternUV = v_imageUV - .5;
 101:   patternUV = (patternUV * vec2(u_imageAspectRatio, 1.));
 102:   patternUV /= (.01 + .09 * u_size);
-103: 
+103:
 104:   float t = u_time;
-105: 
+105:
 106:   float wavesNoise = snoise((.3 + .1 * sin(t)) * .1 * patternUV + vec2(0., .4 * t));
-107: 
+107:
 108:   float causticNoise = getCausticNoise(patternUV + u_waves * vec2(1., -1.) * wavesNoise, 2. * t, 1.5);
-109: 
+109:
 110:   causticNoise += u_layering * getCausticNoise(patternUV + 2. * u_waves * vec2(1., -1.) * wavesNoise, 1.5 * t, 2.);
 111:   causticNoise = causticNoise * causticNoise;
-112: 
+112:
 113:   float edgesDistortion = smoothstep(0., .1, imageUV.x);
 114:   edgesDistortion *= smoothstep(0., .1, imageUV.y);
 115:   edgesDistortion *= (smoothstep(1., 1.1, imageUV.x) + (1.0 - smoothstep(.8, .95, imageUV.x)));
 116:   edgesDistortion *= (1.0 - smoothstep(.9, 1., imageUV.y));
 117:   edgesDistortion = mix(edgesDistortion, 1., u_edges);
-118: 
+118:
 119:   float causticNoiseDistortion = .02 * causticNoise * edgesDistortion;
-120: 
+120:
 121:   float wavesDistortion = .1 * u_waves * wavesNoise;
-122: 
+122:
 123:   imageUV += vec2(wavesDistortion, -wavesDistortion);
 124:   imageUV += (u_caustic * causticNoiseDistortion);
-125: 
+125:
 126:   float frame = getUvFrame(imageUV);
-127: 
+127:
 128:   vec4 image = texture(u_image, imageUV);
 129:   vec4 backColor = u_colorBack;
 130:   backColor.rgb *= backColor.a;
-131: 
+131:
 132:   vec3 color = mix(backColor.rgb, image.rgb, image.a * frame);
 133:   float opacity = backColor.a + image.a * frame;
-134: 
+134:
 135:   causticNoise = max(-.2, causticNoise);
-136: 
+136:
 137:   float hightlight = .025 * u_highlights * causticNoise;
 138:   hightlight *= u_colorHighlight.a;
 139:   color = mix(color, u_colorHighlight.rgb, .05 * u_highlights * causticNoise);
 140:   opacity += hightlight;
-141: 
+141:
 142:   color += hightlight * (.5 + .5 * wavesNoise);
 143:   opacity += hightlight * (.5 + .5 * wavesNoise);
-144: 
+144:
 145:   opacity = clamp(opacity, 0., 1.);
-146: 
+146:
 147:   fragColor = vec4(color, opacity);
 148: }
 149: `;
-150: 
+150:
 151: export interface WaterUniforms extends ShaderSizingUniforms {
 152:   u_image: HTMLImageElement | string | undefined;
 153:   u_colorBack: [number, number, number, number];
@@ -12266,7 +12387,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 159:   u_waves: number;
 160:   u_size: number;
 161: }
-162: 
+162:
 163: export interface WaterParams extends ShaderSizingParams, ShaderMotionParams {
 164:   image?: HTMLImageElement | string;
 165:   colorBack?: string;
@@ -12286,6 +12407,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/waves.ts",
@@ -12295,13 +12417,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/waves.ts</path>
 <type>file</type>
 <content>
 1: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 2: import { declarePI } from '../shader-utils.js';
-3: 
+3:
 4: /**
 5:  * Static line pattern configurable into textures ranging from sharp zigzags to smooth flowing waves.
 6:  *
@@ -12332,11 +12455,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 31:  * - u_offsetY (float): Vertical offset of the graphics center (-1 to 1)
 32:  *
 33:  */
-34: 
+34:
 35: // language=GLSL
 36: export const wavesFragmentShader: string = `#version 300 es
 37: precision mediump float;
-38: 
+38:
 39: uniform vec4 u_colorFront;
 40: uniform vec4 u_colorBack;
 41: uniform float u_shape;
@@ -12345,51 +12468,51 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 44: uniform float u_spacing;
 45: uniform float u_proportion;
 46: uniform float u_softness;
-47: 
+47:
 48: in vec2 v_patternUV;
-49: 
+49:
 50: out vec4 fragColor;
-51: 
+51:
 52: ${ declarePI }
-53: 
+53:
 54: void main() {
 55:   vec2 shape_uv = v_patternUV;
 56:   shape_uv *= 4.;
-57: 
+57:
 58:   float wave = .5 * cos(shape_uv.x * u_frequency * TWO_PI);
 59:   float zigzag = 2. * abs(fract(shape_uv.x * u_frequency) - .5);
 60:   float irregular = sin(shape_uv.x * .25 * u_frequency * TWO_PI) * cos(shape_uv.x * u_frequency * TWO_PI);
 61:   float irregular2 = .75 * (sin(shape_uv.x * u_frequency * TWO_PI) + .5 * cos(shape_uv.x * .5 * u_frequency * TWO_PI));
-62: 
+62:
 63:   float offset = mix(zigzag, wave, smoothstep(0., 1., u_shape));
 64:   offset = mix(offset, irregular, smoothstep(1., 2., u_shape));
 65:   offset = mix(offset, irregular2, smoothstep(2., 3., u_shape));
 66:   offset *= 2. * u_amplitude;
-67: 
+67:
 68:   float spacing = (.001 + u_spacing);
 69:   float shape = .5 + .5 * sin((shape_uv.y + offset) * PI / spacing);
-70: 
+70:
 71:   float aa = .0001 + fwidth(shape);
 72:   float dc = 1. - clamp(u_proportion, 0., 1.);
 73:   float e0 = dc - u_softness - aa;
 74:   float e1 = dc + u_softness + aa;
 75:   float res = smoothstep(min(e0, e1), max(e0, e1), shape);
-76: 
+76:
 77:   vec3 fgColor = u_colorFront.rgb * u_colorFront.a;
 78:   float fgOpacity = u_colorFront.a;
 79:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 80:   float bgOpacity = u_colorBack.a;
-81: 
+81:
 82:   vec3 color = fgColor * res;
 83:   float opacity = fgOpacity * res;
-84: 
+84:
 85:   color += bgColor * (1. - opacity);
 86:   opacity += bgOpacity * (1. - opacity);
-87: 
+87:
 88:   fragColor = vec4(color, opacity);
 89: }
 90: `;
-91: 
+91:
 92: export interface WavesUniforms extends ShaderSizingUniforms {
 93:   u_colorFront: [number, number, number, number];
 94:   u_colorBack: [number, number, number, number];
@@ -12400,7 +12523,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 99:   u_proportion: number;
 100:   u_softness: number;
 101: }
-102: 
+102:
 103: export interface WavesParams extends ShaderSizingParams {
 104:   colorFront?: string;
 105:   colorBack?: string;
@@ -12420,6 +12543,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-sizing.ts",
@@ -12429,6 +12553,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-sizing.ts</path>
 <type>file</type>
@@ -12444,7 +12569,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 9:   u_worldWidth: number;
 10:   u_worldHeight: number;
 11: }
-12: 
+12:
 13: export interface ShaderSizingParams {
 14:   fit?: 'none' | 'contain' | 'cover';
 15:   scale?: number;
@@ -12456,7 +12581,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 21:   worldWidth?: number;
 22:   worldHeight?: number;
 23: }
-24: 
+24:
 25: export const defaultObjectSizing: Required<ShaderSizingParams> = {
 26:   fit: 'contain',
 27:   scale: 1,
@@ -12468,7 +12593,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 33:   worldWidth: 0,
 34:   worldHeight: 0,
 35: };
-36: 
+36:
 37: export const defaultPatternSizing: Required<ShaderSizingParams> = {
 38:   fit: 'none',
 39:   scale: 1,
@@ -12480,13 +12605,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 45:   worldWidth: 0,
 46:   worldHeight: 0,
 47: };
-48: 
+48:
 49: export const ShaderFitOptions = {
 50:   none: 0,
 51:   contain: 1,
 52:   cover: 2,
 53: } as const;
-54: 
+54:
 55: export type ShaderFit = keyof typeof ShaderFitOptions;
 
 (End of file - total 55 lines)
@@ -12496,6 +12621,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-mount.ts",
@@ -12505,14 +12631,15 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-mount.ts</path>
 <type>file</type>
 <content>
 1: import { vertexShaderSource } from './vertex-shader.js';
-2: 
+2:
 3: const DEFAULT_MAX_PIXEL_COUNT: number = 1920 * 1080 * 4;
-4: 
+4:
 5: export class ShaderMount {
 6:   public parentElement: PaperShaderElement;
 7:   public canvasElement: HTMLCanvasElement;
@@ -12547,7 +12674,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 36:   private uniformCache: Record<string, unknown> = {};
 37:   private textureUnitMap: Map<string, number> = new Map();
 38:   private ownerDocument: Document;
-39: 
+39:
 40:   constructor(
 41:     /** The div you'd like to mount the shader to. The shader will match its size. */
 42:     parentElement: HTMLElement,
@@ -12580,16 +12707,16 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 69:     } else {
 70:       throw new Error('Paper Shaders: parent element must be an HTMLElement');
 71:     }
-72: 
+72:
 73:     this.ownerDocument = parentElement.ownerDocument;
-74: 
+74:
 75:     if (!this.ownerDocument.querySelector('style[data-paper-shader]')) {
 76:       const styleElement = this.ownerDocument.createElement('style');
 77:       styleElement.innerHTML = defaultStyle;
 78:       styleElement.setAttribute('data-paper-shader', '');
 79:       this.ownerDocument.head.prepend(styleElement);
 80:     }
-81: 
+81:
 82:     // Create the canvas element and mount it into the provided element
 83:     const canvasElement = this.ownerDocument.createElement('canvas');
 84:     this.canvasElement = canvasElement;
@@ -12601,13 +12728,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 90:     this.currentFrame = frame;
 91:     this.minPixelRatio = minPixelRatio;
 92:     this.maxPixelCount = maxPixelCount;
-93: 
+93:
 94:     const gl = canvasElement.getContext('webgl2', webGlContextAttributes);
 95:     if (!gl) {
 96:       throw new Error('Paper Shaders: WebGL is not supported in this browser');
 97:     }
 98:     this.gl = gl;
-99: 
+99:
 100:     this.initProgram();
 101:     this.setupPositionAttribute();
 102:     // Grab the locations of the uniforms in the fragment shader
@@ -12618,26 +12745,26 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 107:     this.setupResizeObserver();
 108:     // Set up the visual viewport change listener to handle zoom changes (pinch zoom and classic browser zoom)
 109:     visualViewport?.addEventListener('resize', this.handleVisualViewportChange);
-110: 
+110:
 111:     // Set the animation speed after everything is ready to go
 112:     this.setSpeed(speed);
-113: 
+113:
 114:     // Mark parent element as paper shader mount
 115:     this.parentElement.setAttribute('data-paper-shader', '');
-116: 
+116:
 117:     // Add the shaderMount instance to the div mount element to make it easily accessible
 118:     this.parentElement.paperShaderMount = this;
-119: 
+119:
 120:     // Listen for document visibility changes to pause the shader when the tab is hidden
 121:     this.ownerDocument.addEventListener('visibilitychange', this.handleDocumentVisibilityChange);
 122:   }
-123: 
+123:
 124:   private initProgram = () => {
 125:     const program = createProgram(this.gl, vertexShaderSource, this.fragmentShader);
 126:     if (!program) return;
 127:     this.program = program;
 128:   };
-129: 
+129:
 130:   private setupPositionAttribute = () => {
 131:     const positionAttributeLocation = this.gl.getAttribLocation(this.program!, 'a_position');
 132:     const positionBuffer = this.gl.createBuffer();
@@ -12647,7 +12774,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 136:     this.gl.enableVertexAttribArray(positionAttributeLocation);
 137:     this.gl.vertexAttribPointer(positionAttributeLocation, 2, this.gl.FLOAT, false, 0, 0);
 138:   };
-139: 
+139:
 140:   private setupUniforms = () => {
 141:     // Create a map to store all uniform locations
 142:     const uniformLocations: Record<string, WebGLUniformLocation | null> = {
@@ -12655,21 +12782,21 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 144:       u_pixelRatio: this.gl.getUniformLocation(this.program!, 'u_pixelRatio'),
 145:       u_resolution: this.gl.getUniformLocation(this.program!, 'u_resolution'),
 146:     };
-147: 
+147:
 148:     // Add locations for all provided uniforms
 149:     Object.entries(this.providedUniforms).forEach(([key, value]) => {
 150:       uniformLocations[key] = this.gl.getUniformLocation(this.program!, key);
-151: 
+151:
 152:       // For texture uniforms, also look for the aspect ratio uniform
 153:       if (value instanceof HTMLImageElement) {
 154:         const aspectRatioUniformName = `${key}AspectRatio`;
 155:         uniformLocations[aspectRatioUniformName] = this.gl.getUniformLocation(this.program!, aspectRatioUniformName);
 156:       }
 157:     });
-158: 
+158:
 159:     this.uniformLocations = uniformLocations;
 160:   };
-161: 
+161:
 162:   /**
 163:    * The scale that we should render at.
 164:    * - Used to target 2x rendering even on 1x screens for better antialiasing
@@ -12682,29 +12809,29 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 171:   private parentDevicePixelWidth = 0;
 172:   private parentDevicePixelHeight = 0;
 173:   private devicePixelsSupported = false;
-174: 
+174:
 175:   private resizeObserver: ResizeObserver | null = null;
 176:   private setupResizeObserver = () => {
 177:     this.resizeObserver = new ResizeObserver(([entry]) => {
 178:       if (entry?.borderBoxSize[0]) {
 179:         const physicalPixelSize = entry.devicePixelContentBoxSize?.[0];
-180: 
+180:
 181:         if (physicalPixelSize !== undefined) {
 182:           this.devicePixelsSupported = true;
 183:           this.parentDevicePixelWidth = physicalPixelSize.inlineSize;
 184:           this.parentDevicePixelHeight = physicalPixelSize.blockSize;
 185:         }
-186: 
+186:
 187:         this.parentWidth = entry.borderBoxSize[0].inlineSize;
 188:         this.parentHeight = entry.borderBoxSize[0].blockSize;
 189:       }
-190: 
+190:
 191:       this.handleResize();
 192:     });
-193: 
+193:
 194:     this.resizeObserver.observe(this.parentElement);
 195:   };
-196: 
+196:
 197:   // Visual viewport resize handler, mainly used to react to browser zoom changes.
 198:   // Resize observer by itself does not react to pinch zoom, and although it usually
 199:   // reacts to classic browser zoom, it's not guaranteed in edge cases.
@@ -12714,25 +12841,25 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 203:   private handleVisualViewportChange = () => {
 204:     this.resizeObserver?.disconnect();
 205:     this.setupResizeObserver();
-206: 
+206:
 207:     // In case of debugging timing, from here on:
 208:     // - animation frame 1: a paint after the visual viewport resize
 209:     // - animation frame 2: a paint after the resize observer has been handled, if it was ever triggered
 210:   };
-211: 
+211:
 212:   /** Resize handler for when the container div changes size or the max pixel count changes and we want to resize our canvas to match */
 213:   private handleResize = () => {
 214:     // Aim to render at least as many pixels as physically displayed
 215:     // This will overshoot when the user zooms out, but that's acceptable
-216: 
+216:
 217:     let targetPixelWidth = 0;
 218:     let targetPixelHeight = 0;
-219: 
+219:
 220:     // If window.devicePixelRatio is below 1, it's safe to say the browser is just zoomed out
 221:     // We can use 1 as the minimum value not to upscale it needlessly to meet the min pixel ratio param
 222:     const dpr = Math.max(1, window.devicePixelRatio);
 223:     const pinchZoom = visualViewport?.scale ?? 1;
-224: 
+224:
 225:     if (this.devicePixelsSupported) {
 226:       // Use the real pixel size if we know it, plus meet the min pixel ratio requirement and add in pinch zoom
 227:       const scaleToMeetMinPixelRatio = Math.max(1, this.minPixelRatio / dpr);
@@ -12742,7 +12869,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 231:       // Otherwise try to approximate the element size in device pixels using devicePixelRatio.
 232:       // (devicePixelRatio is imprecise and element's width/height may be fractional CSS sizes, not real pixels).
 233:       let targetRenderScale = Math.max(dpr, this.minPixelRatio) * pinchZoom;
-234: 
+234:
 235:       if (this.isSafari) {
 236:         // As of 2025, Safari reports physical devicePixelRatio, but other browsers add the current zoom level:
 237:         // https://bugs.webkit.org/show_bug.cgi?id=124862
@@ -12754,19 +12881,19 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 243:         const zoomLevel = bestGuessBrowserZoom(this.ownerDocument);
 244:         targetRenderScale *= Math.max(1, zoomLevel);
 245:       }
-246: 
+246:
 247:       // Rounding the client width/height since they may be fractional in CSS layout values
 248:       targetPixelWidth = Math.round(this.parentWidth) * targetRenderScale;
 249:       targetPixelHeight = Math.round(this.parentHeight) * targetRenderScale;
 250:     }
-251: 
+251:
 252:     // Prevent the total rendered pixel count from exceeding maxPixelCount
 253:     const maxPixelCountHeadroom = Math.sqrt(this.maxPixelCount) / Math.sqrt(targetPixelWidth * targetPixelHeight);
 254:     const scaleToMeetMaxPixelCount = Math.min(1, maxPixelCountHeadroom);
 255:     const newWidth = Math.round(targetPixelWidth * scaleToMeetMaxPixelCount);
 256:     const newHeight = Math.round(targetPixelHeight * scaleToMeetMaxPixelCount);
 257:     const newRenderScale = newWidth / Math.round(this.parentWidth);
-258: 
+258:
 259:     if (
 260:       this.canvasElement.width !== newWidth ||
 
@@ -12777,6 +12904,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/index.ts",
@@ -12786,6 +12914,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/index.ts</path>
 <type>file</type>
@@ -12799,7 +12928,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 7:   ShaderPreset,
 8:   ImageShaderPreset,
 9: } from './shader-mount.js';
-10: 
+10:
 11: /** Shader sizing options and uniforms */
 12: export {
 13:   defaultObjectSizing,
@@ -12809,7 +12938,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 17:   type ShaderSizingParams,
 18:   type ShaderSizingUniforms,
 19: } from './shader-sizing.js';
-20: 
+20:
 21: /** A flowing interplay of color spots, moving along distinct trajectories and transformed by organic distortion */
 22: export {
 23:   meshGradientFragmentShader,
@@ -12817,7 +12946,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 25:   type MeshGradientParams,
 26:   type MeshGradientUniforms,
 27: } from './shaders/mesh-gradient.js';
-28: 
+28:
 29: /** Radial multi-colored gradient shaped with layered noise for a natural, smoky aesthetic */
 30: export {
 31:   smokeRingMeta,
@@ -12825,10 +12954,10 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 33:   type SmokeRingParams,
 34:   type SmokeRingUniforms,
 35: } from './shaders/smoke-ring.js';
-36: 
+36:
 37: /** A glowing, web-like structure of fluid lines and soft intersections. Great for creating atmospheric, organic-yet-futuristic visuals */
 38: export { neuroNoiseFragmentShader, type NeuroNoiseParams, type NeuroNoiseUniforms } from './shaders/neuro-noise.js';
-39: 
+39:
 40: /** Animated multi-color dots pattern with each dot orbiting around its cell center. Supports up to 40 colors and various shape and motion controls. Great for playful, dynamic backgrounds and UI textures */
 41: export {
 42:   dotOrbitMeta,
@@ -12836,7 +12965,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 44:   type DotOrbitParams,
 45:   type DotOrbitUniforms,
 46: } from './shaders/dot-orbit.js';
-47: 
+47:
 48: /** Static grid pattern made of circles, diamonds, squares or triangles */
 49: export {
 50:   dotGridFragmentShader,
@@ -12845,7 +12974,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 53:   type DotGridParams,
 54:   type DotGridUniforms,
 55: } from './shaders/dot-grid.js';
-56: 
+56:
 57: /** A multi-color gradient mapped into smooth, animated curves, delivering a sleek, futuristic visual */
 58: export {
 59:   simplexNoiseMeta,
@@ -12853,7 +12982,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 61:   type SimplexNoiseParams,
 62:   type SimplexNoiseUniforms,
 63: } from './shaders/simplex-noise.js';
-64: 
+64:
 65: /** Up to 20 gooey blobs moving around the center and merging into smooth organic shapes */
 66: export {
 67:   metaballsMeta,
@@ -12861,16 +12990,16 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 69:   type MetaballsParams,
 70:   type MetaballsUniforms,
 71: } from './shaders/metaballs.js';
-72: 
+72:
 73: /** Animated 3D Perlin noise with exposed controls */
 74: export { perlinNoiseFragmentShader, type PerlinNoiseParams, type PerlinNoiseUniforms } from './shaders/perlin-noise.js';
-75: 
+75:
 76: /** Anti-aliased animated Voronoi pattern with smooth and customizable edges */
 77: export { voronoiMeta, voronoiFragmentShader, type VoronoiParams, type VoronoiUniforms } from './shaders/voronoi.js';
-78: 
+78:
 79: /** Static line pattern configurable into textures ranging from sharp zigzags to smooth flowing waves */
 80: export { wavesFragmentShader, type WavesParams, type WavesUniforms } from './shaders/waves.js';
-81: 
+81:
 82: /** Animated color fields warped by noise and swirls, applied over base patterns (checks, stripes, or split edge). Blends up to 10 colors with adjustable distribution, softness, distortion, and swirl. Great for fluid, smoky, or marbled effects */
 83: export {
 84:   warpMeta,
@@ -12880,16 +13009,16 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 88:   type WarpUniforms,
 89:   type WarpPattern,
 90: } from './shaders/warp.js';
-91: 
+91:
 92: /** Animated rays of light radiating from the center, blended with up to 5 colors. The rays are adjustable by size, density, brightness and center glow. Great for dramatic backgrounds, logo reveals, and VFX like energy bursts or sun shafts */
 93: export { godRaysMeta, godRaysFragmentShader, type GodRaysParams, type GodRaysUniforms } from './shaders/god-rays.js';
-94: 
+94:
 95: /** A single-colored animated spiral that morphs across a wide range of shapes - from crisp, thin-lined geometry to flowing whirlpool forms and wavy, abstract rings */
 96: export { spiralFragmentShader, type SpiralParams, type SpiralUniforms } from './shaders/spiral.js';
-97: 
+97:
 98: /** Animated bands of color twisting and bending, producing spirals, arcs, and flowing circular patterns */
 99: export { swirlMeta, swirlFragmentShader, type SwirlParams, type SwirlUniforms } from './shaders/swirl.js';
-100: 
+100:
 101: /** Animated 2-color dithering over with multiple pattern sources (noise, warp, dots, waves, ripple, swirl, sphere) */
 102: export {
 103:   ditheringFragmentShader,
@@ -12900,7 +13029,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 108:   type DitheringShape,
 109:   type DitheringType,
 110: } from './shaders/dithering.js';
-111: 
+111:
 112: /** Multi-color gradients with grainy, noise-textured distortion available in 7 animated abstract forms */
 113: export {
 114:   grainGradientFragmentShader,
@@ -12910,7 +13039,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 118:   type GrainGradientUniforms,
 119:   type GrainGradientShape,
 120: } from './shaders/grain-gradient.js';
-121: 
+121:
 122: /** Luminous trails of color merging into a glowing gradient frame */
 123: export {
 124:   pulsingBorderMeta,
@@ -12920,7 +13049,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 128:   type PulsingBorderUniforms,
 129:   type PulsingBorderAspectRatio,
 130: } from './shaders/pulsing-border.js';
-131: 
+131:
 132: /** Glowing translucent 3D panels rotating around a central axis */
 133: export {
 134:   colorPanelsFragmentShader,
@@ -12928,7 +13057,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 136:   type ColorPanelsParams,
 137:   type ColorPanelsUniforms,
 138: } from './shaders/color-panels.js';
-139: 
+139:
 140: /** Multi-point mesh gradients with up to 10 color spots, enhanced by two-direction warping, adjustable blend sharpness, and grain controls. Perfect for elegant wallpapers and atmospheric backdrops */
 141: export {
 142:   staticMeshGradientFragmentShader,
@@ -12936,7 +13065,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 144:   type StaticMeshGradientParams,
 145:   type StaticMeshGradientUniforms,
 146: } from './shaders/static-mesh-gradient.js';
-147: 
+147:
 148: /** Radial gradient with up to 10 blended colors, featuring advanced focal point control, shape distortion, and grain effects */
 149: export {
 150:   staticRadialGradientFragmentShader,
@@ -12944,17 +13073,17 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 152:   type StaticRadialGradientParams,
 153:   type StaticRadialGradientUniforms,
 154: } from './shaders/static-radial-gradient.js';
-155: 
+155:
 156: /** A static texture built from multiple noise layers, usable for a realistic paper and cardboard surfaces or generating abstract patterns. Can be used as a image filter or as a texture */
 157: export {
 158:   paperTextureFragmentShader,
 159:   type PaperTextureParams,
 160:   type PaperTextureUniforms,
 161: } from './shaders/paper-texture.js';
-162: 
+162:
 163: /** Water-like surface distortion with natural caustic realism. Works as an image filter or animated texture without image */
 164: export { waterFragmentShader, type WaterParams, type WaterUniforms } from './shaders/water.js';
-165: 
+165:
 166: /** Fluted glass image filter transforms an image into streaked, ribbed distortions, giving a mix of clarity and obscurity */
 167: export {
 168:   flutedGlassFragmentShader,
@@ -12965,14 +13094,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 173:   type FlutedGlassParams,
 174:   type FlutedGlassUniforms,
 175: } from './shaders/fluted-glass.js';
-176: 
+176:
 177: /** A dithering image filter with support for 4 dithering modes and multiple color palettes (2-color, 3-color, and multicolor options, using either predefined colors or ones sampled directly from the original image) */
 178: export {
 179:   imageDitheringFragmentShader,
 180:   type ImageDitheringParams,
 181:   type ImageDitheringUniforms,
 182: } from './shaders/image-dithering.js';
-183: 
+183:
 184: /** A glowing gradient of colors flowing through an input image. The effect creates a smoothly animated wave of intensity across the image */
 185: export {
 186:   heatmapMeta,
@@ -12981,7 +13110,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 189:   type HeatmapParams,
 190:   type HeatmapUniforms,
 191: } from './shaders/heatmap.js';
-192: 
+192:
 193: /** Futuristic liquid metal material applied to uploaded logo or one of pre-defined abstract shape */
 194: export {
 195:   liquidMetalFragmentShader,
@@ -12991,7 +13120,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 199:   type LiquidMetalParams,
 200:   type LiquidMetalUniforms,
 201: } from './shaders/liquid-metal.js';
-202: 
+202:
 203: /** A halftone-dot image filter featuring customizable grids, color palettes, and dot styles */
 204: export {
 205:   HalftoneDotsTypes,
@@ -13002,7 +13131,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 210:   type HalftoneDotsType,
 211:   type HalftoneDotsGrid,
 212: } from './shaders/halftone-dots.js';
-213: 
+213:
 214: /** A halftone CMYK classic algo */
 215: export {
 216:   HalftoneCmykTypes,
@@ -13022,6 +13151,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/index.ts",
@@ -13031,12 +13161,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/index.ts</path>
 <type>file</type>
 <content>
 221: } from './shaders/halftone-cmyk.js';
-222: 
+222:
 223: /** Animated color fields running around a glassy logo shape */
 224: export {
 225:   gemSmokeMeta,
@@ -13047,7 +13178,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 230:   type GemSmokeParams,
 231:   type GemSmokeUniforms,
 232: } from './shaders/gem-smoke.js';
-233: 
+233:
 234: // ----- Utils ----- //
 235: export { getShaderColorFromString } from './get-shader-color-from-string.js';
 236: export { getShaderNoiseTexture } from './get-shader-noise-texture.js';
@@ -13060,6 +13191,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-mount.ts",
@@ -13069,6 +13201,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-mount.ts</path>
 <type>file</type>
@@ -13081,20 +13214,20 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 266:       this.canvasElement.height = newHeight;
 267:       this.resolutionChanged = true;
 268:       this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-269: 
+269:
 270:       // this is necessary to avoid flashes while resizing (the next scheduled render will set uniforms)
 271:       this.render(performance.now());
 272:     }
 273:   };
-274: 
+274:
 275:   private render = (currentTime: number) => {
 276:     if (this.hasBeenDisposed) return;
-277: 
+277:
 278:     if (this.program === null) {
 279:       console.warn('Tried to render before program or gl was initialized');
 280:       return;
 281:     }
-282: 
+282:
 283:     // Calculate the delta time
 284:     const dt = currentTime - this.lastRenderTime;
 285:     this.lastRenderTime = currentTime;
@@ -13102,25 +13235,25 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 287:     if (this.currentSpeed !== 0) {
 288:       this.currentFrame += dt * this.currentSpeed;
 289:     }
-290: 
+290:
 291:     // Clear the canvas
 292:     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
-293: 
+293:
 294:     // Update uniforms
 295:     this.gl.useProgram(this.program);
-296: 
+296:
 297:     // Update the time uniform
 298:     this.gl.uniform1f(this.uniformLocations.u_time!, this.currentFrame * 0.001);
-299: 
+299:
 300:     // If the resolution has changed, we need to update the uniform
 301:     if (this.resolutionChanged) {
 302:       this.gl.uniform2f(this.uniformLocations.u_resolution!, this.gl.canvas.width, this.gl.canvas.height);
 303:       this.gl.uniform1f(this.uniformLocations.u_pixelRatio!, this.renderScale);
 304:       this.resolutionChanged = false;
 305:     }
-306: 
+306:
 307:     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-308: 
+308:
 309:     // Loop if we're animating
 310:     if (this.currentSpeed !== 0) {
 311:       this.requestRender();
@@ -13128,26 +13261,26 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 313:       this.rafId = null;
 314:     }
 315:   };
-316: 
+316:
 317:   private requestRender = () => {
 318:     if (this.rafId !== null) {
 319:       cancelAnimationFrame(this.rafId);
 320:     }
 321:     this.rafId = requestAnimationFrame(this.render);
 322:   };
-323: 
+323:
 324:   /** Creates a texture from an image and sets it into a uniform value */
 325:   private setTextureUniform = (uniformName: string, image: HTMLImageElement): void => {
 326:     if (!image.complete || image.naturalWidth === 0) {
 327:       throw new Error(`Paper Shaders: image for uniform ${uniformName} must be fully loaded`);
 328:     }
-329: 
+329:
 330:     // Clean up existing texture if present
 331:     const existingTexture = this.textures.get(uniformName);
 332:     if (existingTexture) {
 333:       this.gl.deleteTexture(existingTexture);
 334:     }
-335: 
+335:
 336:     // Get texture unit
 337:     if (!this.textureUnitMap.has(uniformName)) {
 338:       this.textureUnitMap.set(uniformName, this.textureUnitMap.size);
@@ -13155,40 +13288,40 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 340:     const textureUnit = this.textureUnitMap.get(uniformName)!;
 341:     // Activate correct texture unit before creating the texture
 342:     this.gl.activeTexture(this.gl.TEXTURE0 + textureUnit);
-343: 
+343:
 344:     // Create and set up the new texture
 345:     const texture = this.gl.createTexture();
 346:     this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-347: 
+347:
 348:     // Set texture parameters
 349:     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
 350:     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
 351:     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
 352:     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-353: 
+353:
 354:     // Upload image to texture
 355:     this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
-356: 
+356:
 357:     // Generate mipmaps if the uniform is in the mipmaps list
 358:     if (this.mipmaps.includes(uniformName)) {
 359:       this.gl.generateMipmap(this.gl.TEXTURE_2D);
 360:       this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR_MIPMAP_LINEAR);
 361:     }
-362: 
+362:
 363:     const error = this.gl.getError();
 364:     if (error !== this.gl.NO_ERROR || texture === null) {
 365:       console.error('Paper Shaders: WebGL error when uploading texture:', error);
 366:       return;
 367:     }
-368: 
+368:
 369:     // Store the texture
 370:     this.textures.set(uniformName, texture);
-371: 
+371:
 372:     // Set up texture unit and uniform
 373:     const location = this.uniformLocations[uniformName];
 374:     if (location) {
 375:       this.gl.uniform1i(location, textureUnit);
-376: 
+376:
 377:       // Calculate and set the aspect ratio uniform
 378:       const aspectRatioUniformName = `${uniformName}AspectRatio`;
 379:       const aspectRatioLocation = this.uniformLocations[aspectRatioUniformName];
@@ -13198,7 +13331,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 383:       }
 384:     }
 385:   };
-386: 
+386:
 387:   /** Utility: recursive equality test for all the uniforms */
 388:   private areUniformValuesEqual = (a: any, b: any): boolean => {
 389:     if (a === b) return true;
@@ -13207,7 +13340,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 392:     }
 393:     return false;
 394:   };
-395: 
+395:
 396:   /** Sets the provided uniform values into the WebGL program, can be a partial list of uniforms that have changed */
 397:   private setUniformValues = (updatedUniforms: ShaderMountUniforms) => {
 398:     this.gl.useProgram(this.program);
@@ -13218,18 +13351,18 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 403:         // Images use their src for the cache value to save memory
 404:         cacheValue = `${value.src.slice(0, 200)}|${value.naturalWidth}x${value.naturalHeight}`;
 405:       }
-406: 
+406:
 407:       // Check if the uniform value has changed and, if not, bail early to avoid extra work
 408:       if (this.areUniformValuesEqual(this.uniformCache[key], cacheValue)) return;
 409:       // Update the uniform cache if we are still here
 410:       this.uniformCache[key] = cacheValue;
-411: 
+411:
 412:       const location = this.uniformLocations[key];
 413:       if (!location) {
 414:         console.warn(`Uniform location for ${key} not found`);
 415:         return;
 416:       }
-417: 
+417:
 418:       if (value instanceof HTMLImageElement) {
 419:         // Texture case, requires a good amount of code so it gets its own function:
 420:         this.setTextureUniform(key, value);
@@ -13237,7 +13370,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 422:         // Array case
 423:         let flatArray: number[] | null = null;
 424:         let valueLength: number | null = null;
-425: 
+425:
 426:         // If it's an array of same-sized arrays, flatten it down so we can set the uniform
 427:         if (value[0] !== undefined && Array.isArray(value[0])) {
 428:           const firstChildLength = value[0].length;
@@ -13254,7 +13387,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 439:           flatArray = value as number[];
 440:           valueLength = flatArray.length;
 441:         }
-442: 
+442:
 443:         // Set the uniform based on array length... supports 2, 3, 4, 9, 16 length arrays of primitive values
 444:         // or arbitrary length arrays of arrays
 445:         switch (valueLength) {
@@ -13288,49 +13421,49 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 473:       }
 474:     });
 475:   };
-476: 
+476:
 477:   /** Gets the current total animation time from 0ms */
 478:   public getCurrentFrame = (): number => {
 479:     return this.currentFrame;
 480:   };
-481: 
+481:
 482:   /** Set a frame to get a deterministic result, frames are literally just milliseconds from zero since the animation started */
 483:   public setFrame = (newFrame: number): void => {
 484:     this.currentFrame = newFrame;
 485:     this.lastRenderTime = performance.now();
 486:     this.render(performance.now());
 487:   };
-488: 
+488:
 489:   /** Set an animation speed (or 0 to stop animation) */
 490:   public setSpeed = (newSpeed = 1): void => {
 491:     // Set the new animation speed
 492:     this.speed = newSpeed;
 493:     this.setCurrentSpeed(this.ownerDocument.hidden ? 0 : newSpeed);
 494:   };
-495: 
+495:
 496:   private setCurrentSpeed = (newSpeed: number): void => {
 497:     this.currentSpeed = newSpeed;
-498: 
+498:
 499:     if (this.rafId === null && newSpeed !== 0) {
 500:       // Moving from 0 to animating, kick off a new rAF loop
 501:       this.lastRenderTime = performance.now();
 502:       this.rafId = requestAnimationFrame(this.render);
 503:     }
-504: 
+504:
 505:     if (this.rafId !== null && newSpeed === 0) {
 506:       // Moving from animating to not animating, cancel the rAF loop
 507:       cancelAnimationFrame(this.rafId);
 508:       this.rafId = null;
 509:     }
 510:   };
-511: 
+511:
 512:   /** Set the maximum pixel count for the shader, this will limit the number of pixels that will be rendered */
 513:   public setMaxPixelCount = (newMaxPixelCount: number = DEFAULT_MAX_PIXEL_COUNT): void => {
 514:     this.maxPixelCount = newMaxPixelCount;
-515: 
+515:
 516:     this.handleResize();
 517:   };
-518: 
+518:
 519:   /** Set the minimum pixel ratio for the shader */
 520:   public setMinPixelRatio = (newMinPixelRatio: number = 2): void => {
 
@@ -13341,6 +13474,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/gradients.ts",
@@ -13350,31 +13484,32 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/gradients.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
-2: 
+2:
 3: // All gradients here use 3 colors (color1 → color2 → color3) with adjustable
 4: // midpoint position. Multi-color palette ramps will land later as a separate
 5: // uniform type; 3 stops covers the common case for now.
-6: 
+6:
 7: const threeColors = (): LayerDefinition['uniforms'] => [
 8:   { name: 'color1', label: 'Color 1', type: 'vec3', default: [0.05, 0.05, 0.15], ui: { color: true } },
 9:   { name: 'color2', label: 'Color 2', type: 'vec3', default: [0.5, 0.2, 0.6], ui: { color: true } },
 10:   { name: 'color3', label: 'Color 3', type: 'vec3', default: [1.0, 0.8, 0.4], ui: { color: true } },
 11:   { name: 'midPoint', label: 'Mid Position', type: 'float', default: 0.5, ui: { min: 0.05, max: 0.95, step: 0.01 } },
 12: ]
-13: 
+13:
 14: const sampleRamp = `vec3 sampleRamp(float t, vec3 c1, vec3 c2, vec3 c3, float mid) {
 15:   if (t < mid) return mix(c1, c2, t / max(mid, 1e-4));
 16:   return mix(c2, c3, (t - mid) / max(1.0 - mid, 1e-4));
 17: }`
-18: 
+18:
 19: const screenP = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 20: vec2 p = (uv - 0.5) * _ar;`
-21: 
+21:
 22: export const linearGradientV2Layer: LayerDefinition = {
 23:   id: 'linear-gradient-v2',
 24:   name: 'Linear Gradient (3-color)',
@@ -13397,7 +13532,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 41: return vec4(sampleRamp(t, {{color1}}, {{color2}}, {{color3}}, {{midPoint}}), 1.0);`,
 42:   },
 43: }
-44: 
+44:
 45: export const radialGradientV2Layer: LayerDefinition = {
 46:   id: 'radial-gradient-v2',
 47:   name: 'Radial Gradient (3-color)',
@@ -13421,7 +13556,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 65: return vec4(sampleRamp(t, {{color1}}, {{color2}}, {{color3}}, {{midPoint}}), 1.0);`,
 66:   },
 67: }
-68: 
+68:
 69: export const conicGradientLayer: LayerDefinition = {
 70:   id: 'conic-gradient',
 71:   name: 'Conic Gradient',
@@ -13445,7 +13580,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 89: return vec4(sampleRamp(t, {{color1}}, {{color2}}, {{color3}}, {{midPoint}}), 1.0);`,
 90:   },
 91: }
-92: 
+92:
 93: export const diamondGradientLayer: LayerDefinition = {
 94:   id: 'diamond-gradient',
 95:   name: 'Diamond Gradient',
@@ -13472,11 +13607,11 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 116: return vec4(sampleRamp(t, {{color1}}, {{color2}}, {{color3}}, {{midPoint}}), 1.0);`,
 117:   },
 118: }
-119: 
+119:
 120: // MultiPointGradient — N animated/static color spots blended via smooth-min
 121: // distance. The mesh-gradient family. Limited to 4 spots until a true
 122: // colorRamp uniform type lands; that's plenty for designer ergonomics.
-123: 
+123:
 124: export const multiPointGradientLayer: LayerDefinition = {
 125:   id: 'multi-point-gradient',
 126:   name: 'Multi-Point Gradient',
@@ -13512,7 +13647,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 156: return vec4(col, 1.0);`,
 157:   },
 158: }
-159: 
+159:
 160: // Mesh Spots Gradient — N animated color blobs blended via IDW (inverse
 161: // distance weighting), same algorithm Paper uses for mesh-gradient. Uses a
 162: // vec4Array palette so spot count is variable and designer-editable.
@@ -13577,7 +13712,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 221: return vec4(color, 1.0);`,
 222:   },
 223: }
-224: 
+224:
 225: export const GRADIENT_LAYERS: Record<string, LayerDefinition> = {
 226:   'linear-gradient-v2': linearGradientV2Layer,
 227:   'radial-gradient-v2': radialGradientV2Layer,
@@ -13594,6 +13729,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts",
@@ -13603,13 +13739,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { gen, SCREEN_P } from './_helpers'
-3: 
+3:
 4: export const scalarFieldLayer = gen({
 5:   id: 'scalar-field',
 6:   name: 'Scalar Field',
@@ -13705,10 +13842,10 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 96:   },
 97:   outputKind: 'scalar',
 98: })
-99: 
+99:
 100: const screenP = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 101: vec2 p = (uv - 0.5) * _ar;`
-102: 
+102:
 103: // Plasma — multi-octave layered sin/cos pattern; designer favourite for
 104: // liquid colour wash backgrounds.
 105: export const plasmaLayer: LayerDefinition = {
@@ -13742,7 +13879,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 133: return vec4(col, 1.0);`,
 134:   },
 135: }
-136: 
+136:
 137: // Perlin Noise (3D, time as z) — classic FBM via simplex2D treated as gradient.
 138: // Reuses simplex2D helper from glsl-utils.
 139: export const perlinNoiseLayer: LayerDefinition = {
@@ -13781,7 +13918,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 172: return vec4(mix({{color1}}, {{color2}}, n), 1.0);`,
 173:   },
 174: }
-175: 
+175:
 176: // FlowField — vector field magnitude rendered as a swirling gradient.
 177: export const flowFieldLayer: LayerDefinition = {
 178:   id: 'flow-field',
@@ -13812,7 +13949,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 203: return vec4(mix({{color1}}, {{color2}}, v), 1.0);`,
 204:   },
 205: }
-206: 
+206:
 207: // Aurora — domain-warped trig-fold noise (Paper "neuro noise" family).
 208: // 15 iterations with exponential scale growth and an accumulating sine sum
 209: // produces tendril-like networks rather than smooth bands.
@@ -13852,7 +13989,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 243: return vec4(col, 1.0);`,
 244:   },
 245: }
-246: 
+246:
 247: // Spiral — animated polar-coordinate spiral.
 248: export const spiralLayer: LayerDefinition = {
 249:   id: 'spiral',
@@ -13883,7 +14020,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 274: return vec4(mix({{colorBack}}, {{colorFront}}, m), 1.0);`,
 275:   },
 276: }
-277: 
+277:
 278: // ContourLines — equipotential lines from a noise field.
 279: export const contourLinesLayer: LayerDefinition = {
 280:   id: 'contour-lines',
@@ -13911,7 +14048,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 302: return vec4(mix({{colorBack}}, {{colorFront}}, m), 1.0);`,
 303:   },
 304: }
-305: 
+305:
 306: // Polar Bands — twisted radial bands; the core primitive behind Paper's Swirl.
 307: // Colors come from a downstream color-ramp (outputKind: scalar) or use
 308: // colorBack/colorFront for a simple two-color result.
@@ -13975,6 +14112,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts",
@@ -13984,13 +14122,14 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { distorter } from './_helpers'
-3: 
+3:
 4: export const spherizeLayer = distorter({
 5:   id: 'spherize',
 6:   name: 'Spherize',
@@ -14012,7 +14151,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 22: return texture(u_prevPass, distorted);`,
 23:   },
 24: })
-25: 
+25:
 26: export const liquifyLayer = distorter({
 27:   id: 'liquify',
 28:   name: 'Liquify',
@@ -14032,7 +14171,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 42: return texture(u_prevPass, uv + vec2(dx, dy) * {{amount}});`,
 43:   },
 44: })
-45: 
+45:
 46: export const stretchLayer = distorter({
 47:   id: 'stretch',
 48:   name: 'Stretch',
@@ -14051,7 +14190,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 61: return texture(u_prevPass, c + d);`,
 62:   },
 63: })
-64: 
+64:
 65: export const twirlLayer = distorter({
 66:   id: 'twirl',
 67:   name: 'Twirl',
@@ -14075,7 +14214,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 85: return texture(u_prevPass, c + rd);`,
 86:   },
 87: })
-88: 
+88:
 89: export const swirlLayer = distorter({
 90:   id: 'swirl',
 91:   name: 'Swirl',
@@ -14097,7 +14236,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 107: return texture(u_prevPass, c + rd);`,
 108:   },
 109: })
-110: 
+110:
 111: export const concentricSpinLayer = distorter({
 112:   id: 'concentric-spin',
 113:   name: 'Concentric Spin',
@@ -14121,7 +14260,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 131: return texture(u_prevPass, c + rd);`,
 132:   },
 133: })
-134: 
+134:
 135: export const gridDistortionLayer = distorter({
 136:   id: 'grid-distortion',
 137:   name: 'Grid Distortion',
@@ -14141,7 +14280,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 151: return texture(u_prevPass, uv + offset);`,
 152:   },
 153: })
-154: 
+154:
 155: export const waveDistortionLayer = distorter({
 156:   id: 'wave-distortion',
 157:   name: 'Wave Distortion',
@@ -14164,7 +14303,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 174: return texture(u_prevPass, uv + offset);`,
 175:   },
 176: })
-177: 
+177:
 178: export const ripplesLayer = distorter({
 179:   id: 'ripples',
 180:   name: 'Ripples',
@@ -14187,7 +14326,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 197: return texture(u_prevPass, uv + normalize(d + 1e-6) * wave);`,
 198:   },
 199: })
-200: 
+200:
 201: export const shatterLayer = distorter({
 202:   id: 'shatter',
 203:   name: 'Shatter',
@@ -14206,7 +14345,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 216: return texture(u_prevPass, uv + offset);`,
 217:   },
 218: })
-219: 
+219:
 220: export const mirrorLayer = distorter({
 221:   id: 'mirror',
 222:   name: 'Mirror',
@@ -14228,7 +14367,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 238: return texture(u_prevPass, c + rotate2D(d, a));`,
 239:   },
 240: })
-241: 
+241:
 242: export const kaleidoscopeLayer = distorter({
 243:   id: 'kaleidoscope',
 244:   name: 'Kaleidoscope',
@@ -14252,7 +14391,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 262: return texture(u_prevPass, c + rd);`,
 263:   },
 264: })
-265: 
+265:
 266: export const polarCoordinatesLayer = distorter({
 267:   id: 'polar-coordinates',
 268:   name: 'Polar Coordinates',
@@ -14282,7 +14421,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 292: return texture(u_prevPass, q);`,
 293:   },
 294: })
-295: 
+295:
 296: export const perspectiveLayer = distorter({
 297:   id: 'perspective',
 298:   name: 'Perspective',
@@ -14301,7 +14440,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 311: return texture(u_prevPass, q + 0.5);`,
 312:   },
 313: })
-314: 
+314:
 315: export const pixelateLayer = distorter({
 316:   id: 'pixelate',
 317:   name: 'Pixelate',
@@ -14317,7 +14456,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 327: return texture(u_prevPass, q);`,
 328:   },
 329: })
-330: 
+330:
 331: export const glassLayer = distorter({
 332:   id: 'glass',
 333:   name: 'Glass',
@@ -14339,7 +14478,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 349: return texture(u_prevPass, uv + grad * {{amount}});`,
 350:   },
 351: })
-352: 
+352:
 353: export const glassTilesLayer = distorter({
 354:   id: 'glass-tiles',
 355:   name: 'Glass Tiles',
@@ -14356,6 +14495,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts",
@@ -14365,6 +14505,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts</path>
 <type>file</type>
@@ -14380,13 +14521,13 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 9: //   * `texture(u_noiseTexture, x)` lookups → procedural `hash21(x)` (Paper's
 10: //     own pre-computed noise texture is itself produced from hash21, so the
 11: //     visual difference is negligible at typical scales)
-12: 
+12:
 13: import type { LayerDefinition } from '../types'
 14: import { gen } from './_helpers'
-15: 
+15:
 16: const SCREEN_OBJECT_UV = `vec2 _ar = vec2(u_resolution.x / max(u_resolution.y, 1.0), 1.0);
 17: vec2 p = (uv - 0.5) * _ar;`
-18: 
+18:
 19: // ──────────────────────────────────────────────────────────────────────────
 20: // Mesh Gradient — IDW of N moving color spots over a swirled, distorted UV,
 21: // post-mixed with a B/W grain overlay. Direct port of Paper's mesh-gradient.ts.
@@ -14472,7 +14613,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 101: return vec4(color, 1.0);`,
 102:   },
 103: })
-104: 
+104:
 105: // ──────────────────────────────────────────────────────────────────────────
 106: // Neuro Noise — 15-iter rotate-and-grow trig-fold accumulator.
 107: // Direct port of Paper's neuro-noise.ts.
@@ -14528,7 +14669,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 157: return vec4(color, 1.0);`,
 158:   },
 159: })
-160: 
+160:
 161: // ──────────────────────────────────────────────────────────────────────────
 162: // Swirl — angle×bandCount pattern with vortex twist; direct port of swirl.ts.
 163: export const paperSwirlLayer = gen({
@@ -14597,7 +14738,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 226: return vec4(color, 1.0);`,
 227:   },
 228: })
-229: 
+229:
 230: // ──────────────────────────────────────────────────────────────────────────
 231: // Spiral — animated logarithmic spiral with stroke, distortion, noise.
 232: // Direct port of spiral.ts.
@@ -14655,7 +14796,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 284: return vec4(color, 1.0);`,
 285:   },
 286: })
-287: 
+287:
 288: // ──────────────────────────────────────────────────────────────────────────
 289: // Voronoi (Paper) — IQ two-pass voronoi with cell colors, gap, glow.
 290: // Direct port of voronoi.ts. Uses Paper's 256×256 noise texture (bound globally
@@ -14743,7 +14884,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 372: return vec4(color, 1.0);`,
 373:   },
 374: })
-375: 
+375:
 376: // ──────────────────────────────────────────────────────────────────────────
 377: // Simplex Noise (Paper) — two-sample sum mapped through a stepped color ramp.
 378: // Distinct from our existing FBM-based `simplex-noise` primitive: this is
@@ -14799,7 +14940,7 @@ The first pass shows the current compiler is layer-linear, vec4-returning, and p
 428: return vec4(gradient, 1.0);`,
 429:   },
 430: })
-431: 
+431:
 432: export const PAPER_SHADER_LAYERS: Record<string, LayerDefinition> = {
 433:   'paper-mesh-gradient': paperMeshGradientLayer,
 434:   'paper-neuro-noise': paperNeuroNoiseLayer,
@@ -14822,6 +14963,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/_helpers.ts",
@@ -14831,16 +14973,17 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/_helpers.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition, BlendMode } from '../types'
-2: 
+2:
 3: type LayerCategory = LayerDefinition['category']
 4: type FactoryOpts = { consumesPrevPass?: boolean; defaultBlendMode?: BlendMode }
 5: type LayerInput = Omit<LayerDefinition, 'category' | 'defaultBlendMode' | 'consumesPrevPass'>
-6: 
+6:
 7: const make =
 8:   (category: LayerCategory, opts: FactoryOpts = {}) =>
 9:   (def: LayerInput): LayerDefinition => ({
@@ -14849,17 +14992,17 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 12:     defaultBlendMode: opts.defaultBlendMode ?? 'normal',
 13:     consumesPrevPass: opts.consumesPrevPass,
 14:   })
-15: 
+15:
 16: export const gen = make('generator')
 17: export const distorter = make('distorter', { consumesPrevPass: true })
 18: export const fx = make('effect', { consumesPrevPass: true })
 19: export const baseFx = make('effect')
 20: export const colorFx = make('modifier')
 21: export const sampleFx = make('modifier', { consumesPrevPass: true })
-22: 
+22:
 23: export const SCREEN_P = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 24: vec2 p = (uv - 0.5) * _ar;`
-25: 
+25:
 26: export const TEX_SIZE = `vec2 texel = 1.0 / u_resolution;`
 
 (End of file - total 26 lines)
@@ -14869,6 +15012,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts",
@@ -14878,13 +15022,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { colorFx, sampleFx } from './_helpers'
-3: 
+3:
 4: export const hueShiftLayer = colorFx({
 5:   id: 'hue-shift',
 6:   name: 'Hue Shift',
@@ -14901,7 +15046,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 17: return vec4(hsv2rgb(h), base.a);`,
 18:   },
 19: })
-20: 
+20:
 21: export const saturationLayer = colorFx({
 22:   id: 'saturation',
 23:   name: 'Saturation',
@@ -14917,7 +15062,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 33: return vec4(mix(vec3(lum), base.rgb, {{amount}}), base.a);`,
 34:   },
 35: })
-36: 
+36:
 37: export const vibranceLayer = colorFx({
 38:   id: 'vibrance',
 39:   name: 'Vibrance',
@@ -14937,7 +15082,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 53: return vec4(mix(vec3(lum), base.rgb, 1.0 + w), base.a);`,
 54:   },
 55: })
-56: 
+56:
 57: export const brightnessContrastLayer = colorFx({
 58:   id: 'brightness-contrast',
 59:   name: 'Brightness/Contrast',
@@ -14953,7 +15098,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 69: return vec4(col, base.a);`,
 70:   },
 71: })
-72: 
+72:
 73: export const sharpnessLayer = sampleFx({
 74:   id: 'sharpness',
 75:   name: 'Sharpness',
@@ -14974,7 +15119,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 90: return vec4(c + (c - blurred) * {{amount}}, 1.0);`,
 91:   },
 92: })
-93: 
+93:
 94: export const tintLayer = colorFx({
 95:   id: 'tint',
 96:   name: 'Tint',
@@ -14989,7 +15134,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 105: return vec4(mix(base.rgb, base.rgb * {{color}} * 1.4, {{amount}}), base.a);`,
 106:   },
 107: })
-108: 
+108:
 109: export const duotoneLayer = colorFx({
 110:   id: 'duotone',
 111:   name: 'Duotone',
@@ -15006,7 +15151,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 122: return vec4(mix({{color1}}, {{color2}}, lum), base.a);`,
 123:   },
 124: })
-125: 
+125:
 126: export const tritoneLayer = colorFx({
 127:   id: 'tritone',
 128:   name: 'Tritone',
@@ -15028,7 +15173,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 144: return vec4(col, base.a);`,
 145:   },
 146: })
-147: 
+147:
 148: export const solarizeLayer = colorFx({
 149:   id: 'solarize',
 150:   name: 'Solarize',
@@ -15043,7 +15188,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 159: return vec4(col, base.a);`,
 160:   },
 161: })
-162: 
+162:
 163: export const invertLayer = colorFx({
 164:   id: 'invert',
 165:   name: 'Invert',
@@ -15057,7 +15202,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 173: return vec4(mix(base.rgb, 1.0 - base.rgb, {{amount}}), base.a);`,
 174:   },
 175: })
-176: 
+176:
 177: export const grayscaleLayer = colorFx({
 178:   id: 'grayscale',
 179:   name: 'Grayscale',
@@ -15073,7 +15218,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 189: return vec4(mix(base.rgb, vec3(lum), {{amount}}), base.a);`,
 190:   },
 191: })
-192: 
+192:
 193: export const chromaticAberration2Layer = sampleFx({
 194:   id: 'chromatic-aberration-2',
 195:   name: 'Chromatic Aberration (Sep.)',
@@ -15095,7 +15240,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 211: return vec4(r, g, b, 1.0);`,
 212:   },
 213: })
-214: 
+214:
 215: export const chromaFlowLayer = colorFx({
 216:   id: 'chroma-flow',
 217:   name: 'Chroma Flow',
@@ -15113,7 +15258,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 229: return vec4(mix(base.rgb, base.rgb * tint, {{amount}}), base.a);`,
 230:   },
 231: })
-232: 
+232:
 233: // N-color stepped/smooth ramp. Reads previous-pass scalar (default: luma)
 234: // and maps to a 1..10-stop palette. The single highest-leverage atom for
 235: // reproducing Paper presets that use `colors[N]` arrays.
@@ -15203,7 +15348,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 319: return colorRampLookup(t, {{colors}}, {{colors}}_count, {{steps}}, {{softness}}, {{stepsPerColor}}, {{wrap}});`,
 320:   },
 321: })
-322: 
+322:
 323: // Replaces previous-pass with vec4(luma, luma, luma, 1.0) so downstream
 324: // dither/threshold/ramp consumers see a clean scalar.
 325: export const luminanceTapLayer = sampleFx({
@@ -15220,7 +15365,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 336:   },
 337:   outputKind: 'scalar',
 338: })
-339: 
+339:
 340: // CMYK channel separation. Output mode 0 = grayscale (channel as luma);
 341: // mode 1 = tinted (full CMYK process color). Stack four with mode=1 +
 342: // halftone effects for a CMYK halftone print look.
@@ -15271,7 +15416,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 387: return vec4(mix(vec3(1.0), tint, v), 1.0);`,
 388:   },
 389: })
-390: 
+390:
 391: // Image Edge — Sobel-based edge detector. Stack over image-source to extract
 392: // outlines for heatmap, liquid-metal, gem-smoke style effects.
 393: export const imageEdgeLayer = sampleFx({
@@ -15310,6 +15455,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts",
@@ -15319,13 +15465,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { fx, baseFx } from './_helpers'
-3: 
+3:
 4: export const halftoneLayer = fx({
 5:   id: 'halftone',
 6:   name: 'Halftone',
@@ -15350,7 +15497,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 25: return vec4(mix({{colorBack}}, {{colorDot}}, fillDot), 1.0);`,
 26:   },
 27: })
-28: 
+28:
 29: export const ditherLayer = fx({
 30:   id: 'dither',
 31:   name: 'Dither',
@@ -15380,7 +15527,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 55: return vec4(mix({{colorDark}}, {{colorLight}}, clamp(q, 0.0, 1.0)), 1.0);`,
 56:   },
 57: })
-58: 
+58:
 59: export const posterizeLayer = baseFx({
 60:   id: 'posterize',
 61:   name: 'Posterize',
@@ -15395,7 +15542,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 70: return vec4(col, base.a);`,
 71:   },
 72: })
-73: 
+73:
 74: export const embossLayer = fx({
 75:   id: 'emboss',
 76:   name: 'Emboss',
@@ -15417,7 +15564,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 92: return vec4(vec3(v), 1.0);`,
 93:   },
 94: })
-95: 
+95:
 96: export const asciiLayer = fx({
 97:   id: 'ascii',
 98:   name: 'ASCII',
@@ -15442,7 +15589,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 117: return vec4(mix({{colorBack}}, {{colorChar}}, bar), 1.0);`,
 118:   },
 119: })
-120: 
+120:
 121: export const filmGrain2Layer = baseFx({
 122:   id: 'film-grain-2',
 123:   name: 'Film Grain (v2)',
@@ -15465,7 +15612,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 140: return vec4(base.rgb + noise * {{intensity}}, base.a);`,
 141:   },
 142: })
-143: 
+143:
 144: export const vignette2Layer = baseFx({
 145:   id: 'vignette-2',
 146:   name: 'Vignette (v2)',
@@ -15486,7 +15633,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 161: return vec4(mix(base.rgb, {{color}}, v), base.a);`,
 162:   },
 163: })
-164: 
+164:
 165: export const paperLayer = baseFx({
 166:   id: 'paper',
 167:   name: 'Paper',
@@ -15506,7 +15653,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 181: return vec4(base.rgb * w, base.a);`,
 182:   },
 183: })
-184: 
+184:
 185: // Material Noise — layered paper/fiber/crumple/grain texture generator.
 186: // Use as a source with overlay/multiply blend on top of an image or gradient.
 187: // Faithfully models Paper's paper-texture primitive breakdown.
@@ -15550,7 +15697,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 225: return vec4(col, 1.0);`,
 226:   },
 227: })
-228: 
+228:
 229: // Dot Glyph Grid — faithful Paper dot-grid recreation: regular lattice of
 230: // geometric dots with per-dot random size/opacity, multiple shapes.
 231: export const dotGlyphGridLayer = baseFx({
@@ -15616,7 +15763,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 291: return vec4(col, 1.0);`,
 292:   },
 293: })
-294: 
+294:
 295: // Halftone CMYK — print-style four-channel halftone. Splits the previous pass
 296: // into C/M/Y/K, screens each at its own rotation (15°/75°/0°/45°) with
 297: // independent shifts, then composites via subtractive ink simulation. Cannot
@@ -15691,6 +15838,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/sources.ts",
@@ -15700,13 +15848,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/sources.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { gen } from './_helpers'
-3: 
+3:
 4: export const solidColorLayer: LayerDefinition = {
 5:   id: 'solid-color',
 6:   name: 'Solid Color',
@@ -15722,7 +15871,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 16: return vec4({{color}}, 1.0);`,
 17:   },
 18: }
-19: 
+19:
 20: // Sample an uploaded or remote image as a texture. Honours fit/scale/rotation/
 21: // offset via the auto-generated _meta and _offset companion uniforms.
 22: export const imageSourceLayer = gen({
@@ -15757,7 +15906,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 51: return src * {{tint}};`,
 52:   },
 53: })
-54: 
+54:
 55: export const SOURCE_LAYERS: Record<string, LayerDefinition> = {
 56:   'solid-color': solidColorLayer,
 57:   'image-source': imageSourceLayer,
@@ -15770,6 +15919,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/patterns.ts",
@@ -15779,20 +15929,21 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/patterns.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
-2: 
+2:
 3: const PATTERN_DEPS = ['aastep']
-4: 
+4:
 5: const screenP = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 6: vec2 p = (uv - 0.5) * _ar;`
-7: 
+7:
 8: // Two-color pattern primitive helpers. Each pattern computes a 0..1 mask `m`
 9: // then outputs mix(color1, color2, m) with alpha = 1.
-10: 
+10:
 11: function twoColors(extra: LayerDefinition['uniforms']): LayerDefinition['uniforms'] {
 12:   return [
 13:     ...extra,
@@ -15800,7 +15951,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 15:     { name: 'color2', label: 'Color 2', type: 'vec3', default: [0.95, 0.95, 0.95], ui: { color: true } },
 16:   ]
 17: }
-18: 
+18:
 19: export const checkerboardLayer: LayerDefinition = {
 20:   id: 'checkerboard',
 21:   name: 'Checkerboard',
@@ -15825,7 +15976,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 40: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 41:   },
 42: }
-43: 
+43:
 44: export const stripesLayer: LayerDefinition = {
 45:   id: 'stripes',
 46:   name: 'Stripes',
@@ -15851,7 +16002,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 66: return vec4(mix({{color2}}, {{color1}}, m), 1.0);`,
 67:   },
 68: }
-69: 
+69:
 70: export const gridLayer: LayerDefinition = {
 71:   id: 'grid',
 72:   name: 'Grid',
@@ -15876,7 +16027,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 91: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 92:   },
 93: }
-94: 
+94:
 95: export const dotGridLayer: LayerDefinition = {
 96:   id: 'dot-grid',
 97:   name: 'Dot Grid',
@@ -15898,7 +16049,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 113: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 114:   },
 115: }
-116: 
+116:
 117: export const hexGridLayer: LayerDefinition = {
 118:   id: 'hex-grid',
 119:   name: 'Hex Grid',
@@ -15924,7 +16075,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 139: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 140:   },
 141: }
-142: 
+142:
 143: export const truchetLayer: LayerDefinition = {
 144:   id: 'truchet',
 145:   name: 'Truchet',
@@ -15953,7 +16104,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 168: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 169:   },
 170: }
-171: 
+171:
 172: export const weaveLayer: LayerDefinition = {
 173:   id: 'weave',
 174:   name: 'Weave',
@@ -15979,7 +16130,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 194: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 195:   },
 196: }
-197: 
+197:
 198: export const strandsLayer: LayerDefinition = {
 199:   id: 'strands',
 200:   name: 'Strands',
@@ -16005,7 +16156,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 220: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 221:   },
 222: }
-223: 
+223:
 224: export const fallingLinesLayer: LayerDefinition = {
 225:   id: 'falling-lines',
 226:   name: 'Falling Lines',
@@ -16039,7 +16190,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 254: return vec4(mix({{color1}}, {{color2}}, m), 1.0);`,
 255:   },
 256: }
-257: 
+257:
 258: export const ringLayer: LayerDefinition = {
 259:   id: 'ring',
 260:   name: 'Ring',
@@ -16064,7 +16215,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 279: return vec4(mix({{color2}}, {{color1}}, m), 1.0);`,
 280:   },
 281: }
-282: 
+282:
 283: // Pseudo-3D semi-transparent panels rotating around a central axis. Direct
 284: // port of paper-design/shaders' color-panels algorithm; kept as a single
 285: // atom because the panel-rotation field isn't reducible to existing primitives.
@@ -16117,7 +16268,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 332: #define PI 3.14159265358979
 333: #endif
 334: const float CP_Z_LIMIT = 0.5;
-335: 
+335:
 336: vec2 cpGetPanel(float angle, vec2 uv, float invLength, float aa, float blur, float a1, float a2, bool edges) {
 337:   float sinA = sin(angle);
 338:   float cosA = cos(angle);
@@ -16151,6 +16302,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/shapes.ts",
@@ -16160,15 +16312,16 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/shapes.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
-2: 
+2:
 3: // Shared SDF helpers each primitive depends on.
 4: const SHAPE_DEPS = ['aastep']
-5: 
+5:
 6: // Common-form GLSL preamble that maps uv → centered, aspect-corrected p
 7: // with a configurable position. Returned `p` is in y-normalised units, so a
 8: // `radius=0.3` circle is the same size on any canvas aspect.
@@ -16177,14 +16330,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 11:   centerY = 'centerY'
 12: ) => `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 13: vec2 p = (uv - vec2({{${centerX}}}, {{${centerY}}})) * _ar;`
-14: 
+14:
 15: // Composes fill + optional stroke into a vec4 with alpha. The shape sits on top
 16: // of whatever the previous blend layer produced, so the layer is alpha-aware.
 17: const fillAndStroke = `float interior = 1.0 - aastep(0.0, d);
 18: float strokeMask = (1.0 - aastep({{strokeWidth}} * 0.5, abs(d))) * step(0.0001, {{strokeWidth}});
 19: vec3 col = mix({{fillColor}}, {{strokeColor}}, strokeMask);
 20: return vec4(col, max(interior, strokeMask));`
-21: 
+21:
 22: const standardShapeUniforms = (extra: LayerDefinition['uniforms']) => [
 23:   ...extra,
 24:   { name: 'centerX', label: 'Center X', type: 'float' as const, default: 0.5, ui: { min: 0, max: 1, step: 0.01 } },
@@ -16193,7 +16346,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 27:   { name: 'strokeColor', label: 'Stroke', type: 'vec3' as const, default: [0.0, 0.0, 0.0], ui: { color: true } },
 28:   { name: 'strokeWidth', label: 'Stroke Width', type: 'float' as const, default: 0.0, ui: { min: 0, max: 0.1, step: 0.001 } },
 29: ]
-30: 
+30:
 31: export const circleLayer: LayerDefinition = {
 32:   id: 'circle',
 33:   name: 'Circle',
@@ -16212,7 +16365,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 46: ${fillAndStroke}`,
 47:   },
 48: }
-49: 
+49:
 50: export const ellipseLayer: LayerDefinition = {
 51:   id: 'ellipse',
 52:   name: 'Ellipse',
@@ -16232,7 +16385,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 66: ${fillAndStroke}`,
 67:   },
 68: }
-69: 
+69:
 70: export const roundedRectLayer: LayerDefinition = {
 71:   id: 'rounded-rect',
 72:   name: 'Rounded Rect',
@@ -16253,7 +16406,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 87: ${fillAndStroke}`,
 88:   },
 89: }
-90: 
+90:
 91: export const polygonLayer: LayerDefinition = {
 92:   id: 'polygon',
 93:   name: 'Polygon',
@@ -16275,7 +16428,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 109: ${fillAndStroke}`,
 110:   },
 111: }
-112: 
+112:
 113: export const starLayer: LayerDefinition = {
 114:   id: 'star',
 115:   name: 'Star',
@@ -16298,7 +16451,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 132: ${fillAndStroke}`,
 133:   },
 134: }
-135: 
+135:
 136: export const crossLayer: LayerDefinition = {
 137:   id: 'cross',
 138:   name: 'Cross',
@@ -16320,7 +16473,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 154: ${fillAndStroke}`,
 155:   },
 156: }
-157: 
+157:
 158: export const crescentLayer: LayerDefinition = {
 159:   id: 'crescent',
 160:   name: 'Crescent',
@@ -16344,7 +16497,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 178: ${fillAndStroke}`,
 179:   },
 180: }
-181: 
+181:
 182: export const vesicaLayer: LayerDefinition = {
 183:   id: 'vesica',
 184:   name: 'Vesica',
@@ -16366,7 +16519,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 200: ${fillAndStroke}`,
 201:   },
 202: }
-203: 
+203:
 204: // Faithful port of paper-design/shaders' pulsing-border. Spots travel around
 205: // a rounded-rectangle perimeter at independent speeds; per-spot colour is
 206: // drawn from a vec4Array palette; output blends between alpha-over and
@@ -16425,13 +16578,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 259: #ifndef PI
 260: #define PI 3.14159265358979
 261: #endif
-262: 
+262:
 263: float pbBeat(float time) {
 264:   float first = pow(abs(sin(time * TWO_PI)), 10.0);
 265:   float second = pow(abs(sin((time - 0.15) * TWO_PI)), 10.0);
 266:   return clamp(first + 0.6 * second, 0.0, 1.0);
 267: }
-268: 
+268:
 269: float pbValueNoise(vec2 st) {
 270:   vec2 i = floor(st);
 271:   vec2 f = fract(st);
@@ -16446,7 +16599,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 280:   float x2 = mix(c, d, u.x);
 281:   return mix(x1, x2, u.y);
 282: }
-283: 
+283:
 284: float pbRoundedBox(
 285:   vec2 uv, vec2 halfSize, float dist, float cornerDistance,
 286:   float thickness, float softness
@@ -16470,48 +16623,48 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 304:     main: `
 305: const float firstFrameOffset = 109.0;
 306: float t = 1.2 * (u_time * {{speed}} + firstFrameOffset);
-307: 
+307:
 308: // borderUV: centered + aspect-corrected (Paper's v_responsiveUV equivalent).
 309: float canvasRatio = u_resolution.x / max(u_resolution.y, 1.0);
 310: vec2 borderUV = (uv - 0.5);
 311: borderUV.x *= max(canvasRatio, 1.0);
 312: borderUV.y /= min(canvasRatio, 1.0);
-313: 
+313:
 314: vec2 halfSize = vec2(0.5);
 315: halfSize.x *= max(canvasRatio, 1.0);
 316: halfSize.y /= min(canvasRatio, 1.0);
-317: 
+317:
 318: float pulse = {{pulse}} * pbBeat(0.18 * u_time * {{speed}});
-319: 
+319:
 320: float mL = {{marginLeft}};
 321: float mR = {{marginRight}};
 322: float mT = {{marginTop}};
 323: float mB = {{marginBottom}};
 324: float mX = mL + mR;
 325: float mY = mT + mB;
-326: 
+326:
 327: float thickness = 0.5 * {{thickness}} * min(halfSize.x, halfSize.y);
 328: halfSize.x *= (1.0 - mX);
 329: halfSize.y *= (1.0 - mY);
-330: 
+330:
 331: vec2 centerShift = vec2(
 332:   (mL - mR) * max(canvasRatio, 1.0) * 0.5,
 333:   (mB - mT) / min(canvasRatio, 1.0) * 0.5
 334: );
 335: borderUV -= centerShift;
 336: halfSize -= mix(thickness, 0.0, {{softness}});
-337: 
+337:
 338: float radius = mix(0.0, min(halfSize.x, halfSize.y), {{roundness}});
 339: vec2 dvec = abs(borderUV) - halfSize + radius;
 340: float outsideDistance = length(max(dvec, 0.0001)) - radius;
 341: float insideDistance = min(max(dvec.x, dvec.y), 0.0001);
 342: float cornerDistance = abs(min(max(dvec.x, dvec.y) - 0.45 * radius, 0.0));
 343: float dist = outsideDistance + insideDistance;
-344: 
+344:
 345: float borderThickness = mix(thickness, 3.0 * thickness, {{softness}});
 346: float border = pbRoundedBox(borderUV, halfSize, dist, cornerDistance, borderThickness, {{softness}});
 347: border = pow(border, 1.0 + {{softness}});
-348: 
+348:
 349: vec2 smokeUV = 0.3 * {{smokeSize}} * uv;
 350: float smoke = clamp(3.0 * pbValueNoise(2.7 * smokeUV + 0.5 * t), 0.0, 1.0);
 351: smoke -= pbValueNoise(3.4 * smokeUV - 0.5 * t);
@@ -16523,7 +16676,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 357: smoke = clamp(smoke, 0.0, 1.0);
 358: border += smoke;
 359: border = clamp(border, 0.0, 1.0);
-360: 
+360:
 
 (Showing lines 1-360 of 433. Use offset=361 to continue.)
 </content>
@@ -16536,6 +16689,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts",
@@ -16545,13 +16699,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts</path>
 <type>file</type>
 <content>
 421:   outputKind: 'scalar',
 422: })
-423: 
+423:
 424: // Image Contour — luminance-band isolines. Useful before color-ramp for
 425: // Paper-style topographic heatmap or liquid-metal looks.
 426: export const imageContourLayer = sampleFx({
@@ -16576,7 +16731,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 445:   },
 446:   outputKind: 'scalar',
 447: })
-448: 
+448:
 449: // Chrome Relief — pseudo-metallic highlight derived from the luminance gradient.
 450: // Stack after an image or contour source for a liquid-metal / chrome look.
 451: export const chromeReliefLayer = sampleFx({
@@ -16610,7 +16765,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 479:   },
 480:   outputKind: 'scalar',
 481: })
-482: 
+482:
 483: // Glow Field — additive bloom/glow effect with inner+outer radius controls.
 484: // Use after any source for bloom, or stack under a color-ramp for tinted glow.
 485: export const glowFieldLayer = sampleFx({
@@ -16649,7 +16804,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 518: return vec4(col, src.a);`,
 519:   },
 520: })
-521: 
+521:
 522: // Alpha Falloff — replicates Paper's heatmap pre-processing in-shader by
 523: // reading (1 - alpha) at THREE Gaussian-equivalent blur scales (sharp / mid
 524: // / wide). Uses the hardware mipmap chain via textureLod() — the runtime
@@ -16726,7 +16881,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 595:   },
 596:   outputKind: 'scalar',
 597: })
-598: 
+598:
 599: // Heat Pulse — faithful port of Paper's heatmap inner/outer/contour math.
 600: // Reads the three blur scales from `alpha-falloff` (.r=shape, .g=big,
 601: // .b=inner) and applies Paper's exact algorithm:
@@ -16785,26 +16940,26 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 654: float shape = src.r;
 655: float big = src.g;
 656: float innerCh = src.b;
-657: 
+657:
 658: // Paper's inner/outer/contour decomposition.
 659: float outerBlur = shape * (1.0 - big);
 660: float innerBlur = (1.0 - shape) * big;
 661: float contour = (1.0 - shape) * innerCh;
-662: 
+662:
 663: // Animated time with three phase-offset copies (Paper: t, t+1/3, t+2/3).
 664: float t = u_time * {{speed}} * 0.1 - 0.3;
 665: float t0 = fract(t);
 666: float t1 = fract(t + 1.0/3.0);
 667: float t2 = fract(t + 2.0/3.0);
-668: 
+668:
 669: // Rotate UV so the wave/shadow travel direction is configurable.
 670: float ang = -{{angle}} * 3.14159 / 180.0;
 671: vec2 animUV = rotate2D(uv - 0.5, ang) + 0.5;
-672: 
+672:
 673: float shadow0 = hpShadowShape(animUV, t0, innerBlur);
 674: float shadow1 = hpShadowShape(animUV, t1, innerBlur);
 675: float shadow2 = hpShadowShape(animUV, t2, innerBlur);
-676: 
+676:
 677: // Inner: baseline interior brightness, dimmed by passing shadow shapes,
 678: // then masked to inside via (1 - shape).
 679: float inner = 0.8 + 0.8 * innerBlur;
@@ -16816,7 +16971,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 685: inner = min(1.0, inner);
 686: inner *= (1.0 - shape);
 687: inner = pow(inner, 1.2);
-688: 
+688:
 689: // Outer: animated wave band sweeping across in the rotated y direction,
 690: // multiplied by the silhouette's outer halo (peaks just outside the edge).
 691: float t3 = fract(t * 3.0 - 0.1);
@@ -16826,13 +16981,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 695: float outer = 0.9 * pow(outerBlur, 0.8);
 696: outer *= animatedMask;
 697: outer *= mix(0.0, 5.0, pow({{outerGlow}}, 2.0));
-698: 
+698:
 699: float heat = clamp(inner + outer, 0.0, 1.0);
 700: return vec4(heat, heat, heat, 1.0);`,
 701:   },
 702:   outputKind: 'scalar',
 703: })
-704: 
+704:
 705: export const COLOR_LAYERS: Record<string, LayerDefinition> = {
 706:   'hue-shift': hueShiftLayer,
 707:   saturation: saturationLayer,
@@ -16865,6 +17020,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts",
@@ -16874,6 +17030,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts</path>
 <type>file</type>
@@ -16883,7 +17040,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 363: return vec4(paper, 1.0);`,
 364:   },
 365: })
-366: 
+366:
 367: export const STYLIZE_LAYERS: Record<string, LayerDefinition> = {
 368:   halftone: halftoneLayer,
 369:   'halftone-cmyk': halftoneCmykLayer,
@@ -16905,6 +17062,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/shapes.ts",
@@ -16914,6 +17072,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/shapes.ts</path>
 <type>file</type>
@@ -16922,15 +17081,15 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 362: float blendAlpha = 0.0;
 363: vec3 addColor = vec3(0.0);
 364: float addAlpha = 0.0;
-365: 
+365:
 366: float bloomMix = 4.0 * {{bloom}};
 367: float intensityF = 1.0 + (1.0 + 4.0 * {{softness}}) * {{intensity}};
-368: 
+368:
 369: float angle = atan(borderUV.y, borderUV.x) / TWO_PI;
-370: 
+370:
 371: int colorsCount = max(1, {{colors}}_count);
 372: int spotsCount = max(1, {{spots}});
-373: 
+373:
 374: for (int colorIdx = 0; colorIdx < 5; colorIdx++) {
 375:   if (colorIdx >= colorsCount) break;
 376:   float colorIdxF = float(colorIdx);
@@ -16969,17 +17128,17 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 409:     addAlpha += srcAlpha;
 410:   }
 411: }
-412: 
+412:
 413: vec3 accumColor = mix(blendColor, addColor, bloomMix);
 414: float accumAlpha = clamp(mix(blendAlpha, addAlpha, bloomMix), 0.0, 1.0);
-415: 
+415:
 416: vec3 bgColor = {{colorBack}}.rgb * {{colorBack}}.a;
 417: vec3 outColor = accumColor + (1.0 - accumAlpha) * bgColor;
 418: float outAlpha = accumAlpha + (1.0 - accumAlpha) * {{colorBack}}.a;
 419: return vec4(outColor, outAlpha);`,
 420:   },
 421: }
-422: 
+422:
 423: export const SHAPE_LAYERS: Record<string, LayerDefinition> = {
 424:   circle: circleLayer,
 425:   ellipse: ellipseLayer,
@@ -16999,6 +17158,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts",
@@ -17008,6 +17168,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts</path>
 <type>file</type>
@@ -17025,7 +17186,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 371: return texture(u_prevPass, q2);`,
 372:   },
 373: })
-374: 
+374:
 375: export const glitchLayer = distorter({
 376:   id: 'glitch',
 377:   name: 'Glitch',
@@ -17050,7 +17211,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 396: return vec4(r, g, b, 1.0);`,
 397:   },
 398: })
-399: 
+399:
 400: export const vhsLayer = distorter({
 401:   id: 'vhs',
 402:   name: 'VHS',
@@ -17078,7 +17239,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 424: return vec4(col, 1.0);`,
 425:   },
 426: })
-427: 
+427:
 428: export const crtScreenLayer = distorter({
 429:   id: 'crt-screen',
 430:   name: 'CRT Screen',
@@ -17108,7 +17269,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 454: return vec4(col, 1.0);`,
 455:   },
 456: })
-457: 
+457:
 458: // Radial sine-wave UV displacement modulated by FBM noise. Stack over an
 459: // `image-source` (or any prev-pass) for caustic-style water surfaces.
 460: export const waterRippleLayer = distorter({
@@ -17140,7 +17301,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 486: return texture(u_prevPass, uv - push);`,
 487:   },
 488: })
-489: 
+489:
 490: // Organic Warp — broad liquid UV distortion driven by layered domain warping.
 491: // Stack over mesh-spots-gradient or any generator for animated mesh-gradient-
 492: // style motion. distortion controls warp amplitude, swirl adds rotational
@@ -17188,7 +17349,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 534: return texture(u_prevPass, q);`,
 535:   },
 536: })
-537: 
+537:
 538: // Chrome Wave — Paper liquid-metal port. Generates the animated multi-band
 539: // chrome stripe profile across the previous pass's silhouette, complete with
 540: // Paper's interior-gradient bump modulation, simplex surface noise, per-stripe
@@ -17276,20 +17437,20 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 622:     main: `
 623: const float firstFrameOffset = 2.8;
 624: float t = {{speed}} * (u_time + firstFrameOffset);
-625: 
+625:
 626: vec4 src = texture(u_prevPass, uv);
 627: float opacity = src.a;
 628: // Interior gradient — wide-blur of alpha approximates Paper's Poisson solve.
 629: float edgeRaw = cwWideAlpha(u_prevPass, uv, {{edgeRadius}});
 630: float edge = pow(edgeRaw, 1.6);
 631: edge *= mix(0.0, 1.0, smoothstep(0.0, 0.4, {{contour}}));
-632: 
+632:
 633: // Rotated UV for stripe direction
 634: float angle = (-{{angle}} + 70.0) * 3.14159 / 180.0;
 635: vec2 rotatedUV = rotate2D(uv - 0.5, angle) + 0.5;
 636: float diagBLtoTR = rotatedUV.x - rotatedUV.y;
 637: float diagTLtoBR = rotatedUV.x + rotatedUV.y;
-638: 
+638:
 639: // Bump (Paper's interior dome) — radial falloff biased by diagonal axis,
 640: // then biased toward top of frame (heavier highlights up top).
 641: vec2 grad_uv = uv - 0.5;
@@ -17299,7 +17460,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 645: float bump = pow(1.8 * dist, 1.2);
 646: bump = 1.0 - bump;
 647: bump *= pow(uv.y, 0.3);
-648: 
+648:
 649: // Stripe widths (modulated by bump so highlights compress at shape interior)
 650: float cycleWidth = max({{repetition}}, 0.5);
 651: float thin1Ratio = 0.12 / cycleWidth * (1.0 - 0.4 * bump);
@@ -17307,11 +17468,11 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 653: float wideRatio = 1.0 - thin1Ratio - thin2Ratio;
 654: float thin1Width = cycleWidth * thin1Ratio;
 655: float thin2Width = cycleWidth * thin2Ratio;
-656: 
+656:
 657: // Surface simplex noise — drives both stripe distortion + edge perturbation
 658: float n = simplex2D(uv - t);
 659: edge += (1.0 - edge) * {{distortion}} * n;
-660: 
+660:
 661: // Paper's direction modulation — this is what makes stripes refract through
 662: // the shape edges and pinch around the interior bump.
 663: direction += diagBLtoTR;
@@ -17319,7 +17480,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 665: direction *= mix(1.0, 1.0 - edge, smoothstep(0.5, 1.0, {{contour}}));
 666: direction -= 1.7 * edge * smoothstep(0.5, 1.0, {{contour}});
 667: direction += 0.2 * pow({{contour}}, 4.0) * (1.0 - smoothstep(0.0, 1.0, edge));
-668: 
+668:
 669: bump *= clamp(pow(uv.y, 0.1), 0.3, 1.0);
 670: direction *= (0.1 + (1.1 - edge) * bump);
 671: direction *= (0.4 + 0.6 * (1.0 - smoothstep(0.5, 1.0, edge)));
@@ -17328,7 +17489,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 674: direction *= (0.5 + 0.5 * pow(uv.y, 2.0));
 675: direction *= cycleWidth;
 676: direction -= t;
-677: 
+677:
 678: // Per-channel chromatic dispersion
 679: float colorDispersion = clamp(1.0 - bump, 0.0, 1.0);
 680: float dispersionRed = colorDispersion + 0.03 * bump * n;
@@ -17339,7 +17500,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 685: dispersionBlue -= 0.2 * edge;
 686: dispersionRed *= ({{shiftRed}} / 20.0);
 687: dispersionBlue *= ({{shiftBlue}} / 20.0);
-688: 
+688:
 689: // Edge-aware per-channel blur: softer near shape edges, sharper at interior
 690: float softness = 0.05 * {{softness}};
 691: float blur = softness + 0.5 * smoothstep(1.0, 10.0, {{repetition}}) * smoothstep(0.0, 1.0, edge);
@@ -17347,21 +17508,21 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 693: blur += smallCanvasT * smoothstep(0.0, 1.0, edge);
 694: float rExtraBlur = softness * (0.05 + 0.1 * ({{shiftRed}} / 20.0) * bump);
 695: float gExtraBlur = softness * 0.05 / max(0.001, abs(1.0 - diagBLtoTR));
-696: 
+696:
 697: vec3 stripW = vec3(thin1Width, thin2Width, wideRatio);
 698: stripW.y -= 0.02 * smoothstep(0.0, 1.0, edge + bump);
-699: 
+699:
 700: float stripeR = fract(direction + dispersionRed);
 701: float chR = cwGetColorChanges({{colorChrome1}}.r, {{colorChrome2}}.r, stripeR, stripW, blur + fwidth(stripeR) + rExtraBlur, bump);
 702: float stripeG = fract(direction);
 703: float chG = cwGetColorChanges({{colorChrome1}}.g, {{colorChrome2}}.g, stripeG, stripW, blur + fwidth(stripeG) + gExtraBlur, bump);
 704: float stripeB = fract(direction - dispersionBlue);
 705: float chB = cwGetColorChanges({{colorChrome1}}.b, {{colorChrome2}}.b, stripeB, stripW, blur + fwidth(stripeB), bump);
-706: 
+706:
 707: vec3 chrome = vec3(chR, chG, chB);
 708: // Color burn tint — Paper's tint blend mode
 709: chrome = mix(chrome, 1.0 - min(vec3(1.0), (1.0 - chrome) / max({{colorTint}}.rgb, vec3(1e-4))), {{colorTint}}.a);
-710: 
+710:
 711: // Composite chrome over background using silhouette alpha (premultiplied)
 712: chrome *= opacity;
 713: vec3 bg = {{colorBack}}.rgb * {{colorBack}}.a;
@@ -17370,7 +17531,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 716: return vec4(outCol, outA);`,
 717:   },
 718: })
-719: 
+719:
 720: // Fluted Glass — vertical (or angled) refractive lanes with bright edge
 
 (Showing lines 361-720 of 883. Use offset=721 to continue.)
@@ -17380,6 +17541,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts",
@@ -17389,6 +17551,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts</path>
 <type>file</type>
@@ -17402,7 +17565,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 367: return vec4(color, 1.0);`,
 368:   },
 369: }
-370: 
+370:
 371: // Spiral Stripe — logarithmic spiral stripe mask, Paper-Spiral algorithm.
 372: // colorBack/colorFront for two-color output; or feed into a color-ramp.
 373: export const spiralStripeLayer: LayerDefinition = {
@@ -17461,7 +17624,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 426: return vec4(color, 1.0);`,
 427:   },
 428: }
-429: 
+429:
 430: // Voronoi Cells — IQ two-pass voronoi with per-cell color from a vec4Array
 431: // palette and adjustable gap/glow. Replaces the simple approx voronoi.
 432: export const voronoiCellsLayer: LayerDefinition = {
@@ -17546,7 +17709,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 511: return vec4(color, 1.0);`,
 512:   },
 513: }
-514: 
+514:
 515: // Metaballs — N gooey balls drifting around the centre, blended via inverse
 516: // squared distance summation; per-ball palette colour selected by the closest
 517: // ball. Drives Paper's `metaballs` shader.
@@ -17628,7 +17791,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 593: return vec4(col, 1.0);`,
 594:   },
 595: }
-596: 
+596:
 597: // Dot Orbit — grid of dots, each orbiting around its cell centre with a
 598: // pseudo-random radius/phase, per-cell palette colour selection. Drives
 599: // Paper's `dot-orbit` shader.
@@ -17715,7 +17878,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 680: return vec4(col, 1.0);`,
 681:   },
 682: }
-683: 
+683:
 684: // Ring Scalar — single soft ring as a 0-1 scalar (peaks at radius, falls off
 685: // in/out). Pair with Polar FBM Distort for smoke-ring boundaries, and
 686: // Color Ramp for colourisation. Outputs the ring value in all RGB channels.
@@ -17743,7 +17906,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 708: return vec4(vec3(v), 1.0);`,
 709:   },
 710: }
-711: 
+711:
 712: export const NOISE_LAYERS: Record<string, LayerDefinition> = {
 713:   'scalar-field': scalarFieldLayer,
 714:   'polar-bands': polarBandsLayer,
@@ -17767,6 +17930,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/runtime-shell.ts",
@@ -17776,6 +17940,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/runtime-shell.ts</path>
 <type>file</type>
@@ -17796,23 +17961,23 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 14: //               256×256 RGB noise lookup) for every pass that declares it.
 15: //   TEXTURE1..14 — image-uniform binders (callers of `bindUniforms`).
 16: // `passContext.nextTextureUnit` reflects the first free unit for that pass.
-17: 
+17:
 18: import { getShaderNoiseTexture } from './paper-noise-texture'
-19: 
+19:
 20: const NOISE_TEXTURE_UNIT = 15
-21: 
+21:
 22: export interface PipelinePass {
 23:   fragment: string
 24:   readsPrevPass: boolean
 25: }
-26: 
+26:
 27: export interface PassContext {
 28:   passIndex: number
 29:   // First texture unit available to image uniforms in this pass. 1 if the
 30:   // pass reads u_prevPass (which sits on TEXTURE0), 0 otherwise.
 31:   nextTextureUnit: number
 32: }
-33: 
+33:
 34: export interface PipelineHandle {
 35:   render(
 36:     time: number,
@@ -17822,7 +17987,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 40:   ): void
 41:   destroy(): void
 42: }
-43: 
+43:
 44: export function createShaderPipeline(
 45:   gl: WebGL2RenderingContext,
 46:   vertexSource: string,
@@ -17844,7 +18009,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 62:     }
 63:     return sh
 64:   }
-65: 
+65:
 66:   const programs: (WebGLProgram | null)[] = passes.map((p) => {
 67:     const vs = compile(gl.VERTEX_SHADER, vertexSource)
 68:     const fs = compile(gl.FRAGMENT_SHADER, p.fragment)
@@ -17863,19 +18028,19 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 81:     }
 82:     return prog
 83:   })
-84: 
+84:
 85:   const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
 86:   const buffer = gl.createBuffer()
 87:   gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 88:   gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW)
-89: 
+89:
 90:   let texA: WebGLTexture | null = null
 91:   let texB: WebGLTexture | null = null
 92:   let fboA: WebGLFramebuffer | null = null
 93:   let fboB: WebGLFramebuffer | null = null
 94:   let fboW = 0
 95:   let fboH = 0
-96: 
+96:
 97:   // Paper's 256×256 RGB noise texture. Bound globally on TEXTURE15 every pass
 98:   // so any layer that references `u_noiseTexture` (smoke-ring, warp, god-rays,
 99:   // paper-voronoi, halftone-cmyk, etc.) can sample it without per-layer wiring.
@@ -17919,7 +18084,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 137:     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 138:     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 139:   }
-140: 
+140:
 141:   function ensureFbos(w: number, h: number) {
 142:     if (w === fboW && h === fboH && texA && texB) return
 143:     if (texA) gl.deleteTexture(texA)
@@ -17965,7 +18130,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 183:     fboB = fB
 184:     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 185:   }
-186: 
+186:
 187:   function render(
 188:     time: number,
 189:     width: number,
@@ -17974,57 +18139,57 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 192:   ) {
 193:     if (passes.length === 0) return
 194:     ensureFbos(width, height)
-195: 
+195:
 196:     let read: WebGLTexture | null = texA
 197:     let writeFbo: WebGLFramebuffer | null = fboB
-198: 
+198:
 199:     if (passes[0].readsPrevPass) {
 200:       gl.bindFramebuffer(gl.FRAMEBUFFER, fboA)
 201:       gl.viewport(0, 0, width, height)
 202:       gl.clearColor(0, 0, 0, 0)
 203:       gl.clear(gl.COLOR_BUFFER_BIT)
 204:     }
-205: 
+205:
 206:     for (let i = 0; i < passes.length; i++) {
 207:       const pass = passes[i]
 208:       const prog = programs[i]
 209:       if (!prog) continue
 210:       const isLast = i === passes.length - 1
 211:       gl.useProgram(prog)
-212: 
+212:
 213:       gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 214:       const posLoc = gl.getAttribLocation(prog, 'a_position')
 215:       gl.enableVertexAttribArray(posLoc)
 216:       gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
-217: 
+217:
 218:       const uTime = gl.getUniformLocation(prog, 'u_time')
 219:       if (uTime) gl.uniform1f(uTime, time)
 220:       const uRes = gl.getUniformLocation(prog, 'u_resolution')
 221:       if (uRes) gl.uniform2f(uRes, width, height)
-222: 
+222:
 223:       if (pass.readsPrevPass) {
 224:         gl.activeTexture(gl.TEXTURE0)
 225:         gl.bindTexture(gl.TEXTURE_2D, read)
 226:         const uPrev = gl.getUniformLocation(prog, 'u_prevPass')
 227:         if (uPrev) gl.uniform1i(uPrev, 0)
 228:       }
-229: 
+229:
 230:       // Bind global noise texture on the reserved high unit. getUniformLocation
 231:       // returns null in passes that don't sample it, so the bind is harmless.
 232:       gl.activeTexture(gl.TEXTURE0 + NOISE_TEXTURE_UNIT)
 233:       gl.bindTexture(gl.TEXTURE_2D, noiseTexture)
 234:       const uNoise = gl.getUniformLocation(prog, 'u_noiseTexture')
 235:       if (uNoise) gl.uniform1i(uNoise, NOISE_TEXTURE_UNIT)
-236: 
+236:
 237:       bindUniforms(
 238:         { passIndex: i, nextTextureUnit: pass.readsPrevPass ? 1 : 0 },
 239:         prog
 240:       )
-241: 
+241:
 242:       gl.bindFramebuffer(gl.FRAMEBUFFER, isLast ? null : writeFbo)
 243:       gl.viewport(0, 0, width, height)
 244:       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-245: 
+245:
 246:       if (!isLast) {
 247:         const justWrote = writeFbo === fboA ? texA : texB
 248:         // Refresh the mip chain so downstream passes that sample with
@@ -18037,7 +18202,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 255:       }
 256:     }
 257:   }
-258: 
+258:
 259:   function destroy() {
 260:     if (texA) gl.deleteTexture(texA)
 261:     if (texB) gl.deleteTexture(texB)
@@ -18047,7 +18212,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 265:     if (buffer) gl.deleteBuffer(buffer)
 266:     programs.forEach((p) => p && gl.deleteProgram(p))
 267:   }
-268: 
+268:
 269:   return { render, destroy }
 270: }
 
@@ -18062,6 +18227,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts",
@@ -18071,6 +18237,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts</path>
 <type>file</type>
@@ -18133,7 +18300,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 776: return vec4(col, src.a);`,
 777:   },
 778: })
-779: 
+779:
 780: // Polar FBM Distort — perturbs UVs radially (push out / pull in from centre)
 781: // based on layered value-noise sampled in polar coordinates. Two animated
 782: // noise fields are cross-faded for the slow drifting cycle that turns plain
@@ -18210,7 +18377,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 853: return texture(u_prevPass, d + 0.5);`,
 854:   },
 855: })
-856: 
+856:
 857: export const DISTORTER_LAYERS: Record<string, LayerDefinition> = {
 858:   spherize: spherizeLayer,
 859:   liquify: liquifyLayer,
@@ -18246,6 +18413,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/context.tsx",
@@ -18255,12 +18423,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/context.tsx</path>
 <type>file</type>
 <content>
 1: "use client";
-2: 
+2:
 3: import {
 4:   createContext,
 5:   useContext,
@@ -18270,12 +18439,12 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 9: } from "react";
 10: import type { LayerInstance, UniformValue } from "./types";
 11: import { LAYER_LIBRARY } from "./layers";
-12: 
+12:
 13: interface ComposerState {
 14:   layers: LayerInstance[];
 15:   selectedLayerId: string | null;
 16: }
-17: 
+17:
 18: type ComposerAction =
 19:   | { type: "ADD_LAYER"; layerType: string }
 20:   | { type: "REMOVE_LAYER"; id: string }
@@ -18286,14 +18455,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 25:   | { type: "UPDATE_BLEND_MODE"; id: string; blendMode: LayerInstance["blendMode"] }
 26:   | { type: "UPDATE_OPACITY"; id: string; opacity: number }
 27:   | { type: "LOAD_STATE"; state: ComposerState };
-28: 
+28:
 29: function generateId() {
 30:   // Generate a safe ID that starts with a letter (avoid GLSL reserved __ prefix issues)
 31:   const chars = 'abcdefghijklmnopqrstuvwxyz'
 32:   const first = chars[Math.floor(Math.random() * chars.length)]
 33:   return first + Math.random().toString(36).substring(2, 8)
 34: }
-35: 
+35:
 36: function cloneDefault(value: UniformValue): UniformValue {
 37:   if (Array.isArray(value)) return [...value];
 38:   if (value && typeof value === "object") {
@@ -18307,16 +18476,16 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 46:   }
 47:   return value;
 48: }
-49: 
+49:
 50: function createLayerInstance(layerType: string): LayerInstance | null {
 51:   const definition = LAYER_LIBRARY[layerType];
 52:   if (!definition) return null;
-53: 
+53:
 54:   const uniformValues: Record<string, UniformValue> = {};
 55:   for (const uniform of definition.uniforms) {
 56:     uniformValues[uniform.name] = cloneDefault(uniform.default);
 57:   }
-58: 
+58:
 59:   return {
 60:     id: generateId(),
 61:     layerType,
@@ -18326,7 +18495,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 65:     uniformValues,
 66:   };
 67: }
-68: 
+68:
 69: function composerReducer(state: ComposerState, action: ComposerAction): ComposerState {
 70:   switch (action.type) {
 71:     case "ADD_LAYER": {
@@ -18338,7 +18507,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 77:         selectedLayerId: instance.id,
 78:       };
 79:     }
-80: 
+80:
 81:     case "REMOVE_LAYER": {
 82:       const newLayers = state.layers.filter((l) => l.id !== action.id);
 83:       return {
@@ -18350,13 +18519,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 89:             : state.selectedLayerId,
 90:       };
 91:     }
-92: 
+92:
 93:     case "REORDER_LAYERS":
 94:       return { ...state, layers: action.layers };
-95: 
+95:
 96:     case "SELECT_LAYER":
 97:       return { ...state, selectedLayerId: action.id };
-98: 
+98:
 99:     case "UPDATE_UNIFORM": {
 100:       return {
 101:         ...state,
@@ -18373,7 +18542,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 112:         ),
 113:       };
 114:     }
-115: 
+115:
 116:     case "TOGGLE_LAYER":
 117:       return {
 118:         ...state,
@@ -18381,7 +18550,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 120:           layer.id === action.id ? { ...layer, enabled: !layer.enabled } : layer
 121:         ),
 122:       };
-123: 
+123:
 124:     case "UPDATE_BLEND_MODE":
 125:       return {
 126:         ...state,
@@ -18389,7 +18558,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 128:           layer.id === action.id ? { ...layer, blendMode: action.blendMode } : layer
 129:         ),
 130:       };
-131: 
+131:
 132:     case "UPDATE_OPACITY":
 133:       return {
 134:         ...state,
@@ -18397,15 +18566,15 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 136:           layer.id === action.id ? { ...layer, opacity: action.opacity } : layer
 137:         ),
 138:       };
-139: 
+139:
 140:     case "LOAD_STATE":
 141:       return action.state;
-142: 
+142:
 143:     default:
 144:       return state;
 145:   }
 146: }
-147: 
+147:
 148: interface ComposerContextValue {
 149:   state: ComposerState;
 150:   addLayer: (layerType: string) => void;
@@ -18419,63 +18588,63 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 158:   loadState: (state: ComposerState) => void;
 159:   getSelectedLayer: () => LayerInstance | null;
 160: }
-161: 
+161:
 162: const ComposerContext = createContext<ComposerContextValue | null>(null);
-163: 
+163:
 164: const initialState: ComposerState = {
 165:   layers: [],
 166:   selectedLayerId: null,
 167: };
-168: 
+168:
 169: export function ComposerProvider({ children }: { children: ReactNode }) {
 170:   const [state, dispatch] = useReducer(composerReducer, initialState);
-171: 
+171:
 172:   const addLayer = useCallback((layerType: string) => {
 173:     dispatch({ type: "ADD_LAYER", layerType });
 174:   }, []);
-175: 
+175:
 176:   const removeLayer = useCallback((id: string) => {
 177:     dispatch({ type: "REMOVE_LAYER", id });
 178:   }, []);
-179: 
+179:
 180:   const reorderLayers = useCallback((layers: LayerInstance[]) => {
 181:     dispatch({ type: "REORDER_LAYERS", layers });
 182:   }, []);
-183: 
+183:
 184:   const selectLayer = useCallback((id: string | null) => {
 185:     dispatch({ type: "SELECT_LAYER", id });
 186:   }, []);
-187: 
+187:
 188:   const updateUniform = useCallback(
 189:     (layerId: string, uniformName: string, value: UniformValue) => {
 190:       dispatch({ type: "UPDATE_UNIFORM", layerId, uniformName, value });
 191:     },
 192:     []
 193:   );
-194: 
+194:
 195:   const toggleLayer = useCallback((id: string) => {
 196:     dispatch({ type: "TOGGLE_LAYER", id });
 197:   }, []);
-198: 
+198:
 199:   const updateBlendMode = useCallback(
 200:     (id: string, blendMode: LayerInstance["blendMode"]) => {
 201:       dispatch({ type: "UPDATE_BLEND_MODE", id, blendMode });
 202:     },
 203:     []
 204:   );
-205: 
+205:
 206:   const updateOpacity = useCallback((id: string, opacity: number) => {
 207:     dispatch({ type: "UPDATE_OPACITY", id, opacity });
 208:   }, []);
-209: 
+209:
 210:   const loadState = useCallback((newState: ComposerState) => {
 211:     dispatch({ type: "LOAD_STATE", state: newState });
 212:   }, []);
-213: 
+213:
 214:   const getSelectedLayer = useCallback(() => {
 215:     return state.layers.find((l) => l.id === state.selectedLayerId) ?? null;
 216:   }, [state.layers, state.selectedLayerId]);
-217: 
+217:
 218:   return (
 219:     <ComposerContext.Provider
 220:       value={{
@@ -18496,7 +18665,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 235:     </ComposerContext.Provider>
 236:   );
 237: }
-238: 
+238:
 239: export function useComposer() {
 240:   const context = useContext(ComposerContext);
 241:   if (!context) {
@@ -18512,6 +18681,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx",
@@ -18521,12 +18691,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx</path>
 <type>file</type>
 <content>
 1: "use client";
-2: 
+2:
 3: import { useComposer } from "@/lib/shader-composer/context";
 4: import { LAYER_LIBRARY } from "@/lib/shader-composer/layers";
 5: import { Slider } from "@/components/ui/slider";
@@ -18548,7 +18719,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 21: } from "@/lib/shader-composer/types";
 22: import { useRef } from "react";
 23: import { Plus, Trash2, Upload, X } from "lucide-react";
-24: 
+24:
 25: const BLEND_MODES: { value: BlendMode; label: string }[] = [
 26:   { value: "normal", label: "Normal" },
 27:   { value: "add", label: "Add" },
@@ -18558,7 +18729,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 31:   { value: "softLight", label: "Soft Light" },
 32:   { value: "hardLight", label: "Hard Light" },
 33: ];
-34: 
+34:
 35: function ColorInput({
 36:   value,
 37:   onChange,
@@ -18571,14 +18742,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 44:     .slice(0, 3)
 45:     .map((v) => Math.round(v * 255).toString(16).padStart(2, "0"))
 46:     .join("")}`;
-47: 
+47:
 48:   const handleHexChange = (hex: string) => {
 49:     const r = parseInt(hex.slice(1, 3), 16) / 255;
 50:     const g = parseInt(hex.slice(3, 5), 16) / 255;
 51:     const b = parseInt(hex.slice(5, 7), 16) / 255;
 52:     onChange(hasAlpha ? [r, g, b, value[3]] : [r, g, b]);
 53:   };
-54: 
+54:
 55:   return (
 56:     <div className="space-y-2">
 57:       <div className="flex items-center gap-2">
@@ -18614,14 +18785,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 87:     </div>
 88:   );
 89: }
-90: 
+90:
 91: function rgbToHex(c: number[]): string {
 92:   return `#${c
 93:     .slice(0, 3)
 94:     .map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0"))
 95:     .join("")}`;
 96: }
-97: 
+97:
 98: function hexToRgb(hex: string): [number, number, number] {
 99:   return [
 100:     parseInt(hex.slice(1, 3), 16) / 255,
@@ -18629,7 +18800,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 102:     parseInt(hex.slice(5, 7), 16) / 255,
 103:   ];
 104: }
-105: 
+105:
 106: function ColorArrayInput({
 107:   value,
 108:   maxLength,
@@ -18705,7 +18876,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 178:     </div>
 179:   );
 180: }
-181: 
+181:
 182: function ImageInput({
 183:   value,
 184:   onChange,
@@ -18714,7 +18885,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 187:   onChange: (value: ImageUniformValue) => void;
 188: }) {
 189:   const fileRef = useRef<HTMLInputElement>(null);
-190: 
+190:
 191:   const handleFile = (file: File) => {
 192:     const reader = new FileReader();
 193:     reader.onload = () => {
@@ -18724,12 +18895,12 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 197:     };
 198:     reader.readAsDataURL(file);
 199:   };
-200: 
+200:
 201:   const handlePaste = (url: string) => {
 202:     if (!url) return;
 203:     onChange({ ...value, url, sourceKind: "url" });
 204:   };
-205: 
+205:
 206:   return (
 207:     <div className="space-y-2">
 208:       <div
@@ -18831,7 +19002,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 304:     </div>
 305:   );
 306: }
-307: 
+307:
 308: function UniformControl({
 309:   uniform,
 310:   value,
@@ -18842,7 +19013,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 315:   onChange: (value: unknown) => void;
 316: }) {
 317:   const { ui } = uniform;
-318: 
+318:
 319:   switch (uniform.type) {
 320:     case "float": {
 321:       const numValue = value as number;
@@ -18865,7 +19036,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 338:         </div>
 339:       );
 340:     }
-341: 
+341:
 342:     case "int": {
 343:       const intValue = value as number;
 344:       return (
@@ -18887,7 +19058,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 360:         </div>
 361:       );
 362:     }
-363: 
+363:
 364:     case "vec2": {
 365:       const vec2Value = value as number[];
 366:       return (
@@ -18926,13 +19097,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 399:         </div>
 400:       );
 401:     }
-402: 
+402:
 403:     case "vec3":
 404:     case "vec4": {
 405:       const vecValue = value as number[];
 406:       // Check if this looks like a color (values between 0-1)
 407:       const isColor = ui?.color || vecValue.every((v) => v >= 0 && v <= 1);
-408: 
+408:
 409:       if (isColor) {
 410:         return (
 411:           <div className="space-y-2">
@@ -18944,7 +19115,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 417:           </div>
 418:         );
 419:       }
-420: 
+420:
 
 (Showing lines 1-420 of 588. Use offset=421 to continue.)
 </content>
@@ -18953,6 +19124,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/layer-stack.tsx",
@@ -18962,12 +19134,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/layer-stack.tsx</path>
 <type>file</type>
 <content>
 1: "use client";
-2: 
+2:
 3: import { useMemo, useState } from "react";
 4: import {
 5:   DndContext,
@@ -18998,9 +19171,9 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 30: import { ScrollArea } from "@/components/ui/scroll-area";
 31: import { cn } from "@/lib/utils";
 32: import { GripVertical, Trash2, Eye, EyeOff, Search, X } from "lucide-react";
-33: 
+33:
 34: const TEMPLATE_STORAGE_KEY = "shader-composer:templates:v1";
-35: 
+35:
 36: function loadTemplatesFromStorage(): Record<string, { layers: LayerInstance[] }> {
 37:   if (typeof window === "undefined") return {};
 38:   try {
@@ -19010,7 +19183,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 42:     return {};
 43:   }
 44: }
-45: 
+45:
 46: function saveTemplatesToStorage(t: Record<string, { layers: LayerInstance[] }>) {
 47:   if (typeof window === "undefined") return;
 48:   try {
@@ -19019,7 +19192,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 51:     /* quota or disabled storage — ignore */
 52:   }
 53: }
-54: 
+54:
 55: function freshLayerId() {
 56:   const chars = "abcdefghijklmnopqrstuvwxyz";
 57:   return (
@@ -19027,7 +19200,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 59:     Math.random().toString(36).substring(2, 8)
 60:   );
 61: }
-62: 
+62:
 63: function instantiatePreset(preset: Preset): LayerInstance[] {
 64:   return preset.layers
 65:     .map((pl) => {
@@ -19048,11 +19221,11 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 80:     })
 81:     .filter((l): l is LayerInstance => l !== null);
 82: }
-83: 
+83:
 84: function SortableLayerItem({ layer }: { layer: LayerInstance }) {
 85:   const { selectLayer, toggleLayer, removeLayer, state } = useComposer();
 86:   const definition = LAYER_LIBRARY[layer.layerType];
-87: 
+87:
 88:   const {
 89:     attributes,
 90:     listeners,
@@ -19061,14 +19234,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 93:     transition,
 94:     isDragging,
 95:   } = useSortable({ id: layer.id });
-96: 
+96:
 97:   const style = {
 98:     transform: CSS.Transform.toString(transform),
 99:     transition,
 100:   };
-101: 
+101:
 102:   const isSelected = state.selectedLayerId === layer.id;
-103: 
+103:
 104:   return (
 105:     <div
 106:       ref={setNodeRef}
@@ -19088,7 +19261,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 120:       >
 121:         <GripVertical className="h-4 w-4" />
 122:       </button>
-123: 
+123:
 124:       <button
 125:         className="flex-1 min-w-0 text-left"
 126:         onClick={() => selectLayer(layer.id)}
@@ -19103,7 +19276,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 135:           </span>
 136:         </div>
 137:       </button>
-138: 
+138:
 139:       <button
 140:         className="p-1 text-muted-foreground hover:text-foreground"
 141:         onClick={() => toggleLayer(layer.id)}
@@ -19114,7 +19287,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 146:           <EyeOff className="h-4 w-4" />
 147:         )}
 148:       </button>
-149: 
+149:
 150:       <button
 151:         className="p-1 text-muted-foreground hover:text-destructive"
 152:         onClick={() => removeLayer(layer.id)}
@@ -19124,14 +19297,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 156:     </div>
 157:   );
 158: }
-159: 
+159:
 160: export function LayerStack() {
 161:   const { state, reorderLayers, addLayer, loadState } = useComposer();
-162: 
+162:
 163:   const [templates, setTemplates] = useState<
 164:     Record<string, { layers: LayerInstance[] }>
 165:   >(() => loadTemplatesFromStorage());
-166: 
+166:
 167:   const handleSaveTemplate = () => {
 168:     if (state.layers.length === 0) return;
 169:     const name = window.prompt("Template name:")?.trim();
@@ -19140,7 +19313,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 172:     setTemplates(next);
 173:     saveTemplatesToStorage(next);
 174:   };
-175: 
+175:
 176:   const handleLoadTemplate = (name: string) => {
 177:     const t = templates[name];
 178:     if (!t) return;
@@ -19149,14 +19322,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 181:       selectedLayerId: t.layers[t.layers.length - 1]?.id ?? null,
 182:     });
 183:   };
-184: 
+184:
 185:   const handleDeleteTemplate = (name: string) => {
 186:     const next = { ...templates };
 187:     delete next[name];
 188:     setTemplates(next);
 189:     saveTemplatesToStorage(next);
 190:   };
-191: 
+191:
 192:   const handleLoadPreset = (preset: Preset) => {
 193:     const layers = instantiatePreset(preset);
 194:     if (layers.length === 0) return;
@@ -19165,35 +19338,35 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 197:       selectedLayerId: layers[layers.length - 1].id,
 198:     });
 199:   };
-200: 
+200:
 201:   const [presetsOpen, setPresetsOpen] = useState(false);
-202: 
+202:
 203:   const sensors = useSensors(
 204:     useSensor(PointerSensor),
 205:     useSensor(KeyboardSensor, {
 206:       coordinateGetter: sortableKeyboardCoordinates,
 207:     })
 208:   );
-209: 
+209:
 210:   const displayLayers = useMemo(
 211:     () => [...state.layers].reverse(),
 212:     [state.layers]
 213:   );
-214: 
+214:
 215:   const handleDragEnd = (event: DragEndEvent) => {
 216:     const { active, over } = event;
-217: 
+217:
 218:     if (over && active.id !== over.id) {
 219:       const oldIndex = displayLayers.findIndex((l) => l.id === active.id);
 220:       const newIndex = displayLayers.findIndex((l) => l.id === over.id);
-221: 
+221:
 222:       const newDisplayOrder = arrayMove(displayLayers, oldIndex, newIndex);
 223:       reorderLayers([...newDisplayOrder].reverse());
 224:     }
 225:   };
-226: 
+226:
 227:   const [search, setSearch] = useState("");
-228: 
+228:
 229:   const grouped = useMemo(() => {
 230:     const q = search.trim().toLowerCase();
 231:     const byCat = new Map<string, { type: string; def: LayerDefinition }[]>();
@@ -19223,7 +19396,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 255:       }))
 256:       .filter((g) => g.items.length > 0);
 257:   }, [search]);
-258: 
+258:
 259:   return (
 260:     <div className="flex flex-col h-full min-h-0">
 261:       <div className="border-b border-border shrink-0">
@@ -19345,7 +19518,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 377:           )}
 378:         </div>
 379:       </div>
-380: 
+380:
 
 (Showing lines 1-380 of 407. Use offset=381 to continue.)
 </content>
@@ -19354,6 +19527,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx",
@@ -19363,12 +19537,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx</path>
 <type>file</type>
 <content>
 1: "use client";
-2: 
+2:
 3: import { useRef, useEffect } from "react";
 4: import { useComposer } from "@/lib/shader-composer/context";
 5: import {
@@ -19387,13 +19562,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 18:   ImageUniformValue,
 19:   Vec4ArrayValue,
 20: } from "@/lib/shader-composer/types";
-21: 
+21:
 22: const FIT_MODE: Record<string, number> = {
 23:   cover: 0,
 24:   contain: 1,
 25:   fill: 2,
 26: };
-27: 
+27:
 28: function isImageValue(v: unknown): v is ImageUniformValue {
 29:   return (
 30:     typeof v === "object" &&
@@ -19401,7 +19576,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 32:     "sourceKind" in (v as Record<string, unknown>)
 33:   );
 34: }
-35: 
+35:
 36: function isVec4ArrayValue(v: unknown): v is Vec4ArrayValue {
 37:   return (
 38:     typeof v === "object" &&
@@ -19409,7 +19584,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 40:     Array.isArray((v as Vec4ArrayValue).values)
 41:   );
 42: }
-43: 
+43:
 44: export function ShaderPreview() {
 45:   const canvasRef = useRef<HTMLCanvasElement>(null);
 46:   const glRef = useRef<WebGL2RenderingContext | null>(null);
@@ -19418,26 +19593,26 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 49:   const animationRef = useRef<number>(0);
 50:   const startTimeRef = useRef<number>(Date.now());
 51:   const textureCacheRef = useRef<TextureCache | null>(null);
-52: 
+52:
 53:   const { state } = useComposer();
-54: 
+54:
 55:   useEffect(() => {
 56:     const canvas = canvasRef.current;
 57:     if (!canvas) return;
-58: 
+58:
 59:     const gl = canvas.getContext("webgl2", {
 60:       alpha: false,
 61:       antialias: true,
 62:       premultipliedAlpha: false,
 63:     });
-64: 
+64:
 65:     if (!gl) {
 66:       console.error("WebGL2 not supported");
 67:       return;
 68:     }
 69:     glRef.current = gl;
 70:     textureCacheRef.current = new TextureCache(gl);
-71: 
+71:
 72:     return () => {
 73:       cancelAnimationFrame(animationRef.current);
 74:       pipelineRef.current?.destroy();
@@ -19446,15 +19621,15 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 77:       textureCacheRef.current = null;
 78:     };
 79:   }, []);
-80: 
+80:
 81:   useEffect(() => {
 82:     const gl = glRef.current;
 83:     if (!gl) return;
-84: 
+84:
 85:     pipelineRef.current?.destroy();
 86:     pipelineRef.current = null;
 87:     passesRef.current = [];
-88: 
+88:
 89:     const enabledLayers = state.layers.filter((l) => l.enabled);
 90:     if (enabledLayers.length === 0) {
 91:       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -19462,7 +19637,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 93:       gl.clear(gl.COLOR_BUFFER_BIT);
 94:       return;
 95:     }
-96: 
+96:
 97:     const { passes, vertexShader } = generateShader(enabledLayers);
 98:     passesRef.current = passes;
 99:     pipelineRef.current = createShaderPipeline(
@@ -19471,12 +19646,12 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 102:       passes.map((p) => ({ fragment: p.fragmentShader, readsPrevPass: p.readsPrevPass }))
 103:     );
 104:   }, [state.layers]);
-105: 
+105:
 106:   useEffect(() => {
 107:     const gl = glRef.current;
 108:     const canvas = canvasRef.current;
 109:     if (!gl || !canvas) return;
-110: 
+110:
 111:     const render = () => {
 112:       const pipeline = pipelineRef.current;
 113:       const passes = passesRef.current;
@@ -19484,7 +19659,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 115:         animationRef.current = requestAnimationFrame(render);
 116:         return;
 117:       }
-118: 
+118:
 119:       const dpr = window.devicePixelRatio || 1;
 120:       const w = Math.max(1, canvas.clientWidth * dpr);
 121:       const h = Math.max(1, canvas.clientHeight * dpr);
@@ -19492,9 +19667,9 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 123:         canvas.width = w;
 124:         canvas.height = h;
 125:       }
-126: 
+126:
 127:       const time = (Date.now() - startTimeRef.current) / 1000;
-128: 
+128:
 129:       pipeline.render(time, w, h, (ctx, program) => {
 130:         const pass = passes[ctx.passIndex];
 131:         let textureUnit = ctx.nextTextureUnit;
@@ -19504,18 +19679,18 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 135:           const definition = LAYER_LIBRARY[layer.layerType];
 136:           if (!definition) continue;
 137:           const prefix = sanitizeName(layer.id);
-138: 
+138:
 139:           const opacityLocation = gl.getUniformLocation(
 140:             program,
 141:             `u_${prefix}_opacity`
 142:           );
 143:           if (opacityLocation) gl.uniform1f(opacityLocation, layer.opacity);
-144: 
+144:
 145:           for (const uniform of definition.uniforms) {
 146:             const baseName = `u_${prefix}_${uniform.name}`;
 147:             const value = layer.uniformValues[uniform.name];
 148:             if (value === undefined) continue;
-149: 
+149:
 150:             switch (uniform.type) {
 151:               case "float":
 152:                 gl.uniform1f(
@@ -19612,14 +19787,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 243:           }
 244:         }
 245:       });
-246: 
+246:
 247:       animationRef.current = requestAnimationFrame(render);
 248:     };
-249: 
+249:
 250:     animationRef.current = requestAnimationFrame(render);
 251:     return () => cancelAnimationFrame(animationRef.current);
 252:   }, [state.layers]);
-253: 
+253:
 254:   return (
 255:     <canvas
 256:       ref={canvasRef}
@@ -19635,6 +19810,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts",
@@ -19644,40 +19820,41 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/presets.ts</path>
 <type>file</type>
 <content>
 1: import type { BlendMode, UniformValue } from './types'
 2: import { PAPER_FLAT_PRESETS } from './paper-presets'
-3: 
+3:
 4: // Built-in preset gallery. Each preset is a layer-stack recipe.
 5: // `paper-presets.ts` is the source of truth; new code should consume
 6: // PAPER_GROUPS / PAPER_FLAT_PRESETS instead of PAPER_PRESETS or LEGACY_PAPER_PRESETS.
-7: 
+7:
 8: export interface PresetLayer {
 9:   layerType: string
 10:   uniformValues: Record<string, UniformValue>
 11:   blendMode?: BlendMode
 12:   opacity?: number
 13: }
-14: 
+14:
 15: export interface Preset {
 16:   name: string
 17:   description: string
 18:   layers: PresetLayer[]
 19: }
-20: 
+20:
 21: export { PAPER_GROUPS, PAPER_FLAT_PRESETS } from './paper-presets'
 22: export type { PaperGroup, PaperPreset, PaperFidelity } from './paper-presets'
-23: 
+23:
 24: // Canonical preset list for the existing picker UI.
 25: export const PAPER_PRESETS: Preset[] = PAPER_FLAT_PRESETS.map((p) => ({
 26:   name: p.name,
 27:   description: `[${p.fidelity}] ${p.description}`,
 28:   layers: p.layers,
 29: }))
-30: 
+30:
 31: // Legacy hand-curated entries preserved so any UI reference doesn't break.
 32: // @deprecated — use PAPER_PRESETS (from PAPER_GROUPS) instead.
 33: export const LEGACY_PAPER_PRESETS: Preset[] = [
@@ -19969,6 +20146,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx",
@@ -19978,6 +20156,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx</path>
 <type>file</type>
@@ -20008,7 +20187,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 444:         </div>
 445:       );
 446:     }
-447: 
+447:
 448:     case "sampler2D": {
 449:       const imgValue = value as ImageUniformValue;
 450:       return (
@@ -20021,7 +20200,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 457:         </div>
 458:       );
 459:     }
-460: 
+460:
 461:     case "vec4Array": {
 462:       const arr = value as Vec4ArrayValue;
 463:       const max = ui?.array?.maxLength ?? uniform.arrayLength ?? 10;
@@ -20038,19 +20217,19 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 474:         </div>
 475:       );
 476:     }
-477: 
+477:
 478:     default:
 479:       return null;
 480:   }
 481: }
-482: 
+482:
 483: export function PropertyPanel() {
 484:   const { state, updateUniform, updateBlendMode, updateOpacity } = useComposer();
-485: 
+485:
 486:   const selectedLayer = state.layers.find(
 487:     (l) => l.id === state.selectedLayerId
 488:   );
-489: 
+489:
 490:   if (!selectedLayer) {
 491:     return (
 492:       <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
@@ -20058,9 +20237,9 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 494:       </div>
 495:     );
 496:   }
-497: 
+497:
 498:   const definition = LAYER_LIBRARY[selectedLayer.layerType];
-499: 
+499:
 500:   if (!definition) {
 501:     return (
 502:       <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
@@ -20068,7 +20247,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 504:       </div>
 505:     );
 506:   }
-507: 
+507:
 508:   return (
 509:     <ScrollArea className="h-full">
 510:       <div className="p-4 space-y-6">
@@ -20080,7 +20259,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 516:             />
 517:             <h2 className="text-sm font-semibold">{definition.name}</h2>
 518:           </div>
-519: 
+519:
 520:           <div className="space-y-4">
 521:             {/* Blend Mode */}
 522:             <div className="space-y-2">
@@ -20103,7 +20282,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 539:                 </SelectContent>
 540:               </Select>
 541:             </div>
-542: 
+542:
 543:             {/* Opacity */}
 544:             <div className="space-y-2">
 545:               <div className="flex items-center justify-between">
@@ -20123,7 +20302,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 559:             </div>
 560:           </div>
 561:         </div>
-562: 
+562:
 563:         {/* Layer-specific uniforms */}
 564:         {definition.uniforms.length > 0 && (
 565:           <div className="space-y-4 pt-4 border-t border-border">
@@ -20158,6 +20337,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/layer-stack.tsx",
@@ -20167,6 +20347,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/layer-stack.tsx</path>
 <type>file</type>
@@ -20206,6 +20387,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/paper-presets.ts",
@@ -20215,6 +20397,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/paper-presets.ts</path>
 <type>file</type>
@@ -20229,38 +20412,38 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 8: //   primitive   — built from composable primitives; canonical version
 9: //   approx      — close visual family; missing one primitive capability
 10: //   reference   — kept as a monolithic Paper port for comparison only
-11: 
+11:
 12: import type { BlendMode, UniformValue, Vec4ArrayValue } from './types'
-13: 
+13:
 14: export type PaperFidelity = 'primitive' | 'approx' | 'reference'
-15: 
+15:
 16: export interface PaperLayerSpec {
 17:   layerType: string
 18:   uniformValues: Record<string, UniformValue>
 19:   blendMode?: BlendMode
 20:   opacity?: number
 21: }
-22: 
+22:
 23: export interface PaperPreset {
 24:   name: string
 25:   fidelity: PaperFidelity
 26:   layers: PaperLayerSpec[]
 27: }
-28: 
+28:
 29: export interface PaperGroup {
 30:   slug: string
 31:   name: string
 32:   description: string
 33:   presets: PaperPreset[]
 34: }
-35: 
+35:
 36: // Helpers -----------------------------------------------------------------
-37: 
+37:
 38: const palette = (...colors: number[][]): Vec4ArrayValue => ({
 39:   values: colors.map((c) => (c.length === 4 ? c : [c[0], c[1], c[2], 1])),
 40:   length: colors.length,
 41: })
-42: 
+42:
 43: const hex = (s: string): number[] => {
 44:   const v = s.replace('#', '')
 45:   const r = parseInt(v.substring(0, 2), 16) / 255
@@ -20269,14 +20452,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 48:   const a = v.length === 8 ? parseInt(v.substring(6, 8), 16) / 255 : 1
 49:   return [r, g, b, a]
 50: }
-51: 
+51:
 52: const noImage = { url: null, sourceKind: 'url' as const, fit: 'cover' as const }
 53: // For heatmap / liquid-metal: silhouette must leave room for the outer
 54: // halo, so contain-fit (image fits within canvas) is the right default.
 55: const noImageContain = { url: null, sourceKind: 'url' as const, fit: 'contain' as const }
-56: 
+56:
 57: // Groups -------------------------------------------------------------------
-58: 
+58:
 59: export const PAPER_GROUPS: PaperGroup[] = [
 60:   // ── Mesh Gradient ──────────────────────────────────────────────────────
 61:   {
@@ -20351,7 +20534,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 130:       },
 131:     ],
 132:   },
-133: 
+133:
 134:   // ── Static Mesh ────────────────────────────────────────────────────────
 135:   {
 136:     slug: 'static-mesh-gradient',
@@ -20396,7 +20579,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 175:       },
 176:     ],
 177:   },
-178: 
+178:
 179:   // ── Neuro Noise ────────────────────────────────────────────────────────
 180:   {
 181:     slug: 'neuro-noise',
@@ -20451,7 +20634,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 230:       },
 231:     ],
 232:   },
-233: 
+233:
 234:   // ── Swirl ──────────────────────────────────────────────────────────────
 235:   {
 236:     slug: 'swirl',
@@ -20504,7 +20687,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 283:       },
 284:     ],
 285:   },
-286: 
+286:
 287:   // ── Spiral ─────────────────────────────────────────────────────────────
 288:   {
 289:     slug: 'spiral',
@@ -20557,7 +20740,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 336:       },
 337:     ],
 338:   },
-339: 
+339:
 340:   // ── Simplex Noise ──────────────────────────────────────────────────────
 341:   {
 342:     slug: 'simplex-noise',
@@ -20617,7 +20800,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 396:       },
 397:     ],
 398:   },
-399: 
+399:
 400:   // ── Perlin Noise ───────────────────────────────────────────────────────
 401:   {
 402:     slug: 'perlin-noise',
@@ -20647,6 +20830,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/texture-cache.ts",
@@ -20656,6 +20840,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/texture-cache.ts</path>
 <type>file</type>
@@ -20664,7 +20849,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 2: // Used by the in-app preview to manage texture lifecycle without thrashing on
 3: // every uniform update. Editor-only for now; exported components implement
 4: // their own simpler binding.
-5: 
+5:
 6: const MAX_TEXTURE_SIZE = 2048
 7: // Upscale tiny / vector images to at least this size so wide-blur shader
 8: // sampling doesn't reveal sub-pixel artifacts.
@@ -20672,7 +20857,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 10: // Target SVG rasterization size before upload — matches Paper's preprocessing.
 11: const SVG_RASTER_SIZE = 1024
 12: const MAX_ENTRIES = 20
-13: 
+13:
 14: interface CacheEntry {
 15:   texture: WebGLTexture
 16:   width: number
@@ -20681,17 +20866,17 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 19:   /** Updated on every getTexture() so eviction picks the oldest. */
 20:   lastUsed: number
 21: }
-22: 
+22:
 23: export class TextureCache {
 24:   private gl: WebGL2RenderingContext
 25:   private entries = new Map<string, CacheEntry>()
 26:   private placeholder: WebGLTexture | null = null
 27:   private inFlight = new Map<string, Promise<CacheEntry | null>>()
-28: 
+28:
 29:   constructor(gl: WebGL2RenderingContext) {
 30:     this.gl = gl
 31:   }
-32: 
+32:
 33:   /** 1×1 transparent texture; safe to bind unconditionally as a fallback. */
 34:   getPlaceholder(): WebGLTexture {
 35:     if (this.placeholder) return this.placeholder
@@ -20717,7 +20902,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 55:     this.placeholder = tex
 56:     return tex
 57:   }
-58: 
+58:
 59:   /** Returns a cached entry synchronously if loaded; otherwise null. */
 60:   peek(url: string): CacheEntry | null {
 61:     const entry = this.entries.get(url)
@@ -20725,7 +20910,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 63:     entry.lastUsed = performance.now()
 64:     return entry
 65:   }
-66: 
+66:
 67:   /**
 68:    * Loads `url` into a texture (cache or fresh). Calls onReady once the
 69:    * upload completes so the renderer can re-render with the new texture.
@@ -20741,7 +20926,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 79:       })
 80:     }
 81:   }
-82: 
+82:
 83:   private async load(url: string): Promise<CacheEntry | null> {
 84:     const gl = this.gl
 85:     const isSvg = isSvgUrl(url)
@@ -20788,7 +20973,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 126:       }
 127:     }
 128:     if (!source) return null
-129: 
+129:
 130:     const tex = gl.createTexture()
 131:     if (!tex) return null
 132:     gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -20810,7 +20995,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 148:       const maxAniso = gl.getParameter(anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number
 149:       gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso))
 150:     }
-151: 
+151:
 152:     const entry: CacheEntry = {
 153:       texture: tex,
 154:       width: w,
@@ -20822,7 +21007,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 160:     this.evictIfNeeded()
 161:     return entry
 162:   }
-163: 
+163:
 164:   private evictIfNeeded() {
 165:     if (this.entries.size <= MAX_ENTRIES) return
 166:     let oldestKey: string | null = null
@@ -20839,7 +21024,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 177:       this.entries.delete(oldestKey)
 178:     }
 179:   }
-180: 
+180:
 181:   destroy() {
 182:     for (const entry of this.entries.values()) {
 183:       this.gl.deleteTexture(entry.texture)
@@ -20851,14 +21036,14 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 189:     }
 190:   }
 191: }
-192: 
+192:
 193: function isSvgUrl(url: string): boolean {
 194:   if (url.startsWith('data:image/svg+xml')) return true
 195:   // Strip query/hash before checking extension.
 196:   const base = url.split('?')[0].split('#')[0]
 197:   return /\.svg$/i.test(base)
 198: }
-199: 
+199:
 200: function loadImage(url: string): Promise<HTMLImageElement> {
 201:   return new Promise((resolve, reject) => {
 202:     const img = new Image()
@@ -20869,7 +21054,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 207:     img.src = url
 208:   })
 209: }
-210: 
+210:
 211: // Fetch SVG bytes, inject explicit width/height into the <svg> root so the
 212: // browser's SVG renderer rasterizes at the desired size, then return an
 213: // HTMLImageElement loaded from the modified SVG. This is the reliable way
@@ -20928,6 +21113,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/export-image-helper.ts",
@@ -20937,6 +21123,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/export-image-helper.ts</path>
 <type>file</type>
@@ -20948,7 +21135,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 5: // IMPORTANT: this file is the single source of truth for the export helpers.
 6: // The generator inlines its source verbatim into exported React/Vanilla code
 7: // so the export and the preview can never drift.
-8: 
+8:
 9: export interface ImageSourceProp {
 10:   url?: string | null
 11:   fit?: 'cover' | 'contain' | 'fill'
@@ -20957,35 +21144,35 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 14:   offsetX?: number
 15:   offsetY?: number
 16: }
-17: 
+17:
 18: // `string` is a convenience shorthand for `{ url: string }`.
 19: export type ImageProp = string | ImageSourceProp | null | undefined
-20: 
+20:
 21: export interface ImageEntry {
 22:   texture: WebGLTexture | null
 23:   aspect: number
 24: }
-25: 
+25:
 26: export interface ImageCache {
 27:   ensure(src: ImageProp): void
 28:   get(src: ImageProp): ImageEntry | null
 29:   getPlaceholder(): WebGLTexture
 30:   destroy(): void
 31: }
-32: 
+32:
 33: export function createImageCache(
 34:   gl: WebGL2RenderingContext,
 35:   onLoad?: () => void
 36: ): ImageCache {
 37:   const entries = new Map<string, ImageEntry>()
 38:   let placeholder: WebGLTexture | null = null
-39: 
+39:
 40:   function urlOf(src: ImageProp): string | null {
 41:     if (!src) return null
 42:     if (typeof src === 'string') return src
 43:     return src.url ?? null
 44:   }
-45: 
+45:
 46:   function getPlaceholder(): WebGLTexture {
 47:     if (placeholder) return placeholder
 48:     const tex = gl.createTexture()
@@ -21009,7 +21196,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 66:     placeholder = tex
 67:     return tex
 68:   }
-69: 
+69:
 70:   function ensure(src: ImageProp): void {
 71:     const url = urlOf(src)
 72:     if (!url) return
@@ -21054,13 +21241,13 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 111:     }
 112:     img.src = url
 113:   }
-114: 
+114:
 115:   function get(src: ImageProp): ImageEntry | null {
 116:     const url = urlOf(src)
 117:     if (!url) return null
 118:     return entries.get(url) ?? null
 119:   }
-120: 
+120:
 121:   function destroy(): void {
 122:     for (const e of entries.values()) {
 123:       if (e.texture) gl.deleteTexture(e.texture)
@@ -21071,16 +21258,16 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 128:       placeholder = null
 129:     }
 130:   }
-131: 
+131:
 132:   return { ensure, get, getPlaceholder, destroy }
 133: }
-134: 
+134:
 135: export function fitModeFromString(fit: string | undefined): number {
 136:   if (fit === 'contain') return 1
 137:   if (fit === 'fill') return 2
 138:   return 0 // cover
 139: }
-140: 
+140:
 141: // Bind a sampler + its `_meta` and `_offset` companion uniforms. Returns the
 142: // next free texture unit. Caller advances `textureUnit` only when this layer
 143: // actually binds a sampler in the current pass (loc !== null).
@@ -21115,7 +21302,7 @@ I have the shader inventory now. The next pass is codebase-side: what the curren
 172:   }
 173:   return textureUnit + 1
 174: }
-175: 
+175:
 176: // Bind a vec4Array uniform plus its `_count` companion. Accepts colors as
 177: // `number[][]` ([r,g,b] or [r,g,b,a] entries in 0..1).
 178: export function bindPaletteUniform(
@@ -21164,15 +21351,19 @@ continue
 ## Assistant (Compaction · Kimi K2.6 · 29.4s)
 
 ## Goal
+
 - Audit the `shaders/packages/shaders/src/shaders` directory and the `src/lib/shader-composer` codebase to identify (a) how each original shader can be decomposed into composable primitives and (b) gaps in the existing editor that must be patched to achieve that decomposition.
 
 ## Constraints & Preferences
+
 - Read-only audit; no file edits.
 - Very thorough inspection of both the original Paper shader package and the composer’s layer/generator/runtime model.
 - Prefer mapping to actual files and line references rather than high-level speculation.
 
 ## Progress
+
 ### Done
+
 - Read `package.json` to confirm project structure (Vite/React/TanStack, WebGL2).
 - Read `shaders/packages/shaders/src/shaders/` inventory: 28+ shader files inventoried including `water`, `voronoi`, `swirl`, `warp`, `waves`, `static-mesh-gradient`, `static-radial-gradient`, `perlin-noise`, `pulsing-border`, `paper-texture`, `simplex-noise`, `spiral`, `smoke-ring`, `mesh-gradient`, `liquid-metal`, `neuro-noise`, `metaballs`, `dot-orbit`, `dot-grid`, `image-dithering`, `halftone-cmyk`, `halftone-dots`, `heatmap`, `grain-gradient`, `god-rays`, `gem-smoke`, `fluted-glass`, `dithering`, `color-panels`.
 - Read shared Paper utilities: `shader-utils.ts`, `shader-color-spaces.ts`, `vertex-shader.ts`, `shader-sizing.ts`, `shader-mount.ts`, `index.ts`.
@@ -21181,15 +21372,19 @@ continue
 - Read composer UI: `components/shader-composer/property-panel.tsx`, `layer-stack.tsx`, `shader-preview.tsx`.
 
 ### In Progress
+
 - Synthesizing the raw file reads into a structured report: primitive breakdown per shader and a prioritized gap/patch list for the composer architecture.
 
 ### Blocked
+
 - None.
 
 ## Key Decisions
+
 - None yet; this is a research/audit phase with no implementation decisions made.
 
 ## Next Steps
+
 1. Synthesize shader findings into (a) a primitive taxonomy (coordinate transforms, SDF sources, noise fields, color ramps, sampling/modifiers, blend/post-process) and (b) per-shader primitive recipes.
 2. Map missing primitive capabilities against the current `LayerDefinition`/`generator.ts` model:
    - scalar vs RGBA layer output channels,
@@ -21208,6 +21403,7 @@ continue
    - `runtime-shell.ts` / `shader-preview.tsx` (noise texture binding on TEXTURE15, preprocessing canvas for image-driven shaders).
 
 ## Critical Context
+
 - The composer uses a linear layer stack that splits into render passes only when `consumesPrevPass: true` (distorters/effects sampling `u_prevPass`). Most Paper shaders are monolithic fragment shaders that combine sizing, pattern generation, color ramping, and compositing in one pass.
 - `generator.ts` emits uniforms with a fixed vec4 array length of 10 (`DEFAULT_VEC4_ARRAY_LENGTH`). Paper shaders use variable `maxColorCount` per shader (5–10) and often rely on `u_noiseTexture` (precomputed 256×256 RGB noise) or JS preprocessing (Poisson solver for gem-smoke/heatmap, SVG rasterization, blur kernels).
 - The composer’s current layer categories: `generator`, `distorter`, `effect`, `modifier`. Paper shaders need additional concepts: `mask/scalar field`, `preprocessor`, `multi-texture sampler`, `color-space transform`.
@@ -21215,6 +21411,7 @@ continue
 - Several Paper shaders use `dFdx`/`dFdy` and `fwidth` for anti-aliasing; the composer’s `aastep` exists but is not universally applied.
 
 ## Relevant Files
+
 - `shaders/packages/shaders/src/shaders/*.ts`: Original Paper shader sources to decompose.
 - `shaders/packages/shaders/src/shader-utils.ts`: Shared GLSL primitives (hash, noise, rotation, color-banding fix).
 - `shaders/packages/shaders/src/shader-color-spaces.ts`: OKLCH transforms missing from composer.
@@ -21246,11 +21443,13 @@ Of course, Mr. Nickerson. Permit me to brief you on our progress.
 We have completed a thorough, read-only audit of both the original **Paper shader library** (`shaders/packages/shaders/src/shaders/`) and the **composer architecture** (`src/lib/shader-composer/`).
 
 **Inventory complete:**
+
 - **28 shader modules** catalogued (from `water` and `god-rays` to `halftone-cmyk` and `color-panels`).
 - **Shared utilities** inspected: `shader-utils.ts`, `shader-color-spaces.ts`, `vertex-shader.ts`, and `shader-mount.ts`.
 - **Composer core** analysed: `types.ts`, `generator.ts`, `glsl-utils.ts`, `runtime-shell.ts`, the full layer directory, and the UI property panel.
 
 **Critical architectural gaps identified:**
+
 1. **Output channels**: Paper shaders mix scalar fields (SDFs, noise masks) and RGBA outputs freely; the composer currently assumes RGBA layers.
 2. **Color ramps**: Paper uses variable-length multi-stop gradients (`maxColorCount` 5–10); the composer hardcodes 3-color arrays with a fixed vec4 length of 10.
 3. **Vertex-stage UVs**: Paper distinguishes `v_objectUV`, `v_patternUV`, and `v_imageUV` with distinct transforms; the composer is fragment-only with a single `uv`.
@@ -21296,32 +21495,35 @@ Very good, Mr. Nickerson. Your clarifications are most helpful. Allow me to pres
 
 Based on `shaders/packages/shaders/src/shader-utils.ts`, `shader-color-spaces.ts`, and `vertex-shader.ts`, the Paper library operates on the following primitive categories:
 
-| Category | Primitives Found | Composer Status |
-|---|---|---|
-| **Coordinate Transforms** | `rotation2`, aspect-correction (`varyingUV`), `v_objectUV` / `v_patternUV` / `v_imageUV` | Partial (single `uv` only) |
-| **Noise / Hash** | `proceduralHash`, `proceduralHash2`, `textureRandomizer`, `valueNoise`, `simplexNoise`, `fiberNoise`, `gaborNoise` | Partial (FBM, some hash) |
-| **SDF Sources** | Circle, rounded rect, polygon, metaball, voronoi | Partial (metaballs, basic shapes) |
-| **Scalar Fields** | Perlin, simplex, dot-orbit, spiral, smoke-ring, warp, water waves, voronoi | Missing many |
-| **Color Ramps** | Multi-stop `u_colors` + `u_colorStops`, OKLCH interpolation | Hardcoded 3-color vec4[10] |
-| **Color Spaces** | `srgbToLinear`, `linearToSrgb`, `LrgbToOklab`, `OklabToLrgb`, `oklabToOklch`, `oklchToSrgb`, `oklchMix` | **Completely absent** |
-| **Sampling** | `u_prevPass`, `u_mainImage`, `u_imageTexture`, `u_noiseTexture` (TEXTURE15) | Prev pass exists; noise texture missing |
-| **Preprocessing** | Poisson solver (gem-smoke, heatmap), blur kernels, dithering matrices, SVG rasterization | **Not implemented** |
-| **Post-process / Effects** | `colorBandingFix`, god-rays, fluted glass (refraction), dithering, halftone | Partial (fluted glass started) |
+| Category                   | Primitives Found                                                                                                   | Composer Status                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------- |
+| **Coordinate Transforms**  | `rotation2`, aspect-correction (`varyingUV`), `v_objectUV` / `v_patternUV` / `v_imageUV`                           | Partial (single `uv` only)              |
+| **Noise / Hash**           | `proceduralHash`, `proceduralHash2`, `textureRandomizer`, `valueNoise`, `simplexNoise`, `fiberNoise`, `gaborNoise` | Partial (FBM, some hash)                |
+| **SDF Sources**            | Circle, rounded rect, polygon, metaball, voronoi                                                                   | Partial (metaballs, basic shapes)       |
+| **Scalar Fields**          | Perlin, simplex, dot-orbit, spiral, smoke-ring, warp, water waves, voronoi                                         | Missing many                            |
+| **Color Ramps**            | Multi-stop `u_colors` + `u_colorStops`, OKLCH interpolation                                                        | Hardcoded 3-color vec4[10]              |
+| **Color Spaces**           | `srgbToLinear`, `linearToSrgb`, `LrgbToOklab`, `OklabToLrgb`, `oklabToOklch`, `oklchToSrgb`, `oklchMix`            | **Completely absent**                   |
+| **Sampling**               | `u_prevPass`, `u_mainImage`, `u_imageTexture`, `u_noiseTexture` (TEXTURE15)                                        | Prev pass exists; noise texture missing |
+| **Preprocessing**          | Poisson solver (gem-smoke, heatmap), blur kernels, dithering matrices, SVG rasterization                           | **Not implemented**                     |
+| **Post-process / Effects** | `colorBandingFix`, god-rays, fluted glass (refraction), dithering, halftone                                        | Partial (fluted glass started)          |
 
 ---
 
 ## II. Per-Shader Primitive Recipes
 
 ### Priority: Heatmap
+
 **File**: `shaders/packages/shaders/src/shaders/heatmap.ts`
 
 **Decomposition**:
+
 1. **Preprocess**: JavaScript Poisson solver on source image to create `u_poissonTexture` (relaxation steps on luminance).
 2. **Scalar Field**: Modified noise gradient magnitude from Poisson output + `varyingUV`.
 3. **Color Ramp**: 8-stop OKLCH palette (`u_colorsHeat`, `u_colorsCold`), mixing via `oklchMix`.
 4. **Post-process**: `colorBandingFix`.
 
 **Composer Gaps**:
+
 - No Poisson solver in runtime or texture pipeline.
 - No 8-stop `vec4Array` UI support (max 10 hardcoded, but UI assumes 3).
 - No `oklchMix` / OKLCH color space layer.
@@ -21329,9 +21531,11 @@ Based on `shaders/packages/shaders/src/shader-utils.ts`, `shader-color-spaces.ts
 ---
 
 ### Priority: Liquid Metal
+
 **File**: `shaders/packages/shaders/src/shaders/liquid-metal.ts`
 
 **Decomposition**:
+
 1. **Coordinate Transform**: Aspect-corrected `varyingUV`.
 2. **Scalar Field**: Layered domain-warped simplex noise (`simplexNoise` with `rotation2`).
 3. **SDF Modifier**: Thresholded noise creating "liquid" blob edges.
@@ -21339,6 +21543,7 @@ Based on `shaders/packages/shaders/src/shader-utils.ts`, `shader-color-spaces.ts
 5. **Post-process**: `colorBandingFix`.
 
 **Composer Gaps**:
+
 - Missing `rotation2` helper in `glsl-utils.ts`.
 - Missing `simplexNoise` (has FBM but not Paper's specific 3D simplex).
 - Missing domain-warp primitive (distortion of UVs by noise field before sampling).
@@ -21348,20 +21553,20 @@ Based on `shaders/packages/shaders/src/shader-utils.ts`, `shader-color-spaces.ts
 
 ### Additional Key Shaders (Selected Gaps)
 
-| Shader | Missing Primitive |
-|---|---|
-| `god-rays` | Volumetric ray-march sampling of `u_mainImage`; requires `u_prevPass` as background or separate blur layer |
-| `fluted-glass` | Refractive UV offset using `dFdx`/`dFdy` on noise; partially started in `distorters.ts` at line 721 |
-| `gem-smoke` | Poisson solver + OKLCH smoke color ramp + `colorBandingFix` |
-| `water` | Domain-warped simplex + normal-map derivative lighting |
-| `warp` | Polar coordinate transform + procedural hash warp |
-| `pulsing-border` | SDF rounded rect + time-modulated thickness + glow field |
-| `color-panels` | Grid SDF + per-cell random color assignment (procedural hash) |
-| `halftone-cmyk` / `halftone-dots` | CMYK separation + dot SDF sampling; requires `u_mainImage` |
-| `image-dithering` | Bayer/ordered matrix thresholding of `u_mainImage` luminance |
-| `grain-gradient` | Film grain overlay + multi-stop gradient |
-| `static-mesh-gradient` / `mesh-gradient` | Barycentric gradient interpolation in UV space (different vertex UV logic) |
-| `dot-grid` / `dot-orbit` | Procedural hash + SDF circle + orbital motion |
+| Shader                                   | Missing Primitive                                                                                          |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `god-rays`                               | Volumetric ray-march sampling of `u_mainImage`; requires `u_prevPass` as background or separate blur layer |
+| `fluted-glass`                           | Refractive UV offset using `dFdx`/`dFdy` on noise; partially started in `distorters.ts` at line 721        |
+| `gem-smoke`                              | Poisson solver + OKLCH smoke color ramp + `colorBandingFix`                                                |
+| `water`                                  | Domain-warped simplex + normal-map derivative lighting                                                     |
+| `warp`                                   | Polar coordinate transform + procedural hash warp                                                          |
+| `pulsing-border`                         | SDF rounded rect + time-modulated thickness + glow field                                                   |
+| `color-panels`                           | Grid SDF + per-cell random color assignment (procedural hash)                                              |
+| `halftone-cmyk` / `halftone-dots`        | CMYK separation + dot SDF sampling; requires `u_mainImage`                                                 |
+| `image-dithering`                        | Bayer/ordered matrix thresholding of `u_mainImage` luminance                                               |
+| `grain-gradient`                         | Film grain overlay + multi-stop gradient                                                                   |
+| `static-mesh-gradient` / `mesh-gradient` | Barycentric gradient interpolation in UV space (different vertex UV logic)                                 |
+| `dot-grid` / `dot-orbit`                 | Procedural hash + SDF circle + orbital motion                                                              |
 
 ---
 
@@ -21370,11 +21575,13 @@ Based on `shaders/packages/shaders/src/shader-utils.ts`, `shader-color-spaces.ts
 ### Phase 1: Foundation (Required for all 1:1 ports)
 
 **A. `src/lib/shader-composer/types.ts`**
+
 - Add `outputKind: 'scalar' | 'rgba'` to `LayerDefinition`. Heatmap and many SDF shaders generate scalar masks before colorization.
 - Extend `UniformValue` union to include `vec2Array`, `vec3Array`, and bounded `vec4Array` (variable length up to 10).
 - Add `preprocessor?: 'poisson' | 'blur' | 'bayer-dither'` to layer config for JS-side image prep.
 
 **B. `src/lib/shader-composer/glsl-utils.ts`**
+
 - Port `rotation2` (lines 1-3 of `shader-utils.ts`).
 - Port `declarePI` and `declareOklchTransforms` (from `shader-color-spaces.ts`).
 - Port `simplexNoise`, `valueNoise`, `fiberNoise`, `proceduralHash`, `proceduralHash2`, `textureRandomizer`.
@@ -21382,6 +21589,7 @@ Based on `shaders/packages/shaders/src/shader-utils.ts`, `shader-color-spaces.ts
 - Add `domainWarp(uv, noiseField, amplitude)` helper.
 
 **C. `src/lib/shader-composer/generator.ts`**
+
 - Support scalar-to-RGBA promotion (when a scalar layer feeds into an RGBA blend).
 - Support variable-length `vec4Array` uniform emission (currently unrolls exactly 10; needs `maxColorCount` dynamic unroll).
 - Implement noise texture binding: inject `u_noiseTexture` on TEXTURE15 if any layer declares `needsNoiseTexture: true`.
@@ -21390,25 +21598,30 @@ Based on `shaders/packages/shaders/src/shader-utils.ts`, `shader-color-spaces.ts
 ### Phase 2: Liquid Metal & Heatmap (User Priority)
 
 **D. New Layer: `src/lib/shader-composer/layers/scalar-fields.ts`**
+
 - `liquidMetalField`: Domain-warped simplex → scalar.
 - `heatmapField`: Gradient magnitude from input texture → scalar.
 
 **E. New Layer: `src/lib/shader-composer/layers/color-spaces.ts`**
+
 - `oklchRamp`: Multi-stop OKLCH color ramp layer (replaces current 3-stop gradient for fidelity).
 - `oklchMix` modifier.
 
 **F. Runtime Preprocessing: `src/lib/shader-composer/runtime-shell.ts`**
+
 - Add Poisson solver canvas helper for `heatmap` and `gem-smoke`.
 - Add Bayer matrix generation for `image-dithering`.
 
 ### Phase 3: Remaining Shader Ports
 
 **G. Expand `layers/sources.ts`**
+
 - `godRaysVolume`: Ray-march sampling.
 - `halftoneCmyk`, `halftoneDots`: CMYK dot SDF sampling.
 - `ditheredImage`: Ordered dither threshold.
 
 **H. Expand `layers/shapes.ts` & `layers/patterns.ts`**
+
 - `roundedRectSDF`, `polygonSDF`, `gridSDF` for `color-panels`, `pulsing-border`.
 - `polarWarp` for `warp` shader.
 
@@ -21443,7 +21656,7 @@ the former, definitely. and yes proceed
 
 ## Assistant (Plan · Kimi K2.6 · 27.2s)
 
-Of course, your grace. I have noted your decision to extend the vertex stage for true 1:1 fidelity. 
+Of course, your grace. I have noted your decision to extend the vertex stage for true 1:1 fidelity.
 
 I must respectfully inform you, sire, that I am currently operating within a **planning and research phase** where file modifications are restricted. I shall therefore present the full implementation specification for your review. Once we transition to execution, I shall implement this blueprint immediately.
 
@@ -21472,11 +21685,13 @@ needsNoiseTexture?: boolean;
 When any layer declares `uvDomains`, the generator must emit a custom vertex shader instead of the default passthrough.
 
 **Injects:**
+
 - `varying vec2 v_objectUV;`
 - `varying vec2 v_patternUV;`
 - `varying vec2 v_imageUV;`
 
 **Computes:**
+
 - `v_objectUV`: aspect-corrected object-space coordinates (from `a_vertex` / `u_resolution`)
 - `v_patternUV`: tiling/repeat coordinates (pattern-space scaling)
 - `v_imageUV`: direct image sampler coordinates
@@ -21490,12 +21705,14 @@ When any layer declares `uvDomains`, the generator must emit a custom vertex sha
 Port the following from Paper's shared utilities:
 
 ### Coordinate Transforms
+
 ```glsl
 mat2 rotation2(float angle);
 vec2 aspectCorrectUV(vec2 uv, vec2 resolution);
 ```
 
 ### Hash & Noise (Procedural)
+
 ```glsl
 float proceduralHash(vec2 p);
 vec2 proceduralHash2(vec2 p);
@@ -21506,6 +21723,7 @@ float fiberNoise(vec2 p);
 ```
 
 ### Color Spaces (Critical for Heatmap, Gem-Smoke)
+
 ```glsl
 vec3 srgbToLinear(vec3 c);
 vec3 linearToSrgb(vec3 c);
@@ -21517,12 +21735,14 @@ vec3 oklchMix(vec3 c1, vec3 c2, float t);
 ```
 
 ### Post-Process
+
 ```glsl
 float colorBandingFix(float color);
 vec3 colorBandingFix(vec3 color);
 ```
 
 ### Domain Warp
+
 ```glsl
 vec2 domainWarp(vec2 uv, float noiseField, float amplitude);
 ```
@@ -21532,11 +21752,13 @@ vec2 domainWarp(vec2 uv, float noiseField, float amplitude);
 ## 3. Variable-Length Color Arrays (`generator.ts`, `property-panel.tsx`)
 
 ### Generator Changes
+
 - Accept `maxColorCount: number` per layer (1–10).
 - Unroll `u_colors` and `u_colorStops` arrays dynamically based on `maxColorCount`, not fixed 10.
 - Emit `int u_colorCount` uniform for loop bounds.
 
 ### Property Panel Changes
+
 - `vec4Array` control must support variable length (1–10 stops).
 - Add min/max length props to `vec4Array` uniform type.
 - UI renders color stop inputs up to `maxColorCount`.
@@ -21546,6 +21768,7 @@ vec2 domainWarp(vec2 uv, float noiseField, float amplitude);
 ## 4. Noise Texture Binding (`runtime-shell.ts`, `generator.ts`)
 
 ### Generator
+
 - If any layer has `needsNoiseTexture: true`, inject:
   ```glsl
   uniform sampler2D u_noiseTexture;
@@ -21553,6 +21776,7 @@ vec2 domainWarp(vec2 uv, float noiseField, float amplitude);
 - Map to texture unit **TEXTURE15** (Paper convention).
 
 ### Runtime Shell
+
 - On shell initialization, generate or load 256×256 RGB noise texture.
 - Bind to TEXTURE15 for all passes if any layer requires it.
 - Cache in `texture-cache.ts`.
@@ -21562,11 +21786,13 @@ vec2 domainWarp(vec2 uv, float noiseField, float amplitude);
 ## 5. Preprocessing Pipeline (`runtime-shell.ts`, `layers/`)
 
 ### Poisson Solver (Heatmap, Gem-Smoke)
+
 - **Input**: `u_imageTexture` or source image.
 - **Process**: 10–20 Jacobi relaxation iterations on luminance channel via offscreen canvas/texture.
 - **Output**: `u_poissonTexture` passed as sampler to fragment layer.
 
 ### Bayer Matrix (Image-Dithering)
+
 - Generate standard 8×8 Bayer matrix as `sampler2D` or `float[64]` uniform.
 - Precompute on JS side, upload as texture.
 
@@ -21575,31 +21801,37 @@ vec2 domainWarp(vec2 uv, float noiseField, float amplitude);
 ## 6. New Primitive Layers
 
 ### `layers/scalar-fields.ts` (NEW FILE)
+
 - `liquidMetalField`: Domain-warped simplex → scalar output.
 - `heatmapGradientField`: Gradient magnitude sampler → scalar output.
 - `perlinField`, `voronoiField`, `dotOrbitField`: Existing noise.ts fields refactored to output scalar.
 
 ### `layers/color-spaces.ts` (NEW FILE)
+
 - `oklchRamp`: Multi-stop OKLCH gradient.
   - Uniforms: `u_colors[10]`, `u_stops[10]`, `u_colorCount`
   - Uses `oklchMix` for interpolation.
 - `srgbToLinearModifier`, `linearToSrgbModifier`.
 
 ### `layers/distorters.ts` (EXTEND)
+
 - Complete `flutedGlassLayer` (line 721+) with proper `dFdx`/`dFdy` refractive offsets.
 - Add `domainWarpDistorter`: UV displacement by noise field.
 
 ### `layers/sources.ts` (EXTEND)
+
 - `godRaysVolume`: Ray-march from light source through `u_prevPass` / `u_mainImage`.
 - `halftoneCmyk`: CMYK channel separation + dot SDF.
 - `halftoneDots`: Monochrome dot SDF.
 
 ### `layers/shapes.ts` (EXTEND)
+
 - `roundedRectSDF`: For `pulsing-border`, `color-panels`.
 - `polygonSDF`: Generic polygon SDF.
 - `gridSDF`: Repetition primitive for `color-panels`.
 
 ### `layers/stylize.ts` (EXTEND)
+
 - `colorBandingFixLayer`: Post-process pass using Paper's fix.
 
 ---
@@ -21607,6 +21839,7 @@ vec2 domainWarp(vec2 uv, float noiseField, float amplitude);
 ## 7. Pass Splitting Logic (`generator.ts`)
 
 ### Rules
+
 1. **Scalar layers** do not split passes; they write to `u_prevPass` as `vec4(scalar, 0, 0, 1)` or use a scalar attachment.
 2. **RGBA layers** writing to `u_prevPass` split as before.
 3. **Post-process layers** (`colorBandingFixLayer`, `godRaysVolume` if sampling prev pass) always split.
@@ -21616,19 +21849,19 @@ vec2 domainWarp(vec2 uv, float noiseField, float amplitude);
 
 ## 8. Execution Order (Suggested)
 
-| Phase | Task | Files |
-|---|---|---|
-| **1** | Extend types for scalar output, UV domains, variable arrays | `types.ts` |
-| **1** | Port GLSL utilities (rotation, noise, OKLCH) | `glsl-utils.ts` |
-| **1** | Extend generator for custom vertex shader emission | `generator.ts` |
-| **1** | Add noise texture binding infrastructure | `runtime-shell.ts`, `texture-cache.ts` |
-| **2** | Implement variable-length color array UI | `property-panel.tsx` |
-| **2** | Add `oklchRamp` layer | `layers/color-spaces.ts` (new) |
-| **2** | Add `liquidMetalField` scalar layer | `layers/scalar-fields.ts` (new) |
-| **2** | Port **Liquid Metal** as composed layers | `layers/index.ts` |
-| **2** | Add Poisson preprocessor + `heatmapField` | `runtime-shell.ts`, `layers/scalar-fields.ts` |
-| **2** | Port **Heatmap** as composed layers | `layers/index.ts` |
-| **3** | Port remaining shaders (god-rays, fluted glass, etc.) | Various layer files |
+| Phase | Task                                                        | Files                                         |
+| ----- | ----------------------------------------------------------- | --------------------------------------------- |
+| **1** | Extend types for scalar output, UV domains, variable arrays | `types.ts`                                    |
+| **1** | Port GLSL utilities (rotation, noise, OKLCH)                | `glsl-utils.ts`                               |
+| **1** | Extend generator for custom vertex shader emission          | `generator.ts`                                |
+| **1** | Add noise texture binding infrastructure                    | `runtime-shell.ts`, `texture-cache.ts`        |
+| **2** | Implement variable-length color array UI                    | `property-panel.tsx`                          |
+| **2** | Add `oklchRamp` layer                                       | `layers/color-spaces.ts` (new)                |
+| **2** | Add `liquidMetalField` scalar layer                         | `layers/scalar-fields.ts` (new)               |
+| **2** | Port **Liquid Metal** as composed layers                    | `layers/index.ts`                             |
+| **2** | Add Poisson preprocessor + `heatmapField`                   | `runtime-shell.ts`, `layers/scalar-fields.ts` |
+| **2** | Port **Heatmap** as composed layers                         | `layers/index.ts`                             |
+| **3** | Port remaining shaders (god-rays, fluted glass, etc.)       | Various layer files                           |
 
 ---
 
@@ -21684,6 +21917,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 **Tool: todowrite**
 
 **Input:**
+
 ```json
 {
   "todos": [
@@ -21722,6 +21956,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 ```
 
 **Output:**
+
 ```
 [
   {
@@ -21764,6 +21999,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "git status --short",
@@ -21774,6 +22010,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 ```
 
 **Output:**
+
 ```
 ?? .gitignore
 ?? bun.lock
@@ -21793,6 +22030,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "src/lib/shader-composer/**/*.ts",
@@ -21801,6 +22039,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts
@@ -21832,6 +22071,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "src/components/shader-composer/**/*.tsx",
@@ -21840,6 +22080,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx
@@ -21851,6 +22092,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 **Tool: glob**
 
 **Input:**
+
 ```json
 {
   "pattern": "shaders/packages/shaders/src/**/*.ts",
@@ -21859,6 +22101,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 ```
 
 **Output:**
+
 ```
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/types.ts
 /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/vertex-shader.ts
@@ -21909,6 +22152,7 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 **Tool: skill**
 
 **Input:**
+
 ```json
 {
   "name": "threejs-shaders"
@@ -21916,7 +22160,8 @@ At once, Mr. Nickerson. I’ll start with the foundation: types, GLSL utilities,
 ```
 
 **Output:**
-```
+
+````
 <skill_content name="threejs-shaders">
 # Skill: threejs-shaders
 
@@ -21948,7 +22193,7 @@ const material = new THREE.ShaderMaterial({
 
 // Update in animation loop
 material.uniforms.time.value = clock.getElapsedTime();
-```
+````
 
 ## ShaderMaterial vs RawShaderMaterial
 
@@ -22566,7 +22811,8 @@ Note: file list is sampled.
 
 </skill_files>
 </skill_content>
-```
+
+````
 
 ---
 
@@ -22581,15 +22827,16 @@ Note: file list is sampled.
   "offset": 1,
   "limit": 260
 }
-```
+````
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/types.ts</path>
 <type>file</type>
 <content>
 1: // Core types for the shader composition system
-2: 
+2:
 3: export type UniformType =
 4:   | 'float'
 5:   | 'vec2'
@@ -22607,9 +22854,9 @@ Note: file list is sampled.
 17:   //   uniform vec4 NAME[arrayLength];
 18:   //   uniform int  NAME_count;        // active entries; rest are zero-padded
 19:   | 'vec4Array'
-20: 
+20:
 21: export type ImageFit = 'cover' | 'contain' | 'fill'
-22: 
+22:
 23: export interface ImageUniformValue {
 24:   // null = bind a 1×1 transparent placeholder texture; layers should treat
 25:   // this as "no image".
@@ -22626,7 +22873,7 @@ Note: file list is sampled.
 36:   scale?: number
 37:   rotation?: number
 38: }
-39: 
+39:
 40: export interface Vec4ArrayValue {
 41:   // Each entry is [r, g, b, a] in 0..1. `length` may be < values.length;
 42:   // entries past `length` are ignored at the shader level via the _count
@@ -22634,14 +22881,14 @@ Note: file list is sampled.
 44:   values: number[][]
 45:   length: number
 46: }
-47: 
+47:
 48: export type UniformValue =
 49:   | number
 50:   | number[]
 51:   | boolean
 52:   | ImageUniformValue
 53:   | Vec4ArrayValue
-54: 
+54:
 55: export interface UniformDefinition {
 56:   name: string
 57:   label: string
@@ -22659,7 +22906,7 @@ Note: file list is sampled.
 69:     array?: { minLength?: number; maxLength?: number }
 70:   }
 71: }
-72: 
+72:
 73: export interface LayerDefinition {
 74:   id: string
 75:   name: string
@@ -22687,7 +22934,7 @@ Note: file list is sampled.
 97:     main: string
 98:   }
 99: }
-100: 
+100:
 101: export interface LayerInstance {
 102:   id: string
 103:   layerType: string
@@ -22696,8 +22943,8 @@ Note: file list is sampled.
 106:   blendMode: BlendMode
 107:   opacity: number
 108: }
-109: 
-110: export type BlendMode = 
+109:
+110: export type BlendMode =
 111:   | 'normal'
 112:   | 'add'
 113:   | 'multiply'
@@ -22705,13 +22952,13 @@ Note: file list is sampled.
 115:   | 'overlay'
 116:   | 'softLight'
 117:   | 'hardLight'
-118: 
+118:
 119: export interface ShaderComposition {
 120:   name: string
 121:   layers: LayerInstance[]
 122:   resolution?: [number, number]
 123: }
-124: 
+124:
 125: export interface GeneratedPass {
 126:   // Complete fragment shader source for this pass
 127:   fragmentShader: string
@@ -22720,7 +22967,7 @@ Note: file list is sampled.
 130:   // IDs of the layer instances that contribute to this pass (in order)
 131:   layerIds: string[]
 132: }
-133: 
+133:
 134: export interface GeneratedShader {
 135:   // Multi-pass output. Single-pass compositions yield exactly one element.
 136:   // Last pass renders to the canvas; intermediate passes render to an FBO
@@ -22752,6 +22999,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts",
@@ -22761,6 +23009,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts</path>
 <type>file</type>
@@ -22777,19 +23026,19 @@ Note: file list is sampled.
 10: import { GLSL_UTILS, BLEND_MODE_FUNCTIONS } from './glsl-utils'
 11: import runtimeShellSource from './runtime-shell.ts?raw'
 12: import imageHelperSource from './export-image-helper.ts?raw'
-13: 
+13:
 14: const INLINED_RUNTIME = runtimeShellSource.replace(/^export /gm, '')
 15: const INLINED_IMAGE_HELPER = imageHelperSource.replace(/^export /gm, '')
-16: 
+16:
 17: // Default fixed length for vec4Array uniforms when LayerDefinition does not
 18: // override `arrayLength`. Mirrors RAMP_MAX in glsl-utils.colorRampLookup.
 19: export const DEFAULT_VEC4_ARRAY_LENGTH = 10
-20: 
+20:
 21: interface PassPlan {
 22:   layers: LayerInstance[]
 23:   readsPrevPass: boolean
 24: }
-25: 
+25:
 26: /**
 27:  * Generates optimized GLSL shader code from a layer composition.
 28:  * Splits the layer chain into render passes at every `consumesPrevPass`
@@ -22800,17 +23049,17 @@ Note: file list is sampled.
 33:   shaderName: string = 'CustomShader'
 34: ): GeneratedShader {
 35:   const enabledLayers = layers.filter((l) => l.enabled)
-36: 
+36:
 37:   // Walk the layer list and split into passes at every consumer boundary.
 38:   const passPlans = splitIntoPasses(enabledLayers)
-39: 
+39:
 40:   // Build the global uniform list (used by runtime + exported code).
 41:   const uniforms: GeneratedShader['uniforms'] = []
 42:   for (const layer of enabledLayers) {
 43:     const def = LAYER_LIBRARY[layer.layerType]
 44:     if (!def) continue
 45:     const prefix = sanitizeName(layer.id)
-46: 
+46:
 47:     uniforms.push({
 48:       name: `u_${prefix}_opacity`,
 49:       type: 'float',
@@ -22832,24 +23081,24 @@ Note: file list is sampled.
 65:       })
 66:     }
 67:   }
-68: 
+68:
 69:   // Generate one fragment shader per pass.
 70:   const passes: GeneratedPass[] = passPlans.map((plan) =>
 71:     buildPass(plan)
 72:   )
-73: 
+73:
 74:   const vertexShader = `#version 300 es
 75: precision highp float;
-76: 
+76:
 77: in vec2 a_position;
 78: out vec2 v_uv;
-79: 
+79:
 80: void main() {
 81:   v_uv = a_position * 0.5 + 0.5;
 82:   gl_Position = vec4(a_position, 0.0, 1.0);
 83: }
 84: `
-85: 
+85:
 86:   // For display purposes, concatenate all passes into one document.
 87:   const fragmentShader = passes
 88:     .map(
@@ -22859,7 +23108,7 @@ Note: file list is sampled.
 92:         ` ===\n${p.fragmentShader}`
 93:     )
 94:     .join('\n\n')
-95: 
+95:
 96:   const typescript = generateTypeScript(uniforms, shaderName)
 97:   const reactComponent = generateReactComponent(
 98:     uniforms,
@@ -22873,7 +23122,7 @@ Note: file list is sampled.
 106:     passes,
 107:     vertexShader
 108:   )
-109: 
+109:
 110:   return {
 111:     passes,
 112:     vertexShader,
@@ -22884,16 +23133,16 @@ Note: file list is sampled.
 117:     fragmentShader,
 118:   }
 119: }
-120: 
+120:
 121: function splitIntoPasses(layers: LayerInstance[]): PassPlan[] {
 122:   const plans: PassPlan[] = []
 123:   let current: LayerInstance[] = []
 124:   let isReader = false
-125: 
+125:
 126:   for (const layer of layers) {
 127:     const def = LAYER_LIBRARY[layer.layerType]
 128:     if (!def) continue
-129: 
+129:
 130:     if (def.consumesPrevPass) {
 131:       // Close the current pass first.
 132:       plans.push({ layers: current, readsPrevPass: isReader })
@@ -22904,7 +23153,7 @@ Note: file list is sampled.
 137:     }
 138:   }
 139:   plans.push({ layers: current, readsPrevPass: isReader })
-140: 
+140:
 141:   // Drop a leading empty pass (happens if the very first layer is a consumer
 142:   // and there is nothing below). The runtime will just bind a black texture.
 143:   if (plans.length > 1 && plans[0].layers.length === 0) {
@@ -22913,13 +23162,13 @@ Note: file list is sampled.
 146:   }
 147:   return plans
 148: }
-149: 
+149:
 150: function buildPass(plan: PassPlan): GeneratedPass {
 151:   const { layers, readsPrevPass } = plan
-152: 
+152:
 153:   const dependencies = new Set<string>()
 154:   const blendModes = new Set<BlendMode>()
-155: 
+155:
 156:   for (const layer of layers) {
 157:     const def = LAYER_LIBRARY[layer.layerType]
 158:     if (!def) continue
@@ -22931,7 +23180,7 @@ Note: file list is sampled.
 164:     const funcName = BLEND_MODE_FUNCTIONS[mode]
 165:     if (funcName) dependencies.add(funcName)
 166:   })
-167: 
+167:
 168:   // Implicit dependency expansion.
 169:   if (dependencies.has('fbm') && !dependencies.has('simplex2D')) {
 170:     dependencies.add('simplex2D')
@@ -22942,7 +23191,7 @@ Note: file list is sampled.
 175:   if (dependencies.has('snoise') && !dependencies.has('simplex2D')) {
 176:     dependencies.add('simplex2D')
 177:   }
-178: 
+178:
 179:   const uniformDeclarations: string[] = [
 180:     'uniform float u_time;',
 181:     'uniform vec2 u_resolution;',
@@ -22954,7 +23203,7 @@ Note: file list is sampled.
 187:   if (readsPrevPass) {
 188:     uniformDeclarations.push('uniform sampler2D u_prevPass;')
 189:   }
-190: 
+190:
 191:   for (const layer of layers) {
 192:     const def = LAYER_LIBRARY[layer.layerType]
 193:     if (!def) continue
@@ -22981,38 +23230,38 @@ Note: file list is sampled.
 214:       }
 215:     }
 216:   }
-217: 
+217:
 218:   const utilFunctions: string[] = []
 219:   const sortedDeps = sortDependencies(Array.from(dependencies))
 220:   for (const dep of sortedDeps) {
 221:     if (GLSL_UTILS[dep]) utilFunctions.push(GLSL_UTILS[dep])
 222:   }
-223: 
+223:
 224:   const layerFunctions: string[] = []
 225:   const mainCalls: string[] = []
 226:   const layerHelpers = new Set<string>()
-227: 
+227:
 228:   for (let i = 0; i < layers.length; i++) {
 229:     const layer = layers[i]
 230:     const def = LAYER_LIBRARY[layer.layerType]
 231:     if (!def) continue
-232: 
+232:
 233:     const prefix = sanitizeName(layer.id)
 234:     const funcName = `layer_${prefix}`
-235: 
+235:
 236:     let mainCode = def.glsl.main
 237:     for (const uniform of def.uniforms) {
 238:       const placeholder = new RegExp(`\\{\\{${uniform.name}\\}\\}`, 'g')
 239:       mainCode = mainCode.replace(placeholder, `u_${prefix}_${uniform.name}`)
 240:     }
-241: 
+241:
 242:     if (def.glsl.functions) layerHelpers.add(def.glsl.functions.trim())
-243: 
+243:
 244:     layerFunctions.push(`
 245: vec4 ${funcName}(vec2 uv, vec4 base) {
 246: ${indent(mainCode.trim(), 2)}
 247: }`)
-248: 
+248:
 249:     const blendFunc = BLEND_MODE_FUNCTIONS[layer.blendMode] || 'blendNormal'
 250:     if (i === 0) {
 251:       // The first layer of the pass is either a generator (ignores base)
@@ -23024,48 +23273,48 @@ Note: file list is sampled.
 257:       )
 258:     }
 259:   }
-260: 
+260:
 261:   const fragmentShader = `#version 300 es
 262: precision highp float;
-263: 
+263:
 264: in vec2 v_uv;
 265: out vec4 fragColor;
-266: 
+266:
 267: // Uniforms
 268: ${uniformDeclarations.join('\n')}
-269: 
+269:
 270: // Utility Functions
 271: ${utilFunctions.join('\n')}
-272: 
+272:
 273: // Layer Helpers
 274: ${Array.from(layerHelpers).join('\n')}
-275: 
+275:
 276: // Layer Functions
 277: ${layerFunctions.join('\n')}
-278: 
+278:
 279: void main() {
 280:   vec2 uv = v_uv;
-281: 
+281:
 282: ${mainCalls.length > 0 ? mainCalls.join('\n') : '  vec4 color = vec4(0.0, 0.0, 0.0, 1.0);'}
-283: 
+283:
 284:   fragColor = color;
 285: }
 286: `
-287: 
+287:
 288:   return {
 289:     fragmentShader,
 290:     readsPrevPass,
 291:     layerIds: layers.map((l) => l.id),
 292:   }
 293: }
-294: 
+294:
 295: export function sanitizeName(name: string): string {
 296:   let sanitized = name.replace(/[^a-zA-Z0-9]/g, '')
 297:   if (/^[0-9]/.test(sanitized)) sanitized = 'l' + sanitized
 298:   if (!sanitized) sanitized = 'layer'
 299:   return sanitized
 300: }
-301: 
+301:
 302: function indent(code: string, spaces: number): string {
 303:   const pad = ' '.repeat(spaces)
 304:   return code
@@ -23073,7 +23322,7 @@ Note: file list is sampled.
 306:     .map((line) => pad + line)
 307:     .join('\n')
 308: }
-309: 
+309:
 310: function sortDependencies(deps: string[]): string[] {
 311:   const order: Record<string, number> = {
 312:     hash: 0,
@@ -23101,7 +23350,7 @@ Note: file list is sampled.
 334:   }
 335:   return deps.sort((a, b) => (order[a] ?? 99) - (order[b] ?? 99))
 336: }
-337: 
+337:
 338: // All uniforms except runtime-managed `u_time` / `u_resolution` are exposed
 339: // as React/vanilla props. sampler2D props accept a URL string or
 340: // `{ url, fit, scale, rotation, offsetX, offsetY }`; vec4Array props accept
@@ -23109,7 +23358,7 @@ Note: file list is sampled.
 342: function isExportableUniform(u: GeneratedShader['uniforms'][number]): boolean {
 343:   return !['u_time', 'u_resolution'].includes(u.name)
 344: }
-345: 
+345:
 346: function generateTypeScript(
 347:   uniforms: GeneratedShader['uniforms'],
 348:   shaderName: string
@@ -23124,11 +23373,11 @@ Note: file list is sampled.
 357:       )}?: ${tsType} // default: ${defaultVal}`
 358:     })
 359:     .join('\n')
-360: 
+360:
 361:   return `export interface ${shaderName}Props {
 362: ${propsInterface}
 363: }
-364: 
+364:
 365: export const ${shaderName.toLowerCase()}Defaults: Required<${shaderName}Props> = {
 366: ${exportable
 367:   .map((u) => `  ${camelCase(u.name)}: ${formatDefault(u.default, u.type)},`)
@@ -23136,7 +23385,7 @@ Note: file list is sampled.
 369: }
 370: `
 371: }
-372: 
+372:
 373: function generateReactComponent(
 374:   uniforms: GeneratedShader['uniforms'],
 375:   shaderName: string,
@@ -23155,7 +23404,7 @@ Note: file list is sampled.
 388:   const ensureLines = samplerUniforms
 389:     .map((u) => `    imageCacheRef.current?.ensure(${camelCase(u.name)})`)
 390:     .join('\n')
-391: 
+391:
 392:   const escapedVertex = escape(vertexShader)
 393:   const passSources = passes
 394:     .map(
@@ -23163,7 +23412,7 @@ Note: file list is sampled.
 396:         `  { fragment: \`${escape(p.fragmentShader)}\`, readsPrevPass: ${p.readsPrevPass} },`
 397:     )
 398:     .join('\n')
-399: 
+399:
 400:   return `'use client'
 
 (Showing lines 1-400 of 655. Use offset=401 to continue.)
@@ -23173,6 +23422,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts",
@@ -23182,25 +23432,26 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts</path>
 <type>file</type>
 <content>
 1: // Shared GLSL utility functions that can be reused across layers
 2: // Each function is keyed by name for deduplication
-3: 
+3:
 4: export const GLSL_UTILS: Record<string, string> = {
 5:   // Random and hash functions
 6:   hash: `
 7: float hash(vec2 p) {
 8:   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 9: }`,
-10: 
+10:
 11:   hash2: `
 12: vec2 hash2(vec2 p) {
 13:   return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
 14: }`,
-15: 
+15:
 16:   hash3: `
 17: vec3 hash3(vec2 p) {
 18:   vec3 q = vec3(dot(p, vec2(127.1, 311.7)),
@@ -23208,13 +23459,13 @@ Note: file list is sampled.
 20:                 dot(p, vec2(419.2, 371.9)));
 21:   return fract(sin(q) * 43758.5453);
 22: }`,
-23: 
+23:
 24:   // Noise functions
 25:   simplex2D: `
 26: vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 27: vec2 mod289v2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 28: vec3 permute(vec3 x) { return mod289(((x * 34.0) + 1.0) * x); }
-29: 
+29:
 30: float simplex2D(vec2 v) {
 31:   const vec4 C = vec4(0.211324865405187, 0.366025403784439,
 32:                       -0.577350269189626, 0.024390243902439);
@@ -23238,7 +23489,7 @@ Note: file list is sampled.
 50:   g.yz = a0.yz * x12.xz + h.yz * x12.yw;
 51:   return 130.0 * dot(m, g);
 52: }`,
-53: 
+53:
 54:   // FBM (Fractal Brownian Motion)
 55:   fbm: `
 56: float fbm(vec2 p, float octaves, float lacunarity, float gain) {
@@ -23254,7 +23505,7 @@ Note: file list is sampled.
 66:   }
 67:   return sum;
 68: }`,
-69: 
+69:
 70:   // Voronoi
 71:   voronoi: `
 72: vec3 voronoi(vec2 x, float randomness) {
@@ -23278,28 +23529,28 @@ Note: file list is sampled.
 90:   }
 91:   return vec3(sqrt(minDist), minCell);
 92: }`,
-93: 
+93:
 94:   // Blend modes
 95:   blendNormal: `
 96: vec4 blendNormal(vec4 base, vec4 blend, float opacity) {
 97:   return mix(base, blend, blend.a * opacity);
 98: }`,
-99: 
+99:
 100:   blendAdd: `
 101: vec4 blendAdd(vec4 base, vec4 blend, float opacity) {
 102:   return base + blend * opacity;
 103: }`,
-104: 
+104:
 105:   blendMultiply: `
 106: vec4 blendMultiply(vec4 base, vec4 blend, float opacity) {
 107:   return mix(base, base * blend, opacity);
 108: }`,
-109: 
+109:
 110:   blendScreen: `
 111: vec4 blendScreen(vec4 base, vec4 blend, float opacity) {
 112:   return mix(base, 1.0 - (1.0 - base) * (1.0 - blend), opacity);
 113: }`,
-114: 
+114:
 115:   blendOverlay: `
 116: vec4 blendOverlay(vec4 base, vec4 blend, float opacity) {
 117:   vec4 result;
@@ -23311,7 +23562,7 @@ Note: file list is sampled.
 123:   result.a = blend.a;
 124:   return mix(base, result, opacity);
 125: }`,
-126: 
+126:
 127:   blendSoftLight: `
 128: vec4 blendSoftLight(vec4 base, vec4 blend, float opacity) {
 129:   vec4 result;
@@ -23323,7 +23574,7 @@ Note: file list is sampled.
 135:   result.a = blend.a;
 136:   return mix(base, result, opacity);
 137: }`,
-138: 
+138:
 139:   blendHardLight: `
 140: vec4 blendHardLight(vec4 base, vec4 blend, float opacity) {
 141:   vec4 result;
@@ -23335,27 +23586,27 @@ Note: file list is sampled.
 147:   result.a = blend.a;
 148:   return mix(base, result, opacity);
 149: }`,
-150: 
+150:
 151:   // Utility functions
 152:   remap: `
 153: float remap(float value, float inMin, float inMax, float outMin, float outMax) {
 154:   return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
 155: }`,
-156: 
+156:
 157:   rotate2D: `
 158: vec2 rotate2D(vec2 v, float angle) {
 159:   float s = sin(angle);
 160:   float c = cos(angle);
 161:   return vec2(c * v.x - s * v.y, s * v.x + c * v.y);
 162: }`,
-163: 
+163:
 164:   // Aspect-corrected centered UV: y in [-0.5, 0.5], x scaled by aspect.
 165:   // Use this whenever a primitive needs to look the same on any canvas shape.
 166:   screenUv: `
 167: vec2 screenUv(vec2 uv) {
 168:   return (uv - 0.5) * vec2(u_resolution.x / u_resolution.y, 1.0);
 169: }`,
-170: 
+170:
 171:   // Anti-aliased step using screen-space derivatives.
 172:   // Works in WebGL2 / GLSL ES 3.00 where fwidth is core (no extension required).
 173:   aastep: `
@@ -23363,30 +23614,30 @@ Note: file list is sampled.
 175:   float afwidth = max(0.5 * fwidth(value), 1e-6);
 176:   return smoothstep(threshold - afwidth, threshold + afwidth, value);
 177: }`,
-178: 
+178:
 179:   // Smooth-min (continuous union) — k controls softness.
 180:   smin: `
 181: float smin(float a, float b, float k) {
 182:   float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
 183:   return mix(b, a, h) - k * h * (1.0 - h);
 184: }`,
-185: 
+185:
 186:   // 2D Signed-Distance Functions (Inigo Quilez canonical set).
 187:   sdCircle: `
 188: float sdCircle(vec2 p, float r) { return length(p) - r; }`,
-189: 
+189:
 190:   sdBox: `
 191: float sdBox(vec2 p, vec2 b) {
 192:   vec2 d = abs(p) - b;
 193:   return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
 194: }`,
-195: 
+195:
 196:   sdRoundedBox: `
 197: float sdRoundedBox(vec2 p, vec2 b, float r) {
 198:   vec2 q = abs(p) - b + vec2(r);
 199:   return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - r;
 200: }`,
-201: 
+201:
 202:   sdEllipse: `
 203: float sdEllipse(vec2 p, vec2 ab) {
 204:   p = abs(p);
@@ -23421,7 +23672,7 @@ Note: file list is sampled.
 233:   vec2 r = vec2(ab.x * co, ab.y * sqrt(1.0 - co * co));
 234:   return length(r - p) * sign(p.y - r.y);
 235: }`,
-236: 
+236:
 237:   sdEquilateralTriangle: `
 238: float sdEquilateralTriangle(vec2 p, float r) {
 239:   const float k = 1.7320508; // sqrt(3)
@@ -23431,14 +23682,14 @@ Note: file list is sampled.
 243:   p.x -= clamp(p.x, -2.0 * r, 0.0);
 244:   return -length(p) * sign(p.y);
 245: }`,
-246: 
+246:
 247:   sdRegularPolygon: `
 248: float sdRegularPolygon(vec2 p, float r, float n) {
 249:   float an = 3.1415926 / n;
 250:   float bn = mod(atan(p.x, p.y), 2.0 * an) - an;
 251:   return length(p) * cos(bn) - r * cos(an);
 252: }`,
-253: 
+253:
 254:   sdStar: `
 255: float sdStar(vec2 p, float r, float n, float m) {
 256:   float an = 3.1415926 / n;
@@ -23451,14 +23702,14 @@ Note: file list is sampled.
 263:   p += ecs * clamp(-dot(p, ecs), 0.0, r * acs.y / ecs.y);
 264:   return length(p) * sign(p.x);
 265: }`,
-266: 
+266:
 267:   sdSegment: `
 268: float sdSegment(vec2 p, vec2 a, vec2 b) {
 269:   vec2 pa = p - a, ba = b - a;
 270:   float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
 271:   return length(pa - ba * h);
 272: }`,
-273: 
+273:
 274:   sdCross: `
 275: float sdCross(vec2 p, vec2 b, float r) {
 276:   p = abs(p); p = (p.y > p.x) ? p.yx : p.xy;
@@ -23467,7 +23718,7 @@ Note: file list is sampled.
 279:   vec2 w = (k > 0.0) ? q : vec2(b.y - p.x, -k);
 280:   return sign(k) * length(max(w, 0.0)) + r;
 281: }`,
-282: 
+282:
 283:   sdVesica: `
 284: float sdVesica(vec2 p, float r, float d) {
 285:   p = abs(p);
@@ -23476,7 +23727,7 @@ Note: file list is sampled.
 288:     ? length(p - vec2(0.0, b))
 289:     : length(p - vec2(-d, 0.0)) - r;
 290: }`,
-291: 
+291:
 292:   // HSV conversion
 293:   rgb2hsv: `
 294: vec3 rgb2hsv(vec3 c) {
@@ -23487,17 +23738,17 @@ Note: file list is sampled.
 299:   float e = 1.0e-10;
 300:   return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 301: }`,
-302: 
+302:
 303:   hsv2rgb: `
 304: vec3 hsv2rgb(vec3 c) {
 305:   vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 306:   vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
 307:   return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 308: }`,
-309: 
+309:
 310:   luma: `
 311: float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }`,
-312: 
+312:
 313:   // Paper Shaders' procedural value-noise hash. Used by Paper's mesh-gradient
 314:   // and value-noise primitives. Different distribution from our hash().
 315:   hash21: `
@@ -23506,7 +23757,7 @@ Note: file list is sampled.
 318:   p += dot(p, p + 19.19);
 319:   return fract(p.x * p.y);
 320: }`,
-321: 
+321:
 322:   // Paper's procedural 2D-out hash. Better-distributed than two hash21 calls.
 323:   hash22: `
 324: vec2 hash22(vec2 p) {
@@ -23514,12 +23765,12 @@ Note: file list is sampled.
 326:   p += dot(p, p.yx + 19.19);
 327:   return fract(vec2(p.x * p.y, p.x + p.y));
 328: }`,
-329: 
+329:
 330:   // Paper's `snoise` is byte-identical to our simplex2D — we just expose the
 331:   // Paper-canonical name so verbatim ports compile without renaming.
 332:   snoise: `
 333: float snoise(vec2 v) { return simplex2D(v); }`,
-334: 
+334:
 335:   // Paper's noise-texture lookups. The runtime always binds a 256×256 RGB
 336:   // noise PNG to `u_noiseTexture` (TEXTURE15), so any layer that depends on
 337:   // these helpers gets a stable, well-distributed sample without per-layer
@@ -23530,12 +23781,12 @@ Note: file list is sampled.
 342: float noiseTextureRandomR(vec2 p) {
 343:   return texture(u_noiseTexture, floor(p) / 100.0 + 0.5).r;
 344: }`,
-345: 
+345:
 346:   noiseTextureRandomGB: `
 347: vec2 noiseTextureRandomGB(vec2 p) {
 348:   return texture(u_noiseTexture, floor(p) / 100.0 + 0.5).gb;
 349: }`,
-350: 
+350:
 351:   // Sampler-helper: maps canvas-space UV in [0,1] to image-space UV, honouring
 352:   // image aspect, fit mode (0=cover, 1=contain, 2=fill), uniform scale, rotation
 353:   // (radians) and pixel-space offset. Canvas aspect comes from u_resolution.
@@ -23574,7 +23825,7 @@ Note: file list is sampled.
 386:   c /= ratio;
 387:   return c + 0.5;
 388: }`,
-389: 
+389:
 390:   // Smooth/stepped color-ramp lookup over a fixed-size vec4 palette.
 391:   // steps=0 → smooth, steps>0 → quantised globally.
 392:   // stepsPerColor>0 → quantise within each color segment.
@@ -23609,7 +23860,7 @@ Note: file list is sampled.
 421:   vec4 b = colors[i1];
 422:   return mix(a, b, f);
 423: }`,
-424: 
+424:
 425:   gaussian9: `
 426: vec4 gaussian9(sampler2D src, vec2 uv, vec2 r) {
 427:   vec4 c = texture(src, uv) * 0.227;
@@ -23624,7 +23875,7 @@ Note: file list is sampled.
 436:   return c;
 437: }`,
 438: }
-439: 
+439:
 440: export const BLEND_MODE_FUNCTIONS: Record<string, string> = {
 441:   normal: 'blendNormal',
 442:   add: 'blendAdd',
@@ -23642,6 +23893,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/runtime-shell.ts",
@@ -23651,6 +23903,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/runtime-shell.ts</path>
 <type>file</type>
@@ -23671,23 +23924,23 @@ Note: file list is sampled.
 14: //               256×256 RGB noise lookup) for every pass that declares it.
 15: //   TEXTURE1..14 — image-uniform binders (callers of `bindUniforms`).
 16: // `passContext.nextTextureUnit` reflects the first free unit for that pass.
-17: 
+17:
 18: import { getShaderNoiseTexture } from './paper-noise-texture'
-19: 
+19:
 20: const NOISE_TEXTURE_UNIT = 15
-21: 
+21:
 22: export interface PipelinePass {
 23:   fragment: string
 24:   readsPrevPass: boolean
 25: }
-26: 
+26:
 27: export interface PassContext {
 28:   passIndex: number
 29:   // First texture unit available to image uniforms in this pass. 1 if the
 30:   // pass reads u_prevPass (which sits on TEXTURE0), 0 otherwise.
 31:   nextTextureUnit: number
 32: }
-33: 
+33:
 34: export interface PipelineHandle {
 35:   render(
 36:     time: number,
@@ -23697,7 +23950,7 @@ Note: file list is sampled.
 40:   ): void
 41:   destroy(): void
 42: }
-43: 
+43:
 44: export function createShaderPipeline(
 45:   gl: WebGL2RenderingContext,
 46:   vertexSource: string,
@@ -23719,7 +23972,7 @@ Note: file list is sampled.
 62:     }
 63:     return sh
 64:   }
-65: 
+65:
 66:   const programs: (WebGLProgram | null)[] = passes.map((p) => {
 67:     const vs = compile(gl.VERTEX_SHADER, vertexSource)
 68:     const fs = compile(gl.FRAGMENT_SHADER, p.fragment)
@@ -23738,19 +23991,19 @@ Note: file list is sampled.
 81:     }
 82:     return prog
 83:   })
-84: 
+84:
 85:   const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
 86:   const buffer = gl.createBuffer()
 87:   gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 88:   gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW)
-89: 
+89:
 90:   let texA: WebGLTexture | null = null
 91:   let texB: WebGLTexture | null = null
 92:   let fboA: WebGLFramebuffer | null = null
 93:   let fboB: WebGLFramebuffer | null = null
 94:   let fboW = 0
 95:   let fboH = 0
-96: 
+96:
 97:   // Paper's 256×256 RGB noise texture. Bound globally on TEXTURE15 every pass
 98:   // so any layer that references `u_noiseTexture` (smoke-ring, warp, god-rays,
 99:   // paper-voronoi, halftone-cmyk, etc.) can sample it without per-layer wiring.
@@ -23794,7 +24047,7 @@ Note: file list is sampled.
 137:     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
 138:     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
 139:   }
-140: 
+140:
 141:   function ensureFbos(w: number, h: number) {
 142:     if (w === fboW && h === fboH && texA && texB) return
 143:     if (texA) gl.deleteTexture(texA)
@@ -23840,7 +24093,7 @@ Note: file list is sampled.
 183:     fboB = fB
 184:     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
 185:   }
-186: 
+186:
 187:   function render(
 188:     time: number,
 189:     width: number,
@@ -23849,57 +24102,57 @@ Note: file list is sampled.
 192:   ) {
 193:     if (passes.length === 0) return
 194:     ensureFbos(width, height)
-195: 
+195:
 196:     let read: WebGLTexture | null = texA
 197:     let writeFbo: WebGLFramebuffer | null = fboB
-198: 
+198:
 199:     if (passes[0].readsPrevPass) {
 200:       gl.bindFramebuffer(gl.FRAMEBUFFER, fboA)
 201:       gl.viewport(0, 0, width, height)
 202:       gl.clearColor(0, 0, 0, 0)
 203:       gl.clear(gl.COLOR_BUFFER_BIT)
 204:     }
-205: 
+205:
 206:     for (let i = 0; i < passes.length; i++) {
 207:       const pass = passes[i]
 208:       const prog = programs[i]
 209:       if (!prog) continue
 210:       const isLast = i === passes.length - 1
 211:       gl.useProgram(prog)
-212: 
+212:
 213:       gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
 214:       const posLoc = gl.getAttribLocation(prog, 'a_position')
 215:       gl.enableVertexAttribArray(posLoc)
 216:       gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
-217: 
+217:
 218:       const uTime = gl.getUniformLocation(prog, 'u_time')
 219:       if (uTime) gl.uniform1f(uTime, time)
 220:       const uRes = gl.getUniformLocation(prog, 'u_resolution')
 221:       if (uRes) gl.uniform2f(uRes, width, height)
-222: 
+222:
 223:       if (pass.readsPrevPass) {
 224:         gl.activeTexture(gl.TEXTURE0)
 225:         gl.bindTexture(gl.TEXTURE_2D, read)
 226:         const uPrev = gl.getUniformLocation(prog, 'u_prevPass')
 227:         if (uPrev) gl.uniform1i(uPrev, 0)
 228:       }
-229: 
+229:
 230:       // Bind global noise texture on the reserved high unit. getUniformLocation
 231:       // returns null in passes that don't sample it, so the bind is harmless.
 232:       gl.activeTexture(gl.TEXTURE0 + NOISE_TEXTURE_UNIT)
 233:       gl.bindTexture(gl.TEXTURE_2D, noiseTexture)
 234:       const uNoise = gl.getUniformLocation(prog, 'u_noiseTexture')
 235:       if (uNoise) gl.uniform1i(uNoise, NOISE_TEXTURE_UNIT)
-236: 
+236:
 237:       bindUniforms(
 238:         { passIndex: i, nextTextureUnit: pass.readsPrevPass ? 1 : 0 },
 239:         prog
 240:       )
-241: 
+241:
 242:       gl.bindFramebuffer(gl.FRAMEBUFFER, isLast ? null : writeFbo)
 243:       gl.viewport(0, 0, width, height)
 244:       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-245: 
+245:
 246:       if (!isLast) {
 247:         const justWrote = writeFbo === fboA ? texA : texB
 248:         // Refresh the mip chain so downstream passes that sample with
@@ -23912,7 +24165,7 @@ Note: file list is sampled.
 255:       }
 256:     }
 257:   }
-258: 
+258:
 259:   function destroy() {
 260:     if (texA) gl.deleteTexture(texA)
 261:     if (texB) gl.deleteTexture(texB)
@@ -23922,7 +24175,7 @@ Note: file list is sampled.
 265:     if (buffer) gl.deleteBuffer(buffer)
 266:     programs.forEach((p) => p && gl.deleteProgram(p))
 267:   }
-268: 
+268:
 269:   return { render, destroy }
 270: }
 
@@ -23933,6 +24186,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/_helpers.ts",
@@ -23942,16 +24196,17 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/_helpers.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition, BlendMode } from '../types'
-2: 
+2:
 3: type LayerCategory = LayerDefinition['category']
 4: type FactoryOpts = { consumesPrevPass?: boolean; defaultBlendMode?: BlendMode }
 5: type LayerInput = Omit<LayerDefinition, 'category' | 'defaultBlendMode' | 'consumesPrevPass'>
-6: 
+6:
 7: const make =
 8:   (category: LayerCategory, opts: FactoryOpts = {}) =>
 9:   (def: LayerInput): LayerDefinition => ({
@@ -23960,17 +24215,17 @@ Note: file list is sampled.
 12:     defaultBlendMode: opts.defaultBlendMode ?? 'normal',
 13:     consumesPrevPass: opts.consumesPrevPass,
 14:   })
-15: 
+15:
 16: export const gen = make('generator')
 17: export const distorter = make('distorter', { consumesPrevPass: true })
 18: export const fx = make('effect', { consumesPrevPass: true })
 19: export const baseFx = make('effect')
 20: export const colorFx = make('modifier')
 21: export const sampleFx = make('modifier', { consumesPrevPass: true })
-22: 
+22:
 23: export const SCREEN_P = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 24: vec2 p = (uv - 0.5) * _ar;`
-25: 
+25:
 26: export const TEX_SIZE = `vec2 texel = 1.0 / u_resolution;`
 
 (End of file - total 26 lines)
@@ -23980,6 +24235,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts",
@@ -23989,6 +24245,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts</path>
 <type>file</type>
@@ -24007,14 +24264,14 @@ Note: file list is sampled.
 12: import { STYLIZE_LAYERS } from './stylize'
 13: import { SPECIALIZED_LAYERS } from './specialized'
 14: import { PAPER_SHADER_LAYERS } from './paper-shaders'
-15: 
+15:
 16: // Re-export new primitives for direct use in presets
 17: export { scalarFieldLayer, polarBandsLayer, spiralStripeLayer, voronoiCellsLayer, metaballsLayer, dotOrbitLayer } from './noise'
 18: export { meshSpotsGradientLayer } from './gradients'
 19: export { organicWarpLayer } from './distorters'
 20: export { imageEdgeLayer, imageContourLayer, chromeReliefLayer, glowFieldLayer } from './color'
 21: export { materialNoiseLayer, dotGlyphGridLayer } from './stylize'
-22: 
+22:
 23: export const simplexNoiseLayer: LayerDefinition = {
 24:   id: 'simplex-noise',
 25:   name: 'Simplex Noise',
@@ -24041,7 +24298,7 @@ Note: file list is sampled.
 46: return vec4(col, 1.0);`,
 47:   },
 48: }
-49: 
+49:
 50: export const voronoiLayer: LayerDefinition = {
 51:   id: 'voronoi',
 52:   name: 'Voronoi',
@@ -24067,7 +24324,7 @@ Note: file list is sampled.
 72: return vec4(col, 1.0);`,
 73:   },
 74: }
-75: 
+75:
 76: export const linearGradientLayer: LayerDefinition = {
 77:   id: 'linear-gradient',
 78:   name: 'Linear Gradient',
@@ -24095,7 +24352,7 @@ Note: file list is sampled.
 100: return vec4(col, 1.0);`,
 101:   },
 102: }
-103: 
+103:
 104: export const radialGradientLayer: LayerDefinition = {
 105:   id: 'radial-gradient',
 106:   name: 'Radial Gradient',
@@ -24122,7 +24379,7 @@ Note: file list is sampled.
 127: return vec4(col, 1.0);`,
 128:   },
 129: }
-130: 
+130:
 131: export const wavesLayer: LayerDefinition = {
 132:   id: 'waves',
 133:   name: 'Waves',
@@ -24150,7 +24407,7 @@ Note: file list is sampled.
 155: return vec4(col, 1.0);`,
 156:   },
 157: }
-158: 
+158:
 159: export const vignetteLayer: LayerDefinition = {
 160:   id: 'vignette',
 161:   name: 'Vignette',
@@ -24174,7 +24431,7 @@ Note: file list is sampled.
 179: return vec4(vigColor, base.a);`,
 180:   },
 181: }
-182: 
+182:
 183: export const grainLayer: LayerDefinition = {
 184:   id: 'grain',
 185:   name: 'Film Grain',
@@ -24203,7 +24460,7 @@ Note: file list is sampled.
 208: return vec4(col, base.a);`,
 209:   },
 210: }
-211: 
+211:
 212: export const chromaticAberrationLayer: LayerDefinition = {
 213:   id: 'chromatic-aberration',
 214:   name: 'Chromatic Aberration',
@@ -24224,7 +24481,7 @@ Note: file list is sampled.
 229: float angleRad = {{angle}} * 3.14159 / 180.0;
 230: vec2 dir = mix(vec2(cos(angleRad), sin(angleRad)), normalize(center + 0.001), {{radial}});
 231: vec2 offset = dir * {{intensity}} * (1.0 + dist * {{radial}});
-232: 
+232:
 233: // Simulate chromatic shift
 234: vec3 col = vec3(
 235:   mix(base.r, base.g, offset.x * 10.0),
@@ -24234,7 +24491,7 @@ Note: file list is sampled.
 239: return vec4(col, base.a);`,
 240:   },
 241: }
-242: 
+242:
 243: export const glowLayer: LayerDefinition = {
 244:   id: 'glow',
 245:   name: 'Glow',
@@ -24265,6 +24522,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts",
@@ -24274,17 +24532,18 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts</path>
 <type>file</type>
 <content>
-401: 
+401:
 402: import { useEffect, useRef } from 'react'
-403: 
+403:
 404: ${INLINED_RUNTIME}
-405: 
+405:
 406: ${INLINED_IMAGE_HELPER}
-407: 
+407:
 408: interface ${shaderName}Props {
 409: ${propUniforms
 410:   .map((u) => `  ${camelCase(u.name)}?: ${uniformTypeToTS(u.type)}`)
@@ -24292,13 +24551,13 @@ Note: file list is sampled.
 412:   className?: string
 413:   style?: React.CSSProperties
 414: }
-415: 
+415:
 416: const VERTEX_SHADER = \`${escapedVertex}\`
-417: 
+417:
 418: const PASSES: PipelinePass[] = [
 419: ${passSources}
 420: ]
-421: 
+421:
 422: export function ${shaderName}({
 423: ${propsWithDefaults}
 424:     className,
@@ -24306,19 +24565,19 @@ Note: file list is sampled.
 426:   }: ${shaderName}Props) {
 427:   const canvasRef = useRef<HTMLCanvasElement>(null)
 428:   const imageCacheRef = useRef<ImageCache | null>(null)
-429: 
+429:
 430:   useEffect(() => {
 431:     const canvas = canvasRef.current
 432:     if (!canvas) return
 433:     const gl = canvas.getContext('webgl2', { alpha: false, antialias: true, premultipliedAlpha: false })
 434:     if (!gl) { console.error('WebGL2 not supported'); return }
-435: 
+435:
 436:     const pipeline = createShaderPipeline(gl, VERTEX_SHADER, PASSES)
 437:     imageCacheRef.current = createImageCache(gl)
-438: 
+438:
 439:     const startTime = performance.now()
 440:     let raf = 0
-441: 
+441:
 442:     function frame() {
 443:       const dpr = window.devicePixelRatio || 1
 444:       const w = canvas!.clientWidth * dpr
@@ -24327,18 +24586,18 @@ Note: file list is sampled.
 447:         canvas!.width = w; canvas!.height = h
 448:       }
 449:       const time = (performance.now() - startTime) / 1000
-450: 
+450:
 451:       pipeline.render(time, w, h, (ctx, prog) => {
 452:         let _u = ctx.nextTextureUnit
 453:         const imageCache = imageCacheRef.current!
 454:         void imageCache; void _u
 455: ${bindLines}
 456:       })
-457: 
+457:
 458:       raf = requestAnimationFrame(frame)
 459:     }
 460:     frame()
-461: 
+461:
 462:     return () => {
 463:       cancelAnimationFrame(raf)
 464:       pipeline.destroy()
@@ -24346,14 +24605,14 @@ Note: file list is sampled.
 466:       imageCacheRef.current = null
 467:     }
 468:   }, [${propsList.join(', ')}])
-469: 
+469:
 470:   // Kick off image loads whenever a sampler prop changes. The animation
 471:   // loop picks up newly loaded textures on the next frame automatically.
 472:   useEffect(() => {
 473:     if (!imageCacheRef.current) return
 474: ${ensureLines || '    // no sampler2D props'}
 475:   }, [${samplerUniforms.map((u) => camelCase(u.name)).join(', ')}])
-476: 
+476:
 477:   return (
 478:     <canvas
 479:       ref={canvasRef}
@@ -24364,7 +24623,7 @@ Note: file list is sampled.
 484: }
 485: `
 486: }
-487: 
+487:
 488: function generateVanillaJs(
 489:   uniforms: GeneratedShader['uniforms'],
 490:   shaderName: string,
@@ -24380,55 +24639,55 @@ Note: file list is sampled.
 500:         `  { fragment: \`${escape(p.fragmentShader)}\`, readsPrevPass: ${p.readsPrevPass} },`
 501:     )
 502:     .join('\n')
-503: 
+503:
 504:   const optionsType = propUniforms
 505:     .map((u) => `  ${camelCase(u.name)}?: ${uniformTypeToTS(u.type)}`)
 506:     .join('\n')
-507: 
+507:
 508:   const accessExpr = (u: GeneratedShader['uniforms'][number]): string =>
 509:     `(options.${camelCase(u.name)} ?? ${formatDefault(u.default, u.type)})`
-510: 
+510:
 511:   const bindLines = propUniforms
 512:     .map((u) => '      ' + emitUniformBind(u, accessExpr(u)))
 513:     .join('\n')
 514:   const ensureLines = samplerUniforms
 515:     .map((u) => `  imageCache.ensure(${accessExpr(u)})`)
 516:     .join('\n')
-517: 
+517:
 518:   return `/**
 519:  * ${shaderName} - Multi-pass WebGL2 shader
 520:  * Generated by Shader Composer
 521:  */
-522: 
+522:
 523: ${INLINED_RUNTIME}
-524: 
+524:
 525: ${INLINED_IMAGE_HELPER}
-526: 
+526:
 527: const VERTEX_SHADER = \`${escapedVertex}\`
-528: 
+528:
 529: const PASSES: PipelinePass[] = [
 530: ${passSources}
 531: ]
-532: 
+532:
 533: export interface ${shaderName}Options {
 534: ${optionsType}
 535: }
-536: 
+536:
 537: export function create${shaderName}(canvas: HTMLCanvasElement, options: ${shaderName}Options = {}) {
 538:   const gl = canvas.getContext('webgl2', { alpha: false, antialias: true, premultipliedAlpha: false })
 539:   if (!gl) throw new Error('WebGL2 not supported')
-540: 
+540:
 541:   const pipeline = createShaderPipeline(gl, VERTEX_SHADER, PASSES)
 542:   const imageCache = createImageCache(gl)
-543: 
+543:
 544:   function ensureImages() {
 545: ${ensureLines || '    // no sampler2D options'}
 546:   }
 547:   ensureImages()
-548: 
+548:
 549:   const startTime = performance.now()
 550:   let animationId = 0
-551: 
+551:
 552:   function frame() {
 553:     const dpr = window.devicePixelRatio || 1
 554:     const w = canvas.clientWidth * dpr
@@ -24443,7 +24702,7 @@ Note: file list is sampled.
 563:     animationId = requestAnimationFrame(frame)
 564:   }
 565:   frame()
-566: 
+566:
 567:   return {
 568:     update(newOptions: Partial<${shaderName}Options>) {
 569:       Object.assign(options, newOptions)
@@ -24458,7 +24717,7 @@ Note: file list is sampled.
 578: }
 579: `
 580: }
-581: 
+581:
 582: function uniformTypeToTS(type: UniformType): string {
 583:   switch (type) {
 584:     case 'float':
@@ -24480,7 +24739,7 @@ Note: file list is sampled.
 600:       return 'number'
 601:   }
 602: }
-603: 
+603:
 604: function formatDefault(value: unknown, type: UniformType): string {
 605:   if (type === 'vec4Array') {
 606:     const v = value as { values?: number[][] } | undefined
@@ -24495,7 +24754,7 @@ Note: file list is sampled.
 615:   if (typeof value === 'object' && value !== null) return 'undefined'
 616:   return String(value)
 617: }
-618: 
+618:
 619: // Emit a single statement that binds one uniform from the prop expression
 620: // `expr`. The emitted code expects `gl`, `prog`, `_u` (next texture unit),
 621: // and `imageCache` to be in scope. Mutates `_u` for sampler2D.
@@ -24525,11 +24784,11 @@ Note: file list is sampled.
 645:     }
 646:   }
 647: }
-648: 
+648:
 649: function camelCase(str: string): string {
 650:   return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
 651: }
-652: 
+652:
 653: function escape(s: string): string {
 654:   return s.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$')
 655: }
@@ -24541,6 +24800,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx",
@@ -24550,12 +24810,13 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/property-panel.tsx</path>
 <type>file</type>
 <content>
 1: "use client";
-2: 
+2:
 3: import { useComposer } from "@/lib/shader-composer/context";
 4: import { LAYER_LIBRARY } from "@/lib/shader-composer/layers";
 5: import { Slider } from "@/components/ui/slider";
@@ -24577,7 +24838,7 @@ Note: file list is sampled.
 21: } from "@/lib/shader-composer/types";
 22: import { useRef } from "react";
 23: import { Plus, Trash2, Upload, X } from "lucide-react";
-24: 
+24:
 25: const BLEND_MODES: { value: BlendMode; label: string }[] = [
 26:   { value: "normal", label: "Normal" },
 27:   { value: "add", label: "Add" },
@@ -24587,7 +24848,7 @@ Note: file list is sampled.
 31:   { value: "softLight", label: "Soft Light" },
 32:   { value: "hardLight", label: "Hard Light" },
 33: ];
-34: 
+34:
 35: function ColorInput({
 36:   value,
 37:   onChange,
@@ -24600,14 +24861,14 @@ Note: file list is sampled.
 44:     .slice(0, 3)
 45:     .map((v) => Math.round(v * 255).toString(16).padStart(2, "0"))
 46:     .join("")}`;
-47: 
+47:
 48:   const handleHexChange = (hex: string) => {
 49:     const r = parseInt(hex.slice(1, 3), 16) / 255;
 50:     const g = parseInt(hex.slice(3, 5), 16) / 255;
 51:     const b = parseInt(hex.slice(5, 7), 16) / 255;
 52:     onChange(hasAlpha ? [r, g, b, value[3]] : [r, g, b]);
 53:   };
-54: 
+54:
 55:   return (
 56:     <div className="space-y-2">
 57:       <div className="flex items-center gap-2">
@@ -24643,14 +24904,14 @@ Note: file list is sampled.
 87:     </div>
 88:   );
 89: }
-90: 
+90:
 91: function rgbToHex(c: number[]): string {
 92:   return `#${c
 93:     .slice(0, 3)
 94:     .map((v) => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0"))
 95:     .join("")}`;
 96: }
-97: 
+97:
 98: function hexToRgb(hex: string): [number, number, number] {
 99:   return [
 100:     parseInt(hex.slice(1, 3), 16) / 255,
@@ -24658,7 +24919,7 @@ Note: file list is sampled.
 102:     parseInt(hex.slice(5, 7), 16) / 255,
 103:   ];
 104: }
-105: 
+105:
 106: function ColorArrayInput({
 107:   value,
 108:   maxLength,
@@ -24734,7 +24995,7 @@ Note: file list is sampled.
 178:     </div>
 179:   );
 180: }
-181: 
+181:
 182: function ImageInput({
 183:   value,
 184:   onChange,
@@ -24743,7 +25004,7 @@ Note: file list is sampled.
 187:   onChange: (value: ImageUniformValue) => void;
 188: }) {
 189:   const fileRef = useRef<HTMLInputElement>(null);
-190: 
+190:
 191:   const handleFile = (file: File) => {
 192:     const reader = new FileReader();
 193:     reader.onload = () => {
@@ -24753,12 +25014,12 @@ Note: file list is sampled.
 197:     };
 198:     reader.readAsDataURL(file);
 199:   };
-200: 
+200:
 201:   const handlePaste = (url: string) => {
 202:     if (!url) return;
 203:     onChange({ ...value, url, sourceKind: "url" });
 204:   };
-205: 
+205:
 206:   return (
 207:     <div className="space-y-2">
 208:       <div
@@ -24860,7 +25121,7 @@ Note: file list is sampled.
 304:     </div>
 305:   );
 306: }
-307: 
+307:
 308: function UniformControl({
 309:   uniform,
 310:   value,
@@ -24871,7 +25132,7 @@ Note: file list is sampled.
 315:   onChange: (value: unknown) => void;
 316: }) {
 317:   const { ui } = uniform;
-318: 
+318:
 319:   switch (uniform.type) {
 320:     case "float": {
 321:       const numValue = value as number;
@@ -24894,7 +25155,7 @@ Note: file list is sampled.
 338:         </div>
 339:       );
 340:     }
-341: 
+341:
 342:     case "int": {
 343:       const intValue = value as number;
 344:       return (
@@ -24916,7 +25177,7 @@ Note: file list is sampled.
 360:         </div>
 361:       );
 362:     }
-363: 
+363:
 364:     case "vec2": {
 365:       const vec2Value = value as number[];
 366:       return (
@@ -24955,13 +25216,13 @@ Note: file list is sampled.
 399:         </div>
 400:       );
 401:     }
-402: 
+402:
 403:     case "vec3":
 404:     case "vec4": {
 405:       const vecValue = value as number[];
 406:       // Check if this looks like a color (values between 0-1)
 407:       const isColor = ui?.color || vecValue.every((v) => v >= 0 && v <= 1);
-408: 
+408:
 409:       if (isColor) {
 410:         return (
 411:           <div className="space-y-2">
@@ -24973,7 +25234,7 @@ Note: file list is sampled.
 417:           </div>
 418:         );
 419:       }
-420: 
+420:
 421:       // Fallback to sliders for non-color vectors
 422:       return (
 423:         <div className="space-y-2">
@@ -25000,7 +25261,7 @@ Note: file list is sampled.
 444:         </div>
 445:       );
 446:     }
-447: 
+447:
 448:     case "sampler2D": {
 449:       const imgValue = value as ImageUniformValue;
 450:       return (
@@ -25013,7 +25274,7 @@ Note: file list is sampled.
 457:         </div>
 458:       );
 459:     }
-460: 
+460:
 461:     case "vec4Array": {
 462:       const arr = value as Vec4ArrayValue;
 463:       const max = ui?.array?.maxLength ?? uniform.arrayLength ?? 10;
@@ -25030,19 +25291,19 @@ Note: file list is sampled.
 474:         </div>
 475:       );
 476:     }
-477: 
+477:
 478:     default:
 479:       return null;
 480:   }
 481: }
-482: 
+482:
 483: export function PropertyPanel() {
 484:   const { state, updateUniform, updateBlendMode, updateOpacity } = useComposer();
-485: 
+485:
 486:   const selectedLayer = state.layers.find(
 487:     (l) => l.id === state.selectedLayerId
 488:   );
-489: 
+489:
 490:   if (!selectedLayer) {
 491:     return (
 492:       <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
@@ -25050,9 +25311,9 @@ Note: file list is sampled.
 494:       </div>
 495:     );
 496:   }
-497: 
+497:
 498:   const definition = LAYER_LIBRARY[selectedLayer.layerType];
-499: 
+499:
 500:   if (!definition) {
 
 (Showing lines 1-500 of 588. Use offset=501 to continue.)
@@ -25062,6 +25323,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx",
@@ -25071,12 +25333,13 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx</path>
 <type>file</type>
 <content>
 1: "use client";
-2: 
+2:
 3: import { useRef, useEffect } from "react";
 4: import { useComposer } from "@/lib/shader-composer/context";
 5: import {
@@ -25095,13 +25358,13 @@ Note: file list is sampled.
 18:   ImageUniformValue,
 19:   Vec4ArrayValue,
 20: } from "@/lib/shader-composer/types";
-21: 
+21:
 22: const FIT_MODE: Record<string, number> = {
 23:   cover: 0,
 24:   contain: 1,
 25:   fill: 2,
 26: };
-27: 
+27:
 28: function isImageValue(v: unknown): v is ImageUniformValue {
 29:   return (
 30:     typeof v === "object" &&
@@ -25109,7 +25372,7 @@ Note: file list is sampled.
 32:     "sourceKind" in (v as Record<string, unknown>)
 33:   );
 34: }
-35: 
+35:
 36: function isVec4ArrayValue(v: unknown): v is Vec4ArrayValue {
 37:   return (
 38:     typeof v === "object" &&
@@ -25117,7 +25380,7 @@ Note: file list is sampled.
 40:     Array.isArray((v as Vec4ArrayValue).values)
 41:   );
 42: }
-43: 
+43:
 44: export function ShaderPreview() {
 45:   const canvasRef = useRef<HTMLCanvasElement>(null);
 46:   const glRef = useRef<WebGL2RenderingContext | null>(null);
@@ -25126,26 +25389,26 @@ Note: file list is sampled.
 49:   const animationRef = useRef<number>(0);
 50:   const startTimeRef = useRef<number>(Date.now());
 51:   const textureCacheRef = useRef<TextureCache | null>(null);
-52: 
+52:
 53:   const { state } = useComposer();
-54: 
+54:
 55:   useEffect(() => {
 56:     const canvas = canvasRef.current;
 57:     if (!canvas) return;
-58: 
+58:
 59:     const gl = canvas.getContext("webgl2", {
 60:       alpha: false,
 61:       antialias: true,
 62:       premultipliedAlpha: false,
 63:     });
-64: 
+64:
 65:     if (!gl) {
 66:       console.error("WebGL2 not supported");
 67:       return;
 68:     }
 69:     glRef.current = gl;
 70:     textureCacheRef.current = new TextureCache(gl);
-71: 
+71:
 72:     return () => {
 73:       cancelAnimationFrame(animationRef.current);
 74:       pipelineRef.current?.destroy();
@@ -25154,15 +25417,15 @@ Note: file list is sampled.
 77:       textureCacheRef.current = null;
 78:     };
 79:   }, []);
-80: 
+80:
 81:   useEffect(() => {
 82:     const gl = glRef.current;
 83:     if (!gl) return;
-84: 
+84:
 85:     pipelineRef.current?.destroy();
 86:     pipelineRef.current = null;
 87:     passesRef.current = [];
-88: 
+88:
 89:     const enabledLayers = state.layers.filter((l) => l.enabled);
 90:     if (enabledLayers.length === 0) {
 91:       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -25170,7 +25433,7 @@ Note: file list is sampled.
 93:       gl.clear(gl.COLOR_BUFFER_BIT);
 94:       return;
 95:     }
-96: 
+96:
 97:     const { passes, vertexShader } = generateShader(enabledLayers);
 98:     passesRef.current = passes;
 99:     pipelineRef.current = createShaderPipeline(
@@ -25179,12 +25442,12 @@ Note: file list is sampled.
 102:       passes.map((p) => ({ fragment: p.fragmentShader, readsPrevPass: p.readsPrevPass }))
 103:     );
 104:   }, [state.layers]);
-105: 
+105:
 106:   useEffect(() => {
 107:     const gl = glRef.current;
 108:     const canvas = canvasRef.current;
 109:     if (!gl || !canvas) return;
-110: 
+110:
 111:     const render = () => {
 112:       const pipeline = pipelineRef.current;
 113:       const passes = passesRef.current;
@@ -25192,7 +25455,7 @@ Note: file list is sampled.
 115:         animationRef.current = requestAnimationFrame(render);
 116:         return;
 117:       }
-118: 
+118:
 119:       const dpr = window.devicePixelRatio || 1;
 120:       const w = Math.max(1, canvas.clientWidth * dpr);
 121:       const h = Math.max(1, canvas.clientHeight * dpr);
@@ -25200,9 +25463,9 @@ Note: file list is sampled.
 123:         canvas.width = w;
 124:         canvas.height = h;
 125:       }
-126: 
+126:
 127:       const time = (Date.now() - startTimeRef.current) / 1000;
-128: 
+128:
 129:       pipeline.render(time, w, h, (ctx, program) => {
 130:         const pass = passes[ctx.passIndex];
 131:         let textureUnit = ctx.nextTextureUnit;
@@ -25212,18 +25475,18 @@ Note: file list is sampled.
 135:           const definition = LAYER_LIBRARY[layer.layerType];
 136:           if (!definition) continue;
 137:           const prefix = sanitizeName(layer.id);
-138: 
+138:
 139:           const opacityLocation = gl.getUniformLocation(
 140:             program,
 141:             `u_${prefix}_opacity`
 142:           );
 143:           if (opacityLocation) gl.uniform1f(opacityLocation, layer.opacity);
-144: 
+144:
 145:           for (const uniform of definition.uniforms) {
 146:             const baseName = `u_${prefix}_${uniform.name}`;
 147:             const value = layer.uniformValues[uniform.name];
 148:             if (value === undefined) continue;
-149: 
+149:
 150:             switch (uniform.type) {
 151:               case "float":
 152:                 gl.uniform1f(
@@ -25320,14 +25583,14 @@ Note: file list is sampled.
 243:           }
 244:         }
 245:       });
-246: 
+246:
 247:       animationRef.current = requestAnimationFrame(render);
 248:     };
-249: 
+249:
 250:     animationRef.current = requestAnimationFrame(render);
 251:     return () => cancelAnimationFrame(animationRef.current);
 252:   }, [state.layers]);
-253: 
+253:
 254:   return (
 255:     <canvas
 256:       ref={canvasRef}
@@ -25343,6 +25606,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/paper-noise-texture.ts",
@@ -25352,6 +25616,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/paper-noise-texture.ts</path>
 <type>file</type>
@@ -25360,12 +25625,12 @@ Note: file list is sampled.
 2:   if (typeof window === 'undefined') {
 3:     return undefined;
 4:   }
-5: 
+5:
 6:   const img = new Image();
 7:   img.src = noiseSrc;
 8:   return img;
 9: }
-10: 
+10:
 11: const noiseSrc =
 12:   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAADAFBMVEUCAQMBAf7/AgMD/wID//7+/wT+A/4FAmYIAqIKnw7+//4EAisEAUgGBIYIewkFVhEJjAoFAuEFA8GWAv6T/gz+AzER/25z/wu1/w1nAggL/049BQUC/y39BrckAQQp/wr+AZYNOvx9AQkN/pELUvMFaAZTBAgIRgsO/7cJNQT+YgkLwRELIf5O/wlP/v79/q4IGAYLK4+kAQ1tAv4IdMpc/4xNMBF2/lQN2vTFAws9BLf9/3kJJgsMRF3+HwkLxfv9BVL8BHEN/9gMsg7cA/13/vv9OAqWA0sOofP9TAsIe/4FQqoF4Q/aAgsQwnKQAwa5BP0JW21NqgmY/f3Z/wkI7whGjAr7oAkLrGGf/JH8jg4zAj4R0Qr+xQ8VZv1Y/8O6//wfA/5bAT79/lQ1AGn8egkKdom0BgYOsfjtBAVDBoz9/zG0A238P/tsbQ/+A9rIig/HCEtvIgrM/1lwBWgIlmr62Q5qA5FndnEIXa+PthUMrqiRfw6SAodE/0cQm6UOirP5swuMCrEOjvo/dBVSA/79KvCgSBL9M1E/TwjUag/e//2WdPZ2TQ9ZMvfPxRD7aPpmOFqXSPu3pww5B/wR00wTgVf3y6dXW137ffv3c7GNj/icJG+4xvYQ61++CZOVll8p//uXzgyTKg6m/1L47w3cAY8EI1T7xvgKbkr7UsGBJPNsB7xL2wuvd5z3svmDmgipcGT8jez8oP0R6bNYuVpUxRn9LZVkqIijYxK7K/dZBtjH/71ZT/1myfz52fVm2WBfk0vxUFj+Vfv9/9plbfz3yl6VUl+flbNijrpfpfz5TZSGRKAI15X14pSt4vwQKMHOTQlKifz1sKW6A9u2A7R65waprffGcfeY/8iyUsFh3rn4lGERMUHJolveAs+PBdb5iZFuX8S8SH7Ekfe8Lwy0t5cLwsD3s2TzbHXa/478nLtNQ6NtstW15QvaKgr25FJm4vyXwFlPInIPId79dUr77fmr18BGdLHIS/mGx6dKw64L7v6k32XMJrWl8ELA3C70AAAgAElEQVR42gTBCTyUeQMA4P97zIx3ZjDvHGaMYQxjhhm33BGTY8h95sodkaNkXVGhKGdUri+SIxQ6nG36VUhS0rnZ6tsVfR2ibKlta7/d5wH7kMaTxlOVozEoHgU29/ayNC9YlrZdyVT+Lf/dAsDDc/xfzX+MLBa2LK23goK0aXhCxZ8qIAdXYj+c8zviDOtRkhEtRxNajHWLuCtdcfQqV2mgRlpDD6wJpKpBrGON27qa4nNeQOU8ViU0pZ2eCMN5mWO7bfR17Q9ItpsqgZJNJcJSq6cSWiV4q1zIDMmkqzAdpqT8gI5G3qm3YEyliPPG9kiwF7P99ghNn7zLs9EXFvFdLmlOdKBAp2ZyGTcI4JuBPYrWyGCYwgFwOhTmHeYC0zEDSp1iX3W71cqoW332M++OAYJUrEySVX0c5lzmDgLcAQ1yFVVOgQ5l+j1k6TEBidTUek7OF4T2kDYo2eVGwOrglKyGBXYyBrxFv9ptR16B+BJ0IFCsryJve0ZEuzNjLeEcw/0aK/kyku6JW0BiicnCBFptKAQRRNRrtmUV/YOn6GNMHXddsFf1YZCHMnFWgcyp2gnLOWTTBcVQVvM/FTgJAHl0NWHHzL0eqzuRXTDCEO03DoThV3kezhrtpNqKW0Bb3MSSAJMmmVnLEpexS8JrmYOr4KXz1cUmByty3N/sbEzBSP8tfGSCJ3caYDhymsPdGbwO4HAl/+PYDCZNf+H6kofkNk4N4Zn6NM4y1lJD7Tt2gyklnrR48dgbfHXgd9uzHvpamm3wKhcaLcawXWxL5T97dL7MeW3aZ7NDWksVZyZv8VQyjm94CDU7UjtbedqOCvB2DdE+wFC6a5JcEIgkKRJ8cfTGmW/2jMS5LEWWKiGY0BFaDNQ... (line truncated to 2000 chars)
 
@@ -25376,6 +25641,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts",
@@ -25385,13 +25651,14 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { gen, SCREEN_P } from './_helpers'
-3: 
+3:
 4: export const scalarFieldLayer = gen({
 5:   id: 'scalar-field',
 6:   name: 'Scalar Field',
@@ -25487,10 +25754,10 @@ Note: file list is sampled.
 96:   },
 97:   outputKind: 'scalar',
 98: })
-99: 
+99:
 100: const screenP = `vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
 101: vec2 p = (uv - 0.5) * _ar;`
-102: 
+102:
 103: // Plasma — multi-octave layered sin/cos pattern; designer favourite for
 104: // liquid colour wash backgrounds.
 105: export const plasmaLayer: LayerDefinition = {
@@ -25524,7 +25791,7 @@ Note: file list is sampled.
 133: return vec4(col, 1.0);`,
 134:   },
 135: }
-136: 
+136:
 137: // Perlin Noise (3D, time as z) — classic FBM via simplex2D treated as gradient.
 138: // Reuses simplex2D helper from glsl-utils.
 139: export const perlinNoiseLayer: LayerDefinition = {
@@ -25563,7 +25830,7 @@ Note: file list is sampled.
 172: return vec4(mix({{color1}}, {{color2}}, n), 1.0);`,
 173:   },
 174: }
-175: 
+175:
 176: // FlowField — vector field magnitude rendered as a swirling gradient.
 177: export const flowFieldLayer: LayerDefinition = {
 178:   id: 'flow-field',
@@ -25594,7 +25861,7 @@ Note: file list is sampled.
 203: return vec4(mix({{color1}}, {{color2}}, v), 1.0);`,
 204:   },
 205: }
-206: 
+206:
 207: // Aurora — domain-warped trig-fold noise (Paper "neuro noise" family).
 208: // 15 iterations with exponential scale growth and an accumulating sine sum
 209: // produces tendril-like networks rather than smooth bands.
@@ -25634,7 +25901,7 @@ Note: file list is sampled.
 243: return vec4(col, 1.0);`,
 244:   },
 245: }
-246: 
+246:
 247: // Spiral — animated polar-coordinate spiral.
 248: export const spiralLayer: LayerDefinition = {
 249:   id: 'spiral',
@@ -25665,7 +25932,7 @@ Note: file list is sampled.
 274: return vec4(mix({{colorBack}}, {{colorFront}}, m), 1.0);`,
 275:   },
 276: }
-277: 
+277:
 278: // ContourLines — equipotential lines from a noise field.
 279: export const contourLinesLayer: LayerDefinition = {
 280:   id: 'contour-lines',
@@ -25693,7 +25960,7 @@ Note: file list is sampled.
 302: return vec4(mix({{colorBack}}, {{colorFront}}, m), 1.0);`,
 303:   },
 304: }
-305: 
+305:
 306: // Polar Bands — twisted radial bands; the core primitive behind Paper's Swirl.
 307: // Colors come from a downstream color-ramp (outputKind: scalar) or use
 308: // colorBack/colorFront for a simple two-color result.
@@ -25758,7 +26025,7 @@ Note: file list is sampled.
 367: return vec4(color, 1.0);`,
 368:   },
 369: }
-370: 
+370:
 371: // Spiral Stripe — logarithmic spiral stripe mask, Paper-Spiral algorithm.
 372: // colorBack/colorFront for two-color output; or feed into a color-ramp.
 373: export const spiralStripeLayer: LayerDefinition = {
@@ -25817,7 +26084,7 @@ Note: file list is sampled.
 426: return vec4(color, 1.0);`,
 427:   },
 428: }
-429: 
+429:
 430: // Voronoi Cells — IQ two-pass voronoi with per-cell color from a vec4Array
 431: // palette and adjustable gap/glow. Replaces the simple approx voronoi.
 432: export const voronoiCellsLayer: LayerDefinition = {
@@ -25897,6 +26164,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts",
@@ -25906,6 +26174,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/paper-shaders.ts</path>
 <type>file</type>
@@ -25921,13 +26190,13 @@ Note: file list is sampled.
 9: //   * `texture(u_noiseTexture, x)` lookups → procedural `hash21(x)` (Paper's
 10: //     own pre-computed noise texture is itself produced from hash21, so the
 11: //     visual difference is negligible at typical scales)
-12: 
+12:
 13: import type { LayerDefinition } from '../types'
 14: import { gen } from './_helpers'
-15: 
+15:
 16: const SCREEN_OBJECT_UV = `vec2 _ar = vec2(u_resolution.x / max(u_resolution.y, 1.0), 1.0);
 17: vec2 p = (uv - 0.5) * _ar;`
-18: 
+18:
 19: // ──────────────────────────────────────────────────────────────────────────
 20: // Mesh Gradient — IDW of N moving color spots over a swirled, distorted UV,
 21: // post-mixed with a B/W grain overlay. Direct port of Paper's mesh-gradient.ts.
@@ -26013,7 +26282,7 @@ Note: file list is sampled.
 101: return vec4(color, 1.0);`,
 102:   },
 103: })
-104: 
+104:
 105: // ──────────────────────────────────────────────────────────────────────────
 106: // Neuro Noise — 15-iter rotate-and-grow trig-fold accumulator.
 107: // Direct port of Paper's neuro-noise.ts.
@@ -26069,7 +26338,7 @@ Note: file list is sampled.
 157: return vec4(color, 1.0);`,
 158:   },
 159: })
-160: 
+160:
 161: // ──────────────────────────────────────────────────────────────────────────
 162: // Swirl — angle×bandCount pattern with vortex twist; direct port of swirl.ts.
 163: export const paperSwirlLayer = gen({
@@ -26138,7 +26407,7 @@ Note: file list is sampled.
 226: return vec4(color, 1.0);`,
 227:   },
 228: })
-229: 
+229:
 230: // ──────────────────────────────────────────────────────────────────────────
 231: // Spiral — animated logarithmic spiral with stroke, distortion, noise.
 232: // Direct port of spiral.ts.
@@ -26196,7 +26465,7 @@ Note: file list is sampled.
 284: return vec4(color, 1.0);`,
 285:   },
 286: })
-287: 
+287:
 288: // ──────────────────────────────────────────────────────────────────────────
 289: // Voronoi (Paper) — IQ two-pass voronoi with cell colors, gap, glow.
 290: // Direct port of voronoi.ts. Uses Paper's 256×256 noise texture (bound globally
@@ -26284,7 +26553,7 @@ Note: file list is sampled.
 372: return vec4(color, 1.0);`,
 373:   },
 374: })
-375: 
+375:
 376: // ──────────────────────────────────────────────────────────────────────────
 377: // Simplex Noise (Paper) — two-sample sum mapped through a stepped color ramp.
 378: // Distinct from our existing FBM-based `simplex-noise` primitive: this is
@@ -26340,7 +26609,7 @@ Note: file list is sampled.
 428: return vec4(gradient, 1.0);`,
 429:   },
 430: })
-431: 
+431:
 432: export const PAPER_SHADER_LAYERS: Record<string, LayerDefinition> = {
 433:   'paper-mesh-gradient': paperMeshGradientLayer,
 434:   'paper-neuro-noise': paperNeuroNoiseLayer,
@@ -26361,6 +26630,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/liquid-metal.ts",
@@ -26370,6 +26640,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/liquid-metal.ts</path>
 <type>file</type>
@@ -26377,7 +26648,7 @@ Note: file list is sampled.
 1: import type { ShaderMotionParams } from '../shader-mount.js';
 2: import { type ShaderSizingParams, type ShaderSizingUniforms } from '../shader-sizing.js';
 3: import { declarePI, rotation2, simplexNoise, colorBandingFix } from '../shader-utils.js';
-4: 
+4:
 5: /**
 6:  * Futuristic liquid metal material applied to uploaded logo or abstract shape.
 7:  * Fluid motion imitation applied over user image with animated stripe pattern
@@ -26421,20 +26692,20 @@ Note: file list is sampled.
 45:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 46:  *
 47:  */
-48: 
+48:
 49: // language=GLSL
 50: export const liquidMetalFragmentShader: string = `#version 300 es
 51: precision mediump float;
-52: 
+52:
 53: uniform sampler2D u_image;
 54: uniform float u_imageAspectRatio;
-55: 
+55:
 56: uniform vec2 u_resolution;
 57: uniform float u_time;
-58: 
+58:
 59: uniform vec4 u_colorBack;
 60: uniform vec4 u_colorTint;
-61: 
+61:
 62: uniform float u_softness;
 63: uniform float u_repetition;
 64: uniform float u_shiftRed;
@@ -26442,49 +26713,49 @@ Note: file list is sampled.
 66: uniform float u_distortion;
 67: uniform float u_contour;
 68: uniform float u_angle;
-69: 
+69:
 70: uniform float u_shape;
 71: uniform bool u_isImage;
-72: 
+72:
 73: in vec2 v_objectUV;
 74: in vec2 v_responsiveUV;
 75: in vec2 v_responsiveBoxGivenSize;
 76: in vec2 v_imageUV;
-77: 
+77:
 78: out vec4 fragColor;
-79: 
+79:
 80: ${ declarePI }
 81: ${ rotation2 }
 82: ${ simplexNoise }
-83: 
+83:
 84: float getColorChanges(float c1, float c2, float stripe_p, vec3 w, float blur, float bump, float tint) {
-85: 
+85:
 86:   float ch = mix(c2, c1, smoothstep(.0, 2. * blur, stripe_p));
-87: 
+87:
 88:   float border = w[0];
 89:   ch = mix(ch, c2, smoothstep(border, border + 2. * blur, stripe_p));
-90: 
+90:
 91:   if (u_isImage == true) {
 92:     bump = smoothstep(.2, .8, bump);
 93:   }
 94:   border = w[0] + .4 * (1. - bump) * w[1];
 95:   ch = mix(ch, c1, smoothstep(border, border + 2. * blur, stripe_p));
-96: 
+96:
 97:   border = w[0] + .5 * (1. - bump) * w[1];
 98:   ch = mix(ch, c2, smoothstep(border, border + 2. * blur, stripe_p));
-99: 
+99:
 100:   border = w[0] + w[1];
 101:   ch = mix(ch, c1, smoothstep(border, border + 2. * blur, stripe_p));
-102: 
+102:
 103:   float gradient_t = (stripe_p - w[0] - w[1]) / w[2];
 104:   float gradient = mix(c1, c2, smoothstep(0., 1., gradient_t));
 105:   ch = mix(ch, gradient, smoothstep(border, border + .5 * blur, stripe_p));
-106: 
+106:
 107:   // Tint color is applied with color burn blending
 108:   ch = mix(ch, 1. - min(1., (1. - ch) / max(tint, 0.0001)), u_colorTint.a);
 109:   return ch;
 110: }
-111: 
+111:
 112: float getImgFrame(vec2 uv, float th) {
 113:   float frame = 1.;
 114:   frame *= smoothstep(0., th, uv.y);
@@ -26493,51 +26764,51 @@ Note: file list is sampled.
 117:   frame *= 1.0 - smoothstep(1. - th, 1., uv.x);
 118:   return frame;
 119: }
-120: 
+120:
 121: float blurEdge3x3(sampler2D tex, vec2 uv, vec2 dudx, vec2 dudy, float radius, float centerSample) {
 122:   vec2 texel = 1.0 / vec2(textureSize(tex, 0));
 123:   vec2 r = radius * texel;
-124: 
+124:
 125:   float w1 = 1.0, w2 = 2.0, w4 = 4.0;
 126:   float norm = 16.0;
 127:   float sum = w4 * centerSample;
-128: 
+128:
 129:   sum += w2 * textureGrad(tex, uv + vec2(0.0, -r.y), dudx, dudy).r;
 130:   sum += w2 * textureGrad(tex, uv + vec2(0.0, r.y), dudx, dudy).r;
 131:   sum += w2 * textureGrad(tex, uv + vec2(-r.x, 0.0), dudx, dudy).r;
 132:   sum += w2 * textureGrad(tex, uv + vec2(r.x, 0.0), dudx, dudy).r;
-133: 
+133:
 134:   sum += w1 * textureGrad(tex, uv + vec2(-r.x, -r.y), dudx, dudy).r;
 135:   sum += w1 * textureGrad(tex, uv + vec2(r.x, -r.y), dudx, dudy).r;
 136:   sum += w1 * textureGrad(tex, uv + vec2(-r.x, r.y), dudx, dudy).r;
 137:   sum += w1 * textureGrad(tex, uv + vec2(r.x, r.y), dudx, dudy).r;
-138: 
+138:
 139:   return sum / norm;
 140: }
-141: 
+141:
 142: float lst(float edge0, float edge1, float x) {
 143:   return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 144: }
-145: 
+145:
 146: void main() {
-147: 
+147:
 148:   const float firstFrameOffset = 2.8;
 149:   float t = .3 * (u_time + firstFrameOffset);
-150: 
+150:
 151:   vec2 uv = v_imageUV;
 152:   vec2 dudx = dFdx(v_imageUV);
 153:   vec2 dudy = dFdy(v_imageUV);
 154:   vec4 img = textureGrad(u_image, uv, dudx, dudy);
-155: 
+155:
 156:   if (u_isImage == false) {
 157:     uv = v_objectUV + .5;
 158:     uv.y = 1. - uv.y;
 159:   }
-160: 
+160:
 161:   float cycleWidth = u_repetition;
 162:   float edge = 0.;
 163:   float contOffset = 1.;
-164: 
+164:
 165:   vec2 rotatedUV = uv - vec2(.5);
 166:   float angle = (-u_angle + 70.) * PI / 180.;
 167:   float cosA = cos(angle);
@@ -26546,7 +26817,7 @@ Note: file list is sampled.
 170:   rotatedUV.x * cosA - rotatedUV.y * sinA,
 171:   rotatedUV.x * sinA + rotatedUV.y * cosA
 172:   ) + vec2(.5);
-173: 
+173:
 174:   if (u_isImage == true) {
 175:     float edgeRaw = img.r;
 176:     edge = blurEdge3x3(u_image, uv, dudx, dudy, 6., edgeRaw);
@@ -26564,7 +26835,7 @@ Note: file list is sampled.
 188:       maskX = pow(maskX, .25);
 189:       maskY = pow(maskY, .25);
 190:       edge = clamp(1. - maskX * maskY, 0., 1.);
-191: 
+191:
 192:       uv = v_responsiveUV;
 193:       if (ratio > 1.) {
 194:         uv.y /= ratio;
@@ -26573,10 +26844,10 @@ Note: file list is sampled.
 197:       }
 198:       uv += .5;
 199:       uv.y = 1. - uv.y;
-200: 
+200:
 201:       cycleWidth *= 2.;
 202:       contOffset = 1.5;
-203: 
+203:
 204:     } else if (u_shape < 2.) {
 205:       // circle
 206:       vec2 shapeUV = uv - .5;
@@ -26586,17 +26857,17 @@ Note: file list is sampled.
 210:       // daisy
 211:       vec2 shapeUV = uv - .5;
 212:       shapeUV *= 1.68;
-213: 
+213:
 214:       float r = length(shapeUV) * 2.;
 215:       float a = atan(shapeUV.y, shapeUV.x) + .2;
 216:       r *= (1. + .05 * sin(3. * a + 2. * t));
 217:       float f = abs(cos(a * 3.));
 218:       edge = smoothstep(f, f + .7, r);
 219:       edge *= edge;
-220: 
+220:
 221:       uv *= .8;
 222:       cycleWidth *= 1.6;
-223: 
+223:
 224:     } else if (u_shape < 4.) {
 225:       // diamond
 226:       vec2 shapeUV = uv - .5;
@@ -26628,11 +26899,11 @@ Note: file list is sampled.
 252:       edge = 1. - smoothstep(.65, .9, edge);
 253:       edge = pow(edge, 4.);
 254:     }
-255: 
+255:
 256:     edge = mix(smoothstep(.9 - 2. * fwidth(edge), .9, edge), edge, smoothstep(0.0, 0.4, u_contour));
-257: 
+257:
 258:   }
-259: 
+259:
 260:   float opacity = 0.;
 261:   if (u_isImage == true) {
 262:     opacity = img.g;
@@ -26646,70 +26917,70 @@ Note: file list is sampled.
 270:       edge = 1.8 * pow(edge, 1.5);
 271:     }
 272:   }
-273: 
+273:
 274:   float diagBLtoTR = rotatedUV.x - rotatedUV.y;
 275:   float diagTLtoBR = rotatedUV.x + rotatedUV.y;
-276: 
+276:
 277:   vec3 color = vec3(0.);
 278:   vec3 color1 = vec3(.98, 0.98, 1.);
 279:   vec3 color2 = vec3(.1, .1, .1 + .1 * smoothstep(.7, 1.3, diagTLtoBR));
-280: 
+280:
 281:   vec2 grad_uv = uv - .5;
-282: 
+282:
 283:   float dist = length(grad_uv + vec2(0., .2 * diagBLtoTR));
 284:   grad_uv = rotate(grad_uv, (.25 - .2 * diagBLtoTR) * PI);
 285:   float direction = grad_uv.x;
-286: 
+286:
 287:   float bump = pow(1.8 * dist, 1.2);
 288:   bump = 1. - bump;
 289:   bump *= pow(uv.y, .3);
-290: 
-291: 
+290:
+291:
 292:   float thin_strip_1_ratio = .12 / cycleWidth * (1. - .4 * bump);
 293:   float thin_strip_2_ratio = .07 / cycleWidth * (1. + .4 * bump);
 294:   float wide_strip_ratio = (1. - thin_strip_1_ratio - thin_strip_2_ratio);
-295: 
+295:
 296:   float thin_strip_1_width = cycleWidth * thin_strip_1_ratio;
 297:   float thin_strip_2_width = cycleWidth * thin_strip_2_ratio;
-298: 
+298:
 299:   float noise = snoise(uv - t);
-300: 
+300:
 301:   edge += (1. - edge) * u_distortion * noise;
-302: 
+302:
 303:   direction += diagBLtoTR;
 304:   float contour = 0.;
 305:   direction -= 2. * noise * diagBLtoTR * (smoothstep(0., 1., edge) * (1.0 - smoothstep(0., 1., edge)));
 306:   direction *= mix(1., 1. - edge, smoothstep(.5, 1., u_contour));
 307:   direction -= 1.7 * edge * smoothstep(.5, 1., u_contour);
 308:   direction += .2 * pow(u_contour, 4.) * (1.0 - smoothstep(0., 1., edge));
-309: 
+309:
 310:   bump *= clamp(pow(uv.y, .1), .3, 1.);
 311:   direction *= (.1 + (1.1 - edge) * bump);
-312: 
+312:
 313:   direction *= (.4 + .6 * (1.0 - smoothstep(.5, 1., edge)));
 314:   direction += .18 * (smoothstep(.1, .2, uv.y) * (1.0 - smoothstep(.2, .4, uv.y)));
 315:   direction += .03 * (smoothstep(.1, .2, 1. - uv.y) * (1.0 - smoothstep(.2, .4, 1. - uv.y)));
-316: 
+316:
 317:   direction *= (.5 + .5 * pow(uv.y, 2.));
 318:   direction *= cycleWidth;
 319:   direction -= t;
-320: 
-321: 
+320:
+321:
 322:   float colorDispersion = (1. - bump);
 323:   colorDispersion = clamp(colorDispersion, 0., 1.);
 324:   float dispersionRed = colorDispersion;
 325:   dispersionRed += .03 * bump * noise;
 326:   dispersionRed += 5. * (smoothstep(-.1, .2, uv.y) * (1.0 - smoothstep(.1, .5, uv.y))) * (smoothstep(.4, .6, bump) * (1.0 - smoothstep(.4, 1., bump)));
 327:   dispersionRed -= diagBLtoTR;
-328: 
+328:
 329:   float dispersionBlue = colorDispersion;
 330:   dispersionBlue *= 1.3;
 331:   dispersionBlue += (smoothstep(0., .4, uv.y) * (1.0 - smoothstep(.1, .8, uv.y))) * (smoothstep(.4, .6, bump) * (1.0 - smoothstep(.4, .8, bump)));
 332:   dispersionBlue -= .2 * edge;
-333: 
+333:
 334:   dispersionRed *= (u_shiftRed / 20.);
 335:   dispersionBlue *= (u_shiftBlue / 20.);
-336: 
+336:
 337:   float blur = 0.;
 338:   float rExtraBlur = 0.;
 339:   float gExtraBlur = 0.;
@@ -26723,7 +26994,7 @@ Note: file list is sampled.
 347:   } else {
 348:     blur = u_softness / 15. + .3 * contour;
 349:   }
-350: 
+350:
 351:   vec3 w = vec3(thin_strip_1_width, thin_strip_2_width, wide_strip_ratio);
 352:   w[1] -= .02 * smoothstep(.0, 1., edge + bump);
 353:   float stripe_r = fract(direction + dispersionRed);
@@ -26732,27 +27003,27 @@ Note: file list is sampled.
 356:   float g = getColorChanges(color1.g, color2.g, stripe_g, w, blur + fwidth(stripe_g) + gExtraBlur, bump, u_colorTint.g);
 357:   float stripe_b = fract(direction - dispersionBlue);
 358:   float b = getColorChanges(color1.b, color2.b, stripe_b, w, blur + fwidth(stripe_b), bump, u_colorTint.b);
-359: 
+359:
 360:   color = vec3(r, g, b);
 361:   color *= opacity;
-362: 
+362:
 363:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 364:   color = color + bgColor * (1. - opacity);
 365:   opacity = opacity + u_colorBack.a * (1. - opacity);
-366: 
+366:
 367:   ${ colorBandingFix }
-368: 
+368:
 369:   fragColor = vec4(color, opacity);
 370: }
 371: `;
-372: 
+372:
 373: // Configuration for Poisson solver
 374: export const POISSON_CONFIG_OPTIMIZED = {
 375:   measurePerformance: false, // Set to true to see performance metrics
 376:   workingSize: 512, // Size to solve Poisson at (will upscale to original size)
 377:   iterations: 40, // SOR converges ~2-20x faster than standard Gauss-Seidel
 378: };
-379: 
+379:
 380: // Precomputed pixel data for sparse processing
 381: interface SparsePixelData {
 382:   interiorPixels: Uint32Array; // Indices of interior pixels
@@ -26762,29 +27033,29 @@ Note: file list is sampled.
 386:   // Layout: [east, west, north, south] for each pixel
 387:   neighborIndices: Int32Array;
 388: }
-389: 
+389:
 390: export function toProcessedLiquidMetal(file: File | string): Promise<{ imageData: ImageData; pngBlob: Blob }> {
 391:   const canvas = document.createElement('canvas');
 392:   const ctx = canvas.getContext('2d');
 393:   const isBlob = typeof file === 'string' && file.startsWith('blob:');
-394: 
+394:
 395:   return new Promise((resolve, reject) => {
 396:     if (!file || !ctx) {
 397:       reject(new Error('Invalid file or canvas context'));
 398:       return;
 399:     }
-400: 
+400:
 401:     const blobContentTypePromise = isBlob && fetch(file).then((res) => res.headers.get('Content-Type'));
 402:     const img = new Image();
 403:     img.crossOrigin = 'anonymous';
 404:     const totalStartTime = performance.now();
-405: 
+405:
 406:     img.onload = async () => {
 407:       // Force SVG to load at a high fidelity size if it's an SVG
 408:       let isSVG;
-409: 
+409:
 410:       const blobContentType = await blobContentTypePromise;
-411: 
+411:
 412:       if (blobContentType) {
 413:         isSVG = blobContentType === 'image/svg+xml';
 414:       } else if (typeof file === 'string') {
@@ -26792,15 +27063,15 @@ Note: file list is sampled.
 416:       } else {
 417:         isSVG = file.type === 'image/svg+xml';
 418:       }
-419: 
+419:
 420:       let originalWidth = img.width || img.naturalWidth;
 421:       let originalHeight = img.height || img.naturalHeight;
-422: 
+422:
 423:       if (isSVG) {
 424:         // Scale SVG to max dimension while preserving aspect ratio
 425:         const svgMaxSize = 4096;
 426:         const aspectRatio = originalWidth / originalHeight;
-427: 
+427:
 428:         if (originalWidth > originalHeight) {
 429:           originalWidth = svgMaxSize;
 430:           originalHeight = svgMaxSize / aspectRatio;
@@ -26808,20 +27079,20 @@ Note: file list is sampled.
 432:           originalHeight = svgMaxSize;
 433:           originalWidth = svgMaxSize * aspectRatio;
 434:         }
-435: 
+435:
 436:         img.width = originalWidth;
 437:         img.height = originalHeight;
 438:       }
-439: 
+439:
 440:       // Always scale to working resolution for consistency
 441:       const minDimension = Math.min(originalWidth, originalHeight);
 442:       const targetSize = POISSON_CONFIG_OPTIMIZED.workingSize;
-443: 
+443:
 444:       // Calculate scale to fit within workingSize
 445:       const scaleFactor = targetSize / minDimension;
 446:       const width = Math.round(originalWidth * scaleFactor);
 447:       const height = Math.round(originalHeight * scaleFactor);
-448: 
+448:
 449:       if (POISSON_CONFIG_OPTIMIZED.measurePerformance) {
 450:         console.log(`[Processing Mode]`);
 451:         console.log(`  Original: ${originalWidth}×${originalHeight}`);
@@ -26830,28 +27101,28 @@ Note: file list is sampled.
 454:           console.log(`  Speedup: ~${Math.round(1 / (scaleFactor * scaleFactor))}×`);
 455:         }
 456:       }
-457: 
+457:
 458:       canvas.width = originalWidth;
 459:       canvas.height = originalHeight;
-460: 
+460:
 461:       // Use a smaller canvas for shape detection and Poisson solving
 462:       const shapeCanvas = document.createElement('canvas');
 463:       shapeCanvas.width = width;
 464:       shapeCanvas.height = height;
-465: 
+465:
 466:       const shapeCtx = shapeCanvas.getContext('2d')!;
 467:       shapeCtx.drawImage(img, 0, 0, width, height);
-468: 
+468:
 469:       // 1) Build optimized masks using TypedArrays
 470:       const startMask = performance.now();
-471: 
+471:
 472:       const shapeImageData = shapeCtx.getImageData(0, 0, width, height);
 473:       const data = shapeImageData.data;
-474: 
+474:
 475:       // Use Uint8Array for masks (1 byte per pixel vs 8+ bytes for boolean array)
 476:       const shapeMask = new Uint8Array(width * height);
 477:       const boundaryMask = new Uint8Array(width * height);
-478: 
+478:
 479:       // First pass: identify shape pixels
 480:       let shapePixelCount = 0;
 481:       for (let i = 0, idx = 0; i < data.length; i += 4, idx++) {
@@ -26860,20 +27131,20 @@ Note: file list is sampled.
 484:         shapeMask[idx] = isShape;
 485:         shapePixelCount += isShape;
 486:       }
-487: 
+487:
 488:       // 2) Optimized boundary detection using sparse approach
 489:       // Only check shape pixels, not all pixels
 490:       const boundaryIndices: number[] = [];
 491:       const interiorIndices: number[] = [];
-492: 
+492:
 493:       for (let y = 0; y < height; y++) {
 494:         for (let x = 0; x < width; x++) {
 495:           const idx = y * width + x;
 496:           if (!shapeMask[idx]) continue;
-497: 
+497:
 498:           // Check if pixel is on boundary (optimized: early exit)
 499:           let isBoundary = false;
-500: 
+500:
 501:           // Check 4-connected neighbors first (most common case)
 502:           if (x === 0 || x === width - 1 || y === 0 || y === height - 1) {
 503:             isBoundary = true;
@@ -26889,7 +27160,7 @@ Note: file list is sampled.
 513:               !shapeMask[idx + width - 1] || // bottom-left
 514:               !shapeMask[idx + width + 1]; // bottom-right
 515:           }
-516: 
+516:
 517:           if (isBoundary) {
 518:             boundaryMask[idx] = 1;
 519:             boundaryIndices.push(idx);
@@ -26902,6 +27173,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/heatmap.ts",
@@ -26911,6 +27183,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shaders/heatmap.ts</path>
 <type>file</type>
@@ -26918,11 +27191,11 @@ Note: file list is sampled.
 1: import type { vec4 } from '../types.js';
 2: import type { ShaderMotionParams } from '../shader-mount.js';
 3: import type { ShaderSizingParams, ShaderSizingUniforms } from '../shader-sizing.js';
-4: 
+4:
 5: export const heatmapMeta = {
 6:   maxColorCount: 10,
 7: } as const;
-8: 
+8:
 9: /**
 10:  * A glowing gradient of colors flowing through an input shape.
 11:  * The effect creates a smoothly animated wave of intensity across the image.
@@ -26959,32 +27232,32 @@ Note: file list is sampled.
 42:  * - u_imageAspectRatio (float): Aspect ratio of the source image
 43:  *
 44:  */
-45: 
+45:
 46: // language=GLSL
 47: export const heatmapFragmentShader: string = `#version 300 es
 48: precision highp float;
-49: 
+49:
 50: in mediump vec2 v_imageUV;
 51: in mediump vec2 v_objectUV;
 52: out vec4 fragColor;
-53: 
+53:
 54: uniform sampler2D u_image;
 55: uniform float u_time;
 56: uniform mediump float u_imageAspectRatio;
-57: 
+57:
 58: uniform vec4 u_colorBack;
 59: uniform vec4 u_colors[${ heatmapMeta.maxColorCount }];
 60: uniform float u_colorsCount;
-61: 
+61:
 62: uniform float u_angle;
 63: uniform float u_noise;
 64: uniform float u_innerGlow;
 65: uniform float u_outerGlow;
 66: uniform float u_contour;
-67: 
+67:
 68: #define TWO_PI 6.28318530718
 69: #define PI 3.14159265358979323846
-70: 
+70:
 71: float getImgFrame(vec2 uv, float th) {
 72:   float frame = 1.;
 73:   frame *= smoothstep(0., th, uv.y);
@@ -26993,31 +27266,31 @@ Note: file list is sampled.
 76:   frame *= 1. - smoothstep(1. - th, 1., uv.x);
 77:   return frame;
 78: }
-79: 
+79:
 80: float circle(vec2 uv, vec2 c, vec2 r) {
 81:   return 1. - smoothstep(r[0], r[1], length(uv - c));
 82: }
-83: 
+83:
 84: float lst(float edge0, float edge1, float x) {
 85:   return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
 86: }
-87: 
+87:
 88: float sst(float edge0, float edge1, float x) {
 89:   return smoothstep(edge0, edge1, x);
 90: }
-91: 
+91:
 92: float shadowShape(vec2 uv, float t, float contour) {
 93:   vec2 scaledUV = uv;
-94: 
+94:
 95:   // base shape tranjectory
 96:   float posY = mix(-1., 2., t);
-97: 
+97:
 98:   // scaleX when it's moving down
 99:   scaledUV.y -= .5;
 100:   float mainCircleScale = sst(0., .8, posY) * lst(1.4, .9, posY);
 101:   scaledUV *= vec2(1., 1. + 1.5 * mainCircleScale);
 102:   scaledUV.y += .5;
-103: 
+103:
 104:   // base shape
 105:   float innerR = .4;
 106:   float outerR = 1. - .3 * (sst(.1, .2, t) * (1. - sst(.2, .5, t)));
@@ -27025,7 +27298,7 @@ Note: file list is sampled.
 108:   float shapeSizing = sst(.2, .3, t) * sst(.6, .3, t);
 109:   s = pow(s, 1.4);
 110:   s *= 1.2;
-111: 
+111:
 112:   // flat gradient to take over the shadow shape
 113:   float topFlattener = 0.;
 114:   {
@@ -27036,7 +27309,7 @@ Note: file list is sampled.
 119:     float topFlattenerMixer = (1. - sst(.0, .3, pos));
 120:     s = mix(topFlattener, s, topFlattenerMixer);
 121:   }
-122: 
+122:
 123:   // apple right circle
 124:   {
 125:     float visibility = sst(.6, .7, t) * (1. - sst(.8, .9, t));
@@ -27045,7 +27318,7 @@ Note: file list is sampled.
 128:     rightCircle *= visibility;
 129:     s = mix(s, 0., rightCircle);
 130:   }
-131: 
+131:
 132:   // apple top circle
 133:   {
 134:     float topCircle = circle(uv, vec2(.5, .19), vec2(.05, .25));
@@ -27054,84 +27327,84 @@ Note: file list is sampled.
 137:     topCircle *= visibility;
 138:     s = mix(s, 0., topCircle);
 139:   }
-140: 
+140:
 141:   float leafMask = circle(uv, vec2(.53, .13), vec2(.08, .19));
 142:   leafMask = mix(leafMask, 0., 1. - sst(.4, .54, uv.x));
 143:   leafMask = mix(0., leafMask, sst(.0, .2, uv.y));
 144:   leafMask *= (sst(.5, 1.1, posY) * sst(1.5, 1.3, posY));
 145:   s += leafMask;
-146: 
+146:
 147:   // apple bottom circle
 148:   {
 149:     float visibility = sst(.0, .4, t) * (1. - sst(.6, .8, t));
 150:     s = mix(s, 0., visibility * circle(uv, vec2(.52, .92), vec2(.09, .25)));
 151:   }
-152: 
+152:
 153:   // random balls that are invisible if apple logo is selected
 154:   {
 155:     float pos = sst(.0, .6, t) * (1. - sst(.6, 1., t));
 156:     s = mix(s, .5, circle(uv, vec2(.0, 1.2 - .5 * pos), vec2(.1, .3)));
 157:     s = mix(s, .0, circle(uv, vec2(1., .5 + .5 * pos), vec2(.1, .3)));
-158: 
+158:
 159:     s = mix(s, 1., circle(uv, vec2(.95, .2 + .2 * sst(.3, .4, t) * sst(.7, .5, t)), vec2(.07, .22)));
 160:     s = mix(s, 1., circle(uv, vec2(.95, .2 + .2 * sst(.3, .4, t) * (1. - sst(.5, .7, t))), vec2(.07, .22)));
 161:     s /= max(1e-4, sst(1., .85, uv.y));
 162:   }
-163: 
+163:
 164:   s = clamp(0., 1., s);
 165:   return s;
 166: }
-167: 
+167:
 168: float blurEdge3x3(sampler2D tex, vec2 uv, vec2 dudx, vec2 dudy, float radius, float centerSample) {
 169:   vec2 texel = 1.0 / vec2(textureSize(tex, 0));
 170:   vec2 r = radius * texel;
-171: 
+171:
 172:   float w1 = 1.0, w2 = 2.0, w4 = 4.0;
 173:   float norm = 16.0;
 174:   float sum = w4 * centerSample;
-175: 
+175:
 176:   sum += w2 * textureGrad(tex, uv + vec2(0.0, -r.y), dudx, dudy).g;
 177:   sum += w2 * textureGrad(tex, uv + vec2(0.0, r.y), dudx, dudy).g;
 178:   sum += w2 * textureGrad(tex, uv + vec2(-r.x, 0.0), dudx, dudy).g;
 179:   sum += w2 * textureGrad(tex, uv + vec2(r.x, 0.0), dudx, dudy).g;
-180: 
+180:
 181:   sum += w1 * textureGrad(tex, uv + vec2(-r.x, -r.y), dudx, dudy).g;
 182:   sum += w1 * textureGrad(tex, uv + vec2(r.x, -r.y), dudx, dudy).g;
 183:   sum += w1 * textureGrad(tex, uv + vec2(-r.x, r.y), dudx, dudy).g;
 184:   sum += w1 * textureGrad(tex, uv + vec2(r.x, r.y), dudx, dudy).g;
-185: 
+185:
 186:   return sum / norm;
 187: }
-188: 
+188:
 189: void main() {
 190:   vec2 uv = v_objectUV + .5;
 191:   uv.y = 1. - uv.y;
-192: 
+192:
 193:   vec2 imgUV = v_imageUV;
 194:   imgUV -= .5;
 195:   imgUV *= 0.5714285714285714;
 196:   imgUV += .5;
 197:   float imgSoftFrame = getImgFrame(imgUV, .03);
-198: 
+198:
 199:   vec4 img = texture(u_image, imgUV);
 200:   vec2 dudx = dFdx(imgUV);
 201:   vec2 dudy = dFdy(imgUV);
-202: 
+202:
 203:   if (img.a == 0.) {
 204:     fragColor = u_colorBack;
 205:     return;
 206:   }
-207: 
+207:
 208:   float t = .1 * u_time;
 209:   t -= .3;
-210: 
+210:
 211:   float tCopy = t + 1. / 3.;
 212:   float tCopy2 = t + 2. / 3.;
-213: 
+213:
 214:   t = mod(t, 1.);
 215:   tCopy = mod(tCopy, 1.);
 216:   tCopy2 = mod(tCopy2, 1.);
-217: 
+217:
 218:   vec2 animationUV = imgUV - vec2(.5);
 219:   float angle = -u_angle * PI / 180.;
 220:   float cosA = cos(angle);
@@ -27140,37 +27413,37 @@ Note: file list is sampled.
 223:   animationUV.x * cosA - animationUV.y * sinA,
 224:   animationUV.x * sinA + animationUV.y * cosA
 225:   ) + vec2(.5);
-226: 
+226:
 227:   float shape = img[0];
-228: 
+228:
 229:   img[1] = blurEdge3x3(u_image, imgUV, dudx, dudy, 8., img[1]);
-230: 
+230:
 231:   float outerBlur = 1. - mix(1., img[1], shape);
 232:   float innerBlur = mix(img[1], 0., shape);
 233:   float contour = mix(img[2], 0., shape);
-234: 
+234:
 235:   outerBlur *= imgSoftFrame;
-236: 
+236:
 237:   float shadow = shadowShape(animationUV, t, innerBlur);
 238:   float shadowCopy = shadowShape(animationUV, tCopy, innerBlur);
 239:   float shadowCopy2 = shadowShape(animationUV, tCopy2, innerBlur);
-240: 
+240:
 241:   float inner = .8 + .8 * innerBlur;
 242:   inner = mix(inner, 0., shadow);
 243:   inner = mix(inner, 0., shadowCopy);
 244:   inner = mix(inner, 0., shadowCopy2);
-245: 
+245:
 246:   inner *= mix(0., 2., u_innerGlow);
-247: 
+247:
 248:   inner += (u_contour * 2.) * contour;
 249:   inner = min(1., inner);
 250:   inner *= (1. - shape);
-251: 
+251:
 252:   float outer = 0.;
 253:   {
 254:     t *= 3.;
 255:     t = mod(t - .1, 1.);
-256: 
+256:
 257:     outer = .9 * pow(outerBlur, .8);
 258:     float y = mod(animationUV.y - t, 1.);
 259:     float animatedMask = sst(.3, .65, y) * (1. - sst(.65, 1., y));
@@ -27179,12 +27452,12 @@ Note: file list is sampled.
 262:     outer *= mix(0., 5., pow(u_outerGlow, 2.));
 263:     outer *= imgSoftFrame;
 264:   }
-265: 
+265:
 266:   inner = pow(inner, 1.2);
 267:   float heat = clamp(inner + outer, 0., 1.);
-268: 
+268:
 269:   heat += (.005 + .35 * u_noise) * (fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453123) - .5);
-270: 
+270:
 271:   float mixer = heat * u_colorsCount;
 272:   vec4 gradient = u_colors[0];
 273:   gradient.rgb *= gradient.a;
@@ -27199,37 +27472,37 @@ Note: file list is sampled.
 282:     c.rgb *= c.a;
 283:     gradient = mix(gradient, c, m);
 284:   }
-285: 
+285:
 286:   vec3 color = gradient.rgb * outerShape;
 287:   float opacity = gradient.a * outerShape;
-288: 
+288:
 289:   vec3 bgColor = u_colorBack.rgb * u_colorBack.a;
 290:   color = color + bgColor * (1.0 - opacity);
 291:   opacity = opacity + u_colorBack.a * (1.0 - opacity);
-292: 
+292:
 293:   color += .02 * (fract(sin(dot(uv + 1., vec2(12.9898, 78.233))) * 43758.5453123) - .5);
-294: 
+294:
 295:   fragColor = vec4(color, opacity);
 296: }
 297: `;
-298: 
+298:
 299: export function toProcessedHeatmap(file: File | string): Promise<{ blob: Blob }> {
 300:   const canvas = document.createElement('canvas');
 301:   const canvasSize = 1000;
-302: 
+302:
 303:   return new Promise((resolve, reject) => {
 304:     const image = new Image();
 305:     image.crossOrigin = 'anonymous';
-306: 
+306:
 307:     image.addEventListener('load', () => {
 308:       if (typeof file === 'string' ? file.endsWith('.svg') : file.type === 'image/svg+xml') {
 309:         // Force SVG to load at a high fidelity size if it's an SVG
 310:         image.width = canvasSize;
 311:         image.height = canvasSize;
 312:       }
-313: 
+313:
 314:       const ratio = image.naturalWidth / image.naturalHeight;
-315: 
+315:
 316:       const maxBlur = Math.floor(canvasSize * 0.15);
 317:       const padding = Math.ceil(maxBlur * 2.5);
 318:       let imgWidth = canvasSize;
@@ -27239,24 +27512,24 @@ Note: file list is sampled.
 322:       } else {
 323:         imgWidth = Math.floor(canvasSize * ratio);
 324:       }
-325: 
+325:
 326:       canvas.width = imgWidth + 2 * padding;
 327:       canvas.height = imgHeight + 2 * padding;
-328: 
+328:
 329:       const ctx = canvas.getContext('2d', { willReadFrequently: true });
 330:       if (!ctx) {
 331:         throw new Error('Failed to get canvas 2d context');
 332:       }
-333: 
+333:
 334:       // 1) Draw original image once, no filters
 335:       ctx.fillStyle = 'white';
 336:       ctx.fillRect(0, 0, canvas.width, canvas.height);
 337:       ctx.drawImage(image, padding, padding, imgWidth, imgHeight);
-338: 
+338:
 339:       const { width, height } = canvas;
 340:       const srcImageData = ctx.getImageData(0, 0, width, height);
 341:       const src = srcImageData.data; // RGBA
-342: 
+342:
 343:       // 2) Build grayscale array (luma)
 344:       const totalPixels = width * height;
 345:       const gray = new Uint8ClampedArray(totalPixels);
@@ -27268,20 +27541,20 @@ Note: file list is sampled.
 351:         // Standard luma conversion
 352:         gray[i] = (0.299 * r + 0.587 * g + 0.114 * b) | 0;
 353:       }
-354: 
+354:
 355:       // 3) Blur grayscale for each "filter" you previously used
 356:       const bigBlurRadius = maxBlur;
 357:       const innerBlurRadius = Math.max(1, Math.round(0.12 * maxBlur));
 358:       const contourRadius = 5;
-359: 
+359:
 360:       const bigBlurGray = multiPassBlurGray(gray, width, height, bigBlurRadius, 3);
 361:       const innerBlurGray = multiPassBlurGray(gray, width, height, innerBlurRadius, 3);
 362:       const contourGray = multiPassBlurGray(gray, width, height, contourRadius, 1);
-363: 
+363:
 364:       // 4) Combine into final ImageData
 365:       const processedImageData = ctx.createImageData(width, height);
 366:       const dst = processedImageData.data;
-367: 
+367:
 368:       for (let i = 0; i < totalPixels; i++) {
 369:         const px = i * 4;
 370:         dst[px] = contourGray[i] ?? 0;
@@ -27289,9 +27562,9 @@ Note: file list is sampled.
 372:         dst[px + 2] = innerBlurGray[i] ?? 0;
 373:         dst[px + 3] = 255;
 374:       }
-375: 
+375:
 376:       ctx.putImageData(processedImageData, 0, 0);
-377: 
+377:
 378:       canvas.toBlob((blob) => {
 379:         if (!blob) {
 380:           reject(new Error('Failed to create PNG blob'));
@@ -27300,15 +27573,15 @@ Note: file list is sampled.
 383:         resolve({ blob });
 384:       }, 'image/png');
 385:     });
-386: 
+386:
 387:     image.addEventListener('error', () => {
 388:       reject(new Error('Failed to load image'));
 389:     });
-390: 
+390:
 391:     image.src = typeof file === 'string' ? file : URL.createObjectURL(file);
 392:   });
 393: }
-394: 
+394:
 395: /**
 396:  * Fast box blur for grayscale images using an integral image.
 397:  * gray: Uint8ClampedArray of length width * height
@@ -27318,10 +27591,10 @@ Note: file list is sampled.
 401:   if (radius <= 0) {
 402:     return gray.slice();
 403:   }
-404: 
+404:
 405:   const out = new Uint8ClampedArray(width * height);
 406:   const integral = new Uint32Array(width * height);
-407: 
+407:
 408:   // Build integral image
 409:   for (let y = 0; y < height; y++) {
 410:     let rowSum = 0;
@@ -27332,7 +27605,7 @@ Note: file list is sampled.
 415:       integral[idx] = rowSum + (y > 0 ? (integral[idx - width] ?? 0) : 0);
 416:     }
 417:   }
-418: 
+418:
 419:   // Blur using integral image
 420:   for (let y = 0; y < height; y++) {
 421:     const y1 = Math.max(0, y - radius);
@@ -27340,26 +27613,26 @@ Note: file list is sampled.
 423:     for (let x = 0; x < width; x++) {
 424:       const x1 = Math.max(0, x - radius);
 425:       const x2 = Math.min(width - 1, x + radius);
-426: 
+426:
 427:       const idxA = y2 * width + x2;
 428:       const idxB = y2 * width + (x1 - 1);
 429:       const idxC = (y1 - 1) * width + x2;
 430:       const idxD = (y1 - 1) * width + (x1 - 1);
-431: 
+431:
 432:       const A = integral[idxA] ?? 0;
 433:       const B = x1 > 0 ? (integral[idxB] ?? 0) : 0;
 434:       const C = y1 > 0 ? (integral[idxC] ?? 0) : 0;
 435:       const D = x1 > 0 && y1 > 0 ? (integral[idxD] ?? 0) : 0;
-436: 
+436:
 437:       const sum = A - B - C + D;
 438:       const area = (x2 - x1 + 1) * (y2 - y1 + 1);
 439:       out[y * width + x] = Math.round(sum / area);
 440:     }
 441:   }
-442: 
+442:
 443:   return out;
 444: }
-445: 
+445:
 446: function multiPassBlurGray(
 447:   gray: Uint8ClampedArray,
 448:   width: number,
@@ -27370,18 +27643,18 @@ Note: file list is sampled.
 453:   if (radius <= 0 || passes <= 1) {
 454:     return blurGray(gray, width, height, radius);
 455:   }
-456: 
+456:
 457:   let input = gray;
 458:   let tmp: Uint8ClampedArray = gray;
-459: 
+459:
 460:   for (let p = 0; p < passes; p++) {
 461:     tmp = blurGray(input, width, height, radius);
 462:     input = tmp;
 463:   }
-464: 
+464:
 465:   return tmp;
 466: }
-467: 
+467:
 468: export interface HeatmapUniforms extends ShaderSizingUniforms {
 469:   u_image: HTMLImageElement | string;
 470:   u_contour: number;
@@ -27393,7 +27666,7 @@ Note: file list is sampled.
 476:   u_colors: vec4[];
 477:   u_colorsCount: number;
 478: }
-479: 
+479:
 480: export interface HeatmapParams extends ShaderSizingParams, ShaderMotionParams {
 481:   image: HTMLImageElement | string;
 482:   contour?: number;
@@ -27412,6 +27685,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-utils.ts",
@@ -27421,6 +27695,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-utils.ts</path>
 <type>file</type>
@@ -27430,14 +27705,14 @@ Note: file list is sampled.
 3: #define TWO_PI 6.28318530718
 4: #define PI 3.14159265358979323846
 5: `;
-6: 
+6:
 7: // language=GLSL
 8: export const rotation2 = `
 9: vec2 rotate(vec2 uv, float th) {
 10:   return mat2(cos(th), sin(th), -sin(th), cos(th)) * uv;
 11: }
 12: `;
-13: 
+13:
 14: // language=GLSL
 15: export const proceduralHash11 = `
 16:   float hash11(float p) {
@@ -27446,7 +27721,7 @@ Note: file list is sampled.
 19:     return fract(p * p);
 20:   }
 21: `;
-22: 
+22:
 23: // language=GLSL
 24: export const proceduralHash21 = `
 25:   float hash21(vec2 p) {
@@ -27455,7 +27730,7 @@ Note: file list is sampled.
 28:     return fract(p.x * p.y);
 29:   }
 30: `;
-31: 
+31:
 32: // language=GLSL
 33: export const proceduralHash22 = `
 34:   vec2 hash22(vec2 p) {
@@ -27464,7 +27739,7 @@ Note: file list is sampled.
 37:     return fract(vec2(p.x * p.y, p.x + p.y));
 38:   }
 39: `;
-40: 
+40:
 41: // language=GLSL
 42: export const textureRandomizerR = `
 43:   float randomR(vec2 p) {
@@ -27472,7 +27747,7 @@ Note: file list is sampled.
 45:     return texture(u_noiseTexture, fract(uv)).r;
 46:   }
 47: `;
-48: 
+48:
 49: // language=GLSL
 50: export const textureRandomizerGB = `
 51:   vec2 randomGB(vec2 p) {
@@ -27480,12 +27755,12 @@ Note: file list is sampled.
 53:     return texture(u_noiseTexture, fract(uv)).gb;
 54:   }
 55: `;
-56: 
+56:
 57: // language=GLSL
 58: export const colorBandingFix = `
 59:   color += 1. / 256. * (fract(sin(dot(.014 * gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453123) - .5);
 60: `;
-61: 
+61:
 62: // language=GLSL
 63: export const simplexNoise = `
 64: vec3 permute(vec3 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
@@ -27516,14 +27791,14 @@ Note: file list is sampled.
 89:   return 130.0 * dot(m, g);
 90: }
 91: `;
-92: 
+92:
 93: // language=GLSL
 94: export const fiberNoise = `
 95: float fiberRandom(vec2 p) {
 96:   vec2 uv = floor(p) / 100.;
 97:   return texture(u_noiseTexture, fract(uv)).b;
 98: }
-99: 
+99:
 100: float fiberValueNoise(vec2 st) {
 101:   vec2 i = floor(st);
 102:   vec2 f = fract(st);
@@ -27536,7 +27811,7 @@ Note: file list is sampled.
 109:   float x2 = mix(c, d, u.x);
 110:   return mix(x1, x2, u.y);
 111: }
-112: 
+112:
 113: float fiberNoiseFbm(in vec2 n, vec2 seedOffset) {
 114:   float total = 0.0, amplitude = 1.;
 115:   for (int i = 0; i < 4; i++) {
@@ -27547,7 +27822,7 @@ Note: file list is sampled.
 120:   }
 121:   return total;
 122: }
-123: 
+123:
 124: float fiberNoise(vec2 uv, vec2 seedOffset) {
 125:   float epsilon = 0.001;
 126:   float n1 = fiberNoiseFbm(uv + vec2(epsilon, 0.0), seedOffset);
@@ -27565,6 +27840,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-color-spaces.ts",
@@ -27574,6 +27850,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-color-spaces.ts</path>
 <type>file</type>
@@ -27582,23 +27859,23 @@ Note: file list is sampled.
 2:   rgb: 0,
 3:   oklch: 1,
 4: } as const;
-5: 
+5:
 6: export type ShaderColorSpace = keyof typeof ShaderColorSpaces;
-7: 
+7:
 8: export const declareOklchTransforms = `
-9: 
+9:
 10: // magic numbers (and magic could be better tbh)
 11: #define OKLCH_CHROMA_THRESHOLD .001
 12: #define OKLCH_HUE_NEUTRALIZER - 2.
-13: 
+13:
 14: vec3 srgbToLinear(vec3 srgb) {
 15:   return pow(srgb, vec3(2.2));
 16: }
-17: 
+17:
 18: vec3 linearToSrgb(vec3 linear) {
 19:   return pow(linear, vec3(1.0 / 2.2));
 20: }
-21: 
+21:
 22: vec3 LrgbToOklab(vec3 rgb) {
 23:   float L = pow(0.4122214708 * rgb.r + 0.5363325363 * rgb.g + 0.0514459929 * rgb.b, 1.0 / 3.0);
 24:   float M = pow(0.2119034982 * rgb.r + 0.6806995451 * rgb.g + 0.1073969566 * rgb.b, 1.0 / 3.0);
@@ -27609,27 +27886,27 @@ Note: file list is sampled.
 29:     0.0259040371 * L + 0.7827717662 * M - 0.808675766 * S
 30:   );
 31: }
-32: 
+32:
 33: vec3 OklabToLrgb(vec3 oklab) {
 34:   float L = oklab.x;
 35:   float a = oklab.y;
 36:   float b = oklab.z;
-37: 
+37:
 38:   float l_ = L + 0.3963377774 * a + 0.2158037573 * b;
 39:   float m_ = L - 0.1055613458 * a - 0.0638541728 * b;
 40:   float s_ = L - 0.0894841775 * a - 1.291485548 * b;
-41: 
+41:
 42:   float l = l_ * l_ * l_;
 43:   float m = m_ * m_ * m_;
 44:   float s = s_ * s_ * s_;
-45: 
+45:
 46:   return vec3(
 47:     4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
 48:     -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
 49:     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s
 50:   );
 51: }
-52: 
+52:
 53: vec3 oklabToOklch(vec3 oklab) {
 54:   float C = length(oklab.yz);
 55:   float H = atan(oklab.z, oklab.y);
@@ -27638,26 +27915,26 @@ Note: file list is sampled.
 58:   }
 59:   return vec3(oklab.x, C, H);
 60: }
-61: 
+61:
 62: vec3 oklchToOklab(vec3 oklch) {
 63:   float a = oklch.y * cos(oklch.z);
 64:   float b = oklch.y * sin(oklch.z);
 65:   return vec3(oklch.x, a, b);
 66: }
-67: 
+67:
 68: float mixHue(float h1, float h2, float mixer) {
 69:   float delta = mod(h2 - h1 + PI, TWO_PI) - PI;
 70:   return h1 + mixer * delta;
 71: }
-72: 
+72:
 73: vec3 srgbToOklab(vec3 rgb) {
 74:   return oklabToOklch(LrgbToOklab(srgbToLinear(rgb)));
 75: }
-76: 
+76:
 77: vec3 oklabToSrgb(vec3 oklab) {
 78:   return linearToSrgb(OklabToLrgb(oklchToOklab(oklab)));
 79: }
-80: 
+80:
 81: vec3 mixOklabVector(vec3 color1, vec3 color2, float mixer) {
 82:   color1.x = mix(color1.x, color2.x, mixer);
 83:   color1.y = mix(color1.y, color2.y, mixer);
@@ -27675,6 +27952,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/vertex-shader.ts",
@@ -27684,6 +27962,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/vertex-shader.ts</path>
 <type>file</type>
@@ -27692,9 +27971,9 @@ Note: file list is sampled.
 2: // language=GLSL
 3: export const vertexShaderSource = `#version 300 es
 4: precision mediump float;
-5: 
+5:
 6: layout(location = 0) in vec4 a_position;
-7: 
+7:
 8: uniform vec2 u_resolution;
 9: uniform float u_pixelRatio;
 10: uniform float u_imageAspectRatio;
@@ -27707,7 +27986,7 @@ Note: file list is sampled.
 17: uniform float u_rotation;
 18: uniform float u_offsetX;
 19: uniform float u_offsetY;
-20: 
+20:
 21: out vec2 v_objectUV;
 22: out vec2 v_objectBoxSize;
 23: out vec2 v_responsiveUV;
@@ -27715,7 +27994,7 @@ Note: file list is sampled.
 25: out vec2 v_patternUV;
 26: out vec2 v_patternBoxSize;
 27: out vec2 v_imageUV;
-28: 
+28:
 29: vec3 getBoxSize(float boxRatio, vec2 givenBoxSize) {
 30:   vec2 box = vec2(0.);
 31:   // fit = none
@@ -27729,10 +28008,10 @@ Note: file list is sampled.
 39:   box.y = box.x / boxRatio;
 40:   return vec3(box, noFitBoxWidth);
 41: }
-42: 
+42:
 43: void main() {
 44:   gl_Position = a_position;
-45: 
+45:
 46:   vec2 uv = gl_Position.xy * .5;
 47:   vec2 boxOrigin = vec2(.5 - u_originX, u_originY - .5);
 48:   vec2 givenBoxSize = vec2(u_worldWidth, u_worldHeight);
@@ -27740,28 +28019,28 @@ Note: file list is sampled.
 50:   float r = u_rotation * 3.14159265358979323846 / 180.;
 51:   mat2 graphicRotation = mat2(cos(r), sin(r), -sin(r), cos(r));
 52:   vec2 graphicOffset = vec2(-u_offsetX, u_offsetY);
-53: 
-54: 
+53:
+54:
 55:   // ===================================================
-56: 
+56:
 57:   float fixedRatio = 1.;
 58:   vec2 fixedRatioBoxGivenSize = vec2(
 59:   (u_worldWidth == 0.) ? u_resolution.x : givenBoxSize.x,
 60:   (u_worldHeight == 0.) ? u_resolution.y : givenBoxSize.y
 61:   );
-62: 
+62:
 63:   v_objectBoxSize = getBoxSize(fixedRatio, fixedRatioBoxGivenSize).xy;
 64:   vec2 objectWorldScale = u_resolution.xy / v_objectBoxSize;
-65: 
+65:
 66:   v_objectUV = uv;
 67:   v_objectUV *= objectWorldScale;
 68:   v_objectUV += boxOrigin * (objectWorldScale - 1.);
 69:   v_objectUV += graphicOffset;
 70:   v_objectUV /= u_scale;
 71:   v_objectUV = graphicRotation * v_objectUV;
-72: 
+72:
 73:   // ===================================================
-74: 
+74:
 75:   v_responsiveBoxGivenSize = vec2(
 76:   (u_worldWidth == 0.) ? u_resolution.x : givenBoxSize.x,
 77:   (u_worldHeight == 0.) ? u_resolution.y : givenBoxSize.y
@@ -27769,13 +28048,13 @@ Note: file list is sampled.
 79:   float responsiveRatio = v_responsiveBoxGivenSize.x / v_responsiveBoxGivenSize.y;
 80:   vec2 responsiveBoxSize = getBoxSize(responsiveRatio, v_responsiveBoxGivenSize).xy;
 81:   vec2 responsiveBoxScale = u_resolution.xy / responsiveBoxSize;
-82: 
+82:
 83:   #ifdef ADD_HELPERS
 84:   v_responsiveHelperBox = uv;
 85:   v_responsiveHelperBox *= responsiveBoxScale;
 86:   v_responsiveHelperBox += boxOrigin * (responsiveBoxScale - 1.);
 87:   #endif
-88: 
+88:
 89:   v_responsiveUV = uv;
 90:   v_responsiveUV *= responsiveBoxScale;
 91:   v_responsiveUV += boxOrigin * (responsiveBoxScale - 1.);
@@ -27784,21 +28063,21 @@ Note: file list is sampled.
 94:   v_responsiveUV.x *= responsiveRatio;
 95:   v_responsiveUV = graphicRotation * v_responsiveUV;
 96:   v_responsiveUV.x /= responsiveRatio;
-97: 
+97:
 98:   // ===================================================
-99: 
+99:
 100:   float patternBoxRatio = givenBoxSize.x / givenBoxSize.y;
 101:   vec2 patternBoxGivenSize = vec2(
 102:   (u_worldWidth == 0.) ? u_resolution.x : givenBoxSize.x,
 103:   (u_worldHeight == 0.) ? u_resolution.y : givenBoxSize.y
 104:   );
 105:   patternBoxRatio = patternBoxGivenSize.x / patternBoxGivenSize.y;
-106: 
+106:
 107:   vec3 boxSizeData = getBoxSize(patternBoxRatio, patternBoxGivenSize);
 108:   v_patternBoxSize = boxSizeData.xy;
 109:   float patternBoxNoFitBoxWidth = boxSizeData.z;
 110:   vec2 patternBoxScale = u_resolution.xy / v_patternBoxSize;
-111: 
+111:
 112:   v_patternUV = uv;
 113:   v_patternUV += graphicOffset / patternBoxScale;
 114:   v_patternUV += boxOrigin;
@@ -27815,9 +28094,9 @@ Note: file list is sampled.
 125:   // x100 is a default multiplier between vertex and fragmant shaders
 126:   // we use it to avoid UV presision issues
 127:   v_patternUV *= .01;
-128: 
+128:
 129:   // ===================================================
-130: 
+130:
 131:   vec2 imageBoxSize;
 132:   if (u_fit == 1.) { // contain
 133:     imageBoxSize.x = min(u_resolution.x / u_imageAspectRatio, u_resolution.y) * u_imageAspectRatio;
@@ -27828,7 +28107,7 @@ Note: file list is sampled.
 138:   }
 139:   imageBoxSize.y = imageBoxSize.x / u_imageAspectRatio;
 140:   vec2 imageBoxScale = u_resolution.xy / imageBoxSize;
-141: 
+141:
 142:   v_imageUV = uv;
 143:   v_imageUV *= imageBoxScale;
 144:   v_imageUV += boxOrigin * (imageBoxScale - 1.);
@@ -27837,7 +28116,7 @@ Note: file list is sampled.
 147:   v_imageUV.x *= u_imageAspectRatio;
 148:   v_imageUV = graphicRotation * v_imageUV;
 149:   v_imageUV.x /= u_imageAspectRatio;
-150: 
+150:
 151:   v_imageUV += .5;
 152:   v_imageUV.y = 1. - v_imageUV.y;
 153: }`;
@@ -27849,6 +28128,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts",
@@ -27858,6 +28138,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts</path>
 <type>file</type>
@@ -27873,9 +28154,9 @@ Note: file list is sampled.
 9: //
 10: // New genuinely cross-cutting Paper algorithms — color-panels, pulsing-border,
 11: // gem-smoke-compose, geometric-pattern-scalar — should land here.
-12: 
+12:
 13: import type { LayerDefinition } from '../types'
-14: 
+14:
 15: export const SPECIALIZED_LAYERS: Record<string, LayerDefinition> = {}
 
 (End of file - total 15 lines)
@@ -27889,6 +28170,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts",
@@ -27898,6 +28180,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/noise.ts</path>
 <type>file</type>
@@ -27915,7 +28198,7 @@ Note: file list is sampled.
 511: return vec4(color, 1.0);`,
 512:   },
 513: }
-514: 
+514:
 515: // Metaballs — N gooey balls drifting around the centre, blended via inverse
 516: // squared distance summation; per-ball palette colour selected by the closest
 517: // ball. Drives Paper's `metaballs` shader.
@@ -27997,7 +28280,7 @@ Note: file list is sampled.
 593: return vec4(col, 1.0);`,
 594:   },
 595: }
-596: 
+596:
 597: // Dot Orbit — grid of dots, each orbiting around its cell centre with a
 598: // pseudo-random radius/phase, per-cell palette colour selection. Drives
 599: // Paper's `dot-orbit` shader.
@@ -28084,7 +28367,7 @@ Note: file list is sampled.
 680: return vec4(col, 1.0);`,
 681:   },
 682: }
-683: 
+683:
 684: // Ring Scalar — single soft ring as a 0-1 scalar (peaks at radius, falls off
 685: // in/out). Pair with Polar FBM Distort for smoke-ring boundaries, and
 686: // Color Ramp for colourisation. Outputs the ring value in all RGB channels.
@@ -28112,7 +28395,7 @@ Note: file list is sampled.
 708: return vec4(vec3(v), 1.0);`,
 709:   },
 710: }
-711: 
+711:
 712: export const NOISE_LAYERS: Record<string, LayerDefinition> = {
 713:   'scalar-field': scalarFieldLayer,
 714:   'polar-bands': polarBandsLayer,
@@ -28136,6 +28419,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts",
@@ -28145,6 +28429,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts</path>
 <type>file</type>
@@ -28153,7 +28438,7 @@ Note: file list is sampled.
 262: return vec4(col, base.a);`,
 263:   },
 264: }
-265: 
+265:
 266: export const bulgeLayer: LayerDefinition = {
 267:   id: 'bulge',
 268:   name: 'Bulge',
@@ -28178,7 +28463,7 @@ Note: file list is sampled.
 287: return texture(u_prevPass, distorted);`,
 288:   },
 289: }
-290: 
+290:
 291: export const colorShiftLayer: LayerDefinition = {
 292:   id: 'color-shift',
 293:   name: 'Color Shift',
@@ -28202,7 +28487,7 @@ Note: file list is sampled.
 311: return vec4(col, base.a);`,
 312:   },
 313: }
-314: 
+314:
 315: export const LAYER_LIBRARY: Record<string, LayerDefinition> = {
 316:   'simplex-noise': simplexNoiseLayer,
 317:   'voronoi': voronoiLayer,
@@ -28229,7 +28514,7 @@ Note: file list is sampled.
 338:   ...SPECIALIZED_LAYERS,
 339:   ...PAPER_SHADER_LAYERS,
 340: }
-341: 
+341:
 342: export const LAYER_CATEGORIES = {
 343:   generator: { name: 'Generators', description: 'Create base patterns' },
 344:   modifier: { name: 'Modifiers', description: 'Transform colors and values' },
@@ -28245,6 +28530,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/context.tsx",
@@ -28254,12 +28540,13 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/context.tsx</path>
 <type>file</type>
 <content>
 1: "use client";
-2: 
+2:
 3: import {
 4:   createContext,
 5:   useContext,
@@ -28269,12 +28556,12 @@ Note: file list is sampled.
 9: } from "react";
 10: import type { LayerInstance, UniformValue } from "./types";
 11: import { LAYER_LIBRARY } from "./layers";
-12: 
+12:
 13: interface ComposerState {
 14:   layers: LayerInstance[];
 15:   selectedLayerId: string | null;
 16: }
-17: 
+17:
 18: type ComposerAction =
 19:   | { type: "ADD_LAYER"; layerType: string }
 20:   | { type: "REMOVE_LAYER"; id: string }
@@ -28285,14 +28572,14 @@ Note: file list is sampled.
 25:   | { type: "UPDATE_BLEND_MODE"; id: string; blendMode: LayerInstance["blendMode"] }
 26:   | { type: "UPDATE_OPACITY"; id: string; opacity: number }
 27:   | { type: "LOAD_STATE"; state: ComposerState };
-28: 
+28:
 29: function generateId() {
 30:   // Generate a safe ID that starts with a letter (avoid GLSL reserved __ prefix issues)
 31:   const chars = 'abcdefghijklmnopqrstuvwxyz'
 32:   const first = chars[Math.floor(Math.random() * chars.length)]
 33:   return first + Math.random().toString(36).substring(2, 8)
 34: }
-35: 
+35:
 36: function cloneDefault(value: UniformValue): UniformValue {
 37:   if (Array.isArray(value)) return [...value];
 38:   if (value && typeof value === "object") {
@@ -28306,16 +28593,16 @@ Note: file list is sampled.
 46:   }
 47:   return value;
 48: }
-49: 
+49:
 50: function createLayerInstance(layerType: string): LayerInstance | null {
 51:   const definition = LAYER_LIBRARY[layerType];
 52:   if (!definition) return null;
-53: 
+53:
 54:   const uniformValues: Record<string, UniformValue> = {};
 55:   for (const uniform of definition.uniforms) {
 56:     uniformValues[uniform.name] = cloneDefault(uniform.default);
 57:   }
-58: 
+58:
 59:   return {
 60:     id: generateId(),
 61:     layerType,
@@ -28325,7 +28612,7 @@ Note: file list is sampled.
 65:     uniformValues,
 66:   };
 67: }
-68: 
+68:
 69: function composerReducer(state: ComposerState, action: ComposerAction): ComposerState {
 70:   switch (action.type) {
 71:     case "ADD_LAYER": {
@@ -28337,7 +28624,7 @@ Note: file list is sampled.
 77:         selectedLayerId: instance.id,
 78:       };
 79:     }
-80: 
+80:
 81:     case "REMOVE_LAYER": {
 82:       const newLayers = state.layers.filter((l) => l.id !== action.id);
 83:       return {
@@ -28349,13 +28636,13 @@ Note: file list is sampled.
 89:             : state.selectedLayerId,
 90:       };
 91:     }
-92: 
+92:
 93:     case "REORDER_LAYERS":
 94:       return { ...state, layers: action.layers };
-95: 
+95:
 96:     case "SELECT_LAYER":
 97:       return { ...state, selectedLayerId: action.id };
-98: 
+98:
 99:     case "UPDATE_UNIFORM": {
 100:       return {
 101:         ...state,
@@ -28372,7 +28659,7 @@ Note: file list is sampled.
 112:         ),
 113:       };
 114:     }
-115: 
+115:
 116:     case "TOGGLE_LAYER":
 117:       return {
 118:         ...state,
@@ -28380,7 +28667,7 @@ Note: file list is sampled.
 120:           layer.id === action.id ? { ...layer, enabled: !layer.enabled } : layer
 121:         ),
 122:       };
-123: 
+123:
 124:     case "UPDATE_BLEND_MODE":
 125:       return {
 126:         ...state,
@@ -28388,7 +28675,7 @@ Note: file list is sampled.
 128:           layer.id === action.id ? { ...layer, blendMode: action.blendMode } : layer
 129:         ),
 130:       };
-131: 
+131:
 132:     case "UPDATE_OPACITY":
 133:       return {
 134:         ...state,
@@ -28396,15 +28683,15 @@ Note: file list is sampled.
 136:           layer.id === action.id ? { ...layer, opacity: action.opacity } : layer
 137:         ),
 138:       };
-139: 
+139:
 140:     case "LOAD_STATE":
 141:       return action.state;
-142: 
+142:
 143:     default:
 144:       return state;
 145:   }
 146: }
-147: 
+147:
 148: interface ComposerContextValue {
 149:   state: ComposerState;
 150:   addLayer: (layerType: string) => void;
@@ -28418,63 +28705,63 @@ Note: file list is sampled.
 158:   loadState: (state: ComposerState) => void;
 159:   getSelectedLayer: () => LayerInstance | null;
 160: }
-161: 
+161:
 162: const ComposerContext = createContext<ComposerContextValue | null>(null);
-163: 
+163:
 164: const initialState: ComposerState = {
 165:   layers: [],
 166:   selectedLayerId: null,
 167: };
-168: 
+168:
 169: export function ComposerProvider({ children }: { children: ReactNode }) {
 170:   const [state, dispatch] = useReducer(composerReducer, initialState);
-171: 
+171:
 172:   const addLayer = useCallback((layerType: string) => {
 173:     dispatch({ type: "ADD_LAYER", layerType });
 174:   }, []);
-175: 
+175:
 176:   const removeLayer = useCallback((id: string) => {
 177:     dispatch({ type: "REMOVE_LAYER", id });
 178:   }, []);
-179: 
+179:
 180:   const reorderLayers = useCallback((layers: LayerInstance[]) => {
 181:     dispatch({ type: "REORDER_LAYERS", layers });
 182:   }, []);
-183: 
+183:
 184:   const selectLayer = useCallback((id: string | null) => {
 185:     dispatch({ type: "SELECT_LAYER", id });
 186:   }, []);
-187: 
+187:
 188:   const updateUniform = useCallback(
 189:     (layerId: string, uniformName: string, value: UniformValue) => {
 190:       dispatch({ type: "UPDATE_UNIFORM", layerId, uniformName, value });
 191:     },
 192:     []
 193:   );
-194: 
+194:
 195:   const toggleLayer = useCallback((id: string) => {
 196:     dispatch({ type: "TOGGLE_LAYER", id });
 197:   }, []);
-198: 
+198:
 199:   const updateBlendMode = useCallback(
 200:     (id: string, blendMode: LayerInstance["blendMode"]) => {
 201:       dispatch({ type: "UPDATE_BLEND_MODE", id, blendMode });
 202:     },
 203:     []
 204:   );
-205: 
+205:
 206:   const updateOpacity = useCallback((id: string, opacity: number) => {
 207:     dispatch({ type: "UPDATE_OPACITY", id, opacity });
 208:   }, []);
-209: 
+209:
 210:   const loadState = useCallback((newState: ComposerState) => {
 211:     dispatch({ type: "LOAD_STATE", state: newState });
 212:   }, []);
-213: 
+213:
 214:   const getSelectedLayer = useCallback(() => {
 215:     return state.layers.find((l) => l.id === state.selectedLayerId) ?? null;
 216:   }, [state.layers, state.selectedLayerId]);
-217: 
+217:
 218:   return (
 219:     <ComposerContext.Provider
 220:       value={{
@@ -28495,7 +28782,7 @@ Note: file list is sampled.
 235:     </ComposerContext.Provider>
 236:   );
 237: }
-238: 
+238:
 239: export function useComposer() {
 240:   const context = useContext(ComposerContext);
 241:   if (!context) {
@@ -28511,6 +28798,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/texture-cache.ts",
@@ -28520,6 +28808,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/texture-cache.ts</path>
 <type>file</type>
@@ -28528,7 +28817,7 @@ Note: file list is sampled.
 2: // Used by the in-app preview to manage texture lifecycle without thrashing on
 3: // every uniform update. Editor-only for now; exported components implement
 4: // their own simpler binding.
-5: 
+5:
 6: const MAX_TEXTURE_SIZE = 2048
 7: // Upscale tiny / vector images to at least this size so wide-blur shader
 8: // sampling doesn't reveal sub-pixel artifacts.
@@ -28536,7 +28825,7 @@ Note: file list is sampled.
 10: // Target SVG rasterization size before upload — matches Paper's preprocessing.
 11: const SVG_RASTER_SIZE = 1024
 12: const MAX_ENTRIES = 20
-13: 
+13:
 14: interface CacheEntry {
 15:   texture: WebGLTexture
 16:   width: number
@@ -28545,17 +28834,17 @@ Note: file list is sampled.
 19:   /** Updated on every getTexture() so eviction picks the oldest. */
 20:   lastUsed: number
 21: }
-22: 
+22:
 23: export class TextureCache {
 24:   private gl: WebGL2RenderingContext
 25:   private entries = new Map<string, CacheEntry>()
 26:   private placeholder: WebGLTexture | null = null
 27:   private inFlight = new Map<string, Promise<CacheEntry | null>>()
-28: 
+28:
 29:   constructor(gl: WebGL2RenderingContext) {
 30:     this.gl = gl
 31:   }
-32: 
+32:
 33:   /** 1×1 transparent texture; safe to bind unconditionally as a fallback. */
 34:   getPlaceholder(): WebGLTexture {
 35:     if (this.placeholder) return this.placeholder
@@ -28581,7 +28870,7 @@ Note: file list is sampled.
 55:     this.placeholder = tex
 56:     return tex
 57:   }
-58: 
+58:
 59:   /** Returns a cached entry synchronously if loaded; otherwise null. */
 60:   peek(url: string): CacheEntry | null {
 61:     const entry = this.entries.get(url)
@@ -28589,7 +28878,7 @@ Note: file list is sampled.
 63:     entry.lastUsed = performance.now()
 64:     return entry
 65:   }
-66: 
+66:
 67:   /**
 68:    * Loads `url` into a texture (cache or fresh). Calls onReady once the
 69:    * upload completes so the renderer can re-render with the new texture.
@@ -28605,7 +28894,7 @@ Note: file list is sampled.
 79:       })
 80:     }
 81:   }
-82: 
+82:
 83:   private async load(url: string): Promise<CacheEntry | null> {
 84:     const gl = this.gl
 85:     const isSvg = isSvgUrl(url)
@@ -28652,7 +28941,7 @@ Note: file list is sampled.
 126:       }
 127:     }
 128:     if (!source) return null
-129: 
+129:
 130:     const tex = gl.createTexture()
 131:     if (!tex) return null
 132:     gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -28674,7 +28963,7 @@ Note: file list is sampled.
 148:       const maxAniso = gl.getParameter(anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number
 149:       gl.texParameterf(gl.TEXTURE_2D, anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, Math.min(8, maxAniso))
 150:     }
-151: 
+151:
 152:     const entry: CacheEntry = {
 153:       texture: tex,
 154:       width: w,
@@ -28686,7 +28975,7 @@ Note: file list is sampled.
 160:     this.evictIfNeeded()
 161:     return entry
 162:   }
-163: 
+163:
 164:   private evictIfNeeded() {
 165:     if (this.entries.size <= MAX_ENTRIES) return
 166:     let oldestKey: string | null = null
@@ -28703,7 +28992,7 @@ Note: file list is sampled.
 177:       this.entries.delete(oldestKey)
 178:     }
 179:   }
-180: 
+180:
 181:   destroy() {
 182:     for (const entry of this.entries.values()) {
 183:       this.gl.deleteTexture(entry.texture)
@@ -28715,14 +29004,14 @@ Note: file list is sampled.
 189:     }
 190:   }
 191: }
-192: 
+192:
 193: function isSvgUrl(url: string): boolean {
 194:   if (url.startsWith('data:image/svg+xml')) return true
 195:   // Strip query/hash before checking extension.
 196:   const base = url.split('?')[0].split('#')[0]
 197:   return /\.svg$/i.test(base)
 198: }
-199: 
+199:
 200: function loadImage(url: string): Promise<HTMLImageElement> {
 201:   return new Promise((resolve, reject) => {
 202:     const img = new Image()
@@ -28733,7 +29022,7 @@ Note: file list is sampled.
 207:     img.src = url
 208:   })
 209: }
-210: 
+210:
 211: // Fetch SVG bytes, inject explicit width/height into the <svg> root so the
 212: // browser's SVG renderer rasterizes at the desired size, then return an
 213: // HTMLImageElement loaded from the modified SVG. This is the reliable way
@@ -28792,6 +29081,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/export-image-helper.ts",
@@ -28801,6 +29091,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/export-image-helper.ts</path>
 <type>file</type>
@@ -28812,7 +29103,7 @@ Note: file list is sampled.
 5: // IMPORTANT: this file is the single source of truth for the export helpers.
 6: // The generator inlines its source verbatim into exported React/Vanilla code
 7: // so the export and the preview can never drift.
-8: 
+8:
 9: export interface ImageSourceProp {
 10:   url?: string | null
 11:   fit?: 'cover' | 'contain' | 'fill'
@@ -28821,35 +29112,35 @@ Note: file list is sampled.
 14:   offsetX?: number
 15:   offsetY?: number
 16: }
-17: 
+17:
 18: // `string` is a convenience shorthand for `{ url: string }`.
 19: export type ImageProp = string | ImageSourceProp | null | undefined
-20: 
+20:
 21: export interface ImageEntry {
 22:   texture: WebGLTexture | null
 23:   aspect: number
 24: }
-25: 
+25:
 26: export interface ImageCache {
 27:   ensure(src: ImageProp): void
 28:   get(src: ImageProp): ImageEntry | null
 29:   getPlaceholder(): WebGLTexture
 30:   destroy(): void
 31: }
-32: 
+32:
 33: export function createImageCache(
 34:   gl: WebGL2RenderingContext,
 35:   onLoad?: () => void
 36: ): ImageCache {
 37:   const entries = new Map<string, ImageEntry>()
 38:   let placeholder: WebGLTexture | null = null
-39: 
+39:
 40:   function urlOf(src: ImageProp): string | null {
 41:     if (!src) return null
 42:     if (typeof src === 'string') return src
 43:     return src.url ?? null
 44:   }
-45: 
+45:
 46:   function getPlaceholder(): WebGLTexture {
 47:     if (placeholder) return placeholder
 48:     const tex = gl.createTexture()
@@ -28873,7 +29164,7 @@ Note: file list is sampled.
 66:     placeholder = tex
 67:     return tex
 68:   }
-69: 
+69:
 70:   function ensure(src: ImageProp): void {
 71:     const url = urlOf(src)
 72:     if (!url) return
@@ -28918,13 +29209,13 @@ Note: file list is sampled.
 111:     }
 112:     img.src = url
 113:   }
-114: 
+114:
 115:   function get(src: ImageProp): ImageEntry | null {
 116:     const url = urlOf(src)
 117:     if (!url) return null
 118:     return entries.get(url) ?? null
 119:   }
-120: 
+120:
 121:   function destroy(): void {
 122:     for (const e of entries.values()) {
 123:       if (e.texture) gl.deleteTexture(e.texture)
@@ -28935,16 +29226,16 @@ Note: file list is sampled.
 128:       placeholder = null
 129:     }
 130:   }
-131: 
+131:
 132:   return { ensure, get, getPlaceholder, destroy }
 133: }
-134: 
+134:
 135: export function fitModeFromString(fit: string | undefined): number {
 136:   if (fit === 'contain') return 1
 137:   if (fit === 'fill') return 2
 138:   return 0 // cover
 139: }
-140: 
+140:
 141: // Bind a sampler + its `_meta` and `_offset` companion uniforms. Returns the
 142: // next free texture unit. Caller advances `textureUnit` only when this layer
 143: // actually binds a sampler in the current pass (loc !== null).
@@ -28979,7 +29270,7 @@ Note: file list is sampled.
 172:   }
 173:   return textureUnit + 1
 174: }
-175: 
+175:
 176: // Bind a vec4Array uniform plus its `_count` companion. Accepts colors as
 177: // `number[][]` ([r,g,b] or [r,g,b,a] entries in 0..1).
 178: export function bindPaletteUniform(
@@ -29012,6 +29303,7 @@ Note: file list is sampled.
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/package.json",
@@ -29021,6 +29313,7 @@ Note: file list is sampled.
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/package.json</path>
 <type>file</type>
@@ -29119,6 +29412,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts",
@@ -29128,13 +29422,14 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { colorFx, sampleFx } from './_helpers'
-3: 
+3:
 4: export const hueShiftLayer = colorFx({
 5:   id: 'hue-shift',
 6:   name: 'Hue Shift',
@@ -29151,7 +29446,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 17: return vec4(hsv2rgb(h), base.a);`,
 18:   },
 19: })
-20: 
+20:
 21: export const saturationLayer = colorFx({
 22:   id: 'saturation',
 23:   name: 'Saturation',
@@ -29167,7 +29462,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 33: return vec4(mix(vec3(lum), base.rgb, {{amount}}), base.a);`,
 34:   },
 35: })
-36: 
+36:
 37: export const vibranceLayer = colorFx({
 38:   id: 'vibrance',
 39:   name: 'Vibrance',
@@ -29187,7 +29482,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 53: return vec4(mix(vec3(lum), base.rgb, 1.0 + w), base.a);`,
 54:   },
 55: })
-56: 
+56:
 57: export const brightnessContrastLayer = colorFx({
 58:   id: 'brightness-contrast',
 59:   name: 'Brightness/Contrast',
@@ -29203,7 +29498,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 69: return vec4(col, base.a);`,
 70:   },
 71: })
-72: 
+72:
 73: export const sharpnessLayer = sampleFx({
 74:   id: 'sharpness',
 75:   name: 'Sharpness',
@@ -29224,7 +29519,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 90: return vec4(c + (c - blurred) * {{amount}}, 1.0);`,
 91:   },
 92: })
-93: 
+93:
 94: export const tintLayer = colorFx({
 95:   id: 'tint',
 96:   name: 'Tint',
@@ -29239,7 +29534,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 105: return vec4(mix(base.rgb, base.rgb * {{color}} * 1.4, {{amount}}), base.a);`,
 106:   },
 107: })
-108: 
+108:
 109: export const duotoneLayer = colorFx({
 110:   id: 'duotone',
 111:   name: 'Duotone',
@@ -29256,7 +29551,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 122: return vec4(mix({{color1}}, {{color2}}, lum), base.a);`,
 123:   },
 124: })
-125: 
+125:
 126: export const tritoneLayer = colorFx({
 127:   id: 'tritone',
 128:   name: 'Tritone',
@@ -29278,7 +29573,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 144: return vec4(col, base.a);`,
 145:   },
 146: })
-147: 
+147:
 148: export const solarizeLayer = colorFx({
 149:   id: 'solarize',
 150:   name: 'Solarize',
@@ -29293,7 +29588,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 159: return vec4(col, base.a);`,
 160:   },
 161: })
-162: 
+162:
 163: export const invertLayer = colorFx({
 164:   id: 'invert',
 165:   name: 'Invert',
@@ -29307,7 +29602,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 173: return vec4(mix(base.rgb, 1.0 - base.rgb, {{amount}}), base.a);`,
 174:   },
 175: })
-176: 
+176:
 177: export const grayscaleLayer = colorFx({
 178:   id: 'grayscale',
 179:   name: 'Grayscale',
@@ -29323,7 +29618,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 189: return vec4(mix(base.rgb, vec3(lum), {{amount}}), base.a);`,
 190:   },
 191: })
-192: 
+192:
 193: export const chromaticAberration2Layer = sampleFx({
 194:   id: 'chromatic-aberration-2',
 195:   name: 'Chromatic Aberration (Sep.)',
@@ -29345,7 +29640,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 211: return vec4(r, g, b, 1.0);`,
 212:   },
 213: })
-214: 
+214:
 215: export const chromaFlowLayer = colorFx({
 216:   id: 'chroma-flow',
 217:   name: 'Chroma Flow',
@@ -29363,7 +29658,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 229: return vec4(mix(base.rgb, base.rgb * tint, {{amount}}), base.a);`,
 230:   },
 231: })
-232: 
+232:
 233: // N-color stepped/smooth ramp. Reads previous-pass scalar (default: luma)
 234: // and maps to a 1..10-stop palette. The single highest-leverage atom for
 235: // reproducing Paper presets that use `colors[N]` arrays.
@@ -29453,7 +29748,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 319: return colorRampLookup(t, {{colors}}, {{colors}}_count, {{steps}}, {{softness}}, {{stepsPerColor}}, {{wrap}});`,
 320:   },
 321: })
-322: 
+322:
 323: // Replaces previous-pass with vec4(luma, luma, luma, 1.0) so downstream
 324: // dither/threshold/ramp consumers see a clean scalar.
 325: export const luminanceTapLayer = sampleFx({
@@ -29470,7 +29765,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 336:   },
 337:   outputKind: 'scalar',
 338: })
-339: 
+339:
 340: // CMYK channel separation. Output mode 0 = grayscale (channel as luma);
 341: // mode 1 = tinted (full CMYK process color). Stack four with mode=1 +
 342: // halftone effects for a CMYK halftone print look.
@@ -29521,7 +29816,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 387: return vec4(mix(vec3(1.0), tint, v), 1.0);`,
 388:   },
 389: })
-390: 
+390:
 391: // Image Edge — Sobel-based edge detector. Stack over image-source to extract
 392: // outlines for heatmap, liquid-metal, gem-smoke style effects.
 393: export const imageEdgeLayer = sampleFx({
@@ -29554,7 +29849,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 420:   },
 421:   outputKind: 'scalar',
 422: })
-423: 
+423:
 424: // Image Contour — luminance-band isolines. Useful before color-ramp for
 425: // Paper-style topographic heatmap or liquid-metal looks.
 426: export const imageContourLayer = sampleFx({
@@ -29579,7 +29874,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 445:   },
 446:   outputKind: 'scalar',
 447: })
-448: 
+448:
 449: // Chrome Relief — pseudo-metallic highlight derived from the luminance gradient.
 450: // Stack after an image or contour source for a liquid-metal / chrome look.
 451: export const chromeReliefLayer = sampleFx({
@@ -29613,7 +29908,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 479:   },
 480:   outputKind: 'scalar',
 481: })
-482: 
+482:
 483: // Glow Field — additive bloom/glow effect with inner+outer radius controls.
 484: // Use after any source for bloom, or stack under a color-ramp for tinted glow.
 485: export const glowFieldLayer = sampleFx({
@@ -29652,7 +29947,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 518: return vec4(col, src.a);`,
 519:   },
 520: })
-521: 
+521:
 522: // Alpha Falloff — replicates Paper's heatmap pre-processing in-shader by
 523: // reading (1 - alpha) at THREE Gaussian-equivalent blur scales (sharp / mid
 524: // / wide). Uses the hardware mipmap chain via textureLod() — the runtime
@@ -29729,7 +30024,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 595:   },
 596:   outputKind: 'scalar',
 597: })
-598: 
+598:
 599: // Heat Pulse — faithful port of Paper's heatmap inner/outer/contour math.
 600: // Reads the three blur scales from `alpha-falloff` (.r=shape, .g=big,
 601: // .b=inner) and applies Paper's exact algorithm:
@@ -29760,6 +30055,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/sources.ts",
@@ -29769,13 +30065,14 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/sources.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { gen } from './_helpers'
-3: 
+3:
 4: export const solidColorLayer: LayerDefinition = {
 5:   id: 'solid-color',
 6:   name: 'Solid Color',
@@ -29791,7 +30088,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 16: return vec4({{color}}, 1.0);`,
 17:   },
 18: }
-19: 
+19:
 20: // Sample an uploaded or remote image as a texture. Honours fit/scale/rotation/
 21: // offset via the auto-generated _meta and _offset companion uniforms.
 22: export const imageSourceLayer = gen({
@@ -29826,7 +30123,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 51: return src * {{tint}};`,
 52:   },
 53: })
-54: 
+54:
 55: export const SOURCE_LAYERS: Record<string, LayerDefinition> = {
 56:   'solid-color': solidColorLayer,
 57:   'image-source': imageSourceLayer,
@@ -29839,6 +30136,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts",
@@ -29848,13 +30146,14 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { fx, baseFx } from './_helpers'
-3: 
+3:
 4: export const halftoneLayer = fx({
 5:   id: 'halftone',
 6:   name: 'Halftone',
@@ -29879,7 +30178,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 25: return vec4(mix({{colorBack}}, {{colorDot}}, fillDot), 1.0);`,
 26:   },
 27: })
-28: 
+28:
 29: export const ditherLayer = fx({
 30:   id: 'dither',
 31:   name: 'Dither',
@@ -29909,7 +30208,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 55: return vec4(mix({{colorDark}}, {{colorLight}}, clamp(q, 0.0, 1.0)), 1.0);`,
 56:   },
 57: })
-58: 
+58:
 59: export const posterizeLayer = baseFx({
 60:   id: 'posterize',
 61:   name: 'Posterize',
@@ -29924,7 +30223,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 70: return vec4(col, base.a);`,
 71:   },
 72: })
-73: 
+73:
 74: export const embossLayer = fx({
 75:   id: 'emboss',
 76:   name: 'Emboss',
@@ -29946,7 +30245,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 92: return vec4(vec3(v), 1.0);`,
 93:   },
 94: })
-95: 
+95:
 96: export const asciiLayer = fx({
 97:   id: 'ascii',
 98:   name: 'ASCII',
@@ -29971,7 +30270,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 117: return vec4(mix({{colorBack}}, {{colorChar}}, bar), 1.0);`,
 118:   },
 119: })
-120: 
+120:
 121: export const filmGrain2Layer = baseFx({
 122:   id: 'film-grain-2',
 123:   name: 'Film Grain (v2)',
@@ -29994,7 +30293,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 140: return vec4(base.rgb + noise * {{intensity}}, base.a);`,
 141:   },
 142: })
-143: 
+143:
 144: export const vignette2Layer = baseFx({
 145:   id: 'vignette-2',
 146:   name: 'Vignette (v2)',
@@ -30015,7 +30314,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 161: return vec4(mix(base.rgb, {{color}}, v), base.a);`,
 162:   },
 163: })
-164: 
+164:
 165: export const paperLayer = baseFx({
 166:   id: 'paper',
 167:   name: 'Paper',
@@ -30035,7 +30334,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 181: return vec4(base.rgb * w, base.a);`,
 182:   },
 183: })
-184: 
+184:
 185: // Material Noise — layered paper/fiber/crumple/grain texture generator.
 186: // Use as a source with overlay/multiply blend on top of an image or gradient.
 187: // Faithfully models Paper's paper-texture primitive breakdown.
@@ -30079,7 +30378,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 225: return vec4(col, 1.0);`,
 226:   },
 227: })
-228: 
+228:
 229: // Dot Glyph Grid — faithful Paper dot-grid recreation: regular lattice of
 230: // geometric dots with per-dot random size/opacity, multiple shapes.
 231: export const dotGlyphGridLayer = baseFx({
@@ -30145,7 +30444,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 291: return vec4(col, 1.0);`,
 292:   },
 293: })
-294: 
+294:
 295: // Halftone CMYK — print-style four-channel halftone. Splits the previous pass
 296: // into C/M/Y/K, screens each at its own rotation (15°/75°/0°/45°) with
 297: // independent shifts, then composites via subtractive ink simulation. Cannot
@@ -30217,7 +30516,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 363: return vec4(paper, 1.0);`,
 364:   },
 365: })
-366: 
+366:
 367: export const STYLIZE_LAYERS: Record<string, LayerDefinition> = {
 368:   halftone: halftoneLayer,
 369:   'halftone-cmyk': halftoneCmykLayer,
@@ -30239,6 +30538,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts",
@@ -30248,13 +30548,14 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/distorters.ts</path>
 <type>file</type>
 <content>
 1: import type { LayerDefinition } from '../types'
 2: import { distorter } from './_helpers'
-3: 
+3:
 4: export const spherizeLayer = distorter({
 5:   id: 'spherize',
 6:   name: 'Spherize',
@@ -30276,7 +30577,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 22: return texture(u_prevPass, distorted);`,
 23:   },
 24: })
-25: 
+25:
 26: export const liquifyLayer = distorter({
 27:   id: 'liquify',
 28:   name: 'Liquify',
@@ -30296,7 +30597,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 42: return texture(u_prevPass, uv + vec2(dx, dy) * {{amount}});`,
 43:   },
 44: })
-45: 
+45:
 46: export const stretchLayer = distorter({
 47:   id: 'stretch',
 48:   name: 'Stretch',
@@ -30315,7 +30616,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 61: return texture(u_prevPass, c + d);`,
 62:   },
 63: })
-64: 
+64:
 65: export const twirlLayer = distorter({
 66:   id: 'twirl',
 67:   name: 'Twirl',
@@ -30339,7 +30640,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 85: return texture(u_prevPass, c + rd);`,
 86:   },
 87: })
-88: 
+88:
 89: export const swirlLayer = distorter({
 90:   id: 'swirl',
 91:   name: 'Swirl',
@@ -30361,7 +30662,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 107: return texture(u_prevPass, c + rd);`,
 108:   },
 109: })
-110: 
+110:
 111: export const concentricSpinLayer = distorter({
 112:   id: 'concentric-spin',
 113:   name: 'Concentric Spin',
@@ -30385,7 +30686,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 131: return texture(u_prevPass, c + rd);`,
 132:   },
 133: })
-134: 
+134:
 135: export const gridDistortionLayer = distorter({
 136:   id: 'grid-distortion',
 137:   name: 'Grid Distortion',
@@ -30405,7 +30706,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 151: return texture(u_prevPass, uv + offset);`,
 152:   },
 153: })
-154: 
+154:
 155: export const waveDistortionLayer = distorter({
 156:   id: 'wave-distortion',
 157:   name: 'Wave Distortion',
@@ -30428,7 +30729,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 174: return texture(u_prevPass, uv + offset);`,
 175:   },
 176: })
-177: 
+177:
 178: export const ripplesLayer = distorter({
 179:   id: 'ripples',
 180:   name: 'Ripples',
@@ -30451,7 +30752,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 197: return texture(u_prevPass, uv + normalize(d + 1e-6) * wave);`,
 198:   },
 199: })
-200: 
+200:
 201: export const shatterLayer = distorter({
 202:   id: 'shatter',
 203:   name: 'Shatter',
@@ -30470,7 +30771,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 216: return texture(u_prevPass, uv + offset);`,
 217:   },
 218: })
-219: 
+219:
 220: export const mirrorLayer = distorter({
 221:   id: 'mirror',
 222:   name: 'Mirror',
@@ -30492,7 +30793,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 238: return texture(u_prevPass, c + rotate2D(d, a));`,
 239:   },
 240: })
-241: 
+241:
 242: export const kaleidoscopeLayer = distorter({
 243:   id: 'kaleidoscope',
 244:   name: 'Kaleidoscope',
@@ -30516,7 +30817,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 262: return texture(u_prevPass, c + rd);`,
 263:   },
 264: })
-265: 
+265:
 266: export const polarCoordinatesLayer = distorter({
 267:   id: 'polar-coordinates',
 268:   name: 'Polar Coordinates',
@@ -30546,7 +30847,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 292: return texture(u_prevPass, q);`,
 293:   },
 294: })
-295: 
+295:
 296: export const perspectiveLayer = distorter({
 297:   id: 'perspective',
 298:   name: 'Perspective',
@@ -30565,7 +30866,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 311: return texture(u_prevPass, q + 0.5);`,
 312:   },
 313: })
-314: 
+314:
 315: export const pixelateLayer = distorter({
 316:   id: 'pixelate',
 317:   name: 'Pixelate',
@@ -30581,7 +30882,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 327: return texture(u_prevPass, q);`,
 328:   },
 329: })
-330: 
+330:
 331: export const glassLayer = distorter({
 332:   id: 'glass',
 333:   name: 'Glass',
@@ -30603,7 +30904,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 349: return texture(u_prevPass, uv + grad * {{amount}});`,
 350:   },
 351: })
-352: 
+352:
 353: export const glassTilesLayer = distorter({
 354:   id: 'glass-tiles',
 355:   name: 'Glass Tiles',
@@ -30625,7 +30926,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 371: return texture(u_prevPass, q2);`,
 372:   },
 373: })
-374: 
+374:
 375: export const glitchLayer = distorter({
 376:   id: 'glitch',
 377:   name: 'Glitch',
@@ -30650,7 +30951,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 396: return vec4(r, g, b, 1.0);`,
 397:   },
 398: })
-399: 
+399:
 400: export const vhsLayer = distorter({
 401:   id: 'vhs',
 402:   name: 'VHS',
@@ -30678,7 +30979,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 424: return vec4(col, 1.0);`,
 425:   },
 426: })
-427: 
+427:
 428: export const crtScreenLayer = distorter({
 429:   id: 'crt-screen',
 430:   name: 'CRT Screen',
@@ -30708,7 +31009,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 454: return vec4(col, 1.0);`,
 455:   },
 456: })
-457: 
+457:
 458: // Radial sine-wave UV displacement modulated by FBM noise. Stack over an
 459: // `image-source` (or any prev-pass) for caustic-style water surfaces.
 460: export const waterRippleLayer = distorter({
@@ -30740,7 +31041,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 486: return texture(u_prevPass, uv - push);`,
 487:   },
 488: })
-489: 
+489:
 490: // Organic Warp — broad liquid UV distortion driven by layered domain warping.
 491: // Stack over mesh-spots-gradient or any generator for animated mesh-gradient-
 492: // style motion. distortion controls warp amplitude, swirl adds rotational
@@ -30788,7 +31089,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 534: return texture(u_prevPass, q);`,
 535:   },
 536: })
-537: 
+537:
 538: // Chrome Wave — Paper liquid-metal port. Generates the animated multi-band
 539: // chrome stripe profile across the previous pass's silhouette, complete with
 540: // Paper's interior-gradient bump modulation, simplex surface noise, per-stripe
@@ -30876,20 +31177,20 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 622:     main: `
 623: const float firstFrameOffset = 2.8;
 624: float t = {{speed}} * (u_time + firstFrameOffset);
-625: 
+625:
 626: vec4 src = texture(u_prevPass, uv);
 627: float opacity = src.a;
 628: // Interior gradient — wide-blur of alpha approximates Paper's Poisson solve.
 629: float edgeRaw = cwWideAlpha(u_prevPass, uv, {{edgeRadius}});
 630: float edge = pow(edgeRaw, 1.6);
 631: edge *= mix(0.0, 1.0, smoothstep(0.0, 0.4, {{contour}}));
-632: 
+632:
 633: // Rotated UV for stripe direction
 634: float angle = (-{{angle}} + 70.0) * 3.14159 / 180.0;
 635: vec2 rotatedUV = rotate2D(uv - 0.5, angle) + 0.5;
 636: float diagBLtoTR = rotatedUV.x - rotatedUV.y;
 637: float diagTLtoBR = rotatedUV.x + rotatedUV.y;
-638: 
+638:
 639: // Bump (Paper's interior dome) — radial falloff biased by diagonal axis,
 640: // then biased toward top of frame (heavier highlights up top).
 641: vec2 grad_uv = uv - 0.5;
@@ -30899,7 +31200,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 645: float bump = pow(1.8 * dist, 1.2);
 646: bump = 1.0 - bump;
 647: bump *= pow(uv.y, 0.3);
-648: 
+648:
 649: // Stripe widths (modulated by bump so highlights compress at shape interior)
 650: float cycleWidth = max({{repetition}}, 0.5);
 651: float thin1Ratio = 0.12 / cycleWidth * (1.0 - 0.4 * bump);
@@ -30907,11 +31208,11 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 653: float wideRatio = 1.0 - thin1Ratio - thin2Ratio;
 654: float thin1Width = cycleWidth * thin1Ratio;
 655: float thin2Width = cycleWidth * thin2Ratio;
-656: 
+656:
 657: // Surface simplex noise — drives both stripe distortion + edge perturbation
 658: float n = simplex2D(uv - t);
 659: edge += (1.0 - edge) * {{distortion}} * n;
-660: 
+660:
 661: // Paper's direction modulation — this is what makes stripes refract through
 662: // the shape edges and pinch around the interior bump.
 663: direction += diagBLtoTR;
@@ -30919,7 +31220,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 665: direction *= mix(1.0, 1.0 - edge, smoothstep(0.5, 1.0, {{contour}}));
 666: direction -= 1.7 * edge * smoothstep(0.5, 1.0, {{contour}});
 667: direction += 0.2 * pow({{contour}}, 4.0) * (1.0 - smoothstep(0.0, 1.0, edge));
-668: 
+668:
 669: bump *= clamp(pow(uv.y, 0.1), 0.3, 1.0);
 670: direction *= (0.1 + (1.1 - edge) * bump);
 671: direction *= (0.4 + 0.6 * (1.0 - smoothstep(0.5, 1.0, edge)));
@@ -30928,7 +31229,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 674: direction *= (0.5 + 0.5 * pow(uv.y, 2.0));
 675: direction *= cycleWidth;
 676: direction -= t;
-677: 
+677:
 678: // Per-channel chromatic dispersion
 679: float colorDispersion = clamp(1.0 - bump, 0.0, 1.0);
 680: float dispersionRed = colorDispersion + 0.03 * bump * n;
@@ -30939,7 +31240,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 685: dispersionBlue -= 0.2 * edge;
 686: dispersionRed *= ({{shiftRed}} / 20.0);
 687: dispersionBlue *= ({{shiftBlue}} / 20.0);
-688: 
+688:
 689: // Edge-aware per-channel blur: softer near shape edges, sharper at interior
 690: float softness = 0.05 * {{softness}};
 691: float blur = softness + 0.5 * smoothstep(1.0, 10.0, {{repetition}}) * smoothstep(0.0, 1.0, edge);
@@ -30947,21 +31248,21 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 693: blur += smallCanvasT * smoothstep(0.0, 1.0, edge);
 694: float rExtraBlur = softness * (0.05 + 0.1 * ({{shiftRed}} / 20.0) * bump);
 695: float gExtraBlur = softness * 0.05 / max(0.001, abs(1.0 - diagBLtoTR));
-696: 
+696:
 697: vec3 stripW = vec3(thin1Width, thin2Width, wideRatio);
 698: stripW.y -= 0.02 * smoothstep(0.0, 1.0, edge + bump);
-699: 
+699:
 700: float stripeR = fract(direction + dispersionRed);
 701: float chR = cwGetColorChanges({{colorChrome1}}.r, {{colorChrome2}}.r, stripeR, stripW, blur + fwidth(stripeR) + rExtraBlur, bump);
 702: float stripeG = fract(direction);
 703: float chG = cwGetColorChanges({{colorChrome1}}.g, {{colorChrome2}}.g, stripeG, stripW, blur + fwidth(stripeG) + gExtraBlur, bump);
 704: float stripeB = fract(direction - dispersionBlue);
 705: float chB = cwGetColorChanges({{colorChrome1}}.b, {{colorChrome2}}.b, stripeB, stripW, blur + fwidth(stripeB), bump);
-706: 
+706:
 707: vec3 chrome = vec3(chR, chG, chB);
 708: // Color burn tint — Paper's tint blend mode
 709: chrome = mix(chrome, 1.0 - min(vec3(1.0), (1.0 - chrome) / max({{colorTint}}.rgb, vec3(1e-4))), {{colorTint}}.a);
-710: 
+710:
 711: // Composite chrome over background using silhouette alpha (premultiplied)
 712: chrome *= opacity;
 713: vec3 bg = {{colorBack}}.rgb * {{colorBack}}.a;
@@ -30970,7 +31271,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 716: return vec4(outCol, outA);`,
 717:   },
 718: })
-719: 
+719:
 720: // Fluted Glass — vertical (or angled) refractive lanes with bright edge
 721: // highlights and soft shadows, evoking fluted/reeded architectural glass.
 722: // Operates on the previous pass; pair with `image-source` to refract photos.
@@ -31030,7 +31331,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 776: return vec4(col, src.a);`,
 777:   },
 778: })
-779: 
+779:
 780: // Polar FBM Distort — perturbs UVs radially (push out / pull in from centre)
 
 (Showing lines 1-780 of 883. Use offset=781 to continue.)
@@ -31044,6 +31345,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts",
@@ -31053,6 +31355,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts</path>
 <type>file</type>
@@ -31093,26 +31396,26 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 654: float shape = src.r;
 655: float big = src.g;
 656: float innerCh = src.b;
-657: 
+657:
 658: // Paper's inner/outer/contour decomposition.
 659: float outerBlur = shape * (1.0 - big);
 660: float innerBlur = (1.0 - shape) * big;
 661: float contour = (1.0 - shape) * innerCh;
-662: 
+662:
 663: // Animated time with three phase-offset copies (Paper: t, t+1/3, t+2/3).
 664: float t = u_time * {{speed}} * 0.1 - 0.3;
 665: float t0 = fract(t);
 666: float t1 = fract(t + 1.0/3.0);
 667: float t2 = fract(t + 2.0/3.0);
-668: 
+668:
 669: // Rotate UV so the wave/shadow travel direction is configurable.
 670: float ang = -{{angle}} * 3.14159 / 180.0;
 671: vec2 animUV = rotate2D(uv - 0.5, ang) + 0.5;
-672: 
+672:
 673: float shadow0 = hpShadowShape(animUV, t0, innerBlur);
 674: float shadow1 = hpShadowShape(animUV, t1, innerBlur);
 675: float shadow2 = hpShadowShape(animUV, t2, innerBlur);
-676: 
+676:
 677: // Inner: baseline interior brightness, dimmed by passing shadow shapes,
 678: // then masked to inside via (1 - shape).
 679: float inner = 0.8 + 0.8 * innerBlur;
@@ -31124,7 +31427,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 685: inner = min(1.0, inner);
 686: inner *= (1.0 - shape);
 687: inner = pow(inner, 1.2);
-688: 
+688:
 689: // Outer: animated wave band sweeping across in the rotated y direction,
 690: // multiplied by the silhouette's outer halo (peaks just outside the edge).
 691: float t3 = fract(t * 3.0 - 0.1);
@@ -31134,13 +31437,13 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 695: float outer = 0.9 * pow(outerBlur, 0.8);
 696: outer *= animatedMask;
 697: outer *= mix(0.0, 5.0, pow({{outerGlow}}, 2.0));
-698: 
+698:
 699: float heat = clamp(inner + outer, 0.0, 1.0);
 700: return vec4(heat, heat, heat, 1.0);`,
 701:   },
 702:   outputKind: 'scalar',
 703: })
-704: 
+704:
 705: export const COLOR_LAYERS: Record<string, LayerDefinition> = {
 706:   'hue-shift': hueShiftLayer,
 707:   saturation: saturationLayer,
@@ -31177,6 +31480,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/tsconfig.json",
@@ -31186,6 +31490,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/tsconfig.json</path>
 <type>file</type>
@@ -31224,6 +31529,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 **Tool: todowrite**
 
 **Input:**
+
 ```json
 {
   "todos": [
@@ -31262,6 +31568,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 ```
 
 **Output:**
+
 ```
 [
   {
@@ -31304,6 +31611,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-sizing.ts",
@@ -31313,6 +31621,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/shaders/packages/shaders/src/shader-sizing.ts</path>
 <type>file</type>
@@ -31328,7 +31637,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 9:   u_worldWidth: number;
 10:   u_worldHeight: number;
 11: }
-12: 
+12:
 13: export interface ShaderSizingParams {
 14:   fit?: 'none' | 'contain' | 'cover';
 15:   scale?: number;
@@ -31340,7 +31649,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 21:   worldWidth?: number;
 22:   worldHeight?: number;
 23: }
-24: 
+24:
 25: export const defaultObjectSizing: Required<ShaderSizingParams> = {
 26:   fit: 'contain',
 27:   scale: 1,
@@ -31352,7 +31661,7 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 33:   worldWidth: 0,
 34:   worldHeight: 0,
 35: };
-36: 
+36:
 37: export const defaultPatternSizing: Required<ShaderSizingParams> = {
 38:   fit: 'none',
 39:   scale: 1,
@@ -31364,13 +31673,13 @@ The audit revealed that several Phase 1 pieces already exist in this workspace: 
 45:   worldWidth: 0,
 46:   worldHeight: 0,
 47: };
-48: 
+48:
 49: export const ShaderFitOptions = {
 50:   none: 0,
 51:   contain: 1,
 52:   cover: 2,
 53: } as const;
-54: 
+54:
 55: export type ShaderFit = keyof typeof ShaderFitOptions;
 
 (End of file - total 55 lines)
@@ -31386,6 +31695,7 @@ I’m applying the foundation patch now: metadata for Paper UV domains, conditio
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/types.ts\n@@\n export type UniformType =\n@@\n   | 'vec4Array'\n+\n+export type UvDomain =\n+  | 'object'\n+  | 'objectBox'\n+  | 'responsive'\n+  | 'responsiveBox'\n+  | 'pattern'\n+  | 'patternBox'\n+  | 'image'\n@@\n   // Advisory only — UI uses this to render scalar previews monochrome\n   // and to hint that a downstream `color-ramp`-style consumer is expected.\n-  outputKind?: 'color' | 'scalar'\n+  outputKind?: 'color' | 'rgba' | 'scalar'\n+  // Requests Paper-compatible vertex varyings. When any enabled layer declares\n+  // this, the generator emits v_objectUV / v_patternUV / v_imageUV and related\n+  // sizing varyings instead of the minimal fullscreen passthrough only.\n+  uvDomains?: UvDomain[]\n+  needsNoiseTexture?: boolean\n+  preprocessor?: 'heatmap' | 'liquidMetal' | 'poisson' | 'blur' | 'bayer-dither'\n   glsl: {\n*** End Patch"
@@ -31393,6 +31703,7 @@ I’m applying the foundation patch now: metadata for Paper UV domains, conditio
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/types.ts
@@ -31405,6 +31716,7 @@ M src/lib/shader-composer/types.ts
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts\n@@\n   // Walk the layer list and split into passes at every consumer boundary.\n   const passPlans = splitIntoPasses(enabledLayers)\n+  const usesPaperUv = enabledLayers.some((layer) => {\n+    const def = LAYER_LIBRARY[layer.layerType]\n+    return Boolean(def?.uvDomains?.length)\n+  })\n@@\n-  const passes: GeneratedPass[] = passPlans.map((plan) =>\n-    buildPass(plan)\n-  )\n+  const passes: GeneratedPass[] = passPlans.map((plan) =>\n+    buildPass(plan, usesPaperUv)\n+  )\n \n-  const vertexShader = `#version 300 es\n-precision highp float;\n-\n-in vec2 a_position;\n-out vec2 v_uv;\n-\n-void main() {\n-  v_uv = a_position * 0.5 + 0.5;\n-  gl_Position = vec4(a_position, 0.0, 1.0);\n-}\n-`\n+  const vertexShader = buildVertexShader(usesPaperUv)\n@@\n-function buildPass(plan: PassPlan): GeneratedPass {\n+function buildPass(plan: PassPlan, usesPaperUv: boolean): GeneratedPass {\n@@\n-  const fragmentShader = `#version 300 es\n+  const paperVaryings = usesPaperUv\n+    ? `in vec2 v_objectUV;\n+in vec2 v_objectBoxSize;\n+in vec2 v_responsiveUV;\n+in vec2 v_responsiveBoxGivenSize;\n+in vec2 v_patternUV;\n+in vec2 v_patternBoxSize;\n+in vec2 v_imageUV;`\n+    : ''\n+\n+  const fragmentShader = `#version 300 es\n precision highp float;\n \n in vec2 v_uv;\n+${paperVaryings}\n out vec4 fragColor;\n@@\n }\n `\n@@\n }\n+\n+function buildVertexShader(usesPaperUv: boolean): string {\n+  if (!usesPaperUv) {\n+    return `#version 300 es\n+precision highp float;\n+\n+in vec2 a_position;\n+out vec2 v_uv;\n+\n+void main() {\n+  v_uv = a_position * 0.5 + 0.5;\n+  gl_Position = vec4(a_position, 0.0, 1.0);\n+}\n+`\n+  }\n+\n+  return `#version 300 es\n+precision highp float;\n+\n+in vec2 a_position;\n+\n+uniform vec2 u_resolution;\n+uniform float u_pixelRatio;\n+uniform float u_imageAspectRatio;\n+uniform float u_originX;\n+uniform float u_originY;\n+uniform float u_worldWidth;\n+uniform float u_worldHeight;\n+uniform float u_fit;\n+uniform float u_scale;\n+uniform float u_rotation;\n+uniform float u_offsetX;\n+uniform float u_offsetY;\n+\n+out vec2 v_uv;\n+out vec2 v_objectUV;\n+out vec2 v_objectBoxSize;\n+out vec2 v_responsiveUV;\n+out vec2 v_responsiveBoxGivenSize;\n+out vec2 v_patternUV;\n+out vec2 v_patternBoxSize;\n+out vec2 v_imageUV;\n+\n+vec3 getBoxSize(float boxRatio, vec2 givenBoxSize) {\n+  vec2 box = vec2(0.0);\n+  box.x = boxRatio * min(givenBoxSize.x / max(boxRatio, 1e-4), givenBoxSize.y);\n+  float noFitBoxWidth = box.x;\n+  if (u_fit == 1.0) {\n+    box.x = boxRatio * min(u_resolution.x / max(boxRatio, 1e-4), u_resolution.y);\n+  } else if (u_fit == 2.0) {\n+    box.x = boxRatio * max(u_resolution.x / max(boxRatio, 1e-4), u_resolution.y);\n+  }\n+  box.y = box.x / max(boxRatio, 1e-4);\n+  return vec3(max(box, vec2(1.0)), max(noFitBoxWidth, 1.0));\n+}\n+\n+void main() {\n+  gl_Position = vec4(a_position, 0.0, 1.0);\n+  v_uv = a_position * 0.5 + 0.5;\n+\n+  vec2 uv = gl_Position.xy * 0.5;\n+  vec2 boxOrigin = vec2(0.5 - u_originX, u_originY - 0.5);\n+  vec2 givenBoxSize = max(vec2(u_worldWidth, u_worldHeight), vec2(1.0)) * max(u_pixelRatio, 1.0);\n+  float r = u_rotation * 3.14159265358979323846 / 180.0;\n+  mat2 graphicRotation = mat2(cos(r), sin(r), -sin(r), cos(r));\n+  vec2 graphicOffset = vec2(-u_offsetX, u_offsetY);\n+\n+  float fixedRatio = 1.0;\n+  vec2 fixedRatioBoxGivenSize = vec2(\n+    (u_worldWidth == 0.0) ? u_resolution.x : givenBoxSize.x,\n+    (u_worldHeight == 0.0) ? u_resolution.y : givenBoxSize.y\n+  );\n+  v_objectBoxSize = getBoxSize(fixedRatio, fixedRatioBoxGivenSize).xy;\n+  vec2 objectWorldScale = u_resolution.xy / v_objectBoxSize;\n+  v_objectUV = uv;\n+  v_objectUV *= objectWorldScale;\n+  v_objectUV += boxOrigin * (objectWorldScale - 1.0);\n+  v_objectUV += graphicOffset;\n+  v_objectUV /= max(u_scale, 1e-4);\n+  v_objectUV = graphicRotation * v_objectUV;\n+\n+  v_responsiveBoxGivenSize = vec2(\n+    (u_worldWidth == 0.0) ? u_resolution.x : givenBoxSize.x,\n+    (u_worldHeight == 0.0) ? u_resolution.y : givenBoxSize.y\n+  );\n+  float responsiveRatio = v_responsiveBoxGivenSize.x / max(v_responsiveBoxGivenSize.y, 1.0);\n+  vec2 responsiveBoxSize = getBoxSize(responsiveRatio, v_responsiveBoxGivenSize).xy;\n+  vec2 responsiveBoxScale = u_resolution.xy / responsiveBoxSize;\n+  v_responsiveUV = uv;\n+  v_responsiveUV *= responsiveBoxScale;\n+  v_responsiveUV += boxOrigin * (responsiveBoxScale - 1.0);\n+  v_responsiveUV += graphicOffset;\n+  v_responsiveUV /= max(u_scale, 1e-4);\n+  v_responsiveUV.x *= responsiveRatio;\n+  v_responsiveUV = graphicRotation * v_responsiveUV;\n+  v_responsiveUV.x /= max(responsiveRatio, 1e-4);\n+\n+  vec2 patternBoxGivenSize = vec2(\n+    (u_worldWidth == 0.0) ? u_resolution.x : givenBoxSize.x,\n+    (u_worldHeight == 0.0) ? u_resolution.y : givenBoxSize.y\n+  );\n+  float patternBoxRatio = patternBoxGivenSize.x / max(patternBoxGivenSize.y, 1.0);\n+  vec3 patternBoxSizeData = getBoxSize(patternBoxRatio, patternBoxGivenSize);\n+  v_patternBoxSize = patternBoxSizeData.xy;\n+  float patternBoxNoFitBoxWidth = patternBoxSizeData.z;\n+  vec2 patternBoxScale = u_resolution.xy / v_patternBoxSize;\n+  v_patternUV = uv;\n+  v_patternUV += graphicOffset / patternBoxScale;\n+  v_patternUV += boxOrigin;\n+  v_patternUV -= boxOrigin / patternBoxScale;\n+  v_patternUV *= u_resolution.xy;\n+  v_patternUV /= max(u_pixelRatio, 1.0);\n+  if (u_fit > 0.0) {\n+    v_patternUV *= patternBoxNoFitBoxWidth / max(v_patternBoxSize.x, 1.0);\n+  }\n+  v_patternUV /= max(u_scale, 1e-4);\n+  v_patternUV = graphicRotation * v_patternUV;\n+  v_patternUV += boxOrigin / patternBoxScale;\n+  v_patternUV -= boxOrigin;\n+  v_patternUV *= 0.01;\n+\n+  float imageAspect = max(u_imageAspectRatio, 1e-4);\n+  vec2 imageBoxSize;\n+  if (u_fit == 1.0) {\n+    imageBoxSize.x = min(u_resolution.x / imageAspect, u_resolution.y) * imageAspect;\n+  } else if (u_fit == 2.0) {\n+    imageBoxSize.x = max(u_resolution.x / imageAspect, u_resolution.y) * imageAspect;\n+  } else {\n+    imageBoxSize.x = min(10.0, 10.0 / imageAspect * imageAspect);\n+  }\n+  imageBoxSize.y = imageBoxSize.x / imageAspect;\n+  vec2 imageBoxScale = u_resolution.xy / max(imageBoxSize, vec2(1.0));\n+  v_imageUV = uv;\n+  v_imageUV *= imageBoxScale;\n+  v_imageUV += boxOrigin * (imageBoxScale - 1.0);\n+  v_imageUV += graphicOffset;\n+  v_imageUV /= max(u_scale, 1e-4);\n+  v_imageUV.x *= imageAspect;\n+  v_imageUV = graphicRotation * v_imageUV;\n+  v_imageUV.x /= imageAspect;\n+  v_imageUV += 0.5;\n+  v_imageUV.y = 1.0 - v_imageUV.y;\n+}\n+`\n+}\n*** End Patch"
@@ -31412,6 +31724,7 @@ M src/lib/shader-composer/types.ts
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/generator.ts
@@ -31424,6 +31737,7 @@ M src/lib/shader-composer/generator.ts
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/runtime-shell.ts\n@@\n-      const uTime = gl.getUniformLocation(prog, 'u_time')\n-      if (uTime) gl.uniform1f(uTime, time)\n-      const uRes = gl.getUniformLocation(prog, 'u_resolution')\n-      if (uRes) gl.uniform2f(uRes, width, height)\n+      const uTime = gl.getUniformLocation(prog, 'u_time')\n+      if (uTime !== null) gl.uniform1f(uTime, time)\n+      const uRes = gl.getUniformLocation(prog, 'u_resolution')\n+      if (uRes !== null) gl.uniform2f(uRes, width, height)\n+\n+      bindPaperSizingUniforms(prog, width, height)\n@@\n-        const uPrev = gl.getUniformLocation(prog, 'u_prevPass')\n-        if (uPrev) gl.uniform1i(uPrev, 0)\n+        const uPrev = gl.getUniformLocation(prog, 'u_prevPass')\n+        if (uPrev !== null) gl.uniform1i(uPrev, 0)\n@@\n       const uNoise = gl.getUniformLocation(prog, 'u_noiseTexture')\n-      if (uNoise) gl.uniform1i(uNoise, NOISE_TEXTURE_UNIT)\n+      if (uNoise !== null) gl.uniform1i(uNoise, NOISE_TEXTURE_UNIT)\n@@\n   function destroy() {\n@@\n   }\n+\n+  function bindPaperSizingUniforms(prog: WebGLProgram, width: number, height: number) {\n+    const pixelRatio = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1\n+    const defaults: Record<string, number> = {\n+      u_pixelRatio: pixelRatio,\n+      u_imageAspectRatio: 1,\n+      u_originX: 0.5,\n+      u_originY: 0.5,\n+      u_worldWidth: 0,\n+      u_worldHeight: 0,\n+      u_fit: 1,\n+      u_scale: 1,\n+      u_rotation: 0,\n+      u_offsetX: 0,\n+      u_offsetY: 0,\n+    }\n+    for (const [name, value] of Object.entries(defaults)) {\n+      const loc = gl.getUniformLocation(prog, name)\n+      if (loc !== null) gl.uniform1f(loc, value)\n+    }\n+    // Keep these values live even if a browser initially reports a zero canvas.\n+    if (width <= 0 || height <= 0) {\n+      const res = gl.getUniformLocation(prog, 'u_resolution')\n+      if (res !== null) gl.uniform2f(res, Math.max(width, 1), Math.max(height, 1))\n+    }\n+  }\n \n   return { render, destroy }\n }\n*** End Patch"
@@ -31431,6 +31745,7 @@ M src/lib/shader-composer/generator.ts
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/runtime-shell.ts
@@ -31443,6 +31758,7 @@ M src/lib/shader-composer/runtime-shell.ts
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/components/shader-composer/shader-preview.tsx\n@@\n                 gl.uniform4fv(\n                   gl.getUniformLocation(program, `${baseName}_meta`),\n                   [\n                     entry?.aspect ?? 1,\n@@\n                     img?.rotation ?? 0,\n                   ]\n                 );\n+                const imageAspectLocation = gl.getUniformLocation(\n+                  program,\n+                  \"u_imageAspectRatio\"\n+                );\n+                if (imageAspectLocation !== null) {\n+                  gl.uniform1f(imageAspectLocation, entry?.aspect ?? 1);\n+                }\n                 gl.uniform2fv(\n                   gl.getUniformLocation(program, `${baseName}_offset`),\n                   [img?.offsetX ?? 0, img?.offsetY ?? 0]\n*** End Patch"
@@ -31450,6 +31766,7 @@ M src/lib/shader-composer/runtime-shell.ts
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/components/shader-composer/shader-preview.tsx
@@ -31462,6 +31779,7 @@ M src/components/shader-composer/shader-preview.tsx
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/export-image-helper.ts\n@@\n   const metaLoc = gl.getUniformLocation(prog, baseName + '_meta')\n   if (metaLoc !== null) {\n     gl.uniform4fv(metaLoc, [entry?.aspect ?? 1, fit, scale, rotation])\n   }\n+  const imageAspectLoc = gl.getUniformLocation(prog, 'u_imageAspectRatio')\n+  if (imageAspectLoc !== null) {\n+    gl.uniform1f(imageAspectLoc, entry?.aspect ?? 1)\n+  }\n   const offsetLoc = gl.getUniformLocation(prog, baseName + '_offset')\n*** End Patch"
@@ -31469,6 +31787,7 @@ M src/components/shader-composer/shader-preview.tsx
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/export-image-helper.ts
@@ -31483,6 +31802,7 @@ The vertex plumbing is in place. I’m adding the shared Paper GLSL primitives n
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/glsl-utils.ts\n@@\n export const GLSL_UTILS: Record<string, string> = {\n+  pi: `\n+#ifndef TWO_PI\n+#define TWO_PI 6.28318530718\n+#endif\n+#ifndef PI\n+#define PI 3.14159265358979323846\n+#endif`,\n+\n   // Random and hash functions\n   hash: `\n float hash(vec2 p) {\n@@\n   rotate2D: `\n vec2 rotate2D(vec2 v, float angle) {\n   float s = sin(angle);\n   float c = cos(angle);\n   return vec2(c * v.x - s * v.y, s * v.x + c * v.y);\n }`,\n+\n+  // Paper's canonical helper name. Kept alongside rotate2D so verbatim ports\n+  // can compile without rewriting all calls.\n+  rotate: `\n+vec2 rotate(vec2 uv, float th) {\n+  return mat2(cos(th), sin(th), -sin(th), cos(th)) * uv;\n+}`,\n@@\n   hash22: `\n vec2 hash22(vec2 p) {\n   p = fract(p * vec2(0.3183099, 0.3678794)) + 0.1;\n   p += dot(p, p.yx + 19.19);\n   return fract(vec2(p.x * p.y, p.x + p.y));\n }`,\n+\n+  valueNoise: `\n+float valueNoise(vec2 st) {\n+  vec2 i = floor(st);\n+  vec2 f = fract(st);\n+  float a = hash21(i);\n+  float b = hash21(i + vec2(1.0, 0.0));\n+  float c = hash21(i + vec2(0.0, 1.0));\n+  float d = hash21(i + vec2(1.0, 1.0));\n+  vec2 u = f * f * (3.0 - 2.0 * f);\n+  float x1 = mix(a, b, u.x);\n+  float x2 = mix(c, d, u.x);\n+  return mix(x1, x2, u.y);\n+}`,\n@@\n   noiseTextureRandomGB: `\n vec2 noiseTextureRandomGB(vec2 p) {\n   return texture(u_noiseTexture, floor(p) / 100.0 + 0.5).gb;\n }`,\n+\n+  fiberNoise: `\n+float fiberRandom(vec2 p) {\n+  return texture(u_noiseTexture, fract(floor(p) / 100.0)).b;\n+}\n+\n+float fiberValueNoise(vec2 st) {\n+  vec2 i = floor(st);\n+  vec2 f = fract(st);\n+  float a = fiberRandom(i);\n+  float b = fiberRandom(i + vec2(1.0, 0.0));\n+  float c = fiberRandom(i + vec2(0.0, 1.0));\n+  float d = fiberRandom(i + vec2(1.0, 1.0));\n+  vec2 u = f * f * (3.0 - 2.0 * f);\n+  float x1 = mix(a, b, u.x);\n+  float x2 = mix(c, d, u.x);\n+  return mix(x1, x2, u.y);\n+}\n+\n+float fiberNoiseFbm(vec2 n, vec2 seedOffset) {\n+  float total = 0.0;\n+  float amplitude = 1.0;\n+  for (int i = 0; i < 4; i++) {\n+    n = rotate(n, 0.7);\n+    total += fiberValueNoise(n + seedOffset) * amplitude;\n+    n *= 2.0;\n+    amplitude *= 0.6;\n+  }\n+  return total;\n+}\n+\n+float fiberNoise(vec2 uv, vec2 seedOffset) {\n+  float epsilon = 0.001;\n+  float n1 = fiberNoiseFbm(uv + vec2(epsilon, 0.0), seedOffset);\n+  float n2 = fiberNoiseFbm(uv - vec2(epsilon, 0.0), seedOffset);\n+  float n3 = fiberNoiseFbm(uv + vec2(0.0, epsilon), seedOffset);\n+  float n4 = fiberNoiseFbm(uv - vec2(0.0, epsilon), seedOffset);\n+  return length(vec2(n1 - n2, n3 - n4)) / (2.0 * epsilon);\n+}`,\n+\n+  domainWarp: `\n+vec2 domainWarp(vec2 uv, float n, float amplitude) {\n+  return uv + vec2(cos(n * TWO_PI), sin(n * TWO_PI)) * amplitude;\n+}`,\n@@\n   colorRampLookup: `\n vec4 colorRampLookup(float t, vec4 colors[10], int count, int steps, float softness, int stepsPerColor, bool wrap) {\n@@\n   return mix(a, b, f);\n }`,\n+\n+  oklchTransforms: `\n+#ifndef OKLCH_CHROMA_THRESHOLD\n+#define OKLCH_CHROMA_THRESHOLD 0.001\n+#endif\n+#ifndef OKLCH_HUE_NEUTRALIZER\n+#define OKLCH_HUE_NEUTRALIZER -2.0\n+#endif\n+\n+vec3 srgbToLinear(vec3 srgb) {\n+  return pow(max(srgb, vec3(0.0)), vec3(2.2));\n+}\n+\n+vec3 linearToSrgb(vec3 linear) {\n+  return pow(max(linear, vec3(0.0)), vec3(1.0 / 2.2));\n+}\n+\n+vec3 LrgbToOklab(vec3 rgb) {\n+  float L = pow(max(0.4122214708 * rgb.r + 0.5363325363 * rgb.g + 0.0514459929 * rgb.b, 0.0), 1.0 / 3.0);\n+  float M = pow(max(0.2119034982 * rgb.r + 0.6806995451 * rgb.g + 0.1073969566 * rgb.b, 0.0), 1.0 / 3.0);\n+  float S = pow(max(0.0883024619 * rgb.r + 0.2817188376 * rgb.g + 0.6299787005 * rgb.b, 0.0), 1.0 / 3.0);\n+  return vec3(\n+    0.2104542553 * L + 0.7936177850 * M - 0.0040720468 * S,\n+    1.9779984951 * L - 2.4285922050 * M + 0.4505937099 * S,\n+    0.0259040371 * L + 0.7827717662 * M - 0.8086757660 * S\n+  );\n+}\n+\n+vec3 OklabToLrgb(vec3 oklab) {\n+  float L = oklab.x;\n+  float a = oklab.y;\n+  float b = oklab.z;\n+  float l_ = L + 0.3963377774 * a + 0.2158037573 * b;\n+  float m_ = L - 0.1055613458 * a - 0.0638541728 * b;\n+  float s_ = L - 0.0894841775 * a - 1.2914855480 * b;\n+  float l = l_ * l_ * l_;\n+  float m = m_ * m_ * m_;\n+  float s = s_ * s_ * s_;\n+  return vec3(\n+    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,\n+    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,\n+    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s\n+  );\n+}\n+\n+vec3 oklabToOklch(vec3 oklab) {\n+  float C = length(oklab.yz);\n+  float H = atan(oklab.z, oklab.y);\n+  if (C < OKLCH_CHROMA_THRESHOLD) H = OKLCH_HUE_NEUTRALIZER;\n+  return vec3(oklab.x, C, H);\n+}\n+\n+vec3 oklchToOklab(vec3 oklch) {\n+  return vec3(oklch.x, oklch.y * cos(oklch.z), oklch.y * sin(oklch.z));\n+}\n+\n+float mixHue(float h1, float h2, float mixer) {\n+  float delta = mod(h2 - h1 + PI, TWO_PI) - PI;\n+  return h1 + mixer * delta;\n+}\n+\n+vec3 srgbToOklch(vec3 rgb) {\n+  return oklabToOklch(LrgbToOklab(srgbToLinear(rgb)));\n+}\n+\n+vec3 oklchToSrgb(vec3 oklch) {\n+  return linearToSrgb(OklabToLrgb(oklchToOklab(oklch)));\n+}\n+\n+vec3 mixOklchVector(vec3 color1, vec3 color2, float mixer) {\n+  color1.x = mix(color1.x, color2.x, mixer);\n+  color1.y = mix(color1.y, color2.y, mixer);\n+  if (color1.y > OKLCH_CHROMA_THRESHOLD && color2.y > OKLCH_CHROMA_THRESHOLD) {\n+    color1.z = mixHue(color1.z, color2.z, mixer);\n+  }\n+  return color1;\n+}\n+\n+vec3 oklchMix(vec3 color1, vec3 color2, float mixer) {\n+  vec3 o1 = srgbToOklch(color1);\n+  vec3 o2 = srgbToOklch(color2);\n+  return clamp(oklchToSrgb(mixOklchVector(o1, o2, mixer)), 0.0, 1.0);\n+}`,\n+\n+  oklchColorRampLookup: `\n+vec4 oklchColorRampLookup(float t, vec4 colors[10], int count, int steps, float softness, int stepsPerColor, bool wrap) {\n+  int n = max(count, 1);\n+  if (n == 1) return colors[0];\n+  float tc = clamp(t, 0.0, 1.0);\n+  if (wrap) tc = fract(tc);\n+  if (steps > 0) {\n+    float fSteps = float(steps);\n+    tc = floor(tc * fSteps) / max(fSteps - 1.0, 1.0);\n+    tc = clamp(tc, 0.0, 1.0);\n+  }\n+  float seg = tc * float(n - 1);\n+  int i0 = int(floor(seg));\n+  int i1 = i0 + 1;\n+  if (i1 > n - 1) i1 = wrap ? 0 : n - 1;\n+  float f = seg - float(i0);\n+  if (stepsPerColor > 1) {\n+    float spc = float(stepsPerColor);\n+    f = floor(f * spc) / max(spc - 1.0, 1.0);\n+    f = clamp(f, 0.0, 1.0);\n+  }\n+  float fw = fwidth(f);\n+  float s = max(softness, 0.0);\n+  f = smoothstep(0.5 - s - fw, 0.5 + s + fw, f);\n+  vec4 a = colors[i0];\n+  vec4 b = colors[i1];\n+  vec3 rgb = oklchMix(a.rgb, b.rgb, f);\n+  return vec4(rgb, mix(a.a, b.a, f));\n+}`,\n+\n+  colorBandingFix: `\n+vec3 colorBandingFix(vec3 color) {\n+  float n = fract(sin(dot(0.014 * gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453123) - 0.5;\n+  return color + n / 256.0;\n+}\n+\n+float colorBandingFix(float value) {\n+  float n = fract(sin(dot(0.014 * gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453123) - 0.5;\n+  return value + n / 256.0;\n+}`,\n \n   gaussian9: `\n*** End Patch"
@@ -31490,6 +31810,7 @@ The vertex plumbing is in place. I’m adding the shared Paper GLSL primitives n
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/glsl-utils.ts
@@ -31502,6 +31823,7 @@ M src/lib/shader-composer/glsl-utils.ts
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/generator.ts\n@@\n   if (dependencies.has('snoise') && !dependencies.has('simplex2D')) {\n     dependencies.add('simplex2D')\n   }\n+  if (dependencies.has('valueNoise') && !dependencies.has('hash21')) {\n+    dependencies.add('hash21')\n+  }\n+  if (dependencies.has('fiberNoise') && !dependencies.has('rotate')) {\n+    dependencies.add('rotate')\n+  }\n+  if (dependencies.has('domainWarp') && !dependencies.has('pi')) {\n+    dependencies.add('pi')\n+  }\n+  if (dependencies.has('oklchTransforms') && !dependencies.has('pi')) {\n+    dependencies.add('pi')\n+  }\n+  if (dependencies.has('oklchColorRampLookup')) {\n+    dependencies.add('oklchTransforms')\n+    dependencies.add('pi')\n+  }\n@@\n     hash3: 0,\n+    pi: 0,\n     remap: 0,\n+    rotate: 0,\n     rotate2D: 0,\n@@\n     hash21: 0,\n     hash22: 0,\n+    valueNoise: 1,\n     simplex2D: 1,\n     fbm: 2,\n+    fiberNoise: 2,\n+    domainWarp: 2,\n     voronoi: 2,\n     snoise: 2,\n+    oklchTransforms: 2,\n+    oklchColorRampLookup: 3,\n     luma: 0,\n+    colorBandingFix: 3,\n*** End Patch"
@@ -31509,6 +31831,7 @@ M src/lib/shader-composer/glsl-utils.ts
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/generator.ts
@@ -31521,6 +31844,7 @@ M src/lib/shader-composer/generator.ts
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/color.ts\n@@\n export const colorRampLayer = sampleFx({\n@@\n })\n+\n+export const oklchColorRampLayer = sampleFx({\n+  id: 'oklch-color-ramp',\n+  name: 'OKLCH Color Ramp',\n+  description: 'Map a scalar through an N-stop perceptual Paper-style palette',\n+  color: '#f59e0b',\n+  uniforms: [\n+    {\n+      name: 'colors',\n+      label: 'Colors',\n+      type: 'vec4Array',\n+      arrayLength: 10,\n+      default: {\n+        values: [\n+          [0.02, 0.05, 0.14, 1],\n+          [0.08, 0.35, 0.72, 1],\n+          [0.95, 0.45, 0.12, 1],\n+          [1.0, 0.95, 0.75, 1],\n+        ],\n+        length: 4,\n+      },\n+      ui: { array: { minLength: 1, maxLength: 10 } },\n+    },\n+    { name: 'channel', label: 'Channel', type: 'int', default: 0, ui: { min: 0, max: 4, step: 1 } },\n+    { name: 'steps', label: 'Steps', type: 'int', default: 0, ui: { min: 0, max: 16, step: 1 } },\n+    { name: 'stepsPerColor', label: 'Steps/Color', type: 'int', default: 1, ui: { min: 1, max: 10, step: 1 } },\n+    { name: 'softness', label: 'Softness', type: 'float', default: 0.5, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'wrap', label: 'Wrap', type: 'bool', default: false },\n+    { name: 'domainMin', label: 'Domain Min', type: 'float', default: 0, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'domainMax', label: 'Domain Max', type: 'float', default: 1, ui: { min: 0, max: 1, step: 0.01 } },\n+  ],\n+  glsl: {\n+    dependencies: ['luma', 'oklchColorRampLookup'],\n+    main: `\n+vec4 src = texture(u_prevPass, uv);\n+float scalar;\n+int ch = {{channel}};\n+if (ch == 0) scalar = luma(src.rgb);\n+else if (ch == 1) scalar = src.r;\n+else if (ch == 2) scalar = src.g;\n+else if (ch == 3) scalar = src.b;\n+else scalar = src.a;\n+float span = max({{domainMax}} - {{domainMin}}, 1e-4);\n+float t = clamp((scalar - {{domainMin}}) / span, 0.0, 1.0);\n+return oklchColorRampLookup(t, {{colors}}, {{colors}}_count, {{steps}}, {{softness}}, {{stepsPerColor}}, {{wrap}});`,\n+  },\n+})\n@@\n   'color-ramp': colorRampLayer,\n+  'oklch-color-ramp': oklchColorRampLayer,\n*** End Patch"
@@ -31528,6 +31852,7 @@ M src/lib/shader-composer/generator.ts
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/layers/color.ts
@@ -31540,6 +31865,7 @@ M src/lib/shader-composer/layers/color.ts
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/stylize.ts\n@@\n export const posterizeLayer = baseFx({\n@@\n })\n+\n+export const colorBandingFixLayer = baseFx({\n+  id: 'color-banding-fix',\n+  name: 'Color Banding Fix',\n+  description: 'Paper-style sub-LSB dithering to hide smooth-gradient banding',\n+  color: '#475569',\n+  uniforms: [\n+    { name: 'amount', label: 'Amount', type: 'float', default: 1.0, ui: { min: 0, max: 2, step: 0.01 } },\n+  ],\n+  glsl: {\n+    dependencies: ['colorBandingFix'],\n+    main: `\n+vec3 fixedColor = colorBandingFix(base.rgb);\n+return vec4(mix(base.rgb, fixedColor, {{amount}}), base.a);`,\n+  },\n+})\n@@\n   posterize: posterizeLayer,\n+  'color-banding-fix': colorBandingFixLayer,\n*** End Patch"
@@ -31547,6 +31873,7 @@ M src/lib/shader-composer/layers/color.ts
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/layers/stylize.ts
@@ -31561,6 +31888,7 @@ I’m adding the first priority ports as explicit Paper-style primitives: a dire
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts\n@@\n-import type { LayerDefinition } from '../types'\n+import type { LayerDefinition } from '../types'\n+import { gen } from './_helpers'\n \n-export const SPECIALIZED_LAYERS: Record<string, LayerDefinition> = {}\n+export const paperLiquidMetalShapeLayer = gen({\n+  id: 'paper-liquid-metal-shape',\n+  name: 'Liquid Metal Shape',\n+  description: 'Paper liquid-metal chrome stripes on built-in shapes using Paper vertex UVs',\n+  color: '#94a3b8',\n+  uvDomains: ['object', 'responsive', 'responsiveBox'],\n+  uniforms: [\n+    { name: 'colorBack', label: 'Background', type: 'vec4', default: [0.95, 0.95, 0.97, 1.0], ui: { color: true } },\n+    { name: 'colorTint', label: 'Tint', type: 'vec4', default: [0.55, 0.65, 1.0, 0.0], ui: { color: true } },\n+    { name: 'shape', label: 'Shape', type: 'float', default: 0.0, ui: { min: 0, max: 4, step: 1 } },\n+    { name: 'angle', label: 'Angle', type: 'float', default: 0.0, ui: { min: 0, max: 360, step: 1 } },\n+    { name: 'repetition', label: 'Repetition', type: 'float', default: 4.0, ui: { min: 1, max: 10, step: 0.1 } },\n+    { name: 'softness', label: 'Softness', type: 'float', default: 0.5, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'shiftRed', label: 'Shift Red', type: 'float', default: 0.3, ui: { min: -1, max: 1, step: 0.01 } },\n+    { name: 'shiftBlue', label: 'Shift Blue', type: 'float', default: -0.3, ui: { min: -1, max: 1, step: 0.01 } },\n+    { name: 'distortion', label: 'Distortion', type: 'float', default: 0.5, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'contour', label: 'Contour', type: 'float', default: 0.4, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'speed', label: 'Speed', type: 'float', default: 0.3, ui: { min: 0, max: 4, step: 0.05 } },\n+  ],\n+  glsl: {\n+    dependencies: ['pi', 'rotate', 'snoise', 'colorBandingFix'],\n+    functions: `\n+float plmGetColorChanges(float c1, float c2, float stripeP, vec3 w, float blur, float bump, float tint) {\n+  float ch = mix(c2, c1, smoothstep(0.0, 2.0 * blur, stripeP));\n+  float border = w.x;\n+  ch = mix(ch, c2, smoothstep(border, border + 2.0 * blur, stripeP));\n+  border = w.x + 0.4 * (1.0 - bump) * w.y;\n+  ch = mix(ch, c1, smoothstep(border, border + 2.0 * blur, stripeP));\n+  border = w.x + 0.5 * (1.0 - bump) * w.y;\n+  ch = mix(ch, c2, smoothstep(border, border + 2.0 * blur, stripeP));\n+  border = w.x + w.y;\n+  ch = mix(ch, c1, smoothstep(border, border + 2.0 * blur, stripeP));\n+  float gradientT = (stripeP - w.x - w.y) / max(w.z, 1e-4);\n+  float gradient = mix(c1, c2, smoothstep(0.0, 1.0, gradientT));\n+  ch = mix(ch, gradient, smoothstep(border, border + 0.5 * blur, stripeP));\n+  return mix(ch, 1.0 - min(1.0, (1.0 - ch) / max(tint, 0.0001)), {{colorTint}}.a);\n+}`,\n+    main: `\n+float t = 0.3 * (u_time * {{speed}} + 2.8);\n+vec2 metalUv = v_objectUV + 0.5;\n+metalUv.y = 1.0 - metalUv.y;\n+float cycleWidth = {{repetition}};\n+float edge = 0.0;\n+float contOffset = 1.0;\n+\n+if ({{shape}} < 1.0) {\n+  vec2 borderUV = v_responsiveUV + 0.5;\n+  float ratio = v_responsiveBoxGivenSize.x / max(v_responsiveBoxGivenSize.y, 1.0);\n+  vec2 mask = min(borderUV, 1.0 - borderUV);\n+  vec2 pixelThickness = min(250.0 / max(v_responsiveBoxGivenSize, vec2(1.0)), vec2(0.5));\n+  float maskX = pow(smoothstep(0.0, pixelThickness.x, mask.x), 0.25);\n+  float maskY = pow(smoothstep(0.0, pixelThickness.y, mask.y), 0.25);\n+  edge = clamp(1.0 - maskX * maskY, 0.0, 1.0);\n+  metalUv = v_responsiveUV;\n+  if (ratio > 1.0) metalUv.y /= ratio;\n+  else metalUv.x *= ratio;\n+  metalUv += 0.5;\n+  metalUv.y = 1.0 - metalUv.y;\n+  cycleWidth *= 2.0;\n+  contOffset = 1.5;\n+} else if ({{shape}} < 2.0) {\n+  vec2 shapeUV = (metalUv - 0.5) * 0.67;\n+  edge = pow(clamp(3.0 * length(shapeUV), 0.0, 1.0), 18.0);\n+} else if ({{shape}} < 3.0) {\n+  vec2 shapeUV = (metalUv - 0.5) * 1.68;\n+  float r = length(shapeUV) * 2.0;\n+  float a = atan(shapeUV.y, shapeUV.x) + 0.2;\n+  r *= 1.0 + 0.05 * sin(3.0 * a + 2.0 * t);\n+  float f = abs(cos(a * 3.0));\n+  edge = smoothstep(f, f + 0.7, r);\n+  edge *= edge;\n+  metalUv *= 0.8;\n+  cycleWidth *= 1.6;\n+} else if ({{shape}} < 4.0) {\n+  vec2 shapeUV = rotate((metalUv - 0.5), 0.25 * PI) * 1.42 + 0.5;\n+  vec2 mask = min(shapeUV, 1.0 - shapeUV);\n+  float maskX = pow(smoothstep(0.0, 0.15, mask.x), 0.25);\n+  float maskY = pow(smoothstep(0.0, 0.15, mask.y), 0.25);\n+  edge = clamp(1.0 - maskX * maskY, 0.0, 1.0);\n+} else {\n+  vec2 shapeUV = (metalUv - 0.5) * 1.3;\n+  for (int i = 0; i < 5; i++) {\n+    float fi = float(i);\n+    float speed = 1.5 + 2.0 / 3.0 * sin(fi * 12.345);\n+    float angle = -fi * 1.5;\n+    vec2 dir1 = vec2(cos(angle), sin(angle));\n+    vec2 dir2 = vec2(cos(angle + 1.57), sin(angle + 1.0));\n+    vec2 traj = 0.4 * (dir1 * sin(t * speed + fi * 1.23) + dir2 * cos(t * speed * 0.7 + fi * 2.17));\n+    float d = length(shapeUV + traj);\n+    edge += pow(1.0 - clamp(d, 0.0, 1.0), 4.0);\n+  }\n+  edge = 1.0 - smoothstep(0.65, 0.9, edge);\n+  edge = pow(edge, 4.0);\n+}\n+\n+edge = mix(smoothstep(0.9 - 2.0 * fwidth(edge), 0.9, edge), edge, smoothstep(0.0, 0.4, {{contour}}));\n+float opacity = 1.0 - smoothstep(0.9 - 2.0 * fwidth(edge), 0.9, edge);\n+if ({{shape}} < 2.0) edge = 1.2 * edge;\n+else edge = 1.8 * pow(edge, 1.5);\n+\n+vec2 rotatedUV = metalUv - 0.5;\n+float angle = (-{{angle}} + 70.0) * PI / 180.0;\n+rotatedUV = vec2(\n+  rotatedUV.x * cos(angle) - rotatedUV.y * sin(angle),\n+  rotatedUV.x * sin(angle) + rotatedUV.y * cos(angle)\n+) + 0.5;\n+float diagBLtoTR = rotatedUV.x - rotatedUV.y;\n+float diagTLtoBR = rotatedUV.x + rotatedUV.y;\n+\n+vec3 color1 = vec3(0.98, 0.98, 1.0);\n+vec3 color2 = vec3(0.1, 0.1, 0.1 + 0.1 * smoothstep(0.7, 1.3, diagTLtoBR));\n+vec2 gradUv = metalUv - 0.5;\n+float dist = length(gradUv + vec2(0.0, 0.2 * diagBLtoTR));\n+gradUv = rotate(gradUv, (0.25 - 0.2 * diagBLtoTR) * PI);\n+float direction = gradUv.x;\n+float bump = 1.0 - pow(1.8 * dist, 1.2);\n+bump *= pow(metalUv.y, 0.3);\n+\n+float thin1Ratio = 0.12 / cycleWidth * (1.0 - 0.4 * bump);\n+float thin2Ratio = 0.07 / cycleWidth * (1.0 + 0.4 * bump);\n+float wideRatio = 1.0 - thin1Ratio - thin2Ratio;\n+float noise = snoise(metalUv - t);\n+edge += (1.0 - edge) * {{distortion}} * noise;\n+direction += diagBLtoTR;\n+direction -= 2.0 * noise * diagBLtoTR * (smoothstep(0.0, 1.0, edge) * (1.0 - smoothstep(0.0, 1.0, edge)));\n+direction *= mix(1.0, 1.0 - edge, smoothstep(0.5, 1.0, {{contour}}));\n+direction -= 1.7 * edge * smoothstep(0.5, 1.0, {{contour}});\n+direction += 0.2 * pow({{contour}}, 4.0) * (1.0 - smoothstep(0.0, 1.0, edge));\n+bump *= clamp(pow(metalUv.y, 0.1), 0.3, 1.0);\n+direction *= 0.1 + (1.1 - edge) * bump;\n+direction *= 0.4 + 0.6 * (1.0 - smoothstep(0.5, 1.0, edge));\n+direction += 0.18 * (smoothstep(0.1, 0.2, metalUv.y) * (1.0 - smoothstep(0.2, 0.4, metalUv.y)));\n+direction += 0.03 * (smoothstep(0.1, 0.2, 1.0 - metalUv.y) * (1.0 - smoothstep(0.2, 0.4, 1.0 - metalUv.y)));\n+direction *= 0.5 + 0.5 * pow(metalUv.y, 2.0);\n+direction *= cycleWidth;\n+direction -= t;\n+\n+float colorDispersion = clamp(1.0 - bump, 0.0, 1.0);\n+float dispersionRed = colorDispersion + 0.03 * bump * noise;\n+dispersionRed += 5.0 * (smoothstep(-0.1, 0.2, metalUv.y) * (1.0 - smoothstep(0.1, 0.5, metalUv.y))) * (smoothstep(0.4, 0.6, bump) * (1.0 - smoothstep(0.4, 1.0, bump)));\n+dispersionRed -= diagBLtoTR;\n+float dispersionBlue = colorDispersion * 1.3;\n+dispersionBlue += (smoothstep(0.0, 0.4, metalUv.y) * (1.0 - smoothstep(0.1, 0.8, metalUv.y))) * (smoothstep(0.4, 0.6, bump) * (1.0 - smoothstep(0.4, 0.8, bump)));\n+dispersionBlue -= 0.2 * edge;\n+dispersionRed *= {{shiftRed}} / 20.0;\n+dispersionBlue *= {{shiftBlue}} / 20.0;\n+\n+float blur = {{softness}} / 15.0 + 0.3 * contOffset;\n+vec3 w = vec3(cycleWidth * thin1Ratio, cycleWidth * thin2Ratio, wideRatio);\n+w.y -= 0.02 * smoothstep(0.0, 1.0, edge + bump);\n+float r = plmGetColorChanges(color1.r, color2.r, fract(direction + dispersionRed), w, blur + fwidth(direction), bump, {{colorTint}}.r);\n+float g = plmGetColorChanges(color1.g, color2.g, fract(direction), w, blur + fwidth(direction), bump, {{colorTint}}.g);\n+float b = plmGetColorChanges(color1.b, color2.b, fract(direction - dispersionBlue), w, blur + fwidth(direction), bump, {{colorTint}}.b);\n+vec3 color = vec3(r, g, b) * opacity;\n+vec3 bgColor = {{colorBack}}.rgb * {{colorBack}}.a;\n+color = color + bgColor * (1.0 - opacity);\n+float outA = opacity + {{colorBack}}.a * (1.0 - opacity);\n+return vec4(colorBandingFix(color), outA);`,\n+  },\n+})\n+\n+export const paperHeatmapLayer = gen({\n+  id: 'paper-heatmap',\n+  name: 'Heatmap (Processed Image)',\n+  description: 'Paper heatmap shader for a preprocessed heatmap texture',\n+  color: '#f97316',\n+  uvDomains: ['object', 'image'],\n+  uniforms: [\n+    { name: 'image', label: 'Processed Image', type: 'sampler2D', default: { url: null, sourceKind: 'url', fit: 'contain' }, ui: { image: { allowUpload: true } } },\n+    { name: 'colorBack', label: 'Background', type: 'vec4', default: [0.02, 0.02, 0.05, 1.0], ui: { color: true } },\n+    {\n+      name: 'colors',\n+      label: 'Colors',\n+      type: 'vec4Array',\n+      arrayLength: 10,\n+      default: {\n+        values: [\n+          [0.08, 0.12, 0.45, 1],\n+          [0.0, 0.65, 0.85, 1],\n+          [0.95, 0.45, 0.12, 1],\n+          [1.0, 0.95, 0.65, 1],\n+        ],\n+        length: 4,\n+      },\n+      ui: { array: { minLength: 1, maxLength: 10 } },\n+    },\n+    { name: 'angle', label: 'Angle', type: 'float', default: 0.0, ui: { min: 0, max: 360, step: 1 } },\n+    { name: 'noise', label: 'Noise', type: 'float', default: 0.2, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'innerGlow', label: 'Inner Glow', type: 'float', default: 0.5, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'outerGlow', label: 'Outer Glow', type: 'float', default: 0.5, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'contour', label: 'Contour', type: 'float', default: 0.5, ui: { min: 0, max: 1, step: 0.01 } },\n+    { name: 'speed', label: 'Speed', type: 'float', default: 1.0, ui: { min: 0, max: 4, step: 0.05 } },\n+  ],\n+  glsl: {\n+    dependencies: ['pi'],\n+    functions: `\n+float phGetImgFrame(vec2 uv, float th) {\n+  float frame = 1.0;\n+  frame *= smoothstep(0.0, th, uv.y);\n+  frame *= 1.0 - smoothstep(1.0 - th, 1.0, uv.y);\n+  frame *= smoothstep(0.0, th, uv.x);\n+  frame *= 1.0 - smoothstep(1.0 - th, 1.0, uv.x);\n+  return frame;\n+}\n+float phCircle(vec2 uv, vec2 c, vec2 r) {\n+  return 1.0 - smoothstep(r.x, r.y, length(uv - c));\n+}\n+float phLst(float edge0, float edge1, float x) {\n+  return clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);\n+}\n+float phSst(float edge0, float edge1, float x) {\n+  return smoothstep(edge0, edge1, x);\n+}\n+float phShadowShape(vec2 uv, float t, float contour) {\n+  vec2 scaledUV = uv;\n+  float posY = mix(-1.0, 2.0, t);\n+  scaledUV.y -= 0.5;\n+  float mainCircleScale = phSst(0.0, 0.8, posY) * phLst(1.4, 0.9, posY);\n+  scaledUV *= vec2(1.0, 1.0 + 1.5 * mainCircleScale);\n+  scaledUV.y += 0.5;\n+  float s = phCircle(scaledUV, vec2(0.5, posY - 0.2), vec2(0.4, 1.0 - 0.3 * (phSst(0.1, 0.2, t) * (1.0 - phSst(0.2, 0.5, t)))));\n+  s = pow(s, 1.4) * 1.2;\n+  float pos = posY - uv.y;\n+  float topFlattener = phLst(-0.4, 0.0, pos) * (1.0 - phSst(0.0, 1.2, pos));\n+  topFlattener = pow(topFlattener, 3.0);\n+  s = mix(topFlattener, s, 1.0 - phSst(0.0, 0.3, pos));\n+  float rightCircle = phCircle(uv, vec2(0.95 - 0.2 * cos(-2.0 - t * TWO_PI), 0.4 - 0.1 * sin(-2.0 - t * TWO_PI)), vec2(0.15, 0.3));\n+  s = mix(s, 0.0, rightCircle * phSst(0.6, 0.7, t) * (1.0 - phSst(0.8, 0.9, t)));\n+  float topCircle = phCircle(uv, vec2(0.5, 0.19), vec2(0.05, 0.25));\n+  topCircle += 2.0 * contour * phCircle(uv, vec2(0.5, 0.19), vec2(0.2, 0.5));\n+  s = mix(s, 0.0, topCircle * 0.55 * phSst(0.2, 0.3, t) * (1.0 - phSst(0.3, 0.45, t)));\n+  float leafMask = phCircle(uv, vec2(0.53, 0.13), vec2(0.08, 0.19));\n+  leafMask = mix(leafMask, 0.0, 1.0 - phSst(0.4, 0.54, uv.x));\n+  leafMask = mix(0.0, leafMask, phSst(0.0, 0.2, uv.y));\n+  leafMask *= phSst(0.5, 1.1, posY) * phSst(1.5, 1.3, posY);\n+  s += leafMask;\n+  s = mix(s, 0.0, phSst(0.0, 0.4, t) * (1.0 - phSst(0.6, 0.8, t)) * phCircle(uv, vec2(0.52, 0.92), vec2(0.09, 0.25)));\n+  float pos = phSst(0.0, 0.6, t) * (1.0 - phSst(0.6, 1.0, t));\n+  s = mix(s, 0.5, phCircle(uv, vec2(0.0, 1.2 - 0.5 * pos), vec2(0.1, 0.3)));\n+  s = mix(s, 0.0, phCircle(uv, vec2(1.0, 0.5 + 0.5 * pos), vec2(0.1, 0.3)));\n+  s = mix(s, 1.0, phCircle(uv, vec2(0.95, 0.2 + 0.2 * phSst(0.3, 0.4, t) * phSst(0.7, 0.5, t)), vec2(0.07, 0.22)));\n+  s = mix(s, 1.0, phCircle(uv, vec2(0.95, 0.2 + 0.2 * phSst(0.3, 0.4, t) * (1.0 - phSst(0.5, 0.7, t))), vec2(0.07, 0.22)));\n+  s /= max(1e-4, phSst(1.0, 0.85, uv.y));\n+  return clamp(s, 0.0, 1.0);\n+}\n+float phBlurEdge3x3(sampler2D tex, vec2 uv, vec2 dudx, vec2 dudy, float radius, float centerSample) {\n+  vec2 texel = 1.0 / vec2(textureSize(tex, 0));\n+  vec2 r = radius * texel;\n+  float sum = 4.0 * centerSample;\n+  sum += 2.0 * textureGrad(tex, uv + vec2(0.0, -r.y), dudx, dudy).g;\n+  sum += 2.0 * textureGrad(tex, uv + vec2(0.0, r.y), dudx, dudy).g;\n+  sum += 2.0 * textureGrad(tex, uv + vec2(-r.x, 0.0), dudx, dudy).g;\n+  sum += 2.0 * textureGrad(tex, uv + vec2(r.x, 0.0), dudx, dudy).g;\n+  sum += textureGrad(tex, uv + vec2(-r.x, -r.y), dudx, dudy).g;\n+  sum += textureGrad(tex, uv + vec2(r.x, -r.y), dudx, dudy).g;\n+  sum += textureGrad(tex, uv + vec2(-r.x, r.y), dudx, dudy).g;\n+  sum += textureGrad(tex, uv + vec2(r.x, r.y), dudx, dudy).g;\n+  return sum / 16.0;\n+}`,\n+    main: `\n+vec2 objectUv = v_objectUV + 0.5;\n+objectUv.y = 1.0 - objectUv.y;\n+vec2 imgUV = v_imageUV;\n+imgUV -= 0.5;\n+imgUV *= 0.5714285714285714;\n+imgUV += 0.5;\n+float imgSoftFrame = phGetImgFrame(imgUV, 0.03);\n+vec4 img = texture({{image}}, imgUV);\n+vec2 dudx = dFdx(imgUV);\n+vec2 dudy = dFdy(imgUV);\n+if (img.a == 0.0) return {{colorBack}};\n+\n+float t = 0.1 * u_time * {{speed}} - 0.3;\n+float t0 = mod(t, 1.0);\n+float t1 = mod(t + 1.0 / 3.0, 1.0);\n+float t2 = mod(t + 2.0 / 3.0, 1.0);\n+vec2 animationUV = imgUV - 0.5;\n+float angle = -{{angle}} * PI / 180.0;\n+animationUV = vec2(\n+  animationUV.x * cos(angle) - animationUV.y * sin(angle),\n+  animationUV.x * sin(angle) + animationUV.y * cos(angle)\n+) + 0.5;\n+\n+float shape = img.r;\n+img.g = phBlurEdge3x3({{image}}, imgUV, dudx, dudy, 8.0, img.g);\n+float outerBlur = 1.0 - mix(1.0, img.g, shape);\n+float innerBlur = mix(img.g, 0.0, shape);\n+float contour = mix(img.b, 0.0, shape);\n+outerBlur *= imgSoftFrame;\n+\n+float shadow0 = phShadowShape(animationUV, t0, innerBlur);\n+float shadow1 = phShadowShape(animationUV, t1, innerBlur);\n+float shadow2 = phShadowShape(animationUV, t2, innerBlur);\n+float inner = 0.8 + 0.8 * innerBlur;\n+inner = mix(inner, 0.0, shadow0);\n+inner = mix(inner, 0.0, shadow1);\n+inner = mix(inner, 0.0, shadow2);\n+inner *= mix(0.0, 2.0, {{innerGlow}});\n+inner += ({{contour}} * 2.0) * contour;\n+inner = min(1.0, inner);\n+inner *= 1.0 - shape;\n+inner = pow(inner, 1.2);\n+\n+float outerT = mod(t0 * 3.0 - 0.1, 1.0);\n+float y = mod(animationUV.y - outerT, 1.0);\n+float animatedMask = smoothstep(0.3, 0.65, y) * (1.0 - smoothstep(0.65, 1.0, y));\n+float outer = 0.9 * pow(outerBlur, 0.8) * (0.5 + animatedMask);\n+outer *= mix(0.0, 5.0, pow({{outerGlow}}, 2.0));\n+outer *= imgSoftFrame;\n+\n+float heat = clamp(inner + outer, 0.0, 1.0);\n+heat += (0.005 + 0.35 * {{noise}}) * (fract(sin(dot(objectUv, vec2(12.9898, 78.233))) * 43758.5453123) - 0.5);\n+float mixer = heat * float(max({{colors}}_count, 1));\n+vec4 gradient = {{colors}}[0];\n+gradient.rgb *= gradient.a;\n+float outerShape = 0.0;\n+for (int i = 1; i < 11; i++) {\n+  if (i > max({{colors}}_count, 1)) break;\n+  float m = clamp(mixer - float(i - 1), 0.0, 1.0);\n+  if (i == 1) outerShape = m;\n+  vec4 c = {{colors}}[i - 1];\n+  c.rgb *= c.a;\n+  gradient = mix(gradient, c, m);\n+}\n+vec3 color = gradient.rgb * outerShape;\n+float opacity = gradient.a * outerShape;\n+vec3 bgColor = {{colorBack}}.rgb * {{colorBack}}.a;\n+color = color + bgColor * (1.0 - opacity);\n+opacity = opacity + {{colorBack}}.a * (1.0 - opacity);\n+color += 0.02 * (fract(sin(dot(objectUv + 1.0, vec2(12.9898, 78.233))) * 43758.5453123) - 0.5);\n+return vec4(color, opacity);`,\n+  },\n+})\n+\n+export const SPECIALIZED_LAYERS: Record<string, LayerDefinition> = {\n+  'paper-liquid-metal-shape': paperLiquidMetalShapeLayer,\n+  'paper-heatmap': paperHeatmapLayer,\n+}\n*** End Patch"
@@ -31568,6 +31896,7 @@ I’m adding the first priority ports as explicit Paper-style primitives: a dire
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/layers/specialized.ts
@@ -31580,6 +31909,7 @@ M src/lib/shader-composer/layers/specialized.ts
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts",
@@ -31589,6 +31919,7 @@ M src/lib/shader-composer/layers/specialized.ts
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts</path>
 <type>file</type>
@@ -31604,10 +31935,10 @@ M src/lib/shader-composer/layers/specialized.ts
 9: //
 10: // New genuinely cross-cutting Paper algorithms — color-panels, pulsing-border,
 11: // gem-smoke-compose, geometric-pattern-scalar — should land here.
-12: 
+12:
 13: import type { LayerDefinition } from '../types'
 14: import { gen } from './_helpers'
-15: 
+15:
 16: export const paperLiquidMetalShapeLayer = gen({
 17:   id: 'paper-liquid-metal-shape',
 18:   name: 'Liquid Metal Shape',
@@ -31652,7 +31983,7 @@ M src/lib/shader-composer/layers/specialized.ts
 57: float cycleWidth = {{repetition}};
 58: float edge = 0.0;
 59: float contOffset = 1.0;
-60: 
+60:
 61: if ({{shape}} < 1.0) {
 62:   vec2 borderUV = v_responsiveUV + 0.5;
 63:   float ratio = v_responsiveBoxGivenSize.x / max(v_responsiveBoxGivenSize.y, 1.0);
@@ -31702,12 +32033,12 @@ M src/lib/shader-composer/layers/specialized.ts
 107:   edge = 1.0 - smoothstep(0.65, 0.9, edge);
 108:   edge = pow(edge, 4.0);
 109: }
-110: 
+110:
 111: edge = mix(smoothstep(0.9 - 2.0 * fwidth(edge), 0.9, edge), edge, smoothstep(0.0, 0.4, {{contour}}));
 112: float opacity = 1.0 - smoothstep(0.9 - 2.0 * fwidth(edge), 0.9, edge);
 113: if ({{shape}} < 2.0) edge = 1.2 * edge;
 114: else edge = 1.8 * pow(edge, 1.5);
-115: 
+115:
 116: vec2 rotatedUV = metalUv - 0.5;
 117: float angle = (-{{angle}} + 70.0) * PI / 180.0;
 118: rotatedUV = vec2(
@@ -31716,7 +32047,7 @@ M src/lib/shader-composer/layers/specialized.ts
 121: ) + 0.5;
 122: float diagBLtoTR = rotatedUV.x - rotatedUV.y;
 123: float diagTLtoBR = rotatedUV.x + rotatedUV.y;
-124: 
+124:
 125: vec3 color1 = vec3(0.98, 0.98, 1.0);
 126: vec3 color2 = vec3(0.1, 0.1, 0.1 + 0.1 * smoothstep(0.7, 1.3, diagTLtoBR));
 127: vec2 gradUv = metalUv - 0.5;
@@ -31725,7 +32056,7 @@ M src/lib/shader-composer/layers/specialized.ts
 130: float direction = gradUv.x;
 131: float bump = 1.0 - pow(1.8 * dist, 1.2);
 132: bump *= pow(metalUv.y, 0.3);
-133: 
+133:
 134: float thin1Ratio = 0.12 / cycleWidth * (1.0 - 0.4 * bump);
 135: float thin2Ratio = 0.07 / cycleWidth * (1.0 + 0.4 * bump);
 136: float wideRatio = 1.0 - thin1Ratio - thin2Ratio;
@@ -31744,7 +32075,7 @@ M src/lib/shader-composer/layers/specialized.ts
 149: direction *= 0.5 + 0.5 * pow(metalUv.y, 2.0);
 150: direction *= cycleWidth;
 151: direction -= t;
-152: 
+152:
 153: float colorDispersion = clamp(1.0 - bump, 0.0, 1.0);
 154: float dispersionRed = colorDispersion + 0.03 * bump * noise;
 155: dispersionRed += 5.0 * (smoothstep(-0.1, 0.2, metalUv.y) * (1.0 - smoothstep(0.1, 0.5, metalUv.y))) * (smoothstep(0.4, 0.6, bump) * (1.0 - smoothstep(0.4, 1.0, bump)));
@@ -31754,7 +32085,7 @@ M src/lib/shader-composer/layers/specialized.ts
 159: dispersionBlue -= 0.2 * edge;
 160: dispersionRed *= {{shiftRed}} / 20.0;
 161: dispersionBlue *= {{shiftBlue}} / 20.0;
-162: 
+162:
 163: float blur = {{softness}} / 15.0 + 0.3 * contOffset;
 164: vec3 w = vec3(cycleWidth * thin1Ratio, cycleWidth * thin2Ratio, wideRatio);
 165: w.y -= 0.02 * smoothstep(0.0, 1.0, edge + bump);
@@ -31768,7 +32099,7 @@ M src/lib/shader-composer/layers/specialized.ts
 173: return vec4(colorBandingFix(color), outA);`,
 174:   },
 175: })
-176: 
+176:
 177: export const paperHeatmapLayer = gen({
 178:   id: 'paper-heatmap',
 179:   name: 'Heatmap (Processed Image)',
@@ -31879,7 +32210,7 @@ M src/lib/shader-composer/layers/specialized.ts
 284: vec2 dudx = dFdx(imgUV);
 285: vec2 dudy = dFdy(imgUV);
 286: if (img.a == 0.0) return {{colorBack}};
-287: 
+287:
 288: float t = 0.1 * u_time * {{speed}} - 0.3;
 289: float t0 = mod(t, 1.0);
 290: float t1 = mod(t + 1.0 / 3.0, 1.0);
@@ -31890,14 +32221,14 @@ M src/lib/shader-composer/layers/specialized.ts
 295:   animationUV.x * cos(angle) - animationUV.y * sin(angle),
 296:   animationUV.x * sin(angle) + animationUV.y * cos(angle)
 297: ) + 0.5;
-298: 
+298:
 299: float shape = img.r;
 300: img.g = phBlurEdge3x3({{image}}, imgUV, dudx, dudy, 8.0, img.g);
 301: float outerBlur = 1.0 - mix(1.0, img.g, shape);
 302: float innerBlur = mix(img.g, 0.0, shape);
 303: float contour = mix(img.b, 0.0, shape);
 304: outerBlur *= imgSoftFrame;
-305: 
+305:
 306: float shadow0 = phShadowShape(animationUV, t0, innerBlur);
 307: float shadow1 = phShadowShape(animationUV, t1, innerBlur);
 308: float shadow2 = phShadowShape(animationUV, t2, innerBlur);
@@ -31910,14 +32241,14 @@ M src/lib/shader-composer/layers/specialized.ts
 315: inner = min(1.0, inner);
 316: inner *= 1.0 - shape;
 317: inner = pow(inner, 1.2);
-318: 
+318:
 319: float outerT = mod(t0 * 3.0 - 0.1, 1.0);
 320: float y = mod(animationUV.y - outerT, 1.0);
 321: float animatedMask = smoothstep(0.3, 0.65, y) * (1.0 - smoothstep(0.65, 1.0, y));
 322: float outer = 0.9 * pow(outerBlur, 0.8) * (0.5 + animatedMask);
 323: outer *= mix(0.0, 5.0, pow({{outerGlow}}, 2.0));
 324: outer *= imgSoftFrame;
-325: 
+325:
 326: float heat = clamp(inner + outer, 0.0, 1.0);
 327: heat += (0.005 + 0.35 * {{noise}}) * (fract(sin(dot(objectUv, vec2(12.9898, 78.233))) * 43758.5453123) - 0.5);
 328: float mixer = heat * float(max({{colors}}_count, 1));
@@ -31941,7 +32272,7 @@ M src/lib/shader-composer/layers/specialized.ts
 346: return vec4(color, opacity);`,
 347:   },
 348: })
-349: 
+349:
 350: export const SPECIALIZED_LAYERS: Record<string, LayerDefinition> = {
 351:   'paper-liquid-metal-shape': paperLiquidMetalShapeLayer,
 352:   'paper-heatmap': paperHeatmapLayer,
@@ -31958,6 +32289,7 @@ M src/lib/shader-composer/layers/specialized.ts
 **Tool: apply_patch**
 
 **Input:**
+
 ```json
 {
   "patchText": "*** Begin Patch\n*** Update File: /Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/specialized.ts\n@@\n float phSst(float edge0, float edge1, float x) {\n-  return smoothstep(edge0, edge1, x);\n+  float t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);\n+  return t * t * (3.0 - 2.0 * t);\n }\n@@\n-  float pos = phSst(0.0, 0.6, t) * (1.0 - phSst(0.6, 1.0, t));\n-  s = mix(s, 0.5, phCircle(uv, vec2(0.0, 1.2 - 0.5 * pos), vec2(0.1, 0.3)));\n-  s = mix(s, 0.0, phCircle(uv, vec2(1.0, 0.5 + 0.5 * pos), vec2(0.1, 0.3)));\n+  float movingPos = phSst(0.0, 0.6, t) * (1.0 - phSst(0.6, 1.0, t));\n+  s = mix(s, 0.5, phCircle(uv, vec2(0.0, 1.2 - 0.5 * movingPos), vec2(0.1, 0.3)));\n+  s = mix(s, 0.0, phCircle(uv, vec2(1.0, 0.5 + 0.5 * movingPos), vec2(0.1, 0.3)));\n*** End Patch"
@@ -31965,6 +32297,7 @@ M src/lib/shader-composer/layers/specialized.ts
 ```
 
 **Output:**
+
 ```
 Success. Updated the following files:
 M src/lib/shader-composer/layers/specialized.ts
@@ -31989,6 +32322,7 @@ Of course, Mr. Nickerson. I shall now wire the new specialized layers into the l
 **Tool: read**
 
 **Input:**
+
 ```json
 {
   "filePath": "/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts",
@@ -31998,6 +32332,7 @@ Of course, Mr. Nickerson. I shall now wire the new specialized layers into the l
 ```
 
 **Output:**
+
 ```
 <path>/Users/tjnickerson/Documents/GitHub/Nickersoft/shader-editor/src/lib/shader-composer/layers/index.ts</path>
 <type>file</type>
@@ -32016,14 +32351,14 @@ Of course, Mr. Nickerson. I shall now wire the new specialized layers into the l
 12: import { STYLIZE_LAYERS } from './stylize'
 13: import { SPECIALIZED_LAYERS } from './specialized'
 14: import { PAPER_SHADER_LAYERS } from './paper-shaders'
-15: 
+15:
 16: // Re-export new primitives for direct use in presets
 17: export { scalarFieldLayer, polarBandsLayer, spiralStripeLayer, voronoiCellsLayer, metaballsLayer, dotOrbitLayer } from './noise'
 18: export { meshSpotsGradientLayer } from './gradients'
 19: export { organicWarpLayer } from './distorters'
 20: export { imageEdgeLayer, imageContourLayer, chromeReliefLayer, glowFieldLayer } from './color'
 21: export { materialNoiseLayer, dotGlyphGridLayer } from './stylize'
-22: 
+22:
 23: export const simplexNoiseLayer: LayerDefinition = {
 24:   id: 'simplex-noise',
 25:   name: 'Simplex Noise',
@@ -32046,6 +32381,7 @@ The specialized layers are already wired into `LAYER_LIBRARY` via the existing `
 **Tool: bash**
 
 **Input:**
+
 ```json
 {
   "command": "bunx tsc --noEmit",
@@ -32056,6 +32392,7 @@ The specialized layers are already wired into `LAYER_LIBRARY` via the existing `
 ```
 
 **Output:**
+
 ```
 (no output)
 ```
@@ -32069,12 +32406,14 @@ The build compiles cleanly — zero errors.
 ## What was accomplished
 
 **Phase 1 foundation**
+
 - `types.ts` — Added `UvDomain` (`object`, `pattern`, `image`, etc.), `uvDomains`, `needsNoiseTexture`, `preprocessor`, and `outputKind: 'rgba'`.
 - `generator.ts` — Conditional **Paper-compatible vertex shader** generation. When any enabled layer declares `uvDomains`, the generator now emits `v_objectUV`, `v_patternUV`, `v_imageUV`, `v_responsiveUV`, and the full `getBoxSize()` / sizing math from Paper's `vertex-shader.ts`. Also added dependency ordering for all new GLSL utilities.
 - `runtime-shell.ts` — Automatic binding of Paper sizing uniforms (`u_pixelRatio`, `u_fit`, `u_scale`, `u_rotation`, `u_originX/Y`, `u_offsetX/Y`, `u_worldWidth/Height`, `u_imageAspectRatio`) so layers using the advanced vertex stage never crash on missing uniforms.
 - `shader-preview.tsx` & `export-image-helper.ts` — Forward `u_imageAspectRatio` from the texture cache into the shader program.
 
 **GLSL utility library expansion (`glsl-utils.ts`)**
+
 - `pi` — `TWO_PI` / `PI` macros.
 - `rotate` — Paper's canonical `mat2` rotation helper.
 - `valueNoise` — Paper's bicubic value-noise (used by mesh-gradient).
@@ -32085,6 +32424,7 @@ The build compiles cleanly — zero errors.
 - `colorBandingFix` — Paper's sub-LSB dither to eliminate gradient banding.
 
 **New composable layers**
+
 - `oklch-color-ramp` (`color.ts`) — N-stop perceptual color ramp; drop-in replacement for `color-ramp` when you want Paper-grade interpolation.
 - `color-banding-fix` (`stylize.ts`) — Post-process dither layer to kill smooth-gradient banding.
 - `paper-liquid-metal-shape` (`specialized.ts`) — **Faithful port** of Paper's liquid-metal shader on built-in shapes (none/circle/daisy/diamond/metaballs), using the new Paper vertex varyings and exact stripe/contour/dispersion math.
@@ -32093,4 +32433,3 @@ The build compiles cleanly — zero errors.
 All changes are committed to the working tree. Shall I proceed with **Phase 2** — adding the Java-side preprocessors (`toProcessedHeatmap`, `toProcessedLiquidMetal`) so the editor can generate the required texture on image upload, or would you prefer to review the new layers in the browser first? How else may I serve, your grace?
 
 ---
-
