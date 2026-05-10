@@ -5,7 +5,7 @@
 // declaratively via presets (`chain().pipe(new Heatmap(...)).pipe(new Blur(...))`).
 
 import { deserializeNode } from './registry'
-import type { Node } from './node'
+import type { Node } from './node.svelte'
 import type { SerializedChain, SerializedNode } from './types'
 
 export class ShaderChain {

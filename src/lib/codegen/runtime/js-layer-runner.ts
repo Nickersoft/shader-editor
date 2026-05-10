@@ -15,7 +15,7 @@
 // on a `preprocessor: 'heatmap' | 'liquidMetal' | ...` enum. It just calls
 // `node.preprocess()` and trusts the node to localize its own logic.
 
-import type { ProcessingNode } from '@/shaders/core/node'
+import type { ProcessingNode } from '@/shaders/core/node.svelte'
 
 interface RunnerEntry {
   hash: string

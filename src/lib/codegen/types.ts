@@ -63,3 +63,42 @@ export interface GeneratedShader {
   reactComponent: string
   vanillaJs: string
 }
+
+/**
+ * The shape that travels with each shader to the portable `shaderMount`
+ * runtime. A subset of `GeneratedUniform` — only what the runtime needs to
+ * bind a value: the GLSL uniform name, its type, and a default to fall back
+ * on when the host doesn't supply one.
+ *
+ * Editor-only fields (`layerName`, `originalName`) are stripped because the
+ * exported shader has no concept of "layers" or "config keys" — just GLSL.
+ */
+export interface UniformSpec {
+  name: string
+  type: UniformGlType
+  default: unknown
+  /** For vec4Array uniforms, the static array length declared in GLSL. */
+  arrayLength?: number
+}
+
+/**
+ * Strip editor-only fields, leaving only what the portable runtime needs.
+ * Filters out the runtime's intrinsic uniforms (`u_time`, `u_resolution`)
+ * and ProcessingNode internals (`*_jsOutput`) — those are bound by the
+ * runtime itself, not by the host.
+ */
+export function toUniformSpecs(uniforms: GeneratedUniform[]): UniformSpec[] {
+  return uniforms
+    .filter(
+      (u) =>
+        u.name !== 'u_time' &&
+        u.name !== 'u_resolution' &&
+        !u.name.endsWith('_jsOutput'),
+    )
+    .map((u) => ({
+      name: u.name,
+      type: u.type,
+      default: u.default,
+      ...(u.arrayLength !== undefined ? { arrayLength: u.arrayLength } : {}),
+    }))
+}

@@ -14,7 +14,7 @@ import {
   GeneratorNode,
   ProcessingNode,
   type Node,
-} from '@/shaders/core/node'
+} from '@/shaders/core/node.svelte'
 
 export interface PassPlan {
   nodes: Node[]

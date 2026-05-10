@@ -3,7 +3,7 @@
 // canvas-draw-element). Runtime support not yet wired; renders a placeholder.
 
 import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node'
+import { GeneratorNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import { zColor } from '@/shaders/core/schemas'

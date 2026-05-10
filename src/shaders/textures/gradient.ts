@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node'
+import { GeneratorNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import {
@@ -106,6 +106,10 @@ export class Gradient extends GeneratorNode<Config, Inputs> {
           },
         ]
     }
+  }
+
+  structuralKey(): string {
+    return `${this.config.type}|${this.config.edges}`
   }
 
   glsl(): GlslBlock {

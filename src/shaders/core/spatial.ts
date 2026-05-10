@@ -12,6 +12,40 @@
 export type SpatialControl =
   | { kind: 'point'; x: string; y: string; label?: string }
   | { kind: 'radius'; cx: string; cy: string; r: string; label?: string }
+  // Universal Figma-style transform widget: an oriented bounding box with
+  // 4 edge handles, 4 corner handles, and rotation hover zones. Reads/writes
+  // the 5 fields exposed by `transformFields()` (x, y, width, height,
+  // rotation). All references point at scalar config keys.
+  | {
+      kind: 'transform'
+      x: string
+      y: string
+      w: string
+      h: string
+      rotation: string
+      label?: string
+    }
+  // Rectangular bounding box with corner handles. `w` and `h` reference scalar
+  // config keys controlling the shape's horizontal and vertical extents. When
+  // both keys are equal the shape is forced to scale uniformly. Set
+  // `halfExtent: true` if the field stores a half-extent (e.g. radius); leave
+  // unset if it stores the full extent (e.g. width). Holding cmd/ctrl during
+  // drag forces uniform scaling regardless of the field configuration.
+  // `extents` lets a shape report its true half-extents in shader y-units when
+  // `w`/`h` don't map directly to the rendered footprint (e.g. a polygon's
+  // circumscribed radius is wider than its actual bounding box). When
+  // provided, the overlay renders the box at those extents and drags scale
+  // the underlying fields proportionally.
+  | {
+      kind: 'boundingBox'
+      cx: string
+      cy: string
+      w: string
+      h: string
+      halfExtent?: boolean
+      extents?: (config: Record<string, unknown>) => { w: number; h: number }
+      label?: string
+    }
   | {
       kind: 'segment'
       from: [string, string]

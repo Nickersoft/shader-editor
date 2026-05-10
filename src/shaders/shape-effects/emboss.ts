@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node'
+import { EffectNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import { zAngle, zFloat } from '@/shaders/core/schemas'
@@ -28,6 +28,7 @@ export class Emboss extends EffectNode<Config, Inputs> {
   static readonly config = config
   static readonly inputs = inputs
   static readonly meta = meta
+  static readonly appliesTo = ['shape'] as const
 
   glsl(): GlslBlock {
     const angle = this.uniformName('lightAngle')

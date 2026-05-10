@@ -5,7 +5,7 @@
 // when a primitive file is imported (the primitive's index file imports each
 // class file, which calls `register(MyClass)` at module load).
 
-import type { Node, NodeClass } from './node'
+import type { Node, NodeClass } from './node.svelte'
 import type { Category, SerializedNode } from './types'
 
 const REGISTRY = new Map<string, NodeClass>()

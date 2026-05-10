@@ -2,8 +2,8 @@
 
 export * from './types'
 export * from './schemas'
-export * from './node'
+export * from './node.svelte'
 export * from './chain'
 export * from './registry'
-export * from './scene'
+export * from './scene.svelte'
 export * from './spatial'

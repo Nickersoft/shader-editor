@@ -1,5 +1,5 @@
 // BlendMode → GLSL function-name mapping. The function bodies live in
-// glsl-utils.ts and are emitted as ordinary dependencies.
+// helpers/blend-modes.ts and are emitted as ordinary dependencies.
 
 import type { BlendMode } from '@/shaders/core/types'
 

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node'
+import { EffectNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import { zBool, zFloat } from '@/shaders/core/schemas'

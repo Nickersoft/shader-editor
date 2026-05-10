@@ -1,16 +1,13 @@
 import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node'
+import { GeneratorNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zAngle, zCenterAxis, zColor, zFloat } from '@/shaders/core/schemas'
+import { transformFields, zColor, zFloat } from '@/shaders/core/schemas'
+import type { SpatialControl } from '@/shaders/core/spatial'
 
 const config = z.object({
-  topWidth: zFloat(0, 1, 0.001).default(0.3).describe('Top Width'),
-  bottomWidth: zFloat(0, 1, 0.001).default(0.5).describe('Bottom Width'),
-  height: zFloat(0, 1, 0.001).default(0.4).describe('Height'),
-  rotation: zAngle(1).default(0).describe('Rotation'),
-  centerX: zCenterAxis().default(0.5).describe('Center X'),
-  centerY: zCenterAxis().default(0.5).describe('Center Y'),
+  ...transformFields(),
+  topRatio: zFloat(0, 1, 0.001).default(0.6).describe('Top Ratio'),
   fillColor: zColor().default([1, 1, 1]).describe('Fill'),
   strokeColor: zColor().default([0, 0, 0]).describe('Stroke'),
   strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe('Stroke Width'),
@@ -21,7 +18,7 @@ const inputs = z.object({})
 
 const meta: NodeMeta = {
   name: 'Trapezoid',
-  description: 'Trapezoid with adjustable top and bottom widths and height',
+  description: 'Trapezoid filling its bounding box; top width is a ratio of the bottom',
   color: '#f59e0b',
   category: 'shapes',
   defaultBlendMode: 'normal',
@@ -35,14 +32,25 @@ export class Trapezoid extends GeneratorNode<Config, Inputs> {
   static readonly config = config
   static readonly inputs = inputs
   static readonly meta = meta
+  static readonly spatialControls: readonly SpatialControl[] = [
+    {
+      kind: 'transform',
+      x: 'x',
+      y: 'y',
+      w: 'width',
+      h: 'height',
+      rotation: 'rotation',
+      label: 'Bounds',
+    },
+  ]
 
   glsl(): GlslBlock {
-    const tw = this.uniformName('topWidth')
-    const bw = this.uniformName('bottomWidth')
+    const x = this.uniformName('x')
+    const y = this.uniformName('y')
+    const w = this.uniformName('width')
     const h = this.uniformName('height')
     const rot = this.uniformName('rotation')
-    const cx = this.uniformName('centerX')
-    const cy = this.uniformName('centerY')
+    const tr = this.uniformName('topRatio')
     const fill = this.uniformName('fillColor')
     const stroke = this.uniformName('strokeColor')
     const sw = this.uniformName('strokeWidth')
@@ -66,9 +74,13 @@ float sdTrapezoid(vec2 p, float topWidth, float bottomWidth, float height) {
 }`,
       main: `
 vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
-vec2 p = (uv - vec2(${cx}, ${cy})) * _ar;
+vec2 p = (uv - vec2(${x}, ${y})) * _ar;
 p = rotate2D(p, ${rot} * 3.14159265 / 180.0);
-float d = sdTrapezoid(p, ${tw} * 0.5, ${bw} * 0.5, ${h} * 0.5);
+// Bottom width = bbox width; top width = ratio × bottom. Height = bbox height.
+float halfBottom = ${w} * 0.5;
+float halfTop = halfBottom * ${tr};
+float halfHeight = ${h} * 0.5;
+float d = sdTrapezoid(p, halfTop, halfBottom, halfHeight);
 float fillA = 1.0 - aastep(0.0, d);
 float strokeA = (1.0 - aastep(${sw} * 0.5, abs(d - ${offset}))) * step(0.0001, ${sw});
 vec3 col = mix(${fill}, ${stroke}, strokeA);

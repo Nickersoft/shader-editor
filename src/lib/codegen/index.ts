@@ -8,13 +8,14 @@
 // emitters) keeps working unchanged.
 
 import type { ShaderChain } from '@/shaders/core/chain'
-import { isProcessingNode } from '@/shaders/core/node'
-import { Scene, chainToScene } from '@/shaders/core/scene'
+import { isProcessingNode } from '@/shaders/core/node.svelte'
+import { Scene, chainToScene } from '@/shaders/core/scene.svelte'
 import { splitIntoPasses } from './passes'
 import { planScene } from './scene-passes'
 import { buildFragment, buildCompositorFragment } from './fragment'
 import { buildVertexShader, fragmentNeedsStructuredUv } from './vertex'
 import { inspectObjectSchema } from './schema-introspection'
+import { assignPrefixSlugs } from './prefix-slugs'
 import { generateTypeScript } from './export/typescript'
 import { generateReactComponent } from './export/react'
 import { generateVanillaJs } from './export/vanilla'
@@ -35,13 +36,18 @@ function generateFromScene(
   scene: Scene,
   shaderName: string,
 ): GeneratedShader {
+  // Assign human-readable GLSL uniform prefixes (e.g. `voronoi`, `circle2`)
+  // before any glsl() call. This makes both uniform declarations and the
+  // node.uniformName() references inside glsl() use readable names.
+  assignPrefixSlugs(scene)
+
   const plan = planScene(scene)
   const layerCount = plan.layers.length
 
   // 1. Collect uniforms from every contributing GLSL node.
   const uniforms: GeneratedUniform[] = []
   const seenIds = new Set<string>()
-  const collectFromNode = (node: import('@/shaders/core/node').Node) => {
+  const collectFromNode = (node: import('@/shaders/core/node.svelte').Node) => {
     if (seenIds.has(node.id)) return
     seenIds.add(node.id)
 
@@ -118,7 +124,7 @@ function generateFromScene(
   const passes: GeneratedPass[] = plan.passes.map((p, i) => {
     if (p.mode === 'compositor') {
       const compositor = buildCompositorFragment(
-        plan.layers.map((l) => l.layer),
+        plan.layers.map((l) => ({ layer: l.layer, parentIndex: l.parentIndex })),
       )
       // Carry the planner's commitToLayer for the compositor (none — composes
       // straight into the ping-pong) but preserve any fields.

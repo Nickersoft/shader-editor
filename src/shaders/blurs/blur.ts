@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node'
+import { EffectNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import { zFloat } from '@/shaders/core/schemas'
@@ -29,7 +29,7 @@ export class Blur extends EffectNode<Config, Inputs> {
 
   glsl(): GlslBlock[] {
     const intensity = this.uniformName('intensity')
-    const deps = ['gaussian13']
+    const deps = ['gaussian13'] as const
     return [
       {
         dependencies: deps,

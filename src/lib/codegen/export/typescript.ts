@@ -2,6 +2,9 @@
 // props — one field per non-runtime uniform, typed by the uniform's GLSL type.
 
 import type { GeneratedUniform } from '../types'
+import { exportable } from './vanilla'
+
+export { exportable }
 
 export function generateTypeScript(
   uniforms: GeneratedUniform[],
@@ -28,61 +31,20 @@ export function generateTypeScript(
   return lines.join('\n') + '\n'
 }
 
-export function exportable(uniforms: GeneratedUniform[]): GeneratedUniform[] {
-  return uniforms.filter(
-    (u) => u.name !== 'u_time' && u.name !== 'u_resolution' && !u.name.endsWith('_jsOutput'),
-  )
-}
 
 /**
- * Builds friendly prop names from `<layerName><Index?><OriginalName>`.
- * The codegen's internal GLSL uniform names embed the random instance id
- * (`u_circlemoxyz123_radius`) which is unreadable in an exported API. This
- * walker assigns one friendly slug per layer-instance and disambiguates
- * duplicates with a 1-based index (`circle.radius` for the first Circle in
- * the chain, `circle2.radius` for the second).
- *
- * Returns a Map keyed by `GeneratedUniform.name` so emitters can look up the
- * external prop name without re-deriving it.
+ * Builds friendly prop names from each uniform's slug prefix + original key.
+ * The codegen now assigns human-readable slug prefixes (e.g. `u_voronoi_colorA`,
+ * `u_circle2_radius`), so this is a trivial mapper: extract the prefix and
+ * append the capitalized field key (`voronoiColorA`, `circle2Radius`).
  */
 export function computePropNames(
   uniforms: GeneratedUniform[],
 ): Map<string, string> {
   const out = new Map<string, string>()
-  // First pass: count instances of each layerName so we know whether to suffix.
-  const layerNameCount = new Map<string, number>()
-  const seenLayers = new Set<string>()
-  // We can't tell node identity from GeneratedUniform alone, but uniforms for
-  // the same node share the same `<u_prefix>` extracted from `u.name`. Group
-  // by that prefix.
-  const prefixToLayer = new Map<string, string>()
-  const prefixOrder: string[] = []
   for (const u of uniforms) {
-    const prefix = extractPrefix(u.name)
-    if (!prefixToLayer.has(prefix)) {
-      prefixToLayer.set(prefix, u.layerName)
-      prefixOrder.push(prefix)
-      layerNameCount.set(u.layerName, (layerNameCount.get(u.layerName) ?? 0) + 1)
-    }
+    out.set(u.name, extractPrefix(u.name) + capitalize(u.originalName))
   }
-  // Second pass: assign suffix per occurrence.
-  const usedSuffix = new Map<string, number>()
-  const prefixToSlug = new Map<string, string>()
-  for (const prefix of prefixOrder) {
-    const layerName = prefixToLayer.get(prefix)!
-    const total = layerNameCount.get(layerName) ?? 1
-    const used = (usedSuffix.get(layerName) ?? 0) + 1
-    usedSuffix.set(layerName, used)
-    const base = camelCase(layerName)
-    const slug = total > 1 ? `${base}${used}` : base
-    prefixToSlug.set(prefix, slug)
-  }
-  for (const u of uniforms) {
-    const prefix = extractPrefix(u.name)
-    const slug = prefixToSlug.get(prefix)!
-    out.set(u.name, slug + capitalize(u.originalName))
-  }
-  void seenLayers
   return out
 }
 
@@ -121,19 +83,3 @@ export function uniformTsType(u: GeneratedUniform): string {
   }
 }
 
-export function camelCase(s: string): string {
-  // Preserve word boundaries: "Mesh Spots Gradient" → "meshSpotsGradient".
-  const parts = s
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-  if (parts.length === 0) return ''
-  return (
-    parts[0].toLowerCase() +
-    parts
-      .slice(1)
-      .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
-      .join('')
-  )
-}

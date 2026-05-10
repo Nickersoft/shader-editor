@@ -12,13 +12,13 @@
 // the layer's `glsl()` block was provided by a ProcessingNode that consumes
 // `u_prevPass` (the preprocessed image).
 
-import { GLSL_UTILS } from './glsl-utils'
+import { GLSL_HELPERS as GLSL_UTILS } from './helpers'
 import { BLEND_MODE_FUNCTIONS } from './blend-modes'
 import { inspectObjectSchema } from './schema-introspection'
 import type { GeneratedPass } from './types'
 import type { PassPlan } from './passes'
-import { EffectNode, GeneratorNode } from '@/shaders/core/node'
-import type { Layer } from '@/shaders/core/scene'
+import { EffectNode, GeneratorNode } from '@/shaders/core/node.svelte'
+import type { Layer } from '@/shaders/core/scene.svelte'
 
 interface BuildContext {
   // Whether any node in the chain references a structured-UV varying (v_objectUV
@@ -32,42 +32,96 @@ export function buildFragment(plan: PassPlan, _ctx: BuildContext): GeneratedPass
 }
 
 /**
+ * One compositor input. `parentIndex`, when set, references another entry in
+ * the same array — the child's RGBA is multiplied by the parent's alpha
+ * before blending, giving Figma-style clipping-mask semantics ("texture
+ * inside shape"). `useAsMask` is the older stack-wide gate where a layer
+ * gates everything beneath it.
+ */
+export interface CompositorLayerSpec {
+  layer: Layer
+  parentIndex: number | null
+}
+
+/**
  * Compositor fragment for the Scene model. Samples one texture per enabled
  * Layer (`u_layer_<i>`) and blends them in render order onto a clear base
  * using each layer's blendMode + opacity. Background color comes in via
  * `u_sceneBackground`.
+ *
+ * Mask layers (Layer.useAsMask) don't draw. When the compositor reaches a
+ * mask layer it multiplies its alpha into the running composite's alpha,
+ * gating every layer that has been blended so far (Unicorn-style "mask
+ * clips the layers below it"). Stacked masks intersect multiplicatively.
+ * Outside the mask, the running color's alpha drops to 0 and the canvas's
+ * transparency shows through (provided the GL context is alpha:true).
+ *
+ * Clipping-mask children (`spec.parentIndex !== null`) are NOT stack-wide:
+ * the child's sample is multiplied by its parent layer's alpha (sampled from
+ * `u_layer_<parent>`) before blending. Only that one child is clipped, not
+ * everything beneath it.
  */
-export function buildCompositorFragment(layers: Layer[]): GeneratedPass {
+export function buildCompositorFragment(
+  specs: CompositorLayerSpec[],
+): GeneratedPass {
   const blendModes = new Set<string>(['normal'])
-  for (const l of layers) blendModes.add(l.blendMode)
+  for (const s of specs) if (!s.layer.useAsMask) blendModes.add(s.layer.blendMode)
   const dependencies = new Set<string>()
   for (const m of blendModes) {
     const fn = BLEND_MODE_FUNCTIONS[m as keyof typeof BLEND_MODE_FUNCTIONS]
     if (fn) dependencies.add(fn)
   }
+  expandTransitiveDeps(dependencies)
   const sortedDeps = sortDependencies(Array.from(dependencies))
   const utilFunctions: string[] = []
   for (const dep of sortedDeps) {
-    if (GLSL_UTILS[dep]) utilFunctions.push(GLSL_UTILS[dep])
+    if (GLSL_UTILS[dep]) utilFunctions.push(GLSL_UTILS[dep].code)
   }
 
   const uniformDeclarations: string[] = [
     'uniform vec2 u_resolution;',
     'uniform vec4 u_sceneBackground;',
   ]
-  for (let i = 0; i < layers.length; i++) {
+  for (let i = 0; i < specs.length; i++) {
     uniformDeclarations.push(`uniform sampler2D u_layer_${i};`)
     uniformDeclarations.push(`uniform float u_layer_${i}_opacity;`)
   }
 
   const layerCalls: string[] = []
   layerCalls.push(`  vec4 color = u_sceneBackground;`)
-  for (let i = 0; i < layers.length; i++) {
-    const blendFn =
-      BLEND_MODE_FUNCTIONS[layers[i].blendMode] || 'blendNormal'
-    layerCalls.push(
-      `  color = ${blendFn}(color, texture(u_layer_${i}, v_uv), u_layer_${i}_opacity);`,
-    )
+  for (let i = 0; i < specs.length; i++) {
+    const { layer, parentIndex } = specs[i]
+    if (layer.useAsMask) {
+      // Multiply running alpha by the mask layer's alpha. Stacks
+      // multiplicatively with any earlier masks. RGB is left untouched so
+      // subsequent layers blend correctly over the (possibly transparent)
+      // running color.
+      layerCalls.push(
+        `  color.a *= texture(u_layer_${i}, v_uv).a * u_layer_${i}_opacity;`,
+      )
+    } else if (parentIndex !== null) {
+      // Clipping-mask child: gate this layer's contribution by the parent
+      // layer's alpha, then blend normally. Only this layer is clipped — not
+      // anything else below.
+      const blendFn =
+        BLEND_MODE_FUNCTIONS[layer.blendMode] || 'blendNormal'
+      // Gate alpha only — RGB stays intact so the blend functions (which
+      // interpolate by `blend.a`) cleanly fade the clipped contribution to
+      // zero outside the parent shape and pass it through unchanged inside.
+      layerCalls.push(
+        `  {
+    vec4 _src = texture(u_layer_${i}, v_uv);
+    _src.a *= texture(u_layer_${parentIndex}, v_uv).a;
+    color = ${blendFn}(color, _src, u_layer_${i}_opacity);
+  }`,
+      )
+    } else {
+      const blendFn =
+        BLEND_MODE_FUNCTIONS[layer.blendMode] || 'blendNormal'
+      layerCalls.push(
+        `  color = ${blendFn}(color, texture(u_layer_${i}, v_uv), u_layer_${i}_opacity);`,
+      )
+    }
   }
 
   const fragmentShader = `#version 300 es
@@ -131,7 +185,11 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
   for (const node of nodes) {
     const block = getGlslBlock(node, blockIndex)
     if (!block) continue
-    block.dependencies?.forEach((d) => dependencies.add(d))
+    const deps =
+      typeof block.dependencies === 'function'
+        ? block.dependencies(node.config)
+        : (block.dependencies ?? [])
+    deps.forEach((d) => dependencies.add(d))
     if (node.blendMode !== 'normal') blendModes.add(node.blendMode)
   }
   blendModes.add('normal')
@@ -140,26 +198,15 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
     if (fn) dependencies.add(fn)
   }
 
-  // Implicit dependency expansion (mirrors the legacy generator).
-  if (dependencies.has('fbm')) dependencies.add('simplex2D')
-  if (dependencies.has('snoise')) dependencies.add('simplex2D')
-  if (dependencies.has('valueNoise')) dependencies.add('hash21')
-  if (dependencies.has('fiberNoise')) dependencies.add('rotate')
-  if (dependencies.has('domainWarp')) dependencies.add('pi')
-  if (dependencies.has('oklchTransforms')) dependencies.add('pi')
-  if (dependencies.has('oklchColorRampLookup')) {
-    dependencies.add('oklchTransforms')
-    dependencies.add('pi')
-  }
+  // Walk transitive dependencies. Each helper in GLSL_UTILS declares its own
+  // upstream needs, so callers only have to list helpers they reference
+  // directly. The closure is bounded by the GLSL_UTILS keys.
+  expandTransitiveDeps(dependencies)
 
   // Uniform declarations.
   const uniformDeclarations: string[] = [
     'uniform float u_time;',
     'uniform vec2 u_resolution;',
-    // Always declared. The runtime binds the global noise texture to TEXTURE15.
-    // Programs that never sample u_noiseTexture pay no cost — the binding is
-    // a single texture-unit no-op when the location resolves to null.
-    'uniform sampler2D u_noiseTexture;',
   ]
   if (readsPrevPass) {
     uniformDeclarations.push('uniform sampler2D u_prevPass;')
@@ -181,6 +228,9 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
   if (/\bu_prevFrame\b/.test(passBody)) {
     uniformDeclarations.push('uniform sampler2D u_prevFrame;')
   }
+  if (/\bu_noiseTexture\b/.test(passBody)) {
+    uniformDeclarations.push('uniform sampler2D u_noiseTexture;')
+  }
 
   for (const node of nodes) {
     const prefix = node.prefix
@@ -194,8 +244,16 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
       const baseName = `u_${prefix}_${field.key}`
       if (field.glslType === 'sampler2D') {
         uniformDeclarations.push(`uniform sampler2D ${baseName};`)
-        uniformDeclarations.push(`uniform vec4 ${baseName}_meta;`)
-        uniformDeclarations.push(`uniform vec2 ${baseName}_offset;`)
+        // _meta/_offset companions are emitted only when the layer's GLSL
+        // actually references them. Cheap layers (e.g. raw sampler reads)
+        // get a smaller program; image-domain layers (image-texture, video,
+        // dom) keep both companions because their GLSL uses them.
+        if (passBody.includes(`${baseName}_meta`)) {
+          uniformDeclarations.push(`uniform vec4 ${baseName}_meta;`)
+        }
+        if (passBody.includes(`${baseName}_offset`)) {
+          uniformDeclarations.push(`uniform vec2 ${baseName}_offset;`)
+        }
       } else if (field.glslType === 'vec4Array') {
         const len = field.arrayLength ?? 10
         uniformDeclarations.push(`uniform vec4 ${baseName}[${len}];`)
@@ -210,7 +268,7 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
   const sortedDeps = sortDependencies(Array.from(dependencies))
   const utilFunctions: string[] = []
   for (const dep of sortedDeps) {
-    if (GLSL_UTILS[dep]) utilFunctions.push(GLSL_UTILS[dep])
+    if (GLSL_UTILS[dep]) utilFunctions.push(GLSL_UTILS[dep].code)
   }
 
   // Per-node helper functions and main() wrappers.
@@ -304,7 +362,7 @@ ${mainCalls.length > 0 ? mainCalls.join('\n') : '  vec4 color = vec4(0.0, 0.0, 0
   }
 }
 
-function getGlslBlock(node: import('@/shaders/core/node').Node, blockIndex = 0) {
+function getGlslBlock(node: import('@/shaders/core/node.svelte').Node, blockIndex = 0) {
   if (node instanceof GeneratorNode) {
     return node.glsl()
   }
@@ -357,4 +415,20 @@ const DEP_ORDER: Record<string, number> = {
 
 function sortDependencies(deps: string[]): string[] {
   return deps.sort((a, b) => (DEP_ORDER[a] ?? 99) - (DEP_ORDER[b] ?? 99))
+}
+
+/** Walk each helper's `needs` transitively, mutating the set in place. */
+function expandTransitiveDeps(deps: Set<string>) {
+  const stack = Array.from(deps)
+  while (stack.length > 0) {
+    const dep = stack.pop()!
+    const entry = GLSL_UTILS[dep]
+    if (!entry?.needs) continue
+    for (const upstream of entry.needs) {
+      if (!deps.has(upstream)) {
+        deps.add(upstream)
+        stack.push(upstream)
+      }
+    }
+  }
 }

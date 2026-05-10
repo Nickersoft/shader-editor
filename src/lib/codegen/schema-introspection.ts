@@ -5,106 +5,105 @@
 // (.optional / .default / .nullable), and emits uniform declarations.
 
 import { z } from 'zod'
-import { getMetaDeep } from '@/shaders/core/schemas'
+import { getMetaDeep, tryUnwrap, type UiMeta } from '@/shaders/core/schemas'
 import type { UniformGlType } from './types'
 
 /** Default fixed length for vec4Array (palette) uniforms. */
 export const DEFAULT_VEC4_ARRAY_LENGTH = 10
 
+type MetaKind = NonNullable<UiMeta['kind']>
+
 export interface InspectedField {
   key: string
   glslType: UniformGlType
-  schema: z.ZodTypeAny
-  // Resolved kind metadata (image-input, palette, sampler2D) if present.
-  kind?: 'image-input' | 'palette' | 'sampler2D'
-  // For vec4Array, the static GLSL upper bound.
+  schema: z.ZodType
+  kind?: MetaKind
   arrayLength?: number
 }
 
-/**
- * UI-only field — covers schema entries that aren't representable as GLSL
- * uniforms (e.g. enum strings) but should still appear in the property panel.
- * `glslType` is `'enumString'` for enum-valued fields.
- */
 export interface InspectedUiField {
   key: string
   glslType: UniformGlType | 'enumString'
-  schema: z.ZodTypeAny
-  kind?: 'image-input' | 'palette' | 'sampler2D'
+  schema: z.ZodType
+  kind?: MetaKind
   arrayLength?: number
   /** For enum strings, the allowed values. */
   enumValues?: readonly string[]
 }
 
 /**
- * Walk through wrapper types (`.optional()`, `.default(...)`, `.nullable()`)
- * to reach the underlying schema. Zod 4 stores wrappers with `_def.innerType`.
+ * Walk through wrapper types (`.optional()`, `.default(...)`, `.nullable()`,
+ * etc.) to reach the underlying schema.
  */
-export function unwrap(schema: z.ZodTypeAny): z.ZodTypeAny {
-  let s: z.ZodTypeAny = schema
-  while (true) {
-    const def = s._def as { innerType?: z.ZodTypeAny }
-    if (def.innerType) {
-      s = def.innerType
-      continue
-    }
-    return s
+export function unwrap(schema: z.ZodType): z.ZodType {
+  let s = schema
+  for (let next = tryUnwrap(s); next; next = tryUnwrap(s)) {
+    s = next
   }
+  return s
 }
 
 /**
  * Infer the GLSL uniform type for a Zod schema. Returns undefined if the
- * schema isn't representable as a single GLSL uniform.
+ * schema isn't representable as a single GLSL uniform. Pass a precomputed
+ * `meta` to avoid a redundant `getMetaDeep` walk in tight loops.
  */
-export function inferGlslType(schema: z.ZodTypeAny): UniformGlType | undefined {
-  const meta = getMetaDeep(schema)
+export function inferGlslType(
+  schema: z.ZodType,
+  meta: UiMeta | undefined = getMetaDeep(schema),
+): UniformGlType | undefined {
   if (meta?.kind === 'image-input' || meta?.kind === 'sampler2D') {
     return 'sampler2D'
   }
   if (meta?.kind === 'palette') return 'vec4Array'
 
   const inner = unwrap(schema)
-  const type = (inner._def as { type: string }).type
 
-  if (type === 'number') {
-    // Zod 4 records `.int()` as a check with `isInt === true`.
-    const def = inner._def as { checks?: Array<{ isInt?: boolean }> }
-    const isInt = def.checks?.some((c) => c.isInt === true)
-    return isInt ? 'int' : 'float'
+  if (inner instanceof z.ZodNumber) {
+    return inner.format?.includes('int') ? 'int' : 'float'
   }
-  if (type === 'boolean') return 'bool'
-  if (type === 'tuple') {
-    const items = (inner._def as unknown as { items: z.ZodTypeAny[] }).items
-    if (items.length === 2) return 'vec2'
-    if (items.length === 3) return 'vec3'
-    if (items.length === 4) return 'vec4'
+  if (inner instanceof z.ZodBoolean) return 'bool'
+  if (inner instanceof z.ZodTuple) {
+    switch (inner.def.items.length) {
+      case 2: return 'vec2'
+      case 3: return 'vec3'
+      case 4: return 'vec4'
+    }
   }
   return undefined
+}
+
+function buildUniformField(
+  key: string,
+  schema: z.ZodType,
+  glslType: UniformGlType,
+  meta: UiMeta | undefined,
+): InspectedField {
+  return {
+    key,
+    glslType,
+    schema,
+    kind: meta?.kind,
+    arrayLength:
+      glslType === 'vec4Array'
+        ? (meta?.ui?.array?.maxLength ?? DEFAULT_VEC4_ARRAY_LENGTH)
+        : undefined,
+  }
 }
 
 /**
  * Walk a Zod object schema's shape, returning one InspectedField per top-level
  * field. Skips fields that aren't representable as uniforms.
  */
-export function inspectObjectSchema(schema: z.ZodTypeAny): InspectedField[] {
+export function inspectObjectSchema(schema: z.ZodType): InspectedField[] {
   const inner = unwrap(schema)
   if (!(inner instanceof z.ZodObject)) return []
-  const shape = inner.shape as Record<string, z.ZodTypeAny>
   const out: InspectedField[] = []
-  for (const [key, fieldSchema] of Object.entries(shape)) {
-    const glslType = inferGlslType(fieldSchema)
-    if (!glslType) continue
+  for (const [key, fieldSchema] of Object.entries(inner.shape)) {
     const meta = getMetaDeep(fieldSchema)
-    out.push({
-      key,
-      glslType,
-      schema: fieldSchema,
-      kind: meta?.kind,
-      arrayLength:
-        glslType === 'vec4Array'
-          ? meta?.ui?.array?.maxLength ?? DEFAULT_VEC4_ARRAY_LENGTH
-          : undefined,
-    })
+    const glslType = inferGlslType(fieldSchema, meta)
+    if (!glslType) continue
+    out.push(buildUniformField(key, fieldSchema, glslType, meta))
   }
   return out
 }
@@ -114,38 +113,26 @@ export function inspectObjectSchema(schema: z.ZodTypeAny): InspectedField[] {
  * the property panel can render dropdowns for non-uniform config fields
  * (e.g. a Gradient node's `type: 'linear' | 'radial'`).
  */
-export function inspectUiFields(schema: z.ZodTypeAny): InspectedUiField[] {
+export function inspectUiFields(schema: z.ZodType): InspectedUiField[] {
   const inner = unwrap(schema)
   if (!(inner instanceof z.ZodObject)) return []
-  const shape = inner.shape as Record<string, z.ZodTypeAny>
   const out: InspectedUiField[] = []
-  for (const [key, fieldSchema] of Object.entries(shape)) {
-    const glslType = inferGlslType(fieldSchema)
+  for (const [key, fieldSchema] of Object.entries(inner.shape)) {
+    const meta = getMetaDeep(fieldSchema)
+    const glslType = inferGlslType(fieldSchema, meta)
     if (glslType) {
-      const meta = getMetaDeep(fieldSchema)
-      out.push({
-        key,
-        glslType,
-        schema: fieldSchema,
-        kind: meta?.kind,
-        arrayLength:
-          glslType === 'vec4Array'
-            ? meta?.ui?.array?.maxLength ?? DEFAULT_VEC4_ARRAY_LENGTH
-            : undefined,
-      })
+      out.push(buildUniformField(key, fieldSchema, glslType, meta))
       continue
     }
     const innerField = unwrap(fieldSchema)
-    const t = (innerField._def as { type?: string }).type
-    if (t === 'enum') {
-      const entries = (innerField._def as { entries?: Record<string, string> })
-        .entries
-      const values = entries ? Object.values(entries) : []
+    if (innerField instanceof z.ZodEnum) {
       out.push({
         key,
         glslType: 'enumString',
         schema: fieldSchema,
-        enumValues: values,
+        enumValues: innerField.options.filter(
+          (v): v is string => typeof v === 'string',
+        ),
       })
     }
   }

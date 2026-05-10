@@ -1,17 +1,14 @@
 import { z } from 'zod'
-import { GeneratorNode } from '@/shaders/core/node'
+import { GeneratorNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
-import { zAngle, zCenterAxis, zColor, zFloat, zInt } from '@/shaders/core/schemas'
+import { transformFields, zColor, zFloat, zInt } from '@/shaders/core/schemas'
 import type { SpatialControl } from '@/shaders/core/spatial'
 
 const config = z.object({
-  radius: zFloat(0.001, 1, 0.001).default(0.4).describe('Radius'),
+  ...transformFields(),
   points: zInt(3, 12).default(5).describe('Points'),
   innerRatio: zFloat(0.1, 0.9, 0.01).default(0.4).describe('Inner Ratio'),
-  rotation: zAngle(1).default(0).describe('Rotation'),
-  centerX: zCenterAxis().default(0.5).describe('Center X'),
-  centerY: zCenterAxis().default(0.5).describe('Center Y'),
   fillColor: zColor().default([1, 1, 1]).describe('Fill'),
   strokeColor: zColor().default([0, 0, 0]).describe('Stroke'),
   strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe('Stroke Width'),
@@ -37,17 +34,25 @@ export class Star extends GeneratorNode<Config, Inputs> {
   static readonly inputs = inputs
   static readonly meta = meta
   static readonly spatialControls: readonly SpatialControl[] = [
-    { kind: 'point', x: 'centerX', y: 'centerY', label: 'Center' },
-    { kind: 'radius', cx: 'centerX', cy: 'centerY', r: 'radius', label: 'Radius' },
+    {
+      kind: 'transform',
+      x: 'x',
+      y: 'y',
+      w: 'width',
+      h: 'height',
+      rotation: 'rotation',
+      label: 'Bounds',
+    },
   ]
 
   glsl(): GlslBlock {
-    const r = this.uniformName('radius')
+    const x = this.uniformName('x')
+    const y = this.uniformName('y')
+    const w = this.uniformName('width')
+    const h = this.uniformName('height')
+    const rot = this.uniformName('rotation')
     const pts = this.uniformName('points')
     const ir = this.uniformName('innerRatio')
-    const rot = this.uniformName('rotation')
-    const cx = this.uniformName('centerX')
-    const cy = this.uniformName('centerY')
     const fill = this.uniformName('fillColor')
     const stroke = this.uniformName('strokeColor')
     const sw = this.uniformName('strokeWidth')
@@ -83,9 +88,11 @@ float sdStarRatio(vec2 p, float outerRadius, float sides, float innerRatio) {
 }`,
       main: `
 vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
-vec2 p = (uv - vec2(${cx}, ${cy})) * _ar;
+vec2 p = (uv - vec2(${x}, ${y})) * _ar;
 p = rotate2D(p, ${rot} * 3.14159265 / 180.0);
-float d = sdStarRatio(p, ${r}, float(${pts}), ${ir});
+vec2 pn = p / vec2(${w} * 0.5, ${h} * 0.5);
+float refHalf = min(${w}, ${h}) * 0.5;
+float d = sdStarRatio(pn, 1.0, float(${pts}), ${ir}) * refHalf;
 float fillA = 1.0 - aastep(0.0, d);
 float strokeA = (1.0 - aastep(${sw} * 0.5, abs(d - ${offset}))) * step(0.0001, ${sw});
 vec3 col = mix(${fill}, ${stroke}, strokeA);

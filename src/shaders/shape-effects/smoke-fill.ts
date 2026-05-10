@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node'
+import { EffectNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import { zColor, zFloat } from '@/shaders/core/schemas'
@@ -30,6 +30,7 @@ export class SmokeFill extends EffectNode<Config, Inputs> {
   static readonly config = config
   static readonly inputs = inputs
   static readonly meta = meta
+  static readonly appliesTo = ['shape'] as const
 
   glsl(): GlslBlock {
     const intensity = this.uniformName('intensity')
@@ -38,11 +39,15 @@ export class SmokeFill extends EffectNode<Config, Inputs> {
     const c1 = this.uniformName('color1')
     const c2 = this.uniformName('color2')
     return {
-      dependencies: ['fbm', 'simplex2D'],
+      dependencies: ['fbm', 'simplex2D', 'unpremultiplyAlpha'],
       main: `
+// Sample the previous pass directly — when SmokeFill runs as its own FBO pass
+// the codegen passes \`base\` as vec4(0), so we cannot rely on it. The previous
+// alpha mask (e.g. a shape) gates where the smoke actually paints.
+vec4 prev = unpremultiplyAlpha(texture(u_prevPass, uv));
 float n = fbm(uv * ${scale} + u_time * vec2(0.0, ${speed} * 0.1), 4.0, 2.0, 0.5) * 0.5 + 0.5;
 vec3 smoke = mix(${c1}, ${c2}, n);
-return vec4(mix(base.rgb, smoke, base.a * ${intensity} * n), base.a);`,
+return vec4(mix(prev.rgb, smoke, prev.a * ${intensity} * n), prev.a);`,
     }
   }
 }

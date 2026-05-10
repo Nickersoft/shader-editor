@@ -12,7 +12,7 @@
 // shader sampling N layer textures by name (`u_layer_0..u_layer_{N-1}`) and
 // blending them via each layer's blendMode + opacity.
 
-import type { Scene, Layer } from '@/shaders/core/scene'
+import type { Scene, Layer } from '@/shaders/core/scene.svelte'
 import type { PassPlan } from './passes'
 import { splitIntoPasses } from './passes'
 
@@ -23,6 +23,8 @@ export interface ScenePlan {
   layers: Array<{
     layer: Layer
     layerIndex: number
+    /** Index of the clipping parent in this `layers` array, or null. */
+    parentIndex: number | null
     /** Indices into `passes` that belong to this layer (in render order). */
     passIndices: number[]
   }>
@@ -35,27 +37,40 @@ export interface ScenePlan {
 export function planScene(scene: Scene): ScenePlan {
   const passes: PassPlan[] = []
   const layerEntries: ScenePlan['layers'] = []
-  const enabledLayers = scene.enabledLayers
+  const flat = scene.flatLayers()
+
+  // Map a layer's flatIndex (from Scene.flatLayers) to its slot in
+  // `layerEntries` once allocated. A layer that produces no passes (e.g. its
+  // source is disabled) is skipped entirely; any descendants that referenced
+  // it as their clip parent fall back to un-clipped.
+  const flatIndexToEntryIndex = new Map<number, number>()
 
   // 1. Layer mini-chains.
-  for (let i = 0; i < enabledLayers.length; i++) {
-    const layer = enabledLayers[i]
+  for (const flatLayer of flat) {
+    const { layer } = flatLayer
     if (!layer.source.enabled) continue
     const layerNodes = [layer.source, ...layer.effects.filter((e) => e.enabled)]
     const layerPasses = splitIntoPasses(layerNodes)
     if (layerPasses.length === 0) continue
 
+    const entryIndex = layerEntries.length
     // Mark the final pass to commit into this layer's texture slot.
     const last = layerPasses[layerPasses.length - 1]
-    last.commitToLayer = i
+    last.commitToLayer = entryIndex
 
     const startIndex = passes.length
     passes.push(...layerPasses)
+    const parentIndex =
+      flatLayer.parentFlatIndex !== null
+        ? flatIndexToEntryIndex.get(flatLayer.parentFlatIndex) ?? null
+        : null
     layerEntries.push({
       layer,
-      layerIndex: i,
+      layerIndex: entryIndex,
+      parentIndex,
       passIndices: layerPasses.map((_, j) => startIndex + j),
     })
+    flatIndexToEntryIndex.set(flatLayer.flatIndex, entryIndex)
   }
 
   // 2. Compositor pass (only when at least one layer rendered).

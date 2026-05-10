@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { EffectNode } from '@/shaders/core/node'
+import { EffectNode } from '@/shaders/core/node.svelte'
 import { register } from '@/shaders/core/registry'
 import type { GlslBlock, NodeMeta } from '@/shaders/core/types'
 import { zFloat } from '@/shaders/core/schemas'
@@ -33,7 +33,7 @@ export class ChannelBlur extends EffectNode<Config, Inputs> {
     const r = this.uniformName('redIntensity')
     const g = this.uniformName('greenIntensity')
     const b = this.uniformName('blueIntensity')
-    const deps = ['gaussian13']
+    const deps = ['gaussian13'] as const
     return [
       {
         dependencies: deps,

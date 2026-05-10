@@ -4,7 +4,6 @@
 export { default as Circle } from './circle'
 export { default as Crescent } from './crescent'
 export { default as Cross } from './cross'
-export { default as Ellipse } from './ellipse'
 export { default as Flower } from './flower'
 export { default as Polygon } from './polygon'
 export { default as Ring } from './ring'
