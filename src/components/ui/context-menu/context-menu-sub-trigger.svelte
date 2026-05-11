@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { ContextMenu as ContextMenuPrimitive } from "bits-ui";
 	import { cn, type WithoutChild } from "@/lib/utils.js";
-	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
+	import CaretRightIcon from 'phosphor-svelte/lib/CaretRight';
 
 	let {
 		ref = $bindable(null),
@@ -25,5 +25,5 @@
 	{...restProps}
 >
 	{@render children?.()}
-	<ChevronRightIcon class="ml-auto" />
+	<CaretRightIcon class="ml-auto" />
 </ContextMenuPrimitive.SubTrigger>
