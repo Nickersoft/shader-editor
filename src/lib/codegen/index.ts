@@ -2,14 +2,9 @@
 // level post-effects) and produces a `GeneratedShader` containing per-pass
 // fragment shaders, a vertex shader, an enumerated uniform list (used by the
 // runtime to bind values), and the source-string exports.
-//
-// The legacy `generate(chain)` overload converts the flat chain to a single-
-// layer Scene first so existing tooling (the smoke script, the export
-// emitters) keeps working unchanged.
 
-import type { ShaderChain } from "@/shaders/core/chain";
 import { isProcessingNode } from "@/shaders/core/node.svelte";
-import { Scene, chainToScene } from "@/shaders/core/scene.svelte";
+import { Scene } from "@/shaders/core/scene.svelte";
 import { splitIntoPasses } from "./passes";
 import { planScene } from "./scene-passes";
 import { buildFragment, buildCompositorFragment } from "./fragment";
@@ -24,12 +19,7 @@ import type { GeneratedPass, GeneratedShader, GeneratedUniform } from "./types";
 export type { GeneratedShader, GeneratedPass, GeneratedUniform } from "./types";
 export { planScene } from "./scene-passes";
 
-export function generate(input: ShaderChain | Scene, shaderName = "CustomShader"): GeneratedShader {
-  const scene = input instanceof Scene ? input : chainToScene(input);
-  return generateFromScene(scene, shaderName);
-}
-
-function generateFromScene(scene: Scene, shaderName: string): GeneratedShader {
+export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedShader {
   // Assign human-readable GLSL uniform prefixes (e.g. `voronoi`, `circle2`)
   // before any glsl() call. This makes both uniform declarations and the
   // node.uniformName() references inside glsl() use readable names.
@@ -40,11 +30,7 @@ function generateFromScene(scene: Scene, shaderName: string): GeneratedShader {
 
   // 1. Collect uniforms from every contributing GLSL node.
   const uniforms: GeneratedUniform[] = [];
-  const seenIds = new Set<string>();
   const collectFromNode = (node: import("@/shaders/core/node.svelte").Node) => {
-    if (seenIds.has(node.id)) return;
-    seenIds.add(node.id);
-
     const prefix = node.prefix;
     const layerName = node.meta.name;
 
@@ -115,22 +101,15 @@ function generateFromScene(scene: Scene, shaderName: string): GeneratedShader {
   }
 
   // 2. Emit fragment shaders.
-  const passes: GeneratedPass[] = plan.passes.map((p, i) => {
+  const passes: GeneratedPass[] = plan.passes.map((p) => {
     if (p.mode === "compositor") {
-      const compositor = buildCompositorFragment(
+      return buildCompositorFragment(
         plan.layers.map((l) => ({ layer: l.layer, parentIndex: l.parentIndex })),
       );
-      // Carry the planner's commitToLayer for the compositor (none — composes
-      // straight into the ping-pong) but preserve any fields.
-      return compositor;
     }
     const built = buildFragment(p, { usesStructuredUv: false });
     if (p.commitToLayer !== undefined) built.commitToLayer = p.commitToLayer;
     if (p.bindLayerTextures) built.bindLayerTextures = true;
-    // ProcessingNode passes aren't supported in scene model yet (they'd need
-    // their JS output bound via the existing binder; their pass plan walks
-    // through unchanged). Fall through.
-    void i;
     return built;
   });
 
@@ -150,10 +129,9 @@ function generateFromScene(scene: Scene, shaderName: string): GeneratedShader {
     )
     .join("\n\n");
 
-  // 5. Source-string exports — operate on the same uniform list. Exports use
-  // the legacy chain shape; for now we project the scene back to a chain via
-  // splitIntoPasses on enabled layers' nodes flattened. This keeps emit code
-  // working until the export emitters are scene-aware.
+  // 5. Source-string exports — single-layer projection of the scene through
+  // the flat splitter. Multi-layer compositing isn't yet supported by the
+  // export emitters, so we flatten enabled layers' nodes for emission.
   const exportNodes = plan.layers.flatMap((l) => [l.layer.source, ...l.layer.effects]);
   const exportPasses = splitIntoPasses(exportNodes).map((p) =>
     buildFragment(p, { usesStructuredUv }),
@@ -170,5 +148,6 @@ function generateFromScene(scene: Scene, shaderName: string): GeneratedShader {
     reactComponent,
     vanillaJs,
     fragmentShader,
+    layerRefs: plan.layers.map((l) => ({ id: l.layer.id })),
   };
 }

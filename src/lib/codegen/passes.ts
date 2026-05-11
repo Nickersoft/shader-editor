@@ -1,4 +1,4 @@
-// Pass splitting. Walks `chain.enabled` and partitions nodes into render
+// Pass splitting. Walks a flat node list and partitions it into render
 // passes:
 //   - A run of GeneratorNodes collapses into one pass (one fragment shader,
 //     N nodes blended together).

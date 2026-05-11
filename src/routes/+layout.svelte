@@ -1,11 +1,12 @@
 <script lang="ts">
-	import '../app.css';
-	import { dev } from '$app/environment';
-	import { injectAnalytics } from '@vercel/analytics/sveltekit';
+  import "../app.css";
 
-	let { children } = $props();
+  import { dev } from "$app/environment";
+  import { injectAnalytics } from "@vercel/analytics/sveltekit";
 
-	if (!dev) injectAnalytics();
+  let { children } = $props();
+
+  if (!dev) injectAnalytics();
 </script>
 
 {@render children()}

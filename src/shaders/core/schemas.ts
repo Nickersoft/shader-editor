@@ -83,17 +83,10 @@ const metaCache = new WeakMap<z.ZodType, UiMeta | undefined>();
 
 /**
  * Walks `.optional()` / `.default()` / `.nullable()` wrappers and merges
- * metadata from every level of the chain. Outer-layer metadata wins on
- * conflicts (so a primitive can `.describe('Override')` over a helper's label
- * without losing the inner `kind`).
- *
- * Necessary because Zod 4's wrappers don't propagate `.meta()` outward, *and*
- * because `.describe()` writes to the outer wrapper's own meta — which would
- * otherwise hide a base-schema `kind` like `'palette'` or `'image-input'`.
- *
- * Results are cached per-schema in a WeakMap. Schemas are referentially
- * stable (declared as `static config` / `static inputs` on Node classes), so
- * this turns repeat calls during property-panel renders into O(1) lookups.
+ * metadata from every level. Outer-wrapper meta wins on conflicts, so a
+ * primitive can `.describe('Override')` without losing the inner `kind`.
+ * Results are cached per-schema (WeakMap) — static schemas on Node classes
+ * are referentially stable, so repeat lookups become O(1).
  */
 export function getMetaDeep(schema: z.ZodType): UiMeta | undefined {
   if (metaCache.has(schema)) return metaCache.get(schema);
@@ -157,9 +150,12 @@ export function zVisibleWhen<S extends z.ZodTypeAny>(
 export type Vec3 = [number, number, number];
 export type Vec4 = [number, number, number, number];
 
+function vecUi(min: number | undefined, max: number | undefined, step: number) {
+  return min !== undefined && max !== undefined ? { min, max, step } : { step };
+}
+
 export function zVec2(min?: number, max?: number, step = 0.01) {
-  const ui = min !== undefined && max !== undefined ? { min, max, step } : { step };
-  return withMeta(z.tuple([z.number(), z.number()]), { ui });
+  return withMeta(z.tuple([z.number(), z.number()]), { ui: vecUi(min, max, step) });
 }
 
 /**
@@ -215,14 +211,14 @@ export function transformFields() {
 }
 
 export function zVec3(min?: number, max?: number, step = 0.01) {
-  const ui = min !== undefined && max !== undefined ? { min, max, step } : { step };
-  return withMeta(z.tuple([z.number(), z.number(), z.number()]), { ui });
+  return withMeta(z.tuple([z.number(), z.number(), z.number()]), {
+    ui: vecUi(min, max, step),
+  });
 }
 
 export function zVec4(min?: number, max?: number, step = 0.01) {
-  const ui = min !== undefined && max !== undefined ? { min, max, step } : { step };
   return withMeta(z.tuple([z.number(), z.number(), z.number(), z.number()]), {
-    ui,
+    ui: vecUi(min, max, step),
   });
 }
 
@@ -273,17 +269,15 @@ export function zEdges() {
   return EdgeModeSchema;
 }
 
-export function edgeMode(value: EdgeMode): "0" | "1" | "2" | "3" {
-  switch (value) {
-    case "stretch":
-      return "0";
-    case "transparent":
-      return "1";
-    case "mirror":
-      return "2";
-    case "wrap":
-      return "3";
-  }
+const EDGE_MODE_CODES = {
+  stretch: "0",
+  transparent: "1",
+  mirror: "2",
+  wrap: "3",
+} as const;
+
+export function edgeMode(value: EdgeMode): (typeof EDGE_MODE_CODES)[EdgeMode] {
+  return EDGE_MODE_CODES[value];
 }
 
 // === Image inputs ===

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { TransformControl } from "@/shaders/core/spatial";
   import { CORNERS, EDGES } from "./consts";
   import CornerHandle from "./corner-handle.svelte";
   import EdgeHandle from "./edge-handle.svelte";
@@ -12,6 +13,7 @@
     pointerToLocal,
   } from "./utils";
   import RotationHandle from "./rotation-handle.svelte";
+  import { getOverlayContext } from "../context";
 
   // Figma-style transform widget for shape primitives.
   //
@@ -29,32 +31,18 @@
   //   - Screen: y-down pixels.
 
   interface Props {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    rotation: number;
-    canvasWidth: number;
-    canvasHeight: number;
-    onChange: (next: {
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-      rotation: number;
-    }) => void;
+    control: TransformControl;
   }
 
-  let {
-    x,
-    y,
-    width,
-    height,
-    rotation,
-    canvasWidth,
-    canvasHeight,
-    onChange,
-  }: Props = $props();
+  let { control }: Props = $props();
+
+  const ctx = getOverlayContext();
+
+  let x = $derived(ctx.readNumber(control.x, 0.5));
+  let y = $derived(ctx.readNumber(control.y, 0.5));
+  let width = $derived(ctx.readNumber(control.w, 0.5));
+  let height = $derived(ctx.readNumber(control.h, 0.5));
+  let rotation = $derived(ctx.readNumber(control.rotation, 0));
 
   // --- Coordinate conversions ------------------------------------------------
 
@@ -62,28 +50,24 @@
   // convention) so a 0.5 value spans 0.5 × canvas-height in pixels along
   // either axis.
 
-  let centerPx = $derived({
-    x: x * canvasWidth,
-    y: (1 - y) * canvasHeight,
-  });
+  let centerPx = $derived(ctx.toPx({ x, y }));
 
   let halfSize = $derived({
-    w: (width / 2) * canvasHeight,
-    h: (height / 2) * canvasHeight,
+    w: (width / 2) * ctx.size.h,
+    h: (height / 2) * ctx.size.h,
   });
 
   // Stored rotation is "rotate the GLSL coord frame ccw by θ", which renders
   // the shape clockwise in screen space — match that here so the widget overlay
   // tracks the visible shape.
 
-  let rotationDeg = $derived(rotation);
   let rotationRad = $derived((rotation * Math.PI) / 180);
 
   // SVG transform that aligns a child to the bbox-local frame (origin at
   // bbox center, x→right, y→down, rotated to match the rendered shape).
 
   let groupTransform = $derived(
-    `translate(${centerPx.x} ${centerPx.y}) rotate(${rotationDeg})`,
+    `translate(${centerPx.x} ${centerPx.y}) rotate(${rotation})`,
   );
 
   // --- Drag plumbing ---------------------------------------------------------
@@ -107,7 +91,7 @@
       start: {
         center: centerPx,
         halfSize,
-        rotationRad: rotationRad,
+        rotationRad,
         pointerAngle: Math.atan2(
           startPointerY - centerPx.y,
           startPointerX - centerPx.x,
@@ -120,16 +104,27 @@
     drag.captureEl?.setPointerCapture(e.pointerId);
   }
 
+  function commit(next: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    rotation: number;
+  }) {
+    ctx.setFields({
+      [control.x]: next.x,
+      [control.y]: next.y,
+      [control.w]: next.width,
+      [control.h]: next.height,
+      [control.rotation]: next.rotation,
+    });
+  }
+
   function applyResize(state: DragState, transform: ResizeTransform) {
-    const baseH = canvasHeight;
-    const baseW = canvasWidth;
+    if (ctx.size.h <= 0 || ctx.size.w <= 0) return;
 
-    if (baseH <= 0 || baseW <= 0) return;
-
-    const size = { w: canvasWidth, h: canvasHeight };
-
-    onChange({
-      ...computeResize(state, size, transform),
+    commit({
+      ...computeResize(state, { w: ctx.size.w, h: ctx.size.h }, transform),
       rotation,
     });
   }
@@ -146,7 +141,7 @@
       const px = e.clientX - rect.left;
       const py = e.clientY - rect.top;
 
-      onChange({
+      commit({
         x,
         y,
         width,

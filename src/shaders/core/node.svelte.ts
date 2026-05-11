@@ -28,7 +28,9 @@
 //   }
 
 import type { z } from "zod";
-import type { BlendMode, GlslBlock, NodeMeta, SerializedNode } from "./types";
+import { makeId } from "@/lib/utils";
+import type { SpatialControlsSpec } from "./spatial";
+import type { BlendMode, GlslBlock, NodeMeta } from "./types";
 
 /**
  * String-keyed fields of an inferred type, with string-indexed signatures
@@ -61,6 +63,7 @@ export interface NodeClass<T extends Node = Node> {
   readonly config: z.ZodTypeAny;
   readonly inputs: z.ZodTypeAny;
   readonly meta: NodeMeta;
+  readonly spatialControls?: SpatialControlsSpec;
 }
 
 /**
@@ -80,10 +83,20 @@ export interface NodeInit {
   enabled?: boolean;
 }
 
-let instanceCounter = 0;
-function defaultId(typeId: string): string {
-  instanceCounter += 1;
-  return `${typeId}-${Date.now().toString(36)}-${instanceCounter}`;
+export interface SerializedNode {
+  // Instance id — stable across save/load. Used to derive uniform-name
+  // prefixes via `sanitizeName(id)`.
+  id: string;
+  // The class's `typeId` (e.g. 'circle', 'heatmap'). The Registry uses this
+  // to dispatch deserialization.
+  typeId: string;
+  // Validated against the class's static `config` Zod schema.
+  config: Record<string, unknown>;
+  // Validated against the class's static `inputs` Zod schema. May be empty.
+  inputs: Record<string, unknown>;
+  blendMode: BlendMode;
+  opacity: number;
+  enabled: boolean;
 }
 
 /**
@@ -125,7 +138,7 @@ export abstract class Node<
       );
     }
 
-    this.id = init.id ?? defaultId(cls.typeId);
+    this.id = init.id ?? makeId(cls.typeId);
     // Validate or fall back to schema defaults. Zod's .parse on an empty
     // object hydrates fields with their .default(...) values.
     this.config = $state((init.config ? cls.config.parse(init.config) : cls.config.parse({})) as C);

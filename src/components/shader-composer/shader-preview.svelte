@@ -16,6 +16,7 @@
   import type { ImageInputValue } from "@/shaders/core/schemas";
   import { hitTestLayerBody, translateShape } from "@/lib/canvas-hit-test";
   import type { SpatialControlsSpec } from "@/shaders/core/spatial";
+  import { hasSpatialControls } from "./canvas/guards";
   import CanvasOverlay from "./canvas/canvas-overlay.svelte";
 
   const FIT_MODE: Record<string, number> = { cover: 0, contain: 1, fill: 2 };
@@ -46,6 +47,7 @@
   let pipeline: PipelineHandle | null = null;
   let passes: GeneratedPass[] = [];
   let uniforms: GeneratedUniform[] = [];
+  let layerRefs: { id: string }[] = [];
   let animationId = 0;
   const startTime = Date.now();
   let textureCache: TextureCache | null = null;
@@ -60,16 +62,18 @@
   let structuralKey = $derived.by(() => {
     const parts: string[] = [];
     parts.push(`bg:${scene.background.color.join(",")}`);
-    for (const layer of scene.layers) {
+    const walkLayer = (layer: typeof scene.layers[number], depth: number) => {
       parts.push(
-        `L:${layer.id}:${layer.enabled ? 1 : 0}:${layer.blendMode}:${layer.useAsMask ? 1 : 0}:${layer.source.id}:${layer.source.typeId}:${layer.source.enabled ? 1 : 0}:${layer.source.structuralKey()}`,
+        `L${depth}:${layer.id}:${layer.enabled ? 1 : 0}:${layer.blendMode}:${layer.source.id}:${layer.source.typeId}:${layer.source.enabled ? 1 : 0}:${layer.source.structuralKey()}`,
       );
       for (const fx of layer.effects) {
         parts.push(
-          `E:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}:${fx.structuralKey()}`,
+          `E${depth}:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}:${fx.structuralKey()}`,
         );
       }
-    }
+      for (const child of layer.children) walkLayer(child, depth + 1);
+    };
+    for (const layer of scene.layers) walkLayer(layer, 0);
     for (const fx of scene.postEffects) {
       parts.push(
         `P:${fx.id}:${fx.typeId}:${fx.enabled ? 1 : 0}:${fx.blendMode}:${fx.structuralKey()}`,
@@ -129,10 +133,9 @@
       for (let i = layers.length - 1; i >= 0; i--) {
         const layer = layers[i];
         if (!layer.enabled) continue;
-        const cls = layer.source.cls as {
-          spatialControls?: SpatialControlsSpec;
-        };
-        const config = layer.source.config as Record<string, unknown>;
+        const cls = layer.source.cls;
+        if (!hasSpatialControls(cls)) continue;
+        const config = layer.source.config;
         if (
           hitTestLayerBody(
             cls.spatialControls,
@@ -198,7 +201,11 @@
       const time = (Date.now() - startTime) / 1000;
       const s = composer.scene;
       pipeline.setSceneBackground(s.background.color);
-      pipeline.setLayerOpacities(s.enabledLayers.map((l) => l.opacity));
+      // Opacities indexed in compositor order — matches `u_layer_<i>` slots
+      // populated by the codegen plan, including clip-mask children.
+      pipeline.setLayerOpacities(
+        layerRefs.map((ref) => s.findLayer(ref.id)?.opacity ?? 1),
+      );
 
       pipeline.render(time, w, h, (renderCtx, program) => {
         const pass = passes[renderCtx.passIndex];
@@ -364,8 +371,8 @@
     passes = [];
     uniforms = [];
 
-    const enabledLayers = s.enabledLayers;
-    if (enabledLayers.length === 0) {
+    if (s.enabledLayers.length === 0) {
+      layerRefs = [];
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       const [r, g, b, a] = s.background.color;
       gl.clearColor(r, g, b, a);
@@ -376,6 +383,10 @@
     const generated = generate(s);
     passes = generated.passes;
     uniforms = generated.uniforms;
+    // The compositor binds `u_layer_<i>` against the planner's flattened layer
+    // list (parents + clip-mask children), not just top-level layers, so the
+    // FBO pool and opacity array must mirror that.
+    layerRefs = generated.layerRefs;
     pipeline = createShaderPipeline(
       gl,
       generated.vertexShader,
@@ -386,14 +397,16 @@
         commitToLayer: p.commitToLayer,
       })),
       {
-        layerCount: enabledLayers.length,
+        layerCount: layerRefs.length,
         sceneBackground: s.background.color,
-        layerOpacities: enabledLayers.map((l) => l.opacity),
+        layerOpacities: layerRefs.map((ref) => s.findLayer(ref.id)?.opacity ?? 1),
       },
     );
 
     const liveIds = new Set<string>();
-    for (const layer of enabledLayers) {
+    for (const ref of layerRefs) {
+      const layer = s.findLayer(ref.id);
+      if (!layer) continue;
       liveIds.add(layer.source.id);
       for (const fx of layer.effects) liveIds.add(fx.id);
     }

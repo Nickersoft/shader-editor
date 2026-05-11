@@ -19,6 +19,8 @@
 	import * as Select from '@/components/ui/select';
 	import FieldControl from './field-control.svelte';
 	import LayerEffectsSections from './layer-effects-sections.svelte';
+	import SceneEffectsSections from './scene-effects-sections.svelte';
+	import ColorInput from './color-input.svelte';
 
 	const BLEND_MODES: { value: BlendMode; label: string }[] = [
 		{ value: 'normal', label: 'Normal' },
@@ -30,11 +32,6 @@
 		{ value: 'hardLight', label: 'Hard Light' }
 	];
 
-	// Resolve via `composer.scene` rather than `composer.chain` — `chain` is
-	// rebuilt on every reactive tick (including per-pixel transform mutations
-	// during a drag), which would invalidate this derivation 60+ times per
-	// second. `findNode` only walks structural fields (layer/effect ids), so
-	// this stays stable through interactive edits.
 	let selectedNode = $derived.by(() => {
 		if (!composer.selectedNodeId) return null;
 		return composer.scene.findNode(composer.selectedNodeId)?.node ?? null;
@@ -115,7 +112,40 @@
 	);
 </script>
 
-{#if !selectedNode || !fields}
+{#if composer.isSceneSelected}
+	<div class="flex flex-col h-full min-h-0">
+		<div
+			class="flex items-start gap-3 p-4 border-b border-[rgba(255,255,255,0.1)] shrink-0"
+		>
+			<div class="flex flex-col gap-1 min-w-0">
+				<p class="text-[14px] font-medium text-white truncate">Scene</p>
+				<p class="text-[12px] font-medium text-white/50">Root</p>
+			</div>
+		</div>
+
+		<ScrollArea class="flex-1 min-h-0">
+			<div class="py-3">
+				<section class="px-3 py-3 space-y-3 border-b border-[rgba(255,255,255,0.1)]">
+					<div class="px-1">
+						<p class="text-[12px] font-medium text-white">Background</p>
+					</div>
+					<ColorInput
+						value={composer.scene.background.color}
+						onChange={(v) =>
+							composer.updateSceneBackground([
+								v[0] ?? 0,
+								v[1] ?? 0,
+								v[2] ?? 0,
+								v[3] ?? 1
+							])}
+					/>
+				</section>
+
+				<SceneEffectsSections />
+			</div>
+		</ScrollArea>
+	</div>
+{:else if !selectedNode || !fields}
 	<div class="flex items-center justify-center h-full text-white/50 text-sm px-6 text-center">
 		Select a layer to edit its properties.
 	</div>

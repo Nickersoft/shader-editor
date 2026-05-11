@@ -2,6 +2,7 @@
 	import { createSortable } from '@dnd-kit/svelte/sortable';
 	import type { Layer } from '@/shaders/core/scene.svelte';
 	import { composer } from '@/lib/state/composer.svelte';
+	import { dragIntent } from '@/lib/state/drag-intent.svelte';
 	import { cn } from '@/lib/utils';
 	import * as ContextMenu from '@/components/ui/context-menu';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
@@ -9,7 +10,6 @@
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import Scissors from '@lucide/svelte/icons/scissors';
 
 	interface Props {
 		layer: Layer;
@@ -43,14 +43,10 @@
 
 	let isSelected = $derived(composer.selectedNodeId === layer.source.id);
 	let meta = $derived(layer.source.meta);
-	let isNestTarget = $derived(sortable.isDropTarget && !sortable.isDragging);
-
-	// Candidate parents = every other top-level layer plus their descendants,
-	// minus this layer's own subtree (would create a cycle). For v1 we list all
-	// top-level layers; nesting deeper requires a follow-up to traverse.
-	let nestCandidates = $derived(
-		composer.scene.layers.filter((l) => l.id !== layer.id)
+	let isNestTarget = $derived(
+		sortable.isDropTarget && !sortable.isDragging && dragIntent.targetId === layer.id
 	);
+
 	let isNested = $derived(composer.scene.findLayerParent(layer.id) ?? null);
 	// Padding scales with depth — 36px for top-level (matches old behavior),
 	// +16px per nest level so children visibly indent under their parent.
@@ -87,15 +83,11 @@
 				</button>
 			{/if}
 
-			{#if layer.useAsMask}
-				<Scissors class="size-3.5 shrink-0 text-white/80" aria-label="Mask layer" />
-			{:else}
-				<span
-					class="size-3.5 rounded-[3px] shrink-0"
-					style:background-color={meta.color}
-					aria-hidden="true"
-				></span>
-			{/if}
+			<span
+				class="size-3.5 rounded-[3px] shrink-0"
+				style:background-color={meta.color}
+				aria-hidden="true"
+			></span>
 
 			<button
 				{@attach sortable.attachHandle}
@@ -132,32 +124,12 @@
 		</div>
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>
-		{#if nestCandidates.length > 0}
-			<ContextMenu.Sub>
-				<ContextMenu.SubTrigger>Clip into…</ContextMenu.SubTrigger>
-				<ContextMenu.SubContent>
-					{#each nestCandidates as parent (parent.id)}
-						<ContextMenu.Item
-							onclick={() => composer.nestLayerAsChild(layer.id, parent.id)}
-						>
-							{parent.name}
-						</ContextMenu.Item>
-					{/each}
-				</ContextMenu.SubContent>
-			</ContextMenu.Sub>
-		{/if}
 		{#if isNested}
 			<ContextMenu.Item onclick={() => composer.unnestLayer(layer.id)}>
 				Move out of clip group
 			</ContextMenu.Item>
+			<ContextMenu.Separator />
 		{/if}
-		<ContextMenu.CheckboxItem
-			checked={layer.useAsMask}
-			onCheckedChange={() => composer.toggleLayerMask(layer.id)}
-		>
-			Use as mask
-		</ContextMenu.CheckboxItem>
-		<ContextMenu.Separator />
 		<ContextMenu.Item onclick={() => composer.removeLayer(layer.id)}>
 			Delete layer
 		</ContextMenu.Item>

@@ -58,6 +58,12 @@ export interface GeneratedShader {
   // Concatenated fragment-shader source for display purposes only. Runtime
   // should iterate `passes`.
   fragmentShader: string;
+  // Layers the runtime must allocate texture slots for, in the same order the
+  // compositor expects (`u_layer_<i>` matches index `i`). Includes clip-mask
+  // children — and is what the preview must drive `layerCount` /
+  // `layerOpacities` from. May differ from `scene.enabledLayers` (which is
+  // top-level only).
+  layerRefs: { id: string }[];
   // Source-string exports.
   typescript: string;
   reactComponent: string;
@@ -65,21 +71,11 @@ export interface GeneratedShader {
 }
 
 /**
- * The shape that travels with each shader to the portable `shaderMount`
- * runtime. A subset of `GeneratedUniform` — only what the runtime needs to
- * bind a value: the GLSL uniform name, its type, and a default to fall back
- * on when the host doesn't supply one.
- *
- * Editor-only fields (`layerName`, `originalName`) are stripped because the
- * exported shader has no concept of "layers" or "config keys" — just GLSL.
+ * Runtime-only subset of `GeneratedUniform`. Editor fields (`layerName`,
+ * `originalName`) are stripped — the exported shader has no concept of layers
+ * or config keys.
  */
-export interface UniformSpec {
-  name: string;
-  type: UniformGlType;
-  default: unknown;
-  /** For vec4Array uniforms, the static array length declared in GLSL. */
-  arrayLength?: number;
-}
+export type UniformSpec = Pick<GeneratedUniform, "name" | "type" | "default" | "arrayLength">;
 
 /**
  * Strip editor-only fields, leaving only what the portable runtime needs.

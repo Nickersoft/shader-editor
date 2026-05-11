@@ -1,14 +1,11 @@
 // Core types for the class-based shader composition system.
 //
-// `Node` (in ./node.ts) is the abstract base. Every primitive lives in its
-// own file under src/shaders/<category>/ — categories mirror the bucketing
-// at shaders.com/docs/components — and `export default`s a class extending
-// GeneratorNode, EffectNode, or ProcessingNode.
-//
-// `ShaderChain` (in ./chain.ts) holds an ordered list of node instances and
-// exposes `.pipe()` for fluent composition. The codegen pipeline at
-// src/lib/codegen/ consumes a chain and emits a runnable + exportable
-// shader.
+// `Node` (in ./node.svelte.ts) is the abstract base. Every primitive lives
+// in its own file under src/shaders/<category>/ — categories mirror the
+// bucketing at shaders.com/docs/components — and `export default`s a class
+// extending GeneratorNode, EffectNode, or ProcessingNode. A `Scene` (in
+// ./scene.svelte.ts) composes them into a Figma-style layer tree which the
+// codegen pipeline at src/lib/codegen/ compiles into a runnable shader.
 
 export type BlendMode =
   | "normal"
@@ -76,25 +73,4 @@ export interface GlslBlock {
   // Helper functions emitted at file scope (deduped across the pass).
   functions?: string;
   main: string;
-}
-
-export interface SerializedNode {
-  // Instance id — stable across save/load. Used to derive uniform-name
-  // prefixes via `sanitizeName(id)`.
-  id: string;
-  // The class's `typeId` (e.g. 'circle', 'heatmap'). The Registry uses this
-  // to dispatch deserialization.
-  typeId: string;
-  // Validated against the class's static `config` Zod schema.
-  config: Record<string, unknown>;
-  // Validated against the class's static `inputs` Zod schema. May be empty.
-  inputs: Record<string, unknown>;
-  blendMode: BlendMode;
-  opacity: number;
-  enabled: boolean;
-}
-
-export interface SerializedChain {
-  // Ordered list of nodes. Order is the layer-stack render order.
-  nodes: SerializedNode[];
 }

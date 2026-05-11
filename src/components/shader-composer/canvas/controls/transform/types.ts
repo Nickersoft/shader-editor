@@ -1,3 +1,7 @@
+import type { Point, Size } from "@/lib/types";
+
+export type { Point, Size };
+
 export interface HandleProps {
   halfSize: Size;
   onPointerDown: (e: PointerEvent) => void;
@@ -19,10 +23,6 @@ export type DragMode =
   | { kind: "edge"; axis: "x" | "y"; sign: -1 | 1 }
   | { kind: "corner"; sx: -1 | 1; sy: -1 | 1 }
   | { kind: "rotate" };
-
-export type Size = { w: number; h: number };
-
-export type Point = { x: number; y: number };
 
 export type ResizeTransform = {
   halfSize: Size;

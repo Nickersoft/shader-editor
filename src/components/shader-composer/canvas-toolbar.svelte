@@ -1,8 +1,6 @@
 <script lang="ts">
 	import Shapes from '@lucide/svelte/icons/shapes';
-	import Sparkles from '@lucide/svelte/icons/sparkles';
 	import Image from '@lucide/svelte/icons/image';
-	import Sliders from '@lucide/svelte/icons/sliders-horizontal';
 	import { cn } from '@/lib/utils';
 
 	interface Props {
@@ -14,9 +12,7 @@
 
 	const items = [
 		{ id: 'shapes', label: 'Shapes', icon: Shapes },
-		{ id: 'effects', label: 'Effects', icon: Sparkles },
-		{ id: 'textures', label: 'Textures', icon: Image },
-		{ id: 'adjustments', label: 'Adjustments', icon: Sliders }
+		{ id: 'textures', label: 'Textures', icon: Image }
 	];
 </script>
 

@@ -16,7 +16,7 @@
 
 	let activeTab = $state('glsl');
 
-	let enabledCount = $derived(composer.chain.enabled.length);
+	let enabledCount = $derived(composer.scene.enabledLayers.length);
 
 	let generated = $state({ fragmentShader: '', reactComponent: '', vanillaJs: '' });
 
@@ -30,7 +30,7 @@
 			return;
 		}
 		const handle = setTimeout(() => {
-			generated = generate(composer.chain);
+			generated = generate(composer.scene);
 		}, 150);
 		return () => clearTimeout(handle);
 	});

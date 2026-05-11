@@ -1,18 +1,16 @@
 // Editor state for the shader composer (Svelte 5 runes class).
 //
 // Canonical state is a `Scene` (Figma-style tree of Layers + scene-level
-// post-effects). `chain` is a $derived flat ShaderChain projection used by
-// the preview / codegen paths.
-//
-// Scene/Layer/Node class fields are themselves `$state`, so direct mutation
-// (`layer.opacity = 0.5`, `scene.layers.push(...)`) is fully reactive — no
-// snapshot/clone dance required.
+// post-effects). Scene/Layer/Node class fields are themselves `$state`, so
+// direct mutation (`layer.opacity = 0.5`, `scene.layers.push(...)`) is fully
+// reactive — no snapshot/clone dance required.
 
-import { ShaderChain } from "@/shaders/core/chain";
+import { reorderById } from "@/lib/utils";
+import { Layer } from "@/shaders/core/layer.svelte";
 import { EffectNode, isEffectNode, isGeneratorNode, type Node } from "@/shaders/core/node.svelte";
 import { getNodeClass } from "@/shaders/core/registry";
-import { Layer, Scene, chainToScene, flattenSceneToChain } from "@/shaders/core/scene.svelte";
-import type { BlendMode, SerializedChain } from "@/shaders/core/types";
+import { Scene } from "@/shaders/core/scene.svelte";
+import type { BlendMode } from "@/shaders/core/types";
 
 function fallbackSelection(scene: Scene): string | null {
   const lastLayer = scene.layers[scene.layers.length - 1];
@@ -24,10 +22,19 @@ function fallbackSelection(scene: Scene): string | null {
 class ComposerStore {
   scene = $state<Scene>(new Scene());
   selectedNodeId = $state<string | null>(null);
-  chain = $derived(new ShaderChain(flattenSceneToChain(this.scene)));
+  // Mutually exclusive with `selectedNodeId`: when true, the Scene root is
+  // active and its background / post-effects render in the property panel.
+  isSceneSelected = $state<boolean>(false);
+  openEffectId = $state<string | null>(null);
 
   get selectedNode(): Node | null {
     return this.selectedNodeId ? (this.scene.findNode(this.selectedNodeId)?.node ?? null) : null;
+  }
+
+  // Resolves an effect list by owner: `null` → scene-level post-effects;
+  // otherwise the named layer's effects array (or undefined if missing).
+  private effectList(layerId: string | null): EffectNode[] | undefined {
+    return layerId === null ? this.scene.postEffects : this.scene.findLayer(layerId)?.effects;
   }
 
   addLayer(generatorTypeId: string) {
@@ -43,73 +50,69 @@ class ComposerStore {
         enabled: node.enabled,
       }),
     );
-    this.selectedNodeId = node.id;
+    this.selectNode(node.id);
   }
 
   removeLayer(id: string) {
-    const removed = this.detachLayer(id);
+    const removed = this.scene.detachLayer(id);
     if (!removed) return;
-    this.selectedNodeId = fallbackSelection(this.scene);
-  }
-
-  /**
-   * Pull a layer out of wherever it lives in the tree (top-level or any
-   * descendant's children list) and return it. Used by reparenting / removal
-   * paths so they don't have to know whether the layer is currently a clip
-   * child or a top-level layer.
-   */
-  private detachLayer(id: string): Layer | null {
-    const idx = this.scene.layers.findIndex((l) => l.id === id);
-    if (idx >= 0) return this.scene.layers.splice(idx, 1)[0];
-    const walk = (parent: Layer): Layer | null => {
-      const ci = parent.children.findIndex((c) => c.id === id);
-      if (ci >= 0) return parent.children.splice(ci, 1)[0];
-      for (const c of parent.children) {
-        const found = walk(c);
-        if (found) return found;
-      }
-      return null;
-    };
-    for (const l of this.scene.layers) {
-      const found = walk(l);
-      if (found) return found;
-    }
-    return null;
+    this.selectNode(fallbackSelection(this.scene));
   }
 
   reorderLayers(orderedIds: string[]) {
-    const byId = new Map(this.scene.layers.map((l) => [l.id, l]));
-    const reordered = orderedIds.map((id) => byId.get(id)).filter((l): l is Layer => Boolean(l));
-    for (const l of this.scene.layers) if (!orderedIds.includes(l.id)) reordered.push(l);
-    this.scene.layers = reordered;
+    this.scene.layers = reorderById(this.scene.layers, orderedIds);
   }
 
   /**
    * Reparent `childId` into `parentId`'s children list (clip-mask group).
-   * No-op if either id is missing, or if `parentId` is a descendant of
-   * `childId` (would create a cycle).
+   * No-op if either id is missing or would create a cycle.
    */
   nestLayerAsChild(childId: string, parentId: string) {
-    if (childId === parentId) return;
-    const parent = this.scene.findLayer(parentId);
-    if (!parent) return;
-    // Cycle check: walk parent's ancestors and refuse if the child is one.
-    const isDescendantOfChild = (l: Layer): boolean => {
-      if (l.id === childId) return true;
-      for (const c of l.children) if (isDescendantOfChild(c)) return true;
-      return false;
-    };
-    if (isDescendantOfChild(parent)) return;
-    const child = this.detachLayer(childId);
-    if (!child) return;
-    parent.children.push(child);
+    this.moveLayerRelativeTo(childId, parentId, "nest");
   }
 
   /** Move a layer out of any clip-group and back to the top level. */
   unnestLayer(layerId: string) {
-    const layer = this.detachLayer(layerId);
+    const layer = this.scene.detachLayer(layerId);
     if (!layer) return;
     this.scene.layers.push(layer);
+  }
+
+  /**
+   * Drop-on-row dispatcher driving the layer panel's drag-and-drop. Detaches
+   * `sourceId` and re-inserts it relative to `targetId`:
+   *   - 'nest': as the last child of target (Figma-style "clip into shape")
+   *   - 'before' / 'after': as a sibling of target in target's parent list,
+   *     in storage order (the panel display is reversed before this is called)
+   * No-ops on cycle, missing ids, or self-drop.
+   */
+  moveLayerRelativeTo(sourceId: string, targetId: string, mode: "before" | "after" | "nest") {
+    if (sourceId === targetId) return;
+    const target = this.scene.findLayer(targetId);
+    if (!target) return;
+
+    if (mode === "nest") {
+      if (this.scene.isDescendant(sourceId, targetId)) return;
+      const source = this.scene.detachLayer(sourceId);
+      if (!source) return;
+      target.children.push(source);
+      return;
+    }
+
+    const targetParent = this.scene.findLayerParent(targetId);
+    if (targetParent === undefined) return;
+    if (targetParent && this.scene.isDescendant(sourceId, targetParent.id)) return;
+    const source = this.scene.detachLayer(sourceId);
+    if (!source) return;
+    const list = targetParent === null ? this.scene.layers : targetParent.children;
+    // Re-find target index: detachLayer may have shifted indices when source
+    // was a sibling of target in the same list.
+    const idx = list.findIndex((l) => l.id === targetId);
+    if (idx < 0) {
+      this.scene.layers.push(source);
+      return;
+    }
+    list.splice(mode === "before" ? idx : idx + 1, 0, source);
   }
 
   toggleLayer(id: string) {
@@ -117,77 +120,62 @@ class ComposerStore {
     if (layer) layer.enabled = !layer.enabled;
   }
 
-  toggleLayerMask(id: string) {
-    const layer = this.scene.findLayer(id);
-    if (layer) layer.useAsMask = !layer.useAsMask;
-  }
-
   /**
-   * Append a layer-scope effect. Returns the new effect's id so callers (e.g.
-   * an effect picker UI) can immediately auto-open its tweak popover. Does
-   * NOT change selection — under the popover model the parent layer stays
-   * the selected node so the property panel doesn't lose context.
+   * Append an effect to a layer (`layerId`) or to the scene (`null`). Returns
+   * the new effect's id; auto-opens its tweak popover. Selection is not
+   * changed — the parent layer/scene stays selected so the property panel
+   * keeps its context.
    */
-  addEffectToLayer(layerId: string, effectTypeId: string): string | null {
+  private addEffect(layerId: string | null, effectTypeId: string): string | null {
     const cls = getNodeClass(effectTypeId);
     if (!cls) return null;
     const node = new cls();
     if (!isEffectNode(node)) return null;
-    const layer = this.scene.findLayer(layerId);
-    if (!layer) return null;
-    layer.effects.push(node);
-    // Surface the new effect via openEffectId so its popover auto-opens.
+    const list = this.effectList(layerId);
+    if (!list) return null;
+    list.push(node);
     this.openEffectId = node.id;
     return node.id;
   }
 
-  /**
-   * The effect whose tweak popover should be open in the property panel.
-   * Effects-as-popovers replaces the older effect-as-selection flow; the
-   * layer stays selected, while this controls which (if any) effect popover
-   * is currently expanded.
-   */
-  openEffectId = $state<string | null>(null);
+  private removeEffect(layerId: string | null, effectId: string) {
+    const list = this.effectList(layerId);
+    if (!list) return;
+    const idx = list.findIndex((e) => e.id === effectId);
+    if (idx < 0) return;
+    list.splice(idx, 1);
+    if (this.selectedNodeId === effectId) this.selectNode(fallbackSelection(this.scene));
+    if (this.openEffectId === effectId) this.openEffectId = null;
+  }
 
-  openEffect(id: string | null) {
-    this.openEffectId = id;
+  addEffectToLayer(layerId: string, effectTypeId: string): string | null {
+    return this.addEffect(layerId, effectTypeId);
   }
 
   removeEffectFromLayer(layerId: string, effectId: string) {
-    const layer = this.scene.findLayer(layerId);
-    if (!layer) return;
-    const idx = layer.effects.findIndex((e) => e.id === effectId);
-    if (idx < 0) return;
-    layer.effects.splice(idx, 1);
-    if (this.selectedNodeId === effectId) this.selectedNodeId = fallbackSelection(this.scene);
-    if (this.openEffectId === effectId) this.openEffectId = null;
+    this.removeEffect(layerId, effectId);
+  }
+
+  addSceneEffect(effectTypeId: string): string | null {
+    return this.addEffect(null, effectTypeId);
+  }
+
+  removeSceneEffect(effectId: string) {
+    this.removeEffect(null, effectId);
   }
 
   reorderEffectsInLayer(layerId: string, orderedIds: string[]) {
     const layer = this.scene.findLayer(layerId);
     if (!layer) return;
-    const byId = new Map(layer.effects.map((e) => [e.id, e]));
-    const reordered = orderedIds
-      .map((id) => byId.get(id))
-      .filter((e): e is EffectNode => Boolean(e));
-    for (const e of layer.effects) if (!orderedIds.includes(e.id)) reordered.push(e);
-    layer.effects = reordered;
+    layer.effects = reorderById(layer.effects, orderedIds);
   }
 
-  addSceneEffect(effectTypeId: string) {
-    const cls = getNodeClass(effectTypeId);
-    if (!cls) return;
-    const node = new cls();
-    if (!isEffectNode(node)) return;
-    this.scene.postEffects.push(node);
-    this.selectedNodeId = node.id;
+  reorderSceneEffects(orderedIds: string[]) {
+    this.scene.postEffects = reorderById(this.scene.postEffects, orderedIds);
   }
 
-  removeSceneEffect(effectId: string) {
-    const idx = this.scene.postEffects.findIndex((e) => e.id === effectId);
-    if (idx < 0) return;
-    this.scene.postEffects.splice(idx, 1);
-    if (this.selectedNodeId === effectId) this.selectedNodeId = fallbackSelection(this.scene);
+  openEffect(id: string | null) {
+    this.openEffectId = id;
   }
 
   moveEffect(
@@ -196,15 +184,13 @@ class ComposerStore {
     toLayerId: string | null,
     toIndex: number,
   ) {
-    const fromList =
-      fromLayerId === null ? this.scene.postEffects : this.scene.findLayer(fromLayerId)?.effects;
+    const fromList = this.effectList(fromLayerId);
     if (!fromList) return;
     const fromIdx = fromList.findIndex((e) => e.id === effectId);
     if (fromIdx < 0) return;
     const [node] = fromList.splice(fromIdx, 1);
     if (!node) return;
-    const toList =
-      toLayerId === null ? this.scene.postEffects : this.scene.findLayer(toLayerId)?.effects;
+    const toList = this.effectList(toLayerId);
     if (!toList) {
       fromList.splice(fromIdx, 0, node);
       return;
@@ -213,17 +199,18 @@ class ComposerStore {
     toList.splice(clamped, 0, node);
   }
 
-  reorderSceneEffects(orderedIds: string[]) {
-    const byId = new Map(this.scene.postEffects.map((e) => [e.id, e]));
-    const reordered = orderedIds
-      .map((id) => byId.get(id))
-      .filter((e): e is EffectNode => Boolean(e));
-    for (const e of this.scene.postEffects) if (!orderedIds.includes(e.id)) reordered.push(e);
-    this.scene.postEffects = reordered;
-  }
-
   selectNode(id: string | null) {
     this.selectedNodeId = id;
+    if (id !== null) this.isSceneSelected = false;
+  }
+
+  selectScene() {
+    this.selectedNodeId = null;
+    this.isSceneSelected = true;
+  }
+
+  updateSceneBackground(color: [number, number, number, number]) {
+    this.scene.background = { color };
   }
 
   toggleNode(id: string) {
@@ -242,11 +229,11 @@ class ComposerStore {
     (found.node.config as Record<string, unknown>)[key] = value;
   }
 
-  // Apply several config writes as one logical mutation. Used by interactive
-  // drags that move multiple correlated fields together (e.g. resize updates
-  // x/y/width/height/rotation in lockstep) — sending them through this API
-  // keeps the call sites declarative and makes the "atomic transform update"
-  // intent legible at the source.
+  /**
+   * Apply several config writes as one logical mutation. Used by interactive
+   * drags that move correlated fields in lockstep (e.g. resize updates
+   * x/y/width/height/rotation together).
+   */
   updateConfigBatch(nodeId: string, updates: Record<string, unknown>) {
     const found = this.scene.findNode(nodeId);
     if (!found) return;
@@ -274,13 +261,9 @@ class ComposerStore {
     found.node.opacity = opacity;
   }
 
-  loadChain(chain: ShaderChain) {
-    this.scene = chainToScene(chain);
-    this.selectedNodeId = fallbackSelection(this.scene);
-  }
-
-  loadJson(json: SerializedChain) {
-    this.loadChain(ShaderChain.fromJSON(json));
+  loadScene(scene: Scene) {
+    this.scene = scene;
+    this.selectNode(fallbackSelection(this.scene));
   }
 }
 

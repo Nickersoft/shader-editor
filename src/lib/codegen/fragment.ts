@@ -35,8 +35,7 @@ export function buildFragment(plan: PassPlan, _ctx: BuildContext): GeneratedPass
  * One compositor input. `parentIndex`, when set, references another entry in
  * the same array — the child's RGBA is multiplied by the parent's alpha
  * before blending, giving Figma-style clipping-mask semantics ("texture
- * inside shape"). `useAsMask` is the older stack-wide gate where a layer
- * gates everything beneath it.
+ * inside shape").
  */
 export interface CompositorLayerSpec {
   layer: Layer;
@@ -49,21 +48,14 @@ export interface CompositorLayerSpec {
  * using each layer's blendMode + opacity. Background color comes in via
  * `u_sceneBackground`.
  *
- * Mask layers (Layer.useAsMask) don't draw. When the compositor reaches a
- * mask layer it multiplies its alpha into the running composite's alpha,
- * gating every layer that has been blended so far (Unicorn-style "mask
- * clips the layers below it"). Stacked masks intersect multiplicatively.
- * Outside the mask, the running color's alpha drops to 0 and the canvas's
- * transparency shows through (provided the GL context is alpha:true).
- *
- * Clipping-mask children (`spec.parentIndex !== null`) are NOT stack-wide:
- * the child's sample is multiplied by its parent layer's alpha (sampled from
- * `u_layer_<parent>`) before blending. Only that one child is clipped, not
- * everything beneath it.
+ * Clipping-mask children (`spec.parentIndex !== null`) multiply the child's
+ * sample alpha by the parent layer's alpha (sampled from `u_layer_<parent>`)
+ * before blending. Only that one child is clipped — not everything beneath
+ * it.
  */
 export function buildCompositorFragment(specs: CompositorLayerSpec[]): GeneratedPass {
   const blendModes = new Set<string>(["normal"]);
-  for (const s of specs) if (!s.layer.useAsMask) blendModes.add(s.layer.blendMode);
+  for (const s of specs) blendModes.add(s.layer.blendMode);
   const dependencies = new Set<string>();
   for (const m of blendModes) {
     const fn = BLEND_MODE_FUNCTIONS[m as keyof typeof BLEND_MODE_FUNCTIONS];
@@ -89,20 +81,14 @@ export function buildCompositorFragment(specs: CompositorLayerSpec[]): Generated
   layerCalls.push(`  vec4 color = u_sceneBackground;`);
   for (let i = 0; i < specs.length; i++) {
     const { layer, parentIndex } = specs[i];
-    if (layer.useAsMask) {
-      // Multiply running alpha by the mask layer's alpha. Stacks
-      // multiplicatively with any earlier masks. RGB is left untouched so
-      // subsequent layers blend correctly over the (possibly transparent)
-      // running color.
-      layerCalls.push(`  color.a *= texture(u_layer_${i}, v_uv).a * u_layer_${i}_opacity;`);
-    } else if (parentIndex !== null) {
+    const blendFn = BLEND_MODE_FUNCTIONS[layer.blendMode] || "blendNormal";
+    if (parentIndex !== null) {
       // Clipping-mask child: gate this layer's contribution by the parent
       // layer's alpha, then blend normally. Only this layer is clipped — not
-      // anything else below.
-      const blendFn = BLEND_MODE_FUNCTIONS[layer.blendMode] || "blendNormal";
-      // Gate alpha only — RGB stays intact so the blend functions (which
-      // interpolate by `blend.a`) cleanly fade the clipped contribution to
-      // zero outside the parent shape and pass it through unchanged inside.
+      // anything else below. Gate alpha only — RGB stays intact so the blend
+      // functions (which interpolate by `blend.a`) cleanly fade the clipped
+      // contribution to zero outside the parent shape and pass it through
+      // unchanged inside.
       layerCalls.push(
         `  {
     vec4 _src = texture(u_layer_${i}, v_uv);
@@ -111,7 +97,6 @@ export function buildCompositorFragment(specs: CompositorLayerSpec[]): Generated
   }`,
       );
     } else {
-      const blendFn = BLEND_MODE_FUNCTIONS[layer.blendMode] || "blendNormal";
       layerCalls.push(
         `  color = ${blendFn}(color, texture(u_layer_${i}, v_uv), u_layer_${i}_opacity);`,
       );
