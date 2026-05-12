@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Slider } from '@/components/ui/slider';
+	import { NumberInput } from '@/components/ui/number-input';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import Plus from '@lucide/svelte/icons/plus';
 
@@ -64,14 +64,15 @@
 				class="w-7 h-7 rounded border border-border cursor-pointer"
 			/>
 			<span class="text-[11px] font-mono text-muted-foreground flex-1">{hex}</span>
-			<Slider
-				type="single"
-				value={c[3] ?? 1}
-				onValueChange={(a) => updateColor(i, [c[0], c[1], c[2], a as number])}
+			<NumberInput
+				value={Math.round((c[3] ?? 1) * 100)}
+				onChange={(a) => updateColor(i, [c[0], c[1], c[2], a / 100])}
 				min={0}
-				max={1}
-				step={0.01}
-				class="w-16"
+				max={100}
+				step={1}
+				integer
+				suffix="%"
+				class="w-20"
 			/>
 			{#if colors.length > minLength}
 				<button

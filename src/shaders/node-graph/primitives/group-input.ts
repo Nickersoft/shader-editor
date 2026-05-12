@@ -55,10 +55,13 @@ export default registerPrimitive({
   uniforms(node) {
     const c = node.config as Config;
     return c.pins.map(
-      (p): UniformSpec => ({
+      (p, i): UniformSpec => ({
         nameSuffix: p.id,
         type: p.type,
         value: defaultValueFor(p.type, p.default),
+        // Live value reads from the pin's `default` field — the property pane
+        // edits it in place, so `default` doubles as the current value.
+        valuePath: ["pins", String(i), "default"],
       }),
     );
   },

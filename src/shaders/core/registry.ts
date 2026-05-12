@@ -14,14 +14,11 @@ export function register<T extends Node>(cls: NodeClass<T>): NodeClass<T> {
   if (!cls.typeId) {
     throw new Error(`Cannot register class ${cls.name}: missing static typeId`);
   }
-  if (REGISTRY.has(cls.typeId)) {
-    const existing = REGISTRY.get(cls.typeId)!;
-    if (existing !== cls) {
-      throw new Error(
-        `Duplicate Node typeId "${cls.typeId}" — already registered to ${existing.name}, attempted by ${cls.name}`,
-      );
-    }
-  }
+  // Always overwrite on re-registration. The static `typeId` is the durable
+  // identity — Vite HMR hands us a new class reference for the same typeId
+  // when a module is hot-reloaded, and throwing would brick the editor on
+  // every save. Cross-class typeId collisions would still be caught by code
+  // review since name + module path are obvious.
   REGISTRY.set(cls.typeId, cls as NodeClass);
   return cls;
 }

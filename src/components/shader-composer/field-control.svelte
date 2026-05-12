@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Slider } from '@/components/ui/slider';
+	import { NumberInput } from '@/components/ui/number-input';
 	import { Label } from '@/components/ui/label';
 	import * as Select from '@/components/ui/select';
 	import type {
@@ -27,6 +27,8 @@
 
 	let meta = $derived(getMetaDeep(field.schema));
 	let ui = $derived(meta?.ui);
+
+	const AXIS_LABELS = ['X', 'Y', 'Z', 'W'];
 </script>
 
 {#if field.glslType === 'enumString'}
@@ -49,42 +51,25 @@
 	</div>
 {:else if field.glslType === 'float'}
 	{@const numValue = (value as number) ?? 0}
-	<div class="space-y-2">
-		<div class="flex items-center justify-between">
-			<Label class="text-xs text-muted-foreground">{label}</Label>
-			<span class="text-xs text-muted-foreground font-mono w-12 text-right">
-				{numValue.toFixed(2)}
-			</span>
-		</div>
-		<Slider
-			type="single"
-			value={numValue}
-			onValueChange={(v) => onChange(v as number)}
-			min={ui?.min ?? 0}
-			max={ui?.max ?? 1}
-			step={ui?.step ?? 0.01}
-			class="w-full"
-		/>
-	</div>
+	<NumberInput
+		label={label}
+		value={numValue}
+		onChange={(v) => onChange(v)}
+		min={ui?.min ?? 0}
+		max={ui?.max ?? 1}
+		step={ui?.step ?? 0.01}
+	/>
 {:else if field.glslType === 'int'}
 	{@const intValue = (value as number) ?? 0}
-	<div class="space-y-2">
-		<div class="flex items-center justify-between">
-			<Label class="text-xs text-muted-foreground">{label}</Label>
-			<span class="text-xs text-muted-foreground font-mono w-12 text-right">
-				{intValue}
-			</span>
-		</div>
-		<Slider
-			type="single"
-			value={intValue}
-			onValueChange={(v) => onChange(Math.round(v as number))}
-			min={ui?.min ?? 0}
-			max={ui?.max ?? 10}
-			step={1}
-			class="w-full"
-		/>
-	</div>
+	<NumberInput
+		label={label}
+		value={intValue}
+		onChange={(v) => onChange(v)}
+		min={ui?.min ?? 0}
+		max={ui?.max ?? 10}
+		step={1}
+		integer
+	/>
 {:else if field.glslType === 'bool'}
 	<div class="flex items-center justify-between">
 		<Label class="text-xs text-muted-foreground">{label}</Label>
@@ -96,39 +81,25 @@
 	</div>
 {:else if field.glslType === 'vec2'}
 	{@const vec2Value = (value as number[]) ?? [0, 0]}
-	<div class="space-y-3">
+	<div class="space-y-1.5">
 		<Label class="text-xs text-muted-foreground">{label}</Label>
-		<div class="space-y-2">
-			<div class="flex items-center gap-2">
-				<span class="text-xs text-muted-foreground w-4">X</span>
-				<Slider
-					type="single"
-					value={vec2Value[0]}
-					onValueChange={(v) => onChange([v as number, vec2Value[1]])}
-					min={ui?.min ?? 0}
-					max={ui?.max ?? 1}
-					step={ui?.step ?? 0.01}
-					class="flex-1"
-				/>
-				<span class="text-xs text-muted-foreground font-mono w-10 text-right">
-					{vec2Value[0].toFixed(2)}
-				</span>
-			</div>
-			<div class="flex items-center gap-2">
-				<span class="text-xs text-muted-foreground w-4">Y</span>
-				<Slider
-					type="single"
-					value={vec2Value[1]}
-					onValueChange={(v) => onChange([vec2Value[0], v as number])}
-					min={ui?.min ?? 0}
-					max={ui?.max ?? 1}
-					step={ui?.step ?? 0.01}
-					class="flex-1"
-				/>
-				<span class="text-xs text-muted-foreground font-mono w-10 text-right">
-					{vec2Value[1].toFixed(2)}
-				</span>
-			</div>
+		<div class="grid grid-cols-2 gap-1.5">
+			<NumberInput
+				label="X"
+				value={vec2Value[0]}
+				onChange={(v) => onChange([v, vec2Value[1]])}
+				min={ui?.min ?? 0}
+				max={ui?.max ?? 1}
+				step={ui?.step ?? 0.01}
+			/>
+			<NumberInput
+				label="Y"
+				value={vec2Value[1]}
+				onChange={(v) => onChange([vec2Value[0], v])}
+				min={ui?.min ?? 0}
+				max={ui?.max ?? 1}
+				step={ui?.step ?? 0.01}
+			/>
 		</div>
 	</div>
 {:else if field.glslType === 'vec3' || field.glslType === 'vec4'}
@@ -140,26 +111,24 @@
 			<ColorInput value={vecValue} onChange={(next) => onChange(next as unknown)} />
 		</div>
 	{:else}
-		<div class="space-y-2">
+		<div class="space-y-1.5">
 			<Label class="text-xs text-muted-foreground">{label}</Label>
-			{#each vecValue as v, i (i)}
-				<div class="flex items-center gap-2">
-					<span class="text-xs text-muted-foreground w-4">{['X', 'Y', 'Z', 'W'][i]}</span>
-					<Slider
-						type="single"
+			<div class="grid {field.glslType === 'vec3' ? 'grid-cols-3' : 'grid-cols-4'} gap-1.5">
+				{#each vecValue as v, i (i)}
+					<NumberInput
+						label={AXIS_LABELS[i]}
 						value={v}
-						onValueChange={(newV) => {
-							const newVec = [...vecValue];
-							newVec[i] = newV as number;
-							onChange(newVec);
+						onChange={(nv) => {
+							const next = [...vecValue];
+							next[i] = nv;
+							onChange(next);
 						}}
 						min={ui?.min ?? 0}
 						max={ui?.max ?? 1}
 						step={ui?.step ?? 0.01}
-						class="flex-1"
 					/>
-				</div>
-			{/each}
+				{/each}
+			</div>
 		</div>
 	{/if}
 {:else if field.glslType === 'sampler2D'}

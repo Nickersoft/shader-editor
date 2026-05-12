@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Slider } from '@/components/ui/slider';
+	import { NumberInput } from '@/components/ui/number-input';
 	import Upload from '@lucide/svelte/icons/upload';
 	import X from '@lucide/svelte/icons/x';
 	import type { ImageInputValue } from '@/shaders/core/schemas';
@@ -117,17 +117,16 @@
 				<option value="fill">Fill</option>
 			</select>
 		</label>
-		<label class="text-[10px] text-muted-foreground">
+		<div class="text-[10px] text-muted-foreground">
 			Scale
-			<Slider
-				type="single"
+			<NumberInput
+				class="mt-1"
 				value={value.scale ?? 1}
-				onValueChange={(s) => onChange({ ...value, scale: s as number })}
+				onChange={(s) => onChange({ ...value, scale: s })}
 				min={0.1}
 				max={4}
 				step={0.01}
-				class="mt-2"
 			/>
-		</label>
+		</div>
 	</div>
 </div>

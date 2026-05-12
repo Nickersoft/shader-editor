@@ -13,7 +13,7 @@ const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Brightness/Contrast",
-  description: "Brightness and contrast adjustment",
+  description: "Adjusts brightness and contrast of the rendered pixels — applied after shading (distinct from the Levels stage which shapes the field before colorization)",
   color: "#a855f7",
   category: "adjustments",
   defaultBlendMode: "normal",

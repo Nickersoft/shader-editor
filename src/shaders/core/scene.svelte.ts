@@ -77,6 +77,14 @@ export class Scene {
     walkSubtree(this.layers, null, (layer) => {
       m.set(layer.source.id, { node: layer.source, layer });
 
+      // Container nodes (e.g. ProceduralField) expose owned sub-nodes via the
+      // `subNodes()` hook. Index each so selection / property-panel / config
+      // updates can address them by id like any other node.
+      const subs = layer.source.subNodes?.() ?? [];
+      for (const sub of subs) {
+        m.set(sub.id, { node: sub, layer });
+      }
+
       for (const fx of layer.effects) {
         m.set(fx.id, { node: fx, layer });
       }

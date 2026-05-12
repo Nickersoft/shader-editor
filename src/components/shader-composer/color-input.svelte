@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Slider } from '@/components/ui/slider';
+	import { NumberInput } from '@/components/ui/number-input';
 
 	interface Props {
 		value: number[];
@@ -40,17 +40,15 @@
 		</span>
 	</div>
 	{#if hasAlpha}
-		<div class="flex items-center gap-2">
-			<span class="text-[10px] text-muted-foreground w-4">A</span>
-			<Slider
-				type="single"
-				value={value[3]}
-				onValueChange={(a) => onChange([value[0], value[1], value[2], a as number])}
-				min={0}
-				max={1}
-				step={0.01}
-				class="flex-1"
-			/>
-		</div>
+		<NumberInput
+			label="A"
+			value={Math.round(value[3] * 100)}
+			onChange={(a) => onChange([value[0], value[1], value[2], a / 100])}
+			min={0}
+			max={100}
+			step={1}
+			integer
+			suffix="%"
+		/>
 	{/if}
 </div>

@@ -36,7 +36,7 @@
 		{hasChildren}
 		{depth}
 	/>
-	{#if hasChildren && isExpanded}
+	{#if isExpanded && hasChildren}
 		<div class="space-y-1">
 			{#each displayChildren as child, i (child.id)}
 				<Self

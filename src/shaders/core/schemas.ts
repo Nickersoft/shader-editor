@@ -33,6 +33,17 @@ export interface UiMeta {
      * universal Transform group on shape primitives).
      */
     group?: string;
+    /**
+     * Inline-pair key. Fields within the same group that share a `row` value
+     * render side-by-side as a single horizontal row (Figma-style W/H pairing).
+     * Order within the row follows declaration order.
+     */
+    row?: string;
+    /**
+     * Compact label used inside paired-row pills (e.g. "W" instead of "Width").
+     * Falls back to the schema description when omitted.
+     */
+    shortLabel?: string;
   };
   // Tagged kinds the codegen and UI dispatch on. `image-input` and `sampler2D`
   // both refer to image data; the difference is where they live:
@@ -193,19 +204,19 @@ export function zCenterAxis(extent = 1, step = 0.01) {
 export function transformFields() {
   return {
     x: withMeta(zCenterAxis(1, 0.001).default(0.5).describe("X"), {
-      ui: { group: "transform" },
+      ui: { group: "transform", row: "xy", shortLabel: "X" },
     }),
     y: withMeta(zCenterAxis(1, 0.001).default(0.5).describe("Y"), {
-      ui: { group: "transform" },
+      ui: { group: "transform", row: "xy", shortLabel: "Y" },
     }),
     width: withMeta(zFloat(0.001, 2, 0.001).default(0.5).describe("Width"), {
-      ui: { group: "transform" },
+      ui: { group: "transform", row: "wh", shortLabel: "W" },
     }),
     height: withMeta(zFloat(0.001, 2, 0.001).default(0.5).describe("Height"), {
-      ui: { group: "transform" },
+      ui: { group: "transform", row: "wh", shortLabel: "H" },
     }),
     rotation: withMeta(zAngle(1).default(0).describe("Rotation"), {
-      ui: { group: "transform" },
+      ui: { group: "transform", shortLabel: "R" },
     }),
   };
 }

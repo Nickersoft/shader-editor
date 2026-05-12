@@ -238,6 +238,21 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
         uniformDeclarations.push(`uniform ${field.glslType} ${baseName};`);
       }
     }
+
+    // Container-node extra uniforms (e.g. ProceduralField stages).
+    const extras = node.extraUniforms?.() ?? [];
+    for (const extra of extras) {
+      const baseName = `u_${prefix}_${extra.nameSuffix}`;
+      if (extra.type === "sampler2D") {
+        uniformDeclarations.push(`uniform sampler2D ${baseName};`);
+      } else if (extra.type === "vec4Array") {
+        const len = extra.arrayLength ?? 10;
+        uniformDeclarations.push(`uniform vec4 ${baseName}[${len}];`);
+        uniformDeclarations.push(`uniform int ${baseName}_count;`);
+      } else {
+        uniformDeclarations.push(`uniform ${extra.type} ${baseName};`);
+      }
+    }
   }
 
   // Utility functions.

@@ -111,24 +111,25 @@ docs/node-graph-migration-plan.md   — this file
 
 ### Phase 1 — Data layer & walking skeleton
 
-Primitives: `GroupInput`, `GroupOutput`, `Time`, `Math`, `ColorRamp` only. Enough to render a pulsing screen end-to-end.
+Primitives: `GroupInput`, `GroupOutput`, `Time`, `Math`, `Combine`, `ColorRamp`. `Combine` was hoisted out of Phase 2 because the walking-skeleton gate demands a two-input scalar op (`speed × time`) for the GroupInput pin to *modulate* the result. Phase 2's checklist still lists `Combine` so the inventory remains accurate; its task is now a no-op.
 
 - [x] `src/shaders/node-graph/types.ts`: `NodeGraph`, `GraphNode`, `Pin`, `Edge`, `PinType`.
-- [x] `src/shaders/node-graph/registry.ts`: primitive registry. Each primitive declares pin definitions + emit function.
-- [x] `src/shaders/node-graph/emit.ts`: topological-sort GLSL emitter. Named locals per output pin.
-- [x] `src/shaders/node-graph/primitives/{group-input,group-output,time,math,color-ramp}.ts`.
-- [ ] Refactor `src/shaders/textures/procedural-field.svelte.ts` — replace `stages` field with `graph: NodeGraph`. Remove stage-chain emit code.
-- [ ] Locate existing xyflow usage; create `node-graph-canvas` component bound to a `NodeGraph`. Bottom panel hosts it when a `ProceduralField` layer is selected.
-- [ ] Layer property pane introspects `GroupInput` pins for parameter controls.
+- [x] `src/shaders/node-graph/registry.ts`: primitive registry. Each primitive declares pin definitions + emit function. `UniformSpec` gained an optional `valuePath` so primitives whose live uniform value sits at a non-trivial path inside `config` (e.g. `GroupInput.pins[i].default`) can declare where the runtime should read.
+- [x] `src/shaders/node-graph/emit.ts`: topological-sort GLSL emitter. Named locals per output pin. `originalPath` now resolves to `["graph", "nodes", String(index), "config", ...valuePath]` so the runtime walker reaches the live value.
+- [x] `src/shaders/node-graph/primitives/{group-input,group-output,time,math,combine,color-ramp}.ts`.
+- [x] Refactor `src/shaders/textures/procedural-field.svelte.ts` — replace `stages` field with `graph: NodeGraph`. Stage-chain emit code removed; the old `stages`/`edges` instance fields are kept as empty stubs solely so the surviving stage-manipulation methods in `composer.svelte.ts` keep type-checking until Phase 3 deletes them. Default graph: `GroupInput(speed=1) → Time → Combine(×) → Math(sin) → ColorRamp → GroupOutput`. `structuralKey()` excludes each node's live-uniform paths, so slider drags do not retrigger shader compilation.
+- [x] xyflow node-graph canvas (`src/components/shader-composer/texture-graph/{texture-graph-editor,graph-primitive-node,graph-palette}.svelte`). Old `stage-*.svelte` components removed.
+- [x] Property pane introspects `GroupInput` pins via `graph-parameter-panel.svelte`. Supports `float`/`int`/`vec2`/`vec3`/`vec4`/`bool` pin controls.
 
-**Gate:** one `ProceduralField` layer, graph `Time → Math(sin) → ColorRamp → GroupOutput`, renders a pulsing screen. Adding nodes / rewiring on the canvas is live. A `speed` pin on `GroupInput` appears in the property pane and modulates the result. `bun run check` adds no new errors beyond the documented 9.
+**Gate:** one `ProceduralField` layer, graph `Time → Combine(×) → Math(sin) → ColorRamp → GroupOutput`, renders a pulsing screen. Adding nodes / rewiring on the canvas is live. A `speed` pin on `GroupInput` appears in the property pane and modulates the result. `bun run check` adds no new errors beyond the documented 9. ✓ All confirmed in-browser.
 
 **Commit message:** `Phase 1: node graph data layer + walking skeleton`
 
 ### Phase 2 — Primitive inventory
 
 - [ ] Attributes: `Position`, `Angle`, `Resolution`.
-- [ ] Scalar math: `Combine`, `MapRange`.
+- [x] Scalar math: `Combine` (delivered in Phase 1 to satisfy the modulation gate).
+- [ ] Scalar math: `MapRange`.
 - [ ] Vector math: `VectorMath`, `CombineXY`, `SeparateXY`.
 - [ ] Sources: `Noise`, `Voronoi`, `CellGrid`, `Hash`, `PolarTransform`, `RadialDistance`.
 
@@ -166,6 +167,12 @@ None at present. Update this section if new ones surface mid-build; do not silen
 
 ## Current state
 
-Phase 0 — plan committed. No code yet. Phase 1 begins next session.
+Phase 1 complete. The walking skeleton is live: a `ProceduralField` layer renders a pulsing screen via the new node-graph emitter, the bottom-panel xyflow canvas shows the DAG, and the property pane drives the `speed` pin uniform without recompiling the shader. Verified in-browser (purple↔pink alternation at default `speed=1`, much faster pulse at `speed=10`).
 
-Pre-existing context: the working branch `port/sveltekit` carries uncommitted work from the prior stage-chain migration (`procedural-migration-plan.md`). That work is being superseded by this plan and will be unwound during Phase 3 (delete `field-stages/`, rewrite preset files). It does not need to be committed first — the new plan replaces it.
+Outstanding stage-chain debris (kept temporarily so Phase 3 can do a single cleanup pass):
+- `ProceduralField.stages` / `ProceduralField.edges` remain as empty `$state` stubs.
+- Stage-manipulation methods on `composer.svelte.ts` (`addStageToFieldGroup`, `removeStage`, `connectStageEdge`, …) are no-ops in practice but still compile.
+- `src/shaders/field-stages/` and all 31 preset stage chains still exist and are still imported by `procedural-presets.ts`; adding any preset tile produces a default-graph pulsing layer regardless of the preset's intended look. The texture palette will start matching its labels again only after Phase 3 rewrites each preset as a graph.
+- The original stage-chain editor and its three `stage-*.svelte` companions have been deleted; the editor file path is reused by the new node-graph canvas.
+
+Phase 2 begins next session — primitive inventory build-out. `Combine` is already done.

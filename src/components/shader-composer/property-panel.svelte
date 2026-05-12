@@ -12,15 +12,18 @@
 		GeneratorNode,
 		getEffectScope
 	} from '@/shaders/core/node.svelte';
+	import { isFieldStageNode } from '@/shaders/core/node.svelte';
 	import type { BlendMode } from '@/shaders/core/types';
-	import { Slider } from '@/components/ui/slider';
+	import { NumberInput } from '@/components/ui/number-input';
 	import { Label } from '@/components/ui/label';
 	import { ScrollArea } from '@/components/ui/scroll-area';
 	import * as Select from '@/components/ui/select';
-	import FieldControl from './field-control.svelte';
 	import LayerEffectsSections from './layer-effects-sections.svelte';
 	import SceneEffectsSections from './scene-effects-sections.svelte';
 	import ColorInput from './color-input.svelte';
+	import NodeFieldRow from './node-field-row.svelte';
+	import GraphParameterPanel from './graph-parameter-panel.svelte';
+	import { ProceduralField } from '@/shaders/textures/procedural-field.svelte';
 
 	const BLEND_MODES: { value: BlendMode; label: string }[] = [
 		{ value: 'normal', label: 'Normal' },
@@ -52,12 +55,18 @@
 
 	let selectionScope = $derived.by(() => {
 		if (!selectedNode) return '';
+		if (isFieldStageNode(selectedNode)) return 'Stage';
 		if (selectedNode instanceof GeneratorNode) return 'Layer';
 		if (selectedNode instanceof EffectNode) {
 			return getEffectScope(selectedNode.cls) === 'scene' ? 'Scene Effect' : 'Effect Layer';
 		}
 		return '';
 	});
+
+	// Stages aren't standalone — they compose into their parent FieldGroup's
+	// shader pass. Blend mode / opacity have no meaning, so the property panel
+	// skips those sections when a stage is selected.
+	let isStageSelection = $derived(selectedNode ? isFieldStageNode(selectedNode) : false);
 
 	let fields = $derived.by(() => {
 		if (!selectedNode) return null;
@@ -89,6 +98,31 @@
 		{ key: 'transform', label: 'Transform' },
 		{ key: '', label: 'Properties' }
 	];
+	type FieldEntry = InspectedUiField | InspectedUiField[];
+
+	// Bucket consecutive (or same-row-keyed) fields into horizontal rows. Fields
+	// with no `row` meta render solo; matching `row` keys merge into one array
+	// that the template renders as a grid row.
+	function pairUp(fields: InspectedUiField[]): FieldEntry[] {
+		const out: FieldEntry[] = [];
+		const rows = new Map<string, InspectedUiField[]>();
+		for (const f of fields) {
+			const row = getMetaDeep(f.schema)?.ui?.row;
+			if (row) {
+				let bucket = rows.get(row);
+				if (!bucket) {
+					bucket = [];
+					rows.set(row, bucket);
+					out.push(bucket);
+				}
+				bucket.push(f);
+			} else {
+				out.push(f);
+			}
+		}
+		return out;
+	}
+
 	let groupedFields = $derived.by(() => {
 		const transform: InspectedUiField[] = [];
 		const other: InspectedUiField[] = [];
@@ -97,14 +131,22 @@
 			else other.push(f);
 		}
 		return [
-			{ key: 'transform', label: 'Transform', fields: transform },
-			{ key: '', label: 'Properties', fields: other }
-		].filter((s) => s.fields.length > 0);
+			{ key: 'transform', label: 'Transform', entries: pairUp(transform) },
+			{ key: '', label: 'Properties', entries: pairUp(other) }
+		].filter((s) => s.entries.length > 0);
 	});
 	void SECTION_ORDER;
 
 	function fieldLabel(field: InspectedField | InspectedUiField): string {
 		return field.schema.description ?? field.key;
+	}
+
+	function rowLabel(field: InspectedUiField): string {
+		return getMetaDeep(field.schema)?.ui?.shortLabel ?? fieldLabel(field);
+	}
+
+	function entryKey(entry: FieldEntry): string {
+		return Array.isArray(entry) ? `row:${entry.map((f) => f.key).join('/')}` : entry.key;
 	}
 
 	let blendModeLabel = $derived(
@@ -171,45 +213,46 @@
 
 		<ScrollArea class="flex-1 min-h-0">
 			<div class="py-3">
-				<section class="px-3 py-3 space-y-3 border-b border-[rgba(255,255,255,0.1)]">
-					<div class="px-1">
-						<p class="text-[12px] font-medium text-white">Blending</p>
-					</div>
-					<Select.Root
-						type="single"
-						value={selectedNode.blendMode || 'normal'}
-						onValueChange={(v) => composer.updateBlendMode(selectedNode!.id, v as BlendMode)}
-					>
-						<Select.Trigger
-							class="w-full h-9 text-[14px] bg-[var(--surface-strong)] border-0 text-white"
+				{#if !isStageSelection}
+					<section class="px-3 py-3 space-y-3 border-b border-[rgba(255,255,255,0.1)]">
+						<div class="px-1">
+							<p class="text-[12px] font-medium text-white">Blending</p>
+						</div>
+						<Select.Root
+							type="single"
+							value={selectedNode.blendMode || 'normal'}
+							onValueChange={(v) => composer.updateBlendMode(selectedNode!.id, v as BlendMode)}
 						>
-							{blendModeLabel}
-						</Select.Trigger>
-						<Select.Content>
-							{#each BLEND_MODES as mode (mode.value)}
-								<Select.Item value={mode.value}>{mode.label}</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-				</section>
+							<Select.Trigger
+								class="w-full h-9 text-[14px] bg-[var(--surface-strong)] border-0 text-white"
+							>
+								{blendModeLabel}
+							</Select.Trigger>
+							<Select.Content>
+								{#each BLEND_MODES as mode (mode.value)}
+									<Select.Item value={mode.value}>{mode.label}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+					</section>
 
-				<section class="px-3 py-3 space-y-3 border-b border-[rgba(255,255,255,0.1)]">
-					<div class="flex items-center justify-between px-1">
-						<p class="text-[12px] font-medium text-white">Opacity</p>
-						<span class="text-[12px] text-white/60 font-mono">
-							{Math.round(selectedNode.opacity * 100)}%
-						</span>
-					</div>
-					<Slider
-						type="single"
-						value={selectedNode.opacity}
-						onValueChange={(v) => composer.updateOpacity(selectedNode!.id, v as number)}
-						min={0}
-						max={1}
-						step={0.01}
-						class="w-full"
-					/>
-				</section>
+					<section class="px-3 py-3 border-b border-[rgba(255,255,255,0.1)]">
+						<NumberInput
+							label="Opacity"
+							value={Math.round(selectedNode.opacity * 100)}
+							onChange={(v) => composer.updateOpacity(selectedNode!.id, v / 100)}
+							min={0}
+							max={100}
+							step={1}
+							integer
+							suffix="%"
+						/>
+					</section>
+				{/if}
+
+				{#if selectedNode instanceof ProceduralField}
+					<GraphParameterPanel field={selectedNode} />
+				{/if}
 
 				{#if allFieldsCount > 0}
 					{#each groupedFields as section (section.key)}
@@ -219,24 +262,33 @@
 							<div class="px-1">
 								<p class="text-[14px] font-medium text-white">{section.label}</p>
 							</div>
-							{#each section.fields as field (field.key)}
-								{@const value = selectedNode.config[field.key]}
-								<FieldControl
-									{field}
-									label={fieldLabel(field)}
-									{value}
-									onChange={(v) => composer.updateConfig(selectedNode!.id, field.key, v)}
-								/>
+							{#each section.entries as entry (entryKey(entry))}
+								{#if Array.isArray(entry)}
+									<div
+										class="grid gap-1.5"
+										style:grid-template-columns="repeat({entry.length}, minmax(0,1fr))"
+									>
+										{#each entry as field (field.key)}
+											<NodeFieldRow
+												node={selectedNode}
+												{field}
+												kind="config"
+												label={rowLabel(field)}
+											/>
+										{/each}
+									</div>
+								{:else}
+									<NodeFieldRow
+										node={selectedNode}
+										field={entry}
+										kind="config"
+										label={fieldLabel(entry)}
+									/>
+								{/if}
 							{/each}
 							{#if section.key === '' && fields.inFields.length > 0}
 								{#each fields.inFields as field (field.key)}
-									{@const value = selectedNode.inputs[field.key]}
-									<FieldControl
-										{field}
-										label={fieldLabel(field)}
-										{value}
-										onChange={(v) => composer.updateInput(selectedNode!.id, field.key, v)}
-									/>
+									<NodeFieldRow node={selectedNode} {field} kind="input" />
 								{/each}
 							{/if}
 						</section>
@@ -247,13 +299,7 @@
 								<p class="text-[14px] font-medium text-white">Inputs</p>
 							</div>
 							{#each fields.inFields as field (field.key)}
-								{@const value = selectedNode.inputs[field.key]}
-								<FieldControl
-									{field}
-									label={fieldLabel(field)}
-									{value}
-									onChange={(v) => composer.updateInput(selectedNode!.id, field.key, v)}
-								/>
+								<NodeFieldRow node={selectedNode} {field} kind="input" />
 							{/each}
 						</section>
 					{/if}

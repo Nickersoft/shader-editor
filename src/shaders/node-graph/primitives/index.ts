@@ -5,4 +5,5 @@ import "./group-input";
 import "./group-output";
 import "./time";
 import "./math";
+import "./combine";
 import "./color-ramp";

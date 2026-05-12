@@ -10,6 +10,7 @@
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import Workflow from '@lucide/svelte/icons/workflow';
 
 	interface Props {
 		layer: Layer;
@@ -51,6 +52,17 @@
 	// Padding scales with depth — 36px for top-level (matches old behavior),
 	// +16px per nest level so children visibly indent under their parent.
 	let leftPad = $derived(36 + depth * 16);
+
+	// True when the layer is a ProceduralField bound to a named preset — the
+	// context menu surfaces a "Separate" action to detach the chain for free
+	// editing.
+	let presetId = $derived.by<string | null>(() => {
+		if (layer.source.typeId !== 'procedural-field') return null;
+		const cfg = layer.source.config as { presetId?: string | null };
+		return cfg.presetId ?? null;
+	});
+
+	let isProceduralField = $derived(layer.source.typeId === 'procedural-field');
 </script>
 
 <ContextMenu.Root>
@@ -102,6 +114,16 @@
 				class="flex items-center gap-0.5 opacity-0 group-hover/row:opacity-100 transition-opacity"
 				class:opacity-100={isSelected}
 			>
+				{#if isProceduralField}
+					<button
+						class="p-1 text-white/70 hover:text-white"
+						onclick={() => composer.openTextureEditor(layer.id)}
+						aria-label="Edit texture graph"
+						title="Edit texture graph"
+					>
+						<Workflow class="size-3.5" />
+					</button>
+				{/if}
 				<button
 					class="p-1 text-white/70 hover:text-white"
 					onclick={() => composer.toggleLayer(layer.id)}
@@ -124,6 +146,18 @@
 		</div>
 	</ContextMenu.Trigger>
 	<ContextMenu.Content>
+		{#if isProceduralField}
+			<ContextMenu.Item onclick={() => composer.openTextureEditor(layer.id)}>
+				Edit texture graph
+			</ContextMenu.Item>
+			<ContextMenu.Separator />
+		{/if}
+		{#if presetId}
+			<ContextMenu.Item onclick={() => composer.separateProceduralPreset(layer.id)}>
+				Separate from preset
+			</ContextMenu.Item>
+			<ContextMenu.Separator />
+		{/if}
 		{#if isNested}
 			<ContextMenu.Item onclick={() => composer.unnestLayer(layer.id)}>
 				Move out of clip group

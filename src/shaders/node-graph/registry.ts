@@ -35,6 +35,14 @@ export interface UniformSpec {
   type: "float" | "vec2" | "vec3" | "vec4" | "int" | "bool";
   /** Initial value, in the same shape as the type. */
   value: unknown;
+  /**
+   * Path *inside the GraphNode's `config`* to read the live value at runtime.
+   * Defaults to `[nameSuffix]` — appropriate when the uniform's value lives at
+   * `node.config[nameSuffix]` (e.g. ColorRamp's `colorA`). Primitives whose
+   * uniform value is nested elsewhere in config (e.g. GroupInput pins) override
+   * this to point at the actual location.
+   */
+  valuePath?: readonly string[];
 }
 
 /**

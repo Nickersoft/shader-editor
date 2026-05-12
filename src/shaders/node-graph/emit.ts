@@ -68,6 +68,10 @@ export function emitGraph(graph: NodeGraph, opts: EmitOptions): EmittedGraph {
   const resolved = new Map<string, ResolvedNode>();
   const uniforms: ExtraUniformDecl[] = [];
 
+  // Node index lookup — used for the runtime `originalPath`, which walks into
+  // `graph.nodes[index].config.<...>` to read the live value.
+  const indexById = new Map(graph.nodes.map((n, i) => [n.id, i] as const));
+
   for (const nodeId of order) {
     const node = nodeById.get(nodeId);
     if (!node) continue;
@@ -81,14 +85,16 @@ export function emitGraph(graph: NodeGraph, opts: EmitOptions): EmittedGraph {
     }
     const uniformSpecs = prim.uniforms?.(node) ?? [];
     const uniformNames: Record<string, string> = {};
+    const nodeIndex = indexById.get(nodeId) ?? 0;
     for (const u of uniformSpecs) {
       const name = `u_${opts.containerPrefix}_${slug}_${u.nameSuffix}`;
       uniformNames[u.nameSuffix] = name;
+      const valuePath = u.valuePath ?? [u.nameSuffix];
       uniforms.push({
         nameSuffix: `${slug}_${u.nameSuffix}`,
         type: u.type,
         value: u.value,
-        originalPath: ["graph", "nodes", node.id, u.nameSuffix],
+        originalPath: ["graph", "nodes", String(nodeIndex), "config", ...valuePath],
         originalName: `${prim.name} · ${u.nameSuffix}`,
       });
     }

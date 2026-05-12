@@ -1,18 +1,24 @@
 <script lang="ts">
+    import { fly } from "svelte/transition";
+    import { cubicOut } from "svelte/easing";
     import LayerStack from "./layer-stack.svelte";
     import ShaderPreview from "./shader-preview.svelte";
     import PropertyPanel from "./property-panel.svelte";
     import CanvasToolbar from "./canvas-toolbar.svelte";
     import EffectsPalette from "./effects-palette.svelte";
     import ExportDialog from "./export-dialog.svelte";
+    import TextureGraphEditor from "./texture-graph/texture-graph-editor.svelte";
     import Card from "../ui/card/card.svelte";
+    import { composer } from "@/lib/state/composer.svelte";
 
     let paletteCategory = $state<string | null>(null);
     let exportOpen = $state(false);
 </script>
 
-<div class="h-screen w-screen overflow-hidden">
-    <div class="flex flex-col h-full w-full px-4 pb-4 overflow-hidden">
+<div class="h-screen w-screen overflow-hidden flex flex-col">
+    <div
+        class="flex flex-col w-full px-4 pb-4 overflow-hidden flex-1 min-h-0"
+    >
         <header
             class="flex h-[69px] items-center justify-between pl-4 pr-3 py-3 shrink-0"
         >
@@ -67,6 +73,15 @@
             </Card>
         </div>
     </div>
+
+    {#if composer.editingTextureLayerId}
+        <div
+            class="h-[55vh] shrink-0 border-t border-white/10 shadow-[0_-12px_40px_-12px_rgba(0,0,0,0.6)]"
+            transition:fly={{ y: 600, duration: 280, easing: cubicOut }}
+        >
+            <TextureGraphEditor />
+        </div>
+    {/if}
 
     <ExportDialog bind:open={exportOpen} />
 </div>

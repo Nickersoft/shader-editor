@@ -240,7 +240,24 @@
             const key = u.originalName;
             const cfgRecord = node.config as Record<string, unknown>;
             const inRecord = node.inputs as Record<string, unknown>;
-            const value = key in cfgRecord ? cfgRecord[key] : inRecord[key];
+            let value: unknown;
+            if (u.originalPath) {
+              // Walk the dotted path from the node root — used by container
+              // nodes (e.g. ProceduralField) whose uniforms live inside nested
+              // substructure. The path includes the root key (config / inputs).
+              let cursor: unknown = node;
+              for (const seg of u.originalPath) {
+                if (cursor && typeof cursor === "object") {
+                  cursor = (cursor as Record<string, unknown>)[seg];
+                } else {
+                  cursor = undefined;
+                  break;
+                }
+              }
+              value = cursor;
+            } else {
+              value = key in cfgRecord ? cfgRecord[key] : inRecord[key];
+            }
             if (value === undefined) continue;
 
             switch (u.type) {

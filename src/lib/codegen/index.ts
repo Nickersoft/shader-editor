@@ -71,6 +71,22 @@ export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedSh
         isSampler2D: field.glslType === "sampler2D",
       });
     }
+
+    // Container nodes (e.g. ProceduralField) may declare extra uniforms beyond
+    // the static config schema — one per stage parameter, etc.
+    const extras = node.extraUniforms?.() ?? [];
+    for (const extra of extras) {
+      uniforms.push({
+        name: `u_${prefix}_${extra.nameSuffix}`,
+        type: extra.type,
+        default: extra.value,
+        layerName,
+        originalName: extra.originalName,
+        originalPath: extra.originalPath,
+        arrayLength: extra.arrayLength,
+        isSampler2D: extra.type === "sampler2D",
+      });
+    }
   };
 
   for (const entry of plan.layers) {

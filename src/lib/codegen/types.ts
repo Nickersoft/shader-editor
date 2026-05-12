@@ -14,11 +14,32 @@ export interface GeneratedUniform {
   layerName: string;
   // The original config or input field key on the node.
   originalName: string;
+  // For "extra" uniforms (e.g. stages inside a ProceduralField container), the
+  // dotted path of property keys to traverse on the node — falls back to a flat
+  // `originalName` lookup when omitted. Index segments are stringified numbers.
+  // Example: ['stages', '0', 'config', 'scale'] → node.config.stages[0].config.scale.
+  originalPath?: string[];
   // For vec4Array uniforms, the static array length declared in GLSL.
   arrayLength?: number;
   // For sampler2D uniforms (image-input or zSampler), companion meta/offset
   // uniforms are auto-emitted; this flag tells exporters about them.
   isSampler2D?: boolean;
+}
+
+// Declaration emitted by a Node's optional `extraUniforms()` hook — used by
+// container-style nodes whose substructure (e.g. a chain of field stages)
+// contributes uniforms beyond the static config schema.
+export interface ExtraUniformDecl {
+  // Suffix appended after `u_<prefix>_` to form the full GLSL uniform name.
+  // Must be GLSL-identifier-safe (e.g. `s0_scale`).
+  nameSuffix: string;
+  type: UniformGlType;
+  value: unknown;
+  // Property path on the node to read the live value from (see GeneratedUniform).
+  originalPath: string[];
+  // Human-friendly key for the debug overlay / property panel.
+  originalName: string;
+  arrayLength?: number;
 }
 
 // GLSL types we need to track for codegen. Maps to `uniform <type> NAME;`.
