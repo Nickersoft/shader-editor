@@ -17,15 +17,8 @@ import {
   type NodeGraph,
 } from "@/shaders/node-graph";
 
-// `procedural-presets.ts` (Phase 1) still imports this type for its legacy
-// stage-shaped data. The Phase 3 preset migration replaces the export with a
-// graph-shaped equivalent; until then this stays as an opaque alias so the
-// existing preset files keep type-checking.
-export type StageChainEntry = Record<string, unknown> & { typeId: string };
-export type StageEdge = { fromStageId: string; toStageId: string; toPort: string };
-
 const config = z.object({
-  presetId: z.string().nullable().default("simplex-noise"),
+  presetId: z.string().nullable().default(null),
 });
 
 const inputs = z.object({});
@@ -53,15 +46,6 @@ export class ProceduralField extends GeneratorNode<Config, Inputs> {
    * else is user-authored.
    */
   graph = $state<NodeGraph>(defaultGraph());
-
-  /**
-   * Legacy stage-chain fields. Kept as empty arrays so call sites in
-   * `composer.svelte.ts` (stage manipulation, preset hydration) keep
-   * type-checking until Phase 3 removes them. The narrow `{ id: string }`
-   * shape is what the composer's reorder/find helpers actually need.
-   */
-  stages = $state<{ id: string }[]>([]);
-  edges = $state<StageEdge[]>([]);
 
   constructor(init: NodeInit = {}) {
     super(init);
@@ -217,8 +201,10 @@ function defaultGraph(): NodeGraph {
     id: "ramp",
     typeId: "color-ramp",
     config: {
-      colorA: [0.08, 0.06, 0.18],
-      colorB: [0.95, 0.42, 0.78],
+      stops: [
+        { position: 0, color: [0.08, 0.06, 0.18] },
+        { position: 1, color: [0.95, 0.42, 0.78] },
+      ],
     },
     position: { x: 660, y: 0 },
   };

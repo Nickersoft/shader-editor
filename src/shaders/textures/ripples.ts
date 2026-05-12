@@ -1,15 +1,23 @@
 import type { ProceduralPreset } from "./procedural-presets";
+import { PresetGraphBuilder } from "./preset-graphs/builders";
 
 export default {
   id: "ripples",
   name: "Ripples",
   description: "Concentric animated ripples — Procedural Field preset",
   color: "#22d3ee",
-  stages: () => [
-    { typeId: "ripple-wave", config: { frequency: 20, speed: 1, phase: 0 } },
-    {
-      typeId: "color-ramp-2",
-      config: { colorA: [1, 1, 1], colorB: [0, 0, 0] },
-    },
-  ],
+  graph: () => {
+    const b = new PresetGraphBuilder();
+    b.groupInput([]);
+    const p = b.position();
+    const t = b.time();
+    const rw = b.add("ripple-wave", { frequency: 20, speed: 1, phase: 0 });
+    b.connect(p, rw.nodeId, "p");
+    b.connect(t, rw.nodeId, "t");
+    const ramp = b.colorRamp(rw, [
+      [0, 0, 0],
+      [1, 1, 1],
+    ]);
+    return b.output(ramp);
+  },
 } satisfies ProceduralPreset;

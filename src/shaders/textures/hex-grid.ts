@@ -1,15 +1,21 @@
 import type { ProceduralPreset } from "./procedural-presets";
+import { PresetGraphBuilder } from "./preset-graphs/builders";
 
 export default {
   id: "hex-grid",
   name: "Hex Grid",
   description: "Honeycomb hexagonal grid — Procedural Field preset",
   color: "#0ea5e9",
-  stages: () => [
-    { typeId: "hex-grid", config: { scale: 8, lineWidth: 1 } },
-    {
-      typeId: "color-ramp-2",
-      config: { colorA: [0, 0, 0], colorB: [1, 1, 1] },
-    },
-  ],
+  graph: () => {
+    const b = new PresetGraphBuilder();
+    b.groupInput([]);
+    const p = b.position();
+    const hg = b.add("hex-grid", { scale: 8, lineWidth: 1 });
+    b.connect(p, hg.nodeId, "p");
+    const ramp = b.colorRamp(hg, [
+      [1, 1, 1],
+      [0, 0, 0],
+    ]);
+    return b.output(ramp);
+  },
 } satisfies ProceduralPreset;

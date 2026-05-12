@@ -29,9 +29,8 @@
 
 import type { z } from "zod";
 import { makeId } from "@/lib/utils";
-import type { UniformGlType } from "@/lib/codegen/types";
 import type { SpatialControlsSpec } from "./spatial";
-import type { BlendMode, GlslBlock, GlslHelperName, NodeMeta } from "./types";
+import type { BlendMode, GlslBlock, NodeMeta } from "./types";
 
 /**
  * String-keyed fields of an inferred type, with string-indexed signatures
@@ -358,113 +357,8 @@ export function generatorSourceKind(cls: NodeClass): EffectAppliesTo {
   return "any";
 }
 
-// === Field stages =========================================================
-//
-// Stages contribute GLSL fragments to a single shader pass owned by a
-// container node (ProceduralField). They are real Node subclasses (id,
-// config, enabled, serialization) but they don't render standalone: a stage's
-// `glsl(ctx)` writes into shared locals declared by the container:
-//
-//   vec2 p   — domain position (uv-centered, aspect-corrected)
-//   float t  — time (u_time)
-//   float n  — scalar signal (set by samplers, read by remap / ramps)
-//   vec3 col — output color (set by ramps; container returns vec4(col, 1.0))
-//
-// Stage parameters flow as live uniforms via the container's `extraUniforms()`
-// hook — value changes don't recompile the shader. Only changes to the chain
-// shape or non-uniform config fields trigger a rebuild.
-
-export type FieldChannel = "p" | "t" | "n" | "col";
-
-export interface FieldStageContext<C extends Record<string, unknown>> {
-  containerPrefix: string;
-  stageIndex: number;
-  config: C;
-  uniforms: Record<keyof C & string, string>;
-  /**
-   * GLSL identifiers for each declared aux input port — either a captured
-   * upstream `_n_<id>` local, or `0.5` when no edge is wired. Additive on top
-   * of the implicit `n`/`p` chain.
-   */
-  aux: Record<string, string>;
-}
-
-export interface FieldStageGlsl {
-  dependencies?: readonly GlslHelperName[];
-  main: string;
-}
-
-export type FieldStageUniformTypes<C extends Record<string, unknown>> = Partial<
-  Record<keyof C & string, UniformGlType>
->;
-
-export abstract class FieldStageNode<
-  C extends Record<string, unknown> = Record<string, unknown>,
-  I extends Record<string, unknown> = Record<string, unknown>,
-> extends Node<C, I> {
-  static readonly uniformTypes: FieldStageUniformTypes<Record<string, unknown>> = {};
-
-  /**
-   * Named scalar input ports beyond the implicit `n` chain. Wired upstream
-   * stages surface through `ctx.aux[portId]`. Default `[]` keeps a stage on
-   * pure implicit-`n` flow.
-   */
-  static readonly auxInputs: readonly string[] = [];
-
-  /**
-   * Extra structural fingerprint folded into the container's rebuild key.
-   * Override to fold "zero-vs-nonzero" decisions about a *uniform-typed*
-   * config field into structural rebuilds, so the GLSL can omit dead branches
-   * (e.g. fbm calls when distortion=0) entirely rather than relying on the
-   * GPU to short-circuit a uniform compare per pixel.
-   */
-  variantKey(): string {
-    return "";
-  }
-
-  abstract glsl(ctx: FieldStageContext<C>): FieldStageGlsl;
-}
-
-export interface FieldStageNodeClass<T extends FieldStageNode = FieldStageNode>
-  extends NodeClass<T> {
-  readonly uniformTypes: FieldStageUniformTypes<Record<string, unknown>>;
-  readonly auxInputs: readonly string[];
-}
-
-export function isFieldStageNode(node: Node): node is FieldStageNode {
-  return node instanceof FieldStageNode;
-}
-
-export function isFieldStageNodeClass(cls: NodeClass): cls is FieldStageNodeClass {
-  return (cls as unknown as typeof FieldStageNode).prototype instanceof FieldStageNode;
-}
-
-/**
- * Composite stage — writes color directly instead of producing a scalar `n`.
- * Extends `FieldStageNode` so it shares the picker, registry, and uniform
- * machinery; the container's codegen branches on `isCompositeStageNode` to
- * emit the appropriate wrapper.
- *
- * Inside the stage's `glsl(ctx).main`, two locals are in scope:
- *   vec3 _stage_col — the color contribution (unpremultiplied)
- *   float _stage_a  — the coverage / alpha mask
- * The container then composites: `col = mix(col, _stage_col, _stage_a)`.
- */
-export abstract class CompositeStageNode<
-  C extends Record<string, unknown> = Record<string, unknown>,
-  I extends Record<string, unknown> = Record<string, unknown>,
-> extends FieldStageNode<C, I> {
-  // Structural brand. `CompositeStageNode` adds no real members on top of
-  // `FieldStageNode`, so without this token TS treats the two as identical and
-  // narrows the `isCompositeStageNode(...) === false` branch all the way to
-  // `never`. The field is never read at runtime.
-  readonly __composite = true as const;
-}
-
-export function isCompositeStageNode(node: Node): node is CompositeStageNode {
-  return node instanceof CompositeStageNode;
-}
-
-export function isCompositeStageNodeClass(cls: NodeClass): boolean {
-  return (cls as unknown as typeof CompositeStageNode).prototype instanceof CompositeStageNode;
-}
+// Field-stage classes (FieldStageNode / CompositeStageNode and their helper
+// types) lived here under the legacy stage-chain model. Phase 3 of the node-
+// graph migration removed both — primitives are now plain registrations under
+// `src/shaders/node-graph/primitives/` and don't reuse the Node class
+// hierarchy.

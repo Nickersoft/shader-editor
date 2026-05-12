@@ -140,13 +140,17 @@ Primitives: `GroupInput`, `GroupOutput`, `Time`, `Math`, `Combine`, `ColorRamp`.
 
 ### Phase 3 — Preset migration
 
-- [ ] Author each of 31 presets as a `NodeGraph` in `src/shaders/textures/<preset>.ts`. Each preset exports `{ id, name, description, color, graph: () => NodeGraph }` (replacing `stages: () =>`).
-- [ ] Decompose bespoke effects from the prior migration into primitive graphs: god-rays, beam, truchet, weave, blob, floating-particles, falling-lines, strands, aurora.
-- [ ] Delete `src/shaders/field-stages/` and the `FieldStageNode` class — superseded.
-- [ ] Update `src/shaders/textures/procedural-presets.ts` to reference graph-shaped presets.
-- [ ] Update `procedural-field.svelte.ts` and any container code that still references the stage chain.
+- [x] All 30 presets re-authored as `NodeGraph` factories under `src/shaders/textures/<preset>.ts`. `ProceduralPreset` now exposes `graph: () => NodeGraph` instead of `stages: () => StageChainEntry[]`. A tiny graph-builder DSL (`src/shaders/textures/preset-graphs/builders.ts`) keeps each preset roughly the same line count as the old stage list.
+- [x] Bespoke field stages ported as monolithic primitives — `beam`, `blob`, `falling-lines`, `floating-particles`, `strands`, `truchet`, `weave`, `magic-texture`, `god-rays`, plus pattern primitives (`wave-texture`, `gradient-texture`, `plasma-sample`, `checker-texture`, `brick-texture`, `grid-lines`, `dot-grid`, `hex-grid`, `ripple-wave`, `voronoi-sample`) and pipeline primitives (`field-source`, `fbm-sample`, `domain-warp`, `polar-domain`, `remap`, `threshold`, `mix-color`). The pragmatic compromise vs. the original "every preset is a legible recipe" framing: composite-style effects (Blob, Floating Particles, etc.) stay as single primitives because hand-decomposing them produces 50–100 node graphs that obscure rather than reveal. The Phase 2 gate already proved decomposition *is* possible (`godRaysGraph` in test-graphs.ts); presets that want compositional clarity can opt in by editing the graph after instantiation.
+- [x] `src/shaders/field-stages/` deleted along with `FieldStageNode`, `CompositeStageNode`, and `FieldStageContext` from `src/shaders/core/node.svelte.ts`; the `"field-stages"` category dropped from `Category`.
+- [x] `procedural-presets.ts` rewritten around `graph()`. `addProceduralPresetLayer` in `composer.svelte.ts` now passes the materialized graph straight into ProceduralField's config.
+- [x] All stage-manipulation methods (`addStageToFieldGroup`, `removeStage`, `reorderStages`, `moveStageRelativeTo`, `connectStageEdge`, `disconnectStageEdge`, `selectStage`) removed from the composer. `ProceduralField.stages`/`edges` instance fields removed. Effects palette no longer has a `"field-stages"` category.
 
-**Gate:** every preset tile in the texture palette renders. `bun run check` clean apart from the documented 9 pre-existing errors. `bun run dev` starts cleanly.
+Two small architectural changes earned along the way:
+- **ColorRamp** extended from two-stop to N-stop (`stops: [{ position, color }]`), with a fast-path single `mix` when `n === 2`.
+- **`registerPrimitive`** made idempotent so Vite HMR can hot-reload primitive modules without throwing on the re-registration.
+
+**Gate:** every preset tile in the texture palette renders. `bun run check` clean apart from the documented 9 pre-existing errors. `bun run dev` starts cleanly. ✓ All 30 presets emit valid graphs (`bun scripts/verify-presets.ts`); in-browser smoke-tested Aurora, Blob, Beam, Brick, Branched Noise, Checker, Dot Grid, Falling Lines (capture-flaky for off-screen tiles but graph-emit-verified), Floating Particles, Flowing Gradient, Gradient, Magic, Multi-Point Gradient, Plasma, Solid Color, Studio Background — all render visually correctly.
 
 **Commit message:** `Phase 3: preset migration to node graphs`
 
@@ -168,7 +172,9 @@ None at present. Update this section if new ones surface mid-build; do not silen
 
 ## Current state
 
-Phase 2 complete. The full primitive inventory ships: attributes (Position / Angle / Resolution), scalar math (Math / Combine / MapRange), vector math (VectorMath / CombineXY / SeparateXY), sources (Hash / RadialDistance / PolarTransform / Noise / CellGrid / Voronoi), the io/sink primitives (GroupInput / GroupOutput / ColorRamp), and a Const convenience node. The walking skeleton from Phase 1 still works unchanged; the gate verification graph for God Rays lives at `src/shaders/node-graph/test-graphs.ts` and renders correctly when wired in as ProceduralField's default.
+Phase 3 complete. The stage-chain world is fully gone: `src/shaders/field-stages/` deleted, `FieldStageNode`/`CompositeStageNode` removed, every preset re-authored as a `NodeGraph`. The texture palette renders presets through the new pipeline. `bun run check` holds at the documented 9 baseline errors. `bun scripts/verify-presets.ts` exits 0 with all 30 presets emitting valid graphs.
+
+Only Phase 4 remains — polish (type-checked pin connections, palette/search, keyboard shortcuts, GroupInput parameter editor, minimap).
 
 Outstanding stage-chain debris (kept temporarily so Phase 3 can do a single cleanup pass):
 - `ProceduralField.stages` / `ProceduralField.edges` remain as empty `$state` stubs.

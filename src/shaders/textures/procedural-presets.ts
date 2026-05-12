@@ -1,3 +1,14 @@
+// Preset catalog for ProceduralField. Each entry pairs identity metadata
+// (id / name / colour / blurb) with a `graph()` factory that returns a fresh
+// `NodeGraph` — IDs inside the graph are minted lexically per preset, so the
+// factory is called once per layer instantiation to avoid shared state across
+// scenes.
+//
+// Phase 3 superseded the old stage-chain shape; every preset here is now a
+// real DAG of primitives.
+
+import type { NodeGraph } from "@/shaders/node-graph";
+
 import aurora from "./aurora";
 import beam from "./beam";
 import blob from "./blob";
@@ -30,26 +41,12 @@ import waveRings from "./wave-rings";
 import weave from "./weave";
 import whiteNoise from "./white-noise";
 
-import type { StageChainEntry } from "./procedural-field.svelte";
-
-/**
- * Aux-input wiring inside a preset, expressed by stage *index* — stage IDs are
- * minted fresh on instantiation, so the composer resolves indices to IDs at
- * the moment a preset is added to the scene.
- */
-export interface PresetEdge {
-  fromIndex: number;
-  toIndex: number;
-  toPort: string;
-}
-
 export interface ProceduralPreset {
   id: string;
   name: string;
   description: string;
   color: string;
-  stages: () => StageChainEntry[];
-  edges?: () => PresetEdge[];
+  graph: () => NodeGraph;
 }
 
 export const PROCEDURAL_PRESETS: readonly ProceduralPreset[] = [
@@ -76,7 +73,6 @@ export const PROCEDURAL_PRESETS: readonly ProceduralPreset[] = [
   solidColor,
   spiral,
   strands,
-  stripes,
   studioBackground,
   swirl,
   truchet,

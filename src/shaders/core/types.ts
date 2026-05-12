@@ -27,10 +27,7 @@ export type Category =
   | "interactive"
   | "distortion"
   | "blurs"
-  | "adjustments"
-  // Sub-pipeline primitives owned by a FieldGroup container. Hidden from the
-  // generic generator/effect pickers — surfaced only inside a Field Group.
-  | "field-stages";
+  | "adjustments";
 
 export interface NodeMeta {
   name: string;

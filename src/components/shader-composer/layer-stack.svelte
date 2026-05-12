@@ -59,11 +59,6 @@
 				sourceId.slice('layer:'.length),
 				targetId.slice('layer:'.length)
 			);
-		} else if (sourceId.startsWith('stage:') && targetId.startsWith('stage:')) {
-			composer.moveStageRelativeTo(
-				sourceId.slice('stage:'.length),
-				targetId.slice('stage:'.length)
-			);
 		}
 	}
 </script>

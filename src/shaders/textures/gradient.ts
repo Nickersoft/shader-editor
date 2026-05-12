@@ -1,15 +1,21 @@
 import type { ProceduralPreset } from "./procedural-presets";
+import { PresetGraphBuilder } from "./preset-graphs/builders";
 
 export default {
   id: "gradient",
   name: "Gradient",
   description: "Two-stop linear gradient — Procedural Field preset",
   color: "#10b981",
-  stages: () => [
-    { typeId: "gradient-texture", config: { type: "linear" } },
-    {
-      typeId: "color-ramp-2",
-      config: { colorA: [0.1, 1.0, 0.0], colorB: [0.0, 0.0, 1.0] },
-    },
-  ],
+  graph: () => {
+    const b = new PresetGraphBuilder();
+    b.groupInput([]);
+    const p = b.position();
+    const grad = b.add("gradient-texture", { type: "linear" });
+    b.connect(p, grad.nodeId, "p");
+    const ramp = b.colorRamp(grad, [
+      [0.0, 0.0, 1.0],
+      [0.1, 1.0, 0.0],
+    ]);
+    return b.output(ramp);
+  },
 } satisfies ProceduralPreset;

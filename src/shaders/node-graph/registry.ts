@@ -70,9 +70,8 @@ export interface NodePrimitive {
 const REGISTRY = new Map<string, NodePrimitive>();
 
 export function registerPrimitive(spec: NodePrimitive): NodePrimitive {
-  if (REGISTRY.has(spec.typeId)) {
-    throw new Error(`Duplicate node primitive registration: ${spec.typeId}`);
-  }
+  // Idempotent — Vite HMR re-imports primitive modules on edit; replacing the
+  // previous entry mirrors the live source instead of throwing in dev.
   REGISTRY.set(spec.typeId, spec);
   return spec;
 }

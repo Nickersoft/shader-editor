@@ -8,19 +8,12 @@
 import { makeId, reorderById } from "@/lib/utils";
 import { Layer } from "@/shaders/core/layer.svelte";
 import { EffectNode, isEffectNode, isGeneratorNode, type Node } from "@/shaders/core/node.svelte";
-import {
-  isFieldStageNode,
-  isFieldStageNodeClass,
-} from "@/shaders/core/node.svelte";
 import { getNodeClass } from "@/shaders/core/registry";
 import { Scene } from "@/shaders/core/scene.svelte";
 import type { BlendMode } from "@/shaders/core/types";
 import { ProceduralField } from "@/shaders/textures/procedural-field.svelte";
 import { getProceduralPreset } from "@/shaders/textures/procedural-presets";
 import { getPrimitive } from "@/shaders/node-graph";
-
-export type StageEdgeSpec = { fromStageId: string; toStageId: string; toPort: string };
-export type StageEdgeTarget = { toStageId: string; toPort: string };
 
 function fallbackSelection(scene: Scene): string | null {
   const lastLayer = scene.layers[scene.layers.length - 1];
@@ -38,10 +31,6 @@ class ComposerStore {
   openEffectId = $state<string | null>(null);
   // When set, the texture-graph editor's bottom sheet is mounted for this layer.
   editingTextureLayerId = $state<string | null>(null);
-  // Texture-graph stage selection — intentionally separate from
-  // `selectedNodeId` so picking a stage in the graph doesn't reshape the main
-  // property panel (which keeps showing the owning layer's properties).
-  selectedStageId = $state<string | null>(null);
 
   get selectedNode(): Node | null {
     return this.selectedNodeId ? (this.scene.findNode(this.selectedNodeId)?.node ?? null) : null;
@@ -70,9 +59,9 @@ class ComposerStore {
   }
 
   /**
-   * Preset edges are declared by stage *index* — IDs are minted fresh on each
-   * instantiation, so we materialize the stage list with stable IDs first,
-   * then translate index pairs into `(fromStageId, toStageId, toPort)` triples.
+   * Instantiate a ProceduralField from a preset's hand-authored NodeGraph.
+   * The preset's `graph()` factory mints fresh node ids per call so two layers
+   * built from the same preset don't share state.
    */
   addProceduralPresetLayer(presetId: string) {
     const cls = getNodeClass("procedural-field");
@@ -80,22 +69,8 @@ class ComposerStore {
     const preset = getProceduralPreset(presetId);
     if (!preset) return;
 
-    const stages = preset.stages().map((entry) => ({
-      ...entry,
-      id: entry.id ?? makeId(entry.typeId),
-    }));
-    const presetEdges = preset.edges?.() ?? [];
-    const edges = presetEdges
-      .map((e) => {
-        const from = stages[e.fromIndex];
-        const to = stages[e.toIndex];
-        if (!from || !to) return null;
-        return { fromStageId: from.id!, toStageId: to.id!, toPort: e.toPort };
-      })
-      .filter((e): e is { fromStageId: string; toStageId: string; toPort: string } => e !== null);
-
     const node = new cls({
-      config: { presetId: preset.id, stages, edges },
+      config: { presetId: preset.id, graph: preset.graph() },
     });
     if (!isGeneratorNode(node)) return;
     this.scene.layers.push(
@@ -315,130 +290,7 @@ class ComposerStore {
   }
 
   /**
-   * Append a new stage to a ProceduralField's chain. Stage chain shape change
-   * triggers a shader rebuild via the container's structuralKey.
-   */
-  addStageToFieldGroup(layerId: string, stageTypeId: string): string | null {
-    const group = this.findFieldGroup(layerId);
-    if (!group) return null;
-    const cls = getNodeClass(stageTypeId);
-    if (!cls || !isFieldStageNodeClass(cls)) return null;
-    const stage = new cls();
-    if (!isFieldStageNode(stage)) return null;
-    group.stages.push(stage);
-    // Adding a stage detaches the layer from any named preset — the chain no
-    // longer matches the preset definition.
-    if (group.config.presetId) {
-      group.config.presetId = null;
-      const owner = this.scene.findLayer(layerId);
-      if (owner) owner.name = group.meta.name;
-    }
-    this.selectNode(stage.id);
-    return stage.id;
-  }
-
-  /** Remove a stage from a ProceduralField's chain by id. */
-  removeStage(stageId: string) {
-    const found = this.scene.findNode(stageId);
-    const layer = found?.layer;
-    if (!layer) return;
-    const group = layer.source instanceof ProceduralField ? layer.source : null;
-    if (!group) return;
-    const idx = group.stages.findIndex((s) => s.id === stageId);
-    if (idx < 0) return;
-    group.stages.splice(idx, 1);
-    // Drop any aux edges that reference this stage — keeping them would
-    // leave the codegen pointing at a non-existent captured local.
-    const touchesRemoved = group.edges.some(
-      (e) => e.fromStageId === stageId || e.toStageId === stageId,
-    );
-    if (touchesRemoved) {
-      group.edges = group.edges.filter(
-        (e) => e.fromStageId !== stageId && e.toStageId !== stageId,
-      );
-    }
-    if (group.config.presetId) {
-      group.config.presetId = null;
-      layer.name = group.meta.name;
-    }
-    if (this.selectedNodeId === stageId) this.selectNode(group.id);
-  }
-
-  /** Reorder stages within a ProceduralField. `orderedIds` is full target order. */
-  reorderStages(layerId: string, orderedIds: string[]) {
-    const group = this.findFieldGroup(layerId);
-    if (!group) return;
-    group.stages = reorderById(group.stages, orderedIds);
-    if (group.config.presetId) {
-      group.config.presetId = null;
-      const owner = this.scene.findLayer(layerId);
-      if (owner) owner.name = group.meta.name;
-    }
-  }
-
-  /**
-   * Move a stage to occupy the slot of `targetStageId` inside the same
-   * ProceduralField. Both stages must live in the same container — cross-group
-   * stage moves are intentionally rejected because stages aren't standalone.
-   */
-  moveStageRelativeTo(sourceStageId: string, targetStageId: string) {
-    if (sourceStageId === targetStageId) return;
-    const srcInfo = this.scene.findNode(sourceStageId);
-    const tgtInfo = this.scene.findNode(targetStageId);
-    const layer = srcInfo?.layer;
-    if (!layer || tgtInfo?.layer !== layer) return;
-    const group = layer.source instanceof ProceduralField ? layer.source : null;
-    if (!group) return;
-    const srcIdx = group.stages.findIndex((s) => s.id === sourceStageId);
-    const tgtIdx = group.stages.findIndex((s) => s.id === targetStageId);
-    if (srcIdx < 0 || tgtIdx < 0) return;
-    const [moved] = group.stages.splice(srcIdx, 1);
-    group.stages.splice(tgtIdx, 0, moved);
-    if (group.config.presetId) {
-      group.config.presetId = null;
-      layer.name = group.meta.name;
-    }
-  }
-
-  /**
-   * Forward references (aux input pointing to a later stage) would emit GLSL
-   * referencing an undeclared local — refuse them outright. One wire per
-   * port: an existing edge on the same target port is replaced.
-   */
-  connectStageEdge(layerId: string, edge: StageEdgeSpec) {
-    const { fromStageId, toStageId, toPort } = edge;
-    if (fromStageId === toStageId) return;
-    const group = this.findFieldGroup(layerId);
-    if (!group) return;
-    const fromIdx = group.stages.findIndex((s) => s.id === fromStageId);
-    const toIdx = group.stages.findIndex((s) => s.id === toStageId);
-    if (fromIdx < 0 || toIdx < 0 || fromIdx >= toIdx) return;
-    const existing = group.edges.find(
-      (e) => e.toStageId === toStageId && e.toPort === toPort,
-    );
-    if (existing && existing.fromStageId === fromStageId) return;
-    const filtered = group.edges.filter(
-      (e) => !(e.toStageId === toStageId && e.toPort === toPort),
-    );
-    filtered.push({ fromStageId, toStageId, toPort });
-    group.edges = filtered;
-  }
-
-  disconnectStageEdge(layerId: string, target: StageEdgeTarget) {
-    const { toStageId, toPort } = target;
-    const group = this.findFieldGroup(layerId);
-    if (!group) return;
-    const hasMatch = group.edges.some(
-      (e) => e.toStageId === toStageId && e.toPort === toPort,
-    );
-    if (!hasMatch) return;
-    group.edges = group.edges.filter(
-      (e) => !(e.toStageId === toStageId && e.toPort === toPort),
-    );
-  }
-
-  /**
-   * Detach a Procedural Field layer from its named preset. The chain is kept
+   * Detach a Procedural Field layer from its named preset. The graph is kept
    * intact (no shader rebuild) but the layer is renamed to the generic name
    * and `presetId` is cleared so future edits can't snap back to the preset.
    * One-way; there's no re-group counterpart by design.
@@ -477,25 +329,16 @@ class ComposerStore {
     const group = this.findFieldGroup(layerId);
     if (!group) return;
     this.editingTextureLayerId = layerId;
-    // Keep the owning generator selected in the outer panel — with the
-    // texture graph mounted as a bottom sheet (not a full-screen takeover),
-    // the layer is still visible above, so it should stay the active context.
     this.selectNode(group.id);
-    this.selectedStageId = null;
   }
 
   closeTextureEditor() {
     this.editingTextureLayerId = null;
-    this.selectedStageId = null;
-  }
-
-  selectStage(id: string | null) {
-    this.selectedStageId = id;
   }
 
   // ==========================================================================
-  // Node-graph manipulation. Operates on the new `graph: NodeGraph` field of
-  // ProceduralField. Phase 3 will remove the old stage-* methods above.
+  // Node-graph manipulation. Operates on the `graph: NodeGraph` field of
+  // ProceduralField — the canonical post-Phase-3 surface.
 
   addGraphNode(layerId: string, typeId: string, position?: { x: number; y: number }) {
     const group = this.findFieldGroup(layerId);

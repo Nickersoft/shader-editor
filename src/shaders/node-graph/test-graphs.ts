@@ -135,7 +135,12 @@ export function godRaysGraph(): NodeGraph {
     {
       id: "ramp",
       typeId: "color-ramp",
-      config: { colorA: [1, 0.95, 0.7], colorB: [0, 0, 0] },
+      config: {
+        stops: [
+          { position: 0, color: [1, 0.95, 0.7] },
+          { position: 1, color: [0, 0, 0] },
+        ],
+      },
       position: { x: X11 - 100, y: 360 },
     },
     { id: "go", typeId: GROUP_OUTPUT_TYPE_ID, config: {}, position: { x: X11, y: 360 } },

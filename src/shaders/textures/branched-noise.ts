@@ -1,28 +1,43 @@
 import type { ProceduralPreset } from "./procedural-presets";
+import { PresetGraphBuilder } from "./preset-graphs/builders";
 
-// Demonstrates aux-edge wiring: two independent samplers feed Mix Fields,
-// which produces a noise-modulated cellular pattern that neither could alone.
+// Phase-3 migration: the legacy preset used a `mix-fields` stage with
+// `mode: multiply, factor: 0.7`. Decomposed here as `n = a * b` — the factor
+// knob is gone in favour of a legible two-input multiply; the visual is
+// essentially identical at factor=1, and tweakability lands in Phase 4.
 export default {
   id: "branched-noise",
   name: "Branched Noise",
   description: "Mix Fields demo — multiplies a Noise field by a Voronoi field, then colorizes",
   color: "#f59e0b",
-  stages: () => [
-    { typeId: "field-source", config: { scale: 3, speed: 0.6, seed: 0 } },
-    { typeId: "fbm-sample", config: { detail: 4 } },
-    { typeId: "field-source", config: { scale: 0.6, speed: 0.4, seed: 17 } },
-    {
-      typeId: "voronoi-sample",
-      config: { feature: "f1", randomness: 0.9, smoothness: 0.4 },
-    },
-    { typeId: "mix-fields", config: { factor: 0.7, mode: "multiply" } },
-    {
-      typeId: "color-ramp-2",
-      config: { colorA: [0.99, 0.62, 0.16], colorB: [0.05, 0.02, 0.18] },
-    },
-  ],
-  edges: () => [
-    { fromIndex: 1, toIndex: 4, toPort: "a" },
-    { fromIndex: 3, toIndex: 4, toPort: "b" },
-  ],
+  graph: () => {
+    const b = new PresetGraphBuilder();
+    b.groupInput([]);
+    const p = b.position();
+    const t = b.time();
+
+    const srcA = b.add("field-source", { scale: 3, speed: 0.6, seed: 0 });
+    b.connect(p, srcA.nodeId, "p");
+    b.connect(t, srcA.nodeId, "t");
+    const fbm = b.add("fbm-sample", { detail: 4, lacunarity: 2, roughness: 0.5, distortion: 0 });
+    b.connect({ nodeId: srcA.nodeId, pin: "p" }, fbm.nodeId, "p");
+    b.connect({ nodeId: srcA.nodeId, pin: "t" }, fbm.nodeId, "t");
+
+    const srcB = b.add("field-source", { scale: 0.6, speed: 0.4, seed: 17 });
+    b.connect(p, srcB.nodeId, "p");
+    b.connect(t, srcB.nodeId, "t");
+    const vor = b.add("voronoi-sample", { feature: "f1", metric: "euclidean", randomness: 0.9, smoothness: 0.4 });
+    b.connect({ nodeId: srcB.nodeId, pin: "p" }, vor.nodeId, "p");
+    b.connect({ nodeId: srcB.nodeId, pin: "t" }, vor.nodeId, "t");
+
+    const mul = b.add("combine", { op: "mul" });
+    b.connect(fbm, mul.nodeId, "a");
+    b.connect(vor, mul.nodeId, "b");
+
+    const ramp = b.colorRamp(mul, [
+      [0.05, 0.02, 0.18],
+      [0.99, 0.62, 0.16],
+    ]);
+    return b.output(ramp);
+  },
 } satisfies ProceduralPreset;

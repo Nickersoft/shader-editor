@@ -12,7 +12,6 @@
 		GeneratorNode,
 		getEffectScope
 	} from '@/shaders/core/node.svelte';
-	import { isFieldStageNode } from '@/shaders/core/node.svelte';
 	import type { BlendMode } from '@/shaders/core/types';
 	import { NumberInput } from '@/components/ui/number-input';
 	import { Label } from '@/components/ui/label';
@@ -55,18 +54,12 @@
 
 	let selectionScope = $derived.by(() => {
 		if (!selectedNode) return '';
-		if (isFieldStageNode(selectedNode)) return 'Stage';
 		if (selectedNode instanceof GeneratorNode) return 'Layer';
 		if (selectedNode instanceof EffectNode) {
 			return getEffectScope(selectedNode.cls) === 'scene' ? 'Scene Effect' : 'Effect Layer';
 		}
 		return '';
 	});
-
-	// Stages aren't standalone — they compose into their parent FieldGroup's
-	// shader pass. Blend mode / opacity have no meaning, so the property panel
-	// skips those sections when a stage is selected.
-	let isStageSelection = $derived(selectedNode ? isFieldStageNode(selectedNode) : false);
 
 	let fields = $derived.by(() => {
 		if (!selectedNode) return null;
@@ -213,8 +206,7 @@
 
 		<ScrollArea class="flex-1 min-h-0">
 			<div class="py-3">
-				{#if !isStageSelection}
-					<section class="px-3 py-3 space-y-3 border-b border-[rgba(255,255,255,0.1)]">
+				<section class="px-3 py-3 space-y-3 border-b border-[rgba(255,255,255,0.1)]">
 						<div class="px-1">
 							<p class="text-[12px] font-medium text-white">Blending</p>
 						</div>
@@ -248,7 +240,6 @@
 							suffix="%"
 						/>
 					</section>
-				{/if}
 
 				{#if selectedNode instanceof ProceduralField}
 					<GraphParameterPanel field={selectedNode} />
