@@ -113,10 +113,10 @@ docs/node-graph-migration-plan.md   — this file
 
 Primitives: `GroupInput`, `GroupOutput`, `Time`, `Math`, `ColorRamp` only. Enough to render a pulsing screen end-to-end.
 
-- [ ] `src/shaders/node-graph/types.ts`: `NodeGraph`, `GraphNode`, `Pin`, `Edge`, `PinType`.
-- [ ] `src/shaders/node-graph/registry.ts`: primitive registry. Each primitive declares pin definitions + emit function.
-- [ ] `src/shaders/node-graph/emit.ts`: topological-sort GLSL emitter. Named locals per output pin.
-- [ ] `src/shaders/node-graph/primitives/{group-input,group-output,time,math,color-ramp}.ts`.
+- [x] `src/shaders/node-graph/types.ts`: `NodeGraph`, `GraphNode`, `Pin`, `Edge`, `PinType`.
+- [x] `src/shaders/node-graph/registry.ts`: primitive registry. Each primitive declares pin definitions + emit function.
+- [x] `src/shaders/node-graph/emit.ts`: topological-sort GLSL emitter. Named locals per output pin.
+- [x] `src/shaders/node-graph/primitives/{group-input,group-output,time,math,color-ramp}.ts`.
 - [ ] Refactor `src/shaders/textures/procedural-field.svelte.ts` — replace `stages` field with `graph: NodeGraph`. Remove stage-chain emit code.
 - [ ] Locate existing xyflow usage; create `node-graph-canvas` component bound to a `NodeGraph`. Bottom panel hosts it when a `ProceduralField` layer is selected.
 - [ ] Layer property pane introspects `GroupInput` pins for parameter controls.
