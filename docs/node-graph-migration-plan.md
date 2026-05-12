@@ -127,13 +127,14 @@ Primitives: `GroupInput`, `GroupOutput`, `Time`, `Math`, `Combine`, `ColorRamp`.
 
 ### Phase 2 — Primitive inventory
 
-- [ ] Attributes: `Position`, `Angle`, `Resolution`.
-- [x] Scalar math: `Combine` (delivered in Phase 1 to satisfy the modulation gate).
-- [ ] Scalar math: `MapRange`.
-- [ ] Vector math: `VectorMath`, `CombineXY`, `SeparateXY`.
-- [ ] Sources: `Noise`, `Voronoi`, `CellGrid`, `Hash`, `PolarTransform`, `RadialDistance`.
+- [x] Attributes: `Position`, `Angle`, `Resolution`.
+- [x] Scalar math: `Combine` (delivered in Phase 1 to satisfy the modulation gate). `Combine` gained `atan2` so PolarTransform's output can be re-radianized when needed.
+- [x] Scalar math: `MapRange`.
+- [x] Vector math: `VectorMath`, `CombineXY`, `SeparateXY`. `VectorMath` ships with `length / normalize / dot / distance / add / sub / scale / rotate2D` — `add` and `sub` aren't in the original inventory but graphs need them to shift `p` by a centre, so they ride in here rather than waiting for a future revision.
+- [x] Sources: `Noise`, `Voronoi`, `CellGrid`, `Hash`, `PolarTransform`, `RadialDistance`.
+- [x] Convenience: `Const` (zero inputs, one float uniform). Not in the original inventory but unavoidable for hand-authored graphs — every scalar literal (2π, 30, 0.6, …) would otherwise have to be routed through `GroupInput` and clutter the layer's property pane. Treat it as the graph equivalent of a Python literal.
 
-**Gate:** I can hand-author God Rays as a primitive DAG and visually match today's preset within tweakable tolerance. The graph is legible — no monolithic effect nodes.
+**Gate:** I can hand-author God Rays as a primitive DAG and visually match today's preset within tweakable tolerance. The graph is legible — no monolithic effect nodes. ✓ Verified in-browser — `src/shaders/node-graph/test-graphs.ts::godRaysGraph` decomposes the 60-line `god-rays.ts` field stage into 28 primitive nodes and renders a recognisable yellow-rays-on-black with all four pins (Center / Density / Decay / Weight) live-editable.
 
 **Commit message:** `Phase 2: primitive inventory complete`
 
@@ -167,7 +168,7 @@ None at present. Update this section if new ones surface mid-build; do not silen
 
 ## Current state
 
-Phase 1 complete. The walking skeleton is live: a `ProceduralField` layer renders a pulsing screen via the new node-graph emitter, the bottom-panel xyflow canvas shows the DAG, and the property pane drives the `speed` pin uniform without recompiling the shader. Verified in-browser (purple↔pink alternation at default `speed=1`, much faster pulse at `speed=10`).
+Phase 2 complete. The full primitive inventory ships: attributes (Position / Angle / Resolution), scalar math (Math / Combine / MapRange), vector math (VectorMath / CombineXY / SeparateXY), sources (Hash / RadialDistance / PolarTransform / Noise / CellGrid / Voronoi), the io/sink primitives (GroupInput / GroupOutput / ColorRamp), and a Const convenience node. The walking skeleton from Phase 1 still works unchanged; the gate verification graph for God Rays lives at `src/shaders/node-graph/test-graphs.ts` and renders correctly when wired in as ProceduralField's default.
 
 Outstanding stage-chain debris (kept temporarily so Phase 3 can do a single cleanup pass):
 - `ProceduralField.stages` / `ProceduralField.edges` remain as empty `$state` stubs.

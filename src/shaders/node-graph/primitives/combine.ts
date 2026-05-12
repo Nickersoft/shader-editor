@@ -17,6 +17,7 @@ const OPS = [
   "smoothstep",
   "pow",
   "mod",
+  "atan2",
 ] as const;
 
 const config = z.object({
@@ -80,5 +81,7 @@ function exprFor(op: Config["op"], a: string, b: string): string {
       return `pow(max(${a}, 0.0), ${b})`;
     case "mod":
       return `mod(${a}, ${b})`;
+    case "atan2":
+      return `atan(${a}, ${b})`;
   }
 }
