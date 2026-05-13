@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps, type Node } from '@xyflow/svelte';
-	import { getPrimitive, type PinSpec } from '@/shaders/node-graph';
+	import { getPrimitive, type PinSpec, type PinType } from '@/shaders/node-graph';
 
 	type PrimitiveNodeData = {
 		nodeId: string;
@@ -15,6 +15,18 @@
 	let prim = $derived(getPrimitive(data.typeId));
 	let inputs = $derived((prim?.inputs(data.config) ?? []) as readonly PinSpec[]);
 	let outputs = $derived((prim?.outputs(data.config) ?? []) as readonly PinSpec[]);
+
+	// Pin-type → handle colour. Matches the Blender convention loosely
+	// (scalars grey, vectors aqua, colors yellow) so the eye learns the
+	// system quickly without needing labels.
+	const PIN_COLOR: Record<PinType, string> = {
+		float: '#9ca3af',
+		int: '#60a5fa',
+		bool: '#f87171',
+		vec2: '#22d3ee',
+		vec3: '#facc15',
+		vec4: '#fb923c'
+	};
 </script>
 
 <div
@@ -55,7 +67,8 @@
 		id={pin.id}
 		type="target"
 		position={Position.Left}
-		style="top: {top}%;"
+		style="top: {top}%; background: {PIN_COLOR[pin.type]};"
+		title="{pin.label ?? pin.id} · {pin.type}"
 		isConnectableEnd
 		isConnectableStart={false}
 	/>
@@ -67,7 +80,8 @@
 		id={pin.id}
 		type="source"
 		position={Position.Right}
-		style="top: {top}%;"
+		style="top: {top}%; background: {PIN_COLOR[pin.type]};"
+		title="{pin.label ?? pin.id} · {pin.type}"
 		isConnectableStart
 		isConnectableEnd={false}
 	/>

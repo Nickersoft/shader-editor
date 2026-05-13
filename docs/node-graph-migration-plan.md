@@ -158,13 +158,13 @@ Two small architectural changes earned along the way:
 
 ### Phase 4 — Polish
 
-- [ ] Type-checked pin connections (reject mismatches or auto-insert cast/swizzle).
-- [ ] Node palette / search in the canvas.
-- [ ] Keyboard shortcuts (delete, duplicate, frame-all).
-- [ ] `GroupInput` parameter editor in layer property pane (reorder pins, rename, set defaults).
-- [ ] Minimap (xyflow built-in).
+- [x] Type-checked pin connections. xyflow's `isValidConnection` rejects mismatches during drag (visual cue) and `handleConnect` re-validates as defence in depth. Handles are colour-coded by pin type (Blender-loose convention — scalar/grey, vec2/aqua, vec3/yellow) so the user knows the type before dragging.
+- [x] Node palette search. `graph-palette.svelte` rewritten with a focused-on-mount input, fuzzy match across name/typeId/description/category, category groupings (Attributes / Math / Sources / I/O / Other), and keyboard nav (Up/Down/Enter/Esc).
+- [x] Keyboard shortcuts. Cmd/Ctrl+D duplicates the selected nodes (new `composer.duplicateGraphNode` clones config + offsets position). F frame-all triggers `useSvelteFlow().fitView`. Delete is already xyflow built-in. Implemented in a tiny `<GraphShortcuts />` sub-component so it can use `useSvelteFlow` inside the SvelteFlow context.
+- [x] GroupInput parameter editor in layer property pane. A gear toggle on the Parameters section flips into edit mode — add/remove/rename/reorder pins, change type (default value resets when type changes), with edge-rewiring kept consistent (renaming a pin migrates outbound edges; removing a pin drops them).
+- [x] Minimap. xyflow's `<MiniMap />` with custom node colouring (GroupInput green, GroupOutput red, everything else indigo) so the canvas stays navigable on large preset graphs (god-rays alone is 28 nodes; blob is 71).
 
-**Gate:** editor feels usable on a typical workflow without obvious paper cuts.
+**Gate:** editor feels usable on a typical workflow without obvious paper cuts. ✓ Verified in-browser — palette search filters live, gear toggle reveals pin editor, decomposed God Rays preset is fully editable in the new canvas with minimap visible.
 
 **Commit message:** `Phase 4: node graph editor polish`
 
@@ -174,11 +174,14 @@ None at present. Update this section if new ones surface mid-build; do not silen
 
 ## Current state
 
-Phase 3 complete and properly decomposed. All bespoke effects that *can* decompose are now genuine primitive DAGs that users can fork in the canvas — God Rays (28 nodes), Beam (18 nodes), Blob (71 nodes), Truchet (35 nodes), Weave (35 nodes), Magic (40 nodes), Falling Lines (62 nodes). Strands and Floating Particles stay as single primitives because their dynamic loops are not expressible in the graph without an iterator primitive. The monolithic effect primitives (`beam.ts`, `blob.ts`, etc.) were deleted once nothing referenced them.
+All four phases complete. The procedural-field system is fully on the node-graph model: 30 presets ship as `NodeGraph` factories, every bespoke effect that *can* decompose is a genuine primitive DAG (only Strands and Floating Particles stay monolithic because of their dynamic loops), and the editor surface is polished — type-checked connections with colour-coded handles, palette search with keyboard nav, Cmd+D duplicate / F frame-all shortcuts, in-pane GroupInput pin editor, minimap.
 
 `bun run check` holds at the documented 9 baseline errors. `bun scripts/verify-presets.ts` exits 0 with all 30 presets emitting valid graphs.
 
-Only Phase 4 remains — polish (type-checked pin connections, palette/search, keyboard shortcuts, GroupInput parameter editor, minimap).
+Possible follow-ups outside the original plan:
+- Iterator primitive (would unblock decomposing Strands and Floating Particles).
+- Subgraph / node-group nesting (deferred in Phase 0).
+- Auto-cast / swizzle on connect (deferred in Phase 0 in favour of strict type-checking, which now ships).
 
 Outstanding stage-chain debris (kept temporarily so Phase 3 can do a single cleanup pass):
 - `ProceduralField.stages` / `ProceduralField.edges` remain as empty `$state` stubs.

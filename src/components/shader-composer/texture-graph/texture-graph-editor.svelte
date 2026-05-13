@@ -3,6 +3,7 @@
 		SvelteFlow,
 		Background,
 		Controls,
+		MiniMap,
 		type Node as XYNode,
 		type Edge as XYEdge,
 		type NodeTypes,
@@ -15,10 +16,11 @@
 
 	import { composer } from '@/lib/state/composer.svelte';
 	import { ProceduralField } from '@/shaders/textures/procedural-field.svelte';
-	import { listPrimitives } from '@/shaders/node-graph';
+	import { getPrimitive, listPrimitives, type PinType } from '@/shaders/node-graph';
 
 	import GraphPrimitiveNode from './graph-primitive-node.svelte';
 	import GraphPalette from './graph-palette.svelte';
+	import GraphShortcuts from './graph-shortcuts.svelte';
 
 	const nodeTypes: NodeTypes = { primitive: GraphPrimitiveNode };
 
@@ -76,11 +78,44 @@
 		paletteOpen = false;
 	}
 
+	// Pin-type lookup used by both the live drag validator (xyflow's
+	// `isValidConnection`) and the post-drop guard in `handleConnect`. Two
+	// layers of defense: the validator gives a visual cue while the user
+	// drags, and the guard makes sure a mismatched edge can't slip in via a
+	// future programmatic source either.
+	function pinTypeOf(nodeId: string, pinId: string, side: 'input' | 'output'): PinType | null {
+		const field = proceduralField;
+		if (!field) return null;
+		const node = field.graph.nodes.find((n) => n.id === nodeId);
+		if (!node) return null;
+		const prim = getPrimitive(node.typeId);
+		if (!prim) return null;
+		const pins = side === 'input' ? prim.inputs(node.config) : prim.outputs(node.config);
+		return pins.find((p) => p.id === pinId)?.type ?? null;
+	}
+
+	// xyflow types the `isValidConnection` callback's input as `Edge |
+	// Connection`, so we accept the loose shape here and pluck the four
+	// fields we actually need.
+	function connectionTypesMatch(c: {
+		source?: string | null;
+		target?: string | null;
+		sourceHandle?: string | null;
+		targetHandle?: string | null;
+	}): boolean {
+		if (!c.source || !c.target || !c.sourceHandle || !c.targetHandle) return false;
+		const a = pinTypeOf(c.source, c.sourceHandle, 'output');
+		const b = pinTypeOf(c.target, c.targetHandle, 'input');
+		if (!a || !b) return false;
+		return a === b;
+	}
+
 	function handleConnect(connection: Connection) {
 		const layerId = composer.editingTextureLayerId;
 		if (!layerId) return;
 		const { source, target, sourceHandle, targetHandle } = connection;
 		if (!source || !target || !sourceHandle || !targetHandle) return;
+		if (!connectionTypesMatch(connection)) return;
 		composer.connectGraphEdge(layerId, {
 			fromNodeId: source,
 			fromPin: sourceHandle,
@@ -111,6 +146,12 @@
 			x: targetNode.position.x,
 			y: targetNode.position.y
 		});
+	}
+
+	function handleDuplicate(selected: XYNode[]) {
+		const layerId = composer.editingTextureLayerId;
+		if (!layerId) return;
+		for (const n of selected) composer.duplicateGraphNode(layerId, n.id);
 	}
 
 	let primitives = $derived(
@@ -170,12 +211,26 @@
 				onconnect={handleConnect}
 				ondelete={handleDelete}
 				onnodedragstop={handleNodeDragStop}
+				isValidConnection={connectionTypesMatch}
 				fitView
 				fitViewOptions={{ padding: 0.25 }}
 				proOptions={{ hideAttribution: true }}
 			>
 				<Background patternColor="rgba(255,255,255,0.08)" gap={24} />
 				<Controls showLock={false} />
+				<MiniMap
+					pannable
+					zoomable
+					maskColor="rgba(0,0,0,0.6)"
+					nodeColor={(n) => {
+						const data = n.data as { typeId?: string } | undefined;
+						if (!data?.typeId) return '#666';
+						if (data.typeId === 'group-input') return '#22c55e';
+						if (data.typeId === 'group-output') return '#ef4444';
+						return '#818cf8';
+					}}
+				/>
+				<GraphShortcuts onDuplicate={handleDuplicate} />
 			</SvelteFlow>
 
 			<div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">

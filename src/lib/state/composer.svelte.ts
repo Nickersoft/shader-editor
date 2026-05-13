@@ -403,6 +403,28 @@ class ComposerStore {
     if (!node) return;
     node.position = position;
   }
+
+  /**
+   * Clone a graph node — keeps config exactly, mints a fresh id, offsets the
+   * position so the copy doesn't sit underneath the source. Returns the new
+   * node's id so callers can update the selection.
+   */
+  duplicateGraphNode(layerId: string, nodeId: string): string | null {
+    const group = this.findFieldGroup(layerId);
+    if (!group) return null;
+    const node = group.graph.nodes.find((n) => n.id === nodeId);
+    if (!node) return null;
+    // group-input / group-output are structural singletons.
+    if (node.typeId === "group-input" || node.typeId === "group-output") return null;
+    const newId = makeId(node.typeId);
+    group.graph.nodes.push({
+      id: newId,
+      typeId: node.typeId,
+      config: structuredClone(node.config),
+      position: { x: node.position.x + 40, y: node.position.y + 40 },
+    });
+    return newId;
+  }
 }
 
 export const composer = new ComposerStore();
