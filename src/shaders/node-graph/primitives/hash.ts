@@ -1,6 +1,7 @@
-// Hash — deterministic float → float pseudorandom. Wraps the codegen's
-// `hash` helper so multiple Hash nodes share the same hashing function
-// instead of each inventing its own.
+// Hash — deterministic vec2 → float pseudorandom. Wraps the codegen's
+// `hash` helper directly — the underlying function takes a vec2, so the pin
+// shape matches and recipes that already have a vec2 (a cell coordinate, a
+// transformed `p`) can wire straight through.
 
 import { z } from "zod";
 import { registerPrimitive } from "../registry";
@@ -8,7 +9,7 @@ import type { PinSpec } from "../types";
 
 const config = z.object({});
 
-const INPUTS: readonly PinSpec[] = [{ id: "x", type: "float", label: "X", default: 0 }];
+const INPUTS: readonly PinSpec[] = [{ id: "p", type: "vec2", label: "P", default: [0, 0] }];
 const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "float", label: "Out" }];
 
 export default registerPrimitive({
@@ -28,11 +29,9 @@ export default registerPrimitive({
   },
 
   emit(ctx) {
-    // hash() in the helpers operates on vec2; feeding it (x, x*1.7) gives a
-    // 1D feed that still keeps the input bits well-mixed.
     ctx.addDependency("hash");
     return {
-      statements: `float ${ctx.outputs.out} = hash(vec2(${ctx.inputs.x}, ${ctx.inputs.x} * 1.7));`,
+      statements: `float ${ctx.outputs.out} = hash(${ctx.inputs.p});`,
     };
   },
 });

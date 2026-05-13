@@ -26,6 +26,9 @@ const OPS = [
   "sub",
   "scale",
   "rotate2D",
+  "floor",
+  "fract",
+  "abs",
 ] as const;
 
 const config = z.object({
@@ -46,6 +49,9 @@ function pinsFor(op: Config["op"]): { in: readonly PinSpec[]; out: readonly PinS
     case "length":
       return { in: [A_VEC2], out: [OUT_FLOAT] };
     case "normalize":
+    case "floor":
+    case "fract":
+    case "abs":
       return { in: [A_VEC2], out: [OUT_VEC2] };
     case "dot":
     case "distance":
@@ -103,6 +109,12 @@ export default registerPrimitive({
         return {
           statements: `vec2 ${o} = mat2(cos(${b}), -sin(${b}), sin(${b}), cos(${b})) * ${a};`,
         };
+      case "floor":
+        return { statements: `vec2 ${o} = floor(${a});` };
+      case "fract":
+        return { statements: `vec2 ${o} = fract(${a});` };
+      case "abs":
+        return { statements: `vec2 ${o} = abs(${a});` };
     }
   },
 });
