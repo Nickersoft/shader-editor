@@ -32,6 +32,10 @@ const config = z.object({
   lacunarity: zFloat(1, 8, 0.01).default(2),
   roughness: zFloat(0, 1, 0.01).default(0.5),
   distortion: zFloat(0, 4, 0.01).default(0),
+  // When set, wrap the input UV via `mod(uv, period)` before sampling so the
+  // noise tiles seamlessly. `period <= 0` disables wrapping.
+  seamless: z.boolean().default(false),
+  period: zFloat(0, 100, 0.1).default(1),
 });
 
 type Config = z.infer<typeof config>;
@@ -84,7 +88,13 @@ class NoiseTexture extends BasePrimitive<Config, In, Out> {
     const o = ctx.outputs.out;
     const scale = ctx.uniforms.scale;
     const seed = ctx.uniforms.seed;
-    const pBase = `(${p} * ${scale} + vec2(${seed}, ${seed} * 1.31) + ${t})`;
+    // When seamless tiling is on, wrap the scaled sample point by `period`
+    // before adding seed/time. Both phases of the noise sit in [0, period),
+    // so the function repeats every `period` units in both axes.
+    const rawP = `(${p} * ${scale} + vec2(${seed}, ${seed} * 1.31) + ${t})`;
+    const pBase = c.seamless
+      ? `mod(${rawP}, vec2(max(${c.period}, 1e-3)))`
+      : rawP;
 
     switch (c.kind) {
       case "white":

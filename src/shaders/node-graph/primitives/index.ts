@@ -28,6 +28,11 @@ import "./separate-xy";
 import "./mapping";
 import "./projection";
 import "./normal";
+import "./loop";
+import "./sampler";
+import "./pixelate";
+import "./grain";
+import "./mask";
 
 // Texture
 import "./white-noise-texture";

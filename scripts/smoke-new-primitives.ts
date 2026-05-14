@@ -28,6 +28,23 @@ const cases: Case[] = [
   { name: "vector-math vec3 refract", typeId: "vector-math", config: { op: "refract", dim: "vec3" }, outPin: "out", groupPin: "color" },
   { name: "vector-math vec3 project", typeId: "vector-math", config: { op: "project", dim: "vec3" }, outPin: "out", groupPin: "color" },
   { name: "vector-math vec3 length → float (coerce)", typeId: "vector-math", config: { op: "length", dim: "vec3" }, outPin: "out", groupPin: "alpha" },
+  // Loop primitive: mix output → group alpha (float → float, identity).
+  { name: "loop", typeId: "loop", config: {}, outPin: "mix", groupPin: "alpha" },
+  // Noise texture with seamless tiling.
+  { name: "noise-texture seamless fbm", typeId: "noise-texture", config: { kind: "fbm", seamless: true, period: 1 }, outPin: "out", groupPin: "alpha" },
+  // Sampler — each mode.
+  { name: "sampler kernel-3x3", typeId: "sampler", config: { mode: "kernel-3x3" }, outPin: "out", groupPin: "color" },
+  { name: "sampler linear", typeId: "sampler", config: { mode: "linear", samples: 8, direction: 45 }, outPin: "out", groupPin: "color" },
+  { name: "sampler zoom", typeId: "sampler", config: { mode: "zoom", samples: 16 }, outPin: "out", groupPin: "color" },
+  { name: "sampler angular", typeId: "sampler", config: { mode: "angular", samples: 16 }, outPin: "out", groupPin: "color" },
+  // Pixelate / grain / mask.
+  { name: "pixelate", typeId: "pixelate", config: {}, outPin: "out", groupPin: "color" },
+  { name: "grain", typeId: "grain", config: {}, outPin: "out", groupPin: "alpha" },
+  { name: "mask vignette", typeId: "mask", config: { shape: "vignette" }, outPin: "out", groupPin: "alpha" },
+  { name: "mask circle", typeId: "mask", config: { shape: "circle" }, outPin: "out", groupPin: "alpha" },
+  { name: "mask rect", typeId: "mask", config: { shape: "rect" }, outPin: "out", groupPin: "alpha" },
+  { name: "mask gradient-linear", typeId: "mask", config: { shape: "gradient-linear" }, outPin: "out", groupPin: "alpha" },
+  { name: "mask gradient-radial", typeId: "mask", config: { shape: "gradient-radial" }, outPin: "out", groupPin: "alpha" },
 ];
 
 function buildGraph(c: Case): NodeGraph {
