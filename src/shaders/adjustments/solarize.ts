@@ -1,15 +1,14 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Solarize — graph-decomposed adjustment.
+//   lum = luma(rgb)
+//   mask = step(threshold, lum)
+//   solarized = mix(rgb, 1 - rgb, mask)
+//   result = mix(rgb, solarized, strength)
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  threshold: zFloat(0, 1).default(0.5).describe("Threshold"),
-  strength: zFloat(0, 1).default(1).describe("Strength"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Solarize",
@@ -19,27 +18,44 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class Solarize extends EffectNode<Config, Inputs> {
+export class Solarize extends GraphEffectBase {
   static readonly typeId = "solarize";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const threshold = this.uniformName("threshold");
-    const strength = this.uniformName("strength");
-    return {
-      dependencies: ["luma"],
-      main: `
-base = texture(u_prevPass, uv);
-float lum = luma(base.rgb);
-vec3 inverted = vec3(1.0) - base.rgb;
-vec3 solarized = lum > ${threshold} ? inverted : base.rgb;
-return vec4(mix(base.rgb, solarized, ${strength}), base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "threshold", type: "float", label: "Threshold", default: 0.5 },
+      { id: "strength", type: "float", label: "Strength", default: 1 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+    const color = { nodeId: sample.nodeId, pin: "color" };
+    const alpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    const lum = b.add("color-math", { op: "luminance" });
+    b.connect(color, lum.nodeId, "a");
+
+    const mask = b.add("math", { op: "step" });
+    b.connect(gi.threshold, mask.nodeId, "a");
+    b.connect(lum, mask.nodeId, "b");
+
+    const inverted = b.add("color-math", { op: "oneminus" });
+    b.connect(color, inverted.nodeId, "a");
+
+    const solarized = b.add("mix-color", { clampT: true });
+    b.connect(color, solarized.nodeId, "a");
+    b.connect(inverted, solarized.nodeId, "b");
+    b.connect(mask, solarized.nodeId, "t");
+
+    const result = b.add("mix-color", { clampT: true });
+    b.connect(color, result.nodeId, "a");
+    b.connect(solarized, result.nodeId, "b");
+    b.connect(gi.strength, result.nodeId, "t");
+
+    return b.output(result, alpha);
   }
 }
 

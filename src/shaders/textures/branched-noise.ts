@@ -16,21 +16,23 @@ export default {
     const p = b.position();
     const t = b.time();
 
-    const srcA = b.add("field-source", { scale: 3, speed: 0.6, seed: 0 });
-    b.connect(p, srcA.nodeId, "p");
-    b.connect(t, srcA.nodeId, "t");
-    const fbm = b.add("fbm-sample", { detail: 4, lacunarity: 2, roughness: 0.5, distortion: 0 });
-    b.connect({ nodeId: srcA.nodeId, pin: "p" }, fbm.nodeId, "p");
-    b.connect({ nodeId: srcA.nodeId, pin: "t" }, fbm.nodeId, "t");
+    const fbm = b.frame("Noise branch", "#0ea5e9", () => {
+      const srcA = b.fieldTransform(p, t, { scale: 3, speed: 0.6, seed: 0 });
+      const fbm = b.add("noise-texture", { kind: "fbm", detail: 4, lacunarity: 2, roughness: 0.5, distortion: 0 });
+      b.connect(srcA.p, fbm.nodeId, "p");
+      b.connect(srcA.t, fbm.nodeId, "t");
+      return fbm;
+    });
 
-    const srcB = b.add("field-source", { scale: 0.6, speed: 0.4, seed: 17 });
-    b.connect(p, srcB.nodeId, "p");
-    b.connect(t, srcB.nodeId, "t");
-    const vor = b.add("voronoi-sample", { feature: "f1", metric: "euclidean", randomness: 0.9, smoothness: 0.4 });
-    b.connect({ nodeId: srcB.nodeId, pin: "p" }, vor.nodeId, "p");
-    b.connect({ nodeId: srcB.nodeId, pin: "t" }, vor.nodeId, "t");
+    const vor = b.frame("Voronoi branch", "#f59e0b", () => {
+      const srcB = b.fieldTransform(p, t, { scale: 0.6, speed: 0.4, seed: 17 });
+      const vor = b.add("voronoi-texture", { feature: "f1", metric: "euclidean", randomness: 0.9, smoothness: 0.4 });
+      b.connect(srcB.p, vor.nodeId, "p");
+      b.connect(srcB.t, vor.nodeId, "t");
+      return vor;
+    });
 
-    const mul = b.add("combine", { op: "mul" });
+    const mul = b.add("math", { op: "mul" });
     b.connect(fbm, mul.nodeId, "a");
     b.connect(vor, mul.nodeId, "b");
 

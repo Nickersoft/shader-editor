@@ -1,3 +1,5 @@
+import type { SpatialControl } from "@/shaders/core/spatial";
+
 export function rgbFromColor(color: unknown, fallback: string): string {
   if (!Array.isArray(color)) return fallback;
   const r = Math.round(((color[0] as number) ?? 0) * 255);

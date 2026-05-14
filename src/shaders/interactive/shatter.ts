@@ -5,14 +5,15 @@ import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { edgeMode, zEdges, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
+  edges: zEdges().default("mirror").describe("Edges"),
+});
+
+const uniforms = z.object({
   intensity: zFloat(0, 1, 0.01).default(0.3).describe("Intensity"),
   density: zFloat(1, 50, 0.5).default(10).describe("Density"),
   chromaticAberration: zFloat(0, 1, 0.01).default(0.3).describe("Chromatic Aberration"),
   seed: zFloat(0, 10, 0.1).default(0).describe("Seed"),
-  edges: zEdges().default("mirror").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Shatter",
@@ -23,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Shatter extends EffectNode<Config, Inputs> {
+export class Shatter extends EffectNode<Config, Uniforms> {
   static readonly typeId = "shatter";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

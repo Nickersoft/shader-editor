@@ -8,8 +8,16 @@
 
 import { z } from "zod";
 import { zFloat } from "@/shaders/core/schemas";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { float, vec2 } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const config = z.object({
   scale: zFloat(0.1, 200).default(8),
@@ -17,34 +25,35 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [{ id: "p", type: "vec2", label: "P", default: [0, 0] }];
-const OUTPUTS: readonly PinSpec[] = [
-  { id: "uv", type: "vec2", label: "Cell UV" },
-  { id: "id", type: "float", label: "Cell ID" },
-];
+const pinIn = z.object({
+  p: vec2("Position", [0, 0]),
+});
 
-export default registerPrimitive({
-  typeId: "cell-grid",
-  name: "Cell Grid",
-  category: "sources",
-  color: "#f97316",
-  description: "Integer grid → per-cell-local UV + stable cell id.",
-  config,
+const pinOut = z.object({
+  uv: vec2("Cell UV"),
+  id: float("Cell ID"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  outputs() {
-    return OUTPUTS;
-  },
+class CellGrid extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "cell-grid";
+  static readonly meta: PrimitiveMeta = {
+    name: "Cell Grid",
+    category: "texture",
+    color: "#f97316",
+    description: "Integer grid → per-cell-local UV + stable cell id.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
 
-  uniforms(node) {
-    const c = node.config as Config;
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     return [{ nameSuffix: "scale", type: "float", value: c.scale } satisfies UniformSpec];
-  },
+  }
 
-  emit(ctx) {
+  emit(ctx: EmitContext<In, Out>): EmitResult {
     ctx.addDependency("hash21");
     const p = ctx.inputs.p;
     const scale = ctx.uniforms.scale;
@@ -55,5 +64,7 @@ export default registerPrimitive({
 vec2 ${uv} = fract(${uv}_scaled);
 float ${id} = hash21(floor(${uv}_scaled));`,
     };
-  },
-});
+  }
+}
+
+export default register(CellGrid);

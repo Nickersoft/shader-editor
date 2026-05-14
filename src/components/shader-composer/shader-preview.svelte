@@ -109,12 +109,13 @@
 
     // Pointerdown on a shape both selects the layer and starts a body-drag
     // translation. Walks top-to-bottom (topmost layer wins); misses leave
-    // the current selection alone. Drag deltas are applied to a config
+    // the current selection alone. Drag deltas are applied to a uniforms
     // snapshot taken at pointerdown so the move stays absolute and doesn't
-    // drift across frames.
+    // drift across frames. Transform fields (x/y/w/h/rotation) live on the
+    // node's `uniforms` schema since they're GPU-bound.
     type DragState = {
       sourceId: string;
-      startConfig: Record<string, unknown>;
+      startUniforms: Record<string, unknown>;
       spec: SpatialControlsSpec | undefined;
       startPx: number;
       startPy: number;
@@ -134,12 +135,16 @@
         const layer = layers[i];
         if (!layer.enabled) continue;
         const cls = layer.source.cls;
+        // Whole-body drag is a shape affordance keyed off `cls.spatialControls`.
+        // ProceduralField doesn't declare class-level spatial controls (its
+        // handles come from per-primitive aggregation in canvas-overlay), so
+        // this naturally skips gradient/preset layers without extra plumbing.
         if (!hasSpatialControls(cls)) continue;
-        const config = layer.source.config;
+        const uniforms = layer.source.uniforms;
         if (
           hitTestLayerBody(
             cls.spatialControls,
-            config,
+            uniforms,
             px,
             py,
             rect.width,
@@ -149,7 +154,7 @@
           composer.selectNode(layer.source.id);
           drag = {
             sourceId: layer.source.id,
-            startConfig: { ...config },
+            startUniforms: { ...uniforms },
             spec: cls.spatialControls,
             startPx: px,
             startPy: py,
@@ -170,8 +175,8 @@
         (e.clientX - rect.left - drag.startPx) / Math.max(drag.rectWidth, 1);
       const dy =
         -(e.clientY - rect.top - drag.startPy) / Math.max(drag.rectHeight, 1);
-      const updates = translateShape(drag.spec, drag.startConfig, dx, dy);
-      if (updates) composer.updateConfigBatch(drag.sourceId, updates);
+      const updates = translateShape(drag.spec, drag.startUniforms, dx, dy);
+      if (updates) composer.updateUniformBatch(drag.sourceId, updates);
     };
 
     const onPointerUp = () => {
@@ -238,13 +243,13 @@
             if (u.originalName === "jsOutput") continue;
             const baseName = u.name;
             const key = u.originalName;
-            const cfgRecord = node.config as Record<string, unknown>;
-            const inRecord = node.inputs as Record<string, unknown>;
+            const uRecord = node.uniforms as Record<string, unknown>;
             let value: unknown;
             if (u.originalPath) {
               // Walk the dotted path from the node root — used by container
               // nodes (e.g. ProceduralField) whose uniforms live inside nested
-              // substructure. The path includes the root key (config / inputs).
+              // substructure. The path includes the root key (config /
+              // uniforms / etc.).
               let cursor: unknown = node;
               for (const seg of u.originalPath) {
                 if (cursor && typeof cursor === "object") {
@@ -256,7 +261,7 @@
               }
               value = cursor;
             } else {
-              value = key in cfgRecord ? cfgRecord[key] : inRecord[key];
+              value = uRecord[key];
             }
             if (value === undefined) continue;
 

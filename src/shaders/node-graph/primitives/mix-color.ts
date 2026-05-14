@@ -2,36 +2,56 @@
 // effects whose `(color, alpha)` outputs need blending onto a background.
 
 import { z } from "zod";
-import { registerPrimitive } from "../registry";
-import type { PinSpec } from "../types";
+import { color, float } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+} from "../registry";
 
-const config = z.object({});
-
-const INPUTS: readonly PinSpec[] = [
-  { id: "a", type: "vec3", label: "A", default: [0, 0, 0] },
-  { id: "b", type: "vec3", label: "B", default: [1, 1, 1] },
-  { id: "t", type: "float", label: "T", default: 0 },
-];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "vec3", label: "Out" }];
-
-export default registerPrimitive({
-  typeId: "mix-color",
-  name: "Mix Color",
-  category: "math",
-  color: "#ec4899",
-  description: "Linear blend between two colors.",
-  config,
-
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
-
-  emit(ctx) {
-    return {
-      statements: `vec3 ${ctx.outputs.out} = mix(${ctx.inputs.a}, ${ctx.inputs.b}, clamp(${ctx.inputs.t}, 0.0, 1.0));`,
-    };
-  },
+// `clampT` keeps the historical behaviour (mix's `t` clamped to [0,1]) so
+// presets that predate the flag stay safe. Adjustments like saturation and
+// vibrance intentionally over-shoot the unit interval and turn clamping off.
+const config = z.object({
+  clampT: z.boolean().default(true),
 });
+
+const pinIn = z.object({
+  a: color("A", [0, 0, 0]),
+  b: color("B", [1, 1, 1]),
+  t: float("Mix", 0),
+});
+
+const pinOut = z.object({
+  out: color("Out"),
+});
+
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
+
+type Config = z.infer<typeof config>;
+
+class MixColor extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "mix-color";
+  static readonly meta: PrimitiveMeta = {
+    name: "Mix Color",
+    category: "color",
+    color: "#ec4899",
+    description: "Linear blend between two colors.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
+
+  emit(ctx: EmitContext<In, Out>): EmitResult {
+    const t = this.cfg(ctx.config).clampT
+      ? `clamp(${ctx.inputs.t}, 0.0, 1.0)`
+      : ctx.inputs.t;
+    return {
+      statements: `vec3 ${ctx.outputs.out} = mix(${ctx.inputs.a}, ${ctx.inputs.b}, ${t});`,
+    };
+  }
+}
+
+export default register(MixColor);

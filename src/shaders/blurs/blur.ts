@@ -4,11 +4,11 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 200, 1).default(50).describe("Intensity"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Blur",
@@ -19,12 +19,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Blur extends EffectNode<Config, Inputs> {
+export class Blur extends EffectNode<Config, Uniforms> {
   static readonly typeId = "blur";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock[] {

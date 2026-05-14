@@ -8,14 +8,15 @@ const WaveTypeSchema = z.enum(["sine", "triangle", "square", "sawtooth", "bounce
 
 const config = z.object({
   waveType: WaveTypeSchema.default("sine").describe("Wave Type"),
+  edges: zEdges().default("stretch").describe("Edges"),
+});
+
+const uniforms = z.object({
   amplitude: zFloat(0, 1, 0.005).default(0.05).describe("Amplitude"),
   frequency: zFloat(0, 50, 0.5).default(5.0).describe("Frequency"),
   speed: zFloat(0, 5, 0.05).default(1.0).describe("Speed"),
   angle: zAngle().default(0.0).describe("Direction (deg)"),
-  edges: zEdges().default("stretch").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Wave Distortion",
@@ -26,7 +27,7 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
 const WAVE_INDEX: Record<z.infer<typeof WaveTypeSchema>, number> = {
   sine: 0,
@@ -36,10 +37,10 @@ const WAVE_INDEX: Record<z.infer<typeof WaveTypeSchema>, number> = {
   bounce: 4,
 };
 
-export class WaveDistortion extends EffectNode<Config, Inputs> {
+export class WaveDistortion extends EffectNode<Config, Uniforms> {
   static readonly typeId = "wave-distortion";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

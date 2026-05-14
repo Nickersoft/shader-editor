@@ -3,7 +3,15 @@
 
   interface Props {
     value: number;
+    /** Fires on every interim change — typically used for live display. */
     onChange: (value: number) => void;
+    /**
+     * Fires when the user commits a value: drag-end, Enter/blur from typed
+     * edit, or each arrow-key step. Used to gate expensive side effects
+     * (e.g. a shader recompile) to discrete commits only. If omitted, the
+     * input behaves identically to passing `onChange` for both.
+     */
+    onCommit?: (value: number) => void;
     min?: number;
     max?: number;
     step?: number;
@@ -23,6 +31,7 @@
   let {
     value,
     onChange,
+    onCommit,
     min = -Infinity,
     max = Infinity,
     step = 1,
@@ -63,6 +72,7 @@
     let n = clamp(next);
     if (integer) n = Math.round(n);
     if (n !== value) onChange(n);
+    return n;
   }
 
   function startDrag(e: PointerEvent) {
@@ -95,7 +105,13 @@
     } catch {}
     const wasDrag = drag.moved;
     drag = null;
-    if (!wasDrag) enterEdit();
+    if (!wasDrag) {
+      enterEdit();
+      return;
+    }
+    // Drag ended on a real scrub — fire the commit hook so callers that
+    // gate expensive side effects (shader recompile) only pay at scrub-end.
+    onCommit?.(value);
   }
 
   function enterEdit() {
@@ -110,7 +126,10 @@
   function exitEdit(commitDraft: boolean) {
     if (commitDraft) {
       const parsed = parseFloat(draftText);
-      if (Number.isFinite(parsed)) commit(parsed);
+      if (Number.isFinite(parsed)) {
+        const n = commit(parsed);
+        onCommit?.(n);
+      }
     }
     editing = false;
   }
@@ -132,7 +151,10 @@
       const next = (Number.isFinite(base) ? base : value) + dir * step * mult;
       const clamped = integer ? Math.round(clamp(next)) : clamp(next);
       draftText = format(clamped);
-      commit(clamped);
+      const n = commit(clamped);
+      // Each arrow-key press is a discrete commit — fire the hook so
+      // recompile-gated callers see one bake per keypress.
+      onCommit?.(n);
       inputEl?.select();
     }
   }

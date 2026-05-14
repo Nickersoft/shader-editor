@@ -26,6 +26,12 @@ export interface PinSpec {
   //   vec4 → [number, number, number, number]
   //   bool → boolean
   default?: PinDefault;
+  // Semantic tag layered atop the GLSL type. Drives two things:
+  //   1. UI rendering — `color` swaps the inline scrubbers for a swatch.
+  //   2. Implicit coercion — when a vec3 collapses to a float, `color`
+  //      yields Rec.709 luminance, `vector` yields length(), `uv` rejects.
+  // Emit otherwise ignores subtype.
+  subtype?: "color" | "vector" | "uv" | "angle" | "channel";
 }
 
 export type PinDefault =
@@ -45,6 +51,12 @@ export interface GraphNode {
   typeId: string;
   config: Record<string, unknown>;
   position: { x: number; y: number };
+  /**
+   * Per-pin override values for unwired input pins (Blender-style inline
+   * defaults). Falls back to the primitive's PinSpec.default when absent.
+   * Ignored entirely for any pin that has an incoming edge.
+   */
+  pinValues?: Record<string, PinDefault>;
 }
 
 export interface Edge {
@@ -54,9 +66,34 @@ export interface Edge {
   toPin: string;
 }
 
+/**
+ * A non-emit visual grouping: a colored, labelled rectangle that sits behind
+ * nodes to organise a sub-area of the graph (e.g. "Domain warp", "Color
+ * grading"). Frames are pure metadata — emit() ignores them entirely.
+ */
+export interface Frame {
+  id: string;
+  label: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  /** CSS color string used for the title chip and tinted background. */
+  color: string;
+  /**
+   * Explicit member node IDs. Set by preset builders so layoutGraph can lay
+   * the cluster out as a single super-node; user-drawn frames leave this
+   * undefined and rely on spatial-bbox membership at drag time.
+   */
+  nodeIds?: string[];
+}
+
 export interface NodeGraph {
   nodes: GraphNode[];
   edges: Edge[];
+  /**
+   * Optional visual frames grouping subsets of nodes. Absent on legacy graphs;
+   * treat `undefined` as `[]`.
+   */
+  frames?: Frame[];
 }
 
 /**

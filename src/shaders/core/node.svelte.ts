@@ -10,18 +10,22 @@
 //   - Each EffectNode triggers an FBO split — its glsl() main sees `vec4 prev`
 //   - Each ProcessingNode is a pipeline boundary (CPU pass + optional GLSL render)
 //
-// Each subclass declares its identity via static fields:
+// Each subclass declares its identity via two parallel Zod schemas:
+//   - `uniforms` → fields bound as GPU uniforms (numerics, vectors, colors,
+//     samplers, palettes). Hot-swappable at runtime, no recompile.
+//   - `config`   → editor-level state that branches the emitted GLSL source
+//     (string enums like `edges`, halftone `style`, ring `softFalloff`).
+//     Mutating `config` triggers a shader rebuild; mutating `uniforms`
+//     just rebinds values. The default `structuralKey()` hashes `config`
+//     so this distinction is enforced by construction.
 //
 //   class Circle extends GeneratorNode {
 //     static typeId = 'circle'
-//     static config = z.object({ radius: zFloat(0,1).default(0.3), ... })
-//     static inputs = z.object({})
+//     static config = z.object({})
+//     static uniforms = z.object({ radius: zFloat(0,1).default(0.3), ... })
 //     static meta: NodeMeta = { name: 'Circle', category: 'shapes', ... }
 //
-//     declare config: z.infer<typeof Circle.config>
-//
 //     glsl() {
-//       const c = this.config
 //       const radius = this.uniformName('radius')
 //       return { main: `float d = length(uv - 0.5); ... return vec4(...);` }
 //     }
@@ -35,9 +39,9 @@ import type { BlendMode, GlslBlock, NodeMeta } from "./types";
 /**
  * String-keyed fields of an inferred type, with string-indexed signatures
  * filtered out. Zod 4 infers `z.object({})` as `{ [k: string]: never }`,
- * whose `keyof` is `string` — that would poison `keyof C | keyof I` and
+ * whose `keyof` is `string` — that would poison `keyof C | keyof U` and
  * cause `uniformName(...)` to accept any string. This helper returns
- * `never` for index-signature shapes so empty input schemas don't widen
+ * `never` for index-signature shapes so empty schemas don't widen
  * the constraint.
  */
 type ConcreteKeys<T> = string extends keyof T ? never : Extract<keyof T, string>;
@@ -56,12 +60,12 @@ export function sanitizeName(name: string): string {
 
 // Static contract every Node subclass implements. Used by the Registry to
 // instantiate nodes from `SerializedNode`. The Registry stores nodes
-// erased — generic config/inputs types are only useful at the leaf class.
+// erased — generic config/uniforms types are only useful at the leaf class.
 export interface NodeClass<T extends Node = Node> {
   new (init?: NodeInit): T;
   readonly typeId: string;
   readonly config: z.ZodTypeAny;
-  readonly inputs: z.ZodTypeAny;
+  readonly uniforms: z.ZodTypeAny;
   readonly meta: NodeMeta;
   readonly spatialControls?: SpatialControlsSpec;
 }
@@ -70,13 +74,19 @@ export interface NodeClass<T extends Node = Node> {
  * Loose init shape for `new MyNode(...)`. Construction is rarely typed at the
  * call site — most nodes are produced by deserialization or by the editor
  * UI, both of which carry plain JSON-shaped values. Typed access is via
- * `this.config` / `this.inputs` (narrowed by the class's generics), so the
+ * `this.config` / `this.uniforms` (narrowed by the class's generics), so the
  * authoring ergonomics that matter — inside `glsl()` and `preprocess()` —
  * stay typesafe.
+ *
+ * `inputs` is accepted for backward compatibility with serialized scenes
+ * predating the config/uniforms split — it is merged into the parse pool
+ * alongside `config` and `uniforms`, and each schema picks its own keys.
  */
 export interface NodeInit {
   id?: string;
   config?: Record<string, unknown>;
+  uniforms?: Record<string, unknown>;
+  /** @deprecated legacy serialized field; merged into the parse pool. */
   inputs?: Record<string, unknown>;
   blendMode?: BlendMode;
   opacity?: number;
@@ -90,10 +100,14 @@ export interface SerializedNode {
   // The class's `typeId` (e.g. 'circle', 'heatmap'). The Registry uses this
   // to dispatch deserialization.
   typeId: string;
-  // Validated against the class's static `config` Zod schema.
+  // Validated against the class's static `config` Zod schema. Holds editor-
+  // level state that branches the emitted GLSL (string enums, structural
+  // toggles). Mutating any field here triggers a shader rebuild.
   config: Record<string, unknown>;
-  // Validated against the class's static `inputs` Zod schema. May be empty.
-  inputs: Record<string, unknown>;
+  // Validated against the class's static `uniforms` Zod schema. Holds the
+  // GPU-bound state (numerics, vectors, colors, samplers). Mutating any
+  // field here just rebinds values — no recompile.
+  uniforms: Record<string, unknown>;
   blendMode: BlendMode;
   opacity: number;
   enabled: boolean;
@@ -103,20 +117,20 @@ export interface SerializedNode {
  * Abstract base. Do not extend directly — use GeneratorNode, EffectNode, or
  * ProcessingNode.
  *
- * Generic over the inferred config + input shapes:
- *   class Circle extends GeneratorNode<z.infer<typeof config>, z.infer<typeof inputs>> { … }
+ * Generic over the inferred config + uniforms shapes:
+ *   class Circle extends GeneratorNode<z.infer<typeof config>, z.infer<typeof uniforms>> { … }
  *
- * The generics give `this.config` and `this.inputs` precise types and let
+ * The generics give `this.config` and `this.uniforms` precise types and let
  * `uniformName(key)` enforce that `key` is an actual field on either schema.
  */
 export abstract class Node<
   C extends Record<string, unknown> = Record<string, unknown>,
-  I extends Record<string, unknown> = Record<string, unknown>,
+  U extends Record<string, unknown> = Record<string, unknown>,
 > {
   // === Static identity (set on each subclass) ===
   static readonly typeId: string = "";
   static readonly config: z.ZodTypeAny;
-  static readonly inputs: z.ZodTypeAny;
+  static readonly uniforms: z.ZodTypeAny;
   static readonly meta: NodeMeta;
 
   // === Instance state ===
@@ -125,7 +139,7 @@ export abstract class Node<
   // tooling) triggers Svelte reactivity without scene/layer reassignment.
   id: string;
   config: C;
-  inputs: I;
+  uniforms: U;
   blendMode: BlendMode;
   opacity: number;
   enabled: boolean;
@@ -139,10 +153,14 @@ export abstract class Node<
     }
 
     this.id = init.id ?? makeId(cls.typeId);
-    // Validate or fall back to schema defaults. Zod's .parse on an empty
-    // object hydrates fields with their .default(...) values.
-    this.config = $state((init.config ? cls.config.parse(init.config) : cls.config.parse({})) as C);
-    this.inputs = $state((init.inputs ? cls.inputs.parse(init.inputs) : cls.inputs.parse({})) as I);
+    // Each schema parses from a merged pool of all three init buckets so
+    // legacy scenes (which packed everything under `config` + `inputs`)
+    // hydrate correctly. Zod silently drops keys it doesn't recognize, so
+    // each schema picks only its own fields. New saves carry `config` and
+    // `uniforms` cleanly separated; `inputs` is the back-compat door.
+    const pool = { ...init.config, ...init.uniforms, ...init.inputs };
+    this.config = $state(cls.config.parse(pool) as C);
+    this.uniforms = $state(cls.uniforms.parse(pool) as U);
     this.blendMode = $state(init.blendMode ?? cls.meta.defaultBlendMode);
     this.opacity = $state(init.opacity ?? 1);
     this.enabled = $state(init.enabled ?? true);
@@ -177,26 +195,31 @@ export abstract class Node<
   }
 
   /**
-   * Returns the generated uniform name for a config or input key. The key is
-   * type-checked against the union of both schemas' fields, so a typo or
-   * dropped field becomes a compile-time error inside `glsl()`:
+   * Returns the generated uniform name for a uniforms-schema or config-schema
+   * key. The key is type-checked against the union of both schemas' fields,
+   * so a typo or dropped field becomes a compile-time error inside `glsl()`:
    *
-   *   const radius = this.uniformName('radius')   // ✓ if config has `radius`
+   *   const radius = this.uniformName('radius')   // ✓ if uniforms has `radius`
    *   const oops   = this.uniformName('radiu')    // TS error
+   *
+   * Config-schema keys are accepted in the type for the rare case where a
+   * structural switch is also referenced by name in emitted GLSL — but only
+   * uniforms-schema fields are actually bound at runtime.
    */
-  uniformName(key: ConcreteKeys<C> | ConcreteKeys<I>): string {
+  uniformName(key: ConcreteKeys<C> | ConcreteKeys<U>): string {
     return `u_${this.prefix}_${key}`;
   }
 
   /**
-   * Discriminator for config fields that change the GLSL source (not just
-   * uniform values). The shader-preview pipeline only rebuilds when the
-   * scene's "structural key" changes; for nodes whose `glsl()` branches on
-   * config (e.g. Gradient `type`, Halftone `style`), override this to return
-   * a stable string of the relevant config slice. Default = no contribution.
+   * Structural fingerprint folded into the scene's rebuild key. Default
+   * hashes the whole `config` slice, which is the schema reserved for
+   * fields that branch the emitted GLSL — so any mutation there triggers
+   * a rebuild without per-node bookkeeping. Override only for container
+   * nodes whose structure depends on something outside `config` (e.g.
+   * `ProceduralField`, whose graph topology lives elsewhere).
    */
   structuralKey(): string {
-    return "";
+    return JSON.stringify(this.config);
   }
 
   /**
@@ -224,7 +247,7 @@ export abstract class Node<
       id: this.id,
       typeId: this.typeId,
       config: this.config,
-      inputs: this.inputs,
+      uniforms: this.uniforms,
       blendMode: this.blendMode,
       opacity: this.opacity,
       enabled: this.enabled,
@@ -239,8 +262,8 @@ export abstract class Node<
  */
 export abstract class GeneratorNode<
   C extends Record<string, unknown> = Record<string, unknown>,
-  I extends Record<string, unknown> = Record<string, unknown>,
-> extends Node<C, I> {
+  U extends Record<string, unknown> = Record<string, unknown>,
+> extends Node<C, U> {
   abstract glsl(): GlslBlock;
 }
 
@@ -276,8 +299,8 @@ export type EffectAppliesTo = "shape" | "texture" | "any";
  */
 export abstract class EffectNode<
   C extends Record<string, unknown> = Record<string, unknown>,
-  I extends Record<string, unknown> = Record<string, unknown>,
-> extends Node<C, I> {
+  U extends Record<string, unknown> = Record<string, unknown>,
+> extends Node<C, U> {
   /**
    * Attachment scope. Subclasses override to restrict where they may be
    * placed (e.g. cursor-driven effects that need full canvas state set
@@ -302,8 +325,8 @@ export abstract class EffectNode<
  */
 export abstract class ProcessingNode<
   C extends Record<string, unknown> = Record<string, unknown>,
-  I extends Record<string, unknown> = Record<string, unknown>,
-> extends Node<C, I> {
+  U extends Record<string, unknown> = Record<string, unknown>,
+> extends Node<C, U> {
   abstract preprocess(): Promise<{ dataUrl: string } | null>;
   glsl?(): GlslBlock;
 }

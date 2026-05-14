@@ -8,7 +8,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zBool, zColor } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   objectFit: z
     .enum(["cover", "contain", "fill", "scale-down", "none"])
     .default("cover")
@@ -16,8 +18,6 @@ const config = z.object({
   mirror: zBool().default(true).describe("Mirror"),
   placeholder: zColor().default([0.08, 0.1, 0.14]).describe("Placeholder Color"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Webcam Texture",
@@ -28,12 +28,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class WebcamTexture extends GeneratorNode<Config, Inputs> {
+export class WebcamTexture extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "webcam-texture";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

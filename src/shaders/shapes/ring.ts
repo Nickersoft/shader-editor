@@ -6,16 +6,17 @@ import { transformFields, zColor, zFloat } from "@/shaders/core/schemas";
 import type { SpatialControl } from "@/shaders/core/spatial";
 
 const config = z.object({
+  strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
+});
+
+const uniforms = z.object({
   ...transformFields(),
   thickness: zFloat(0, 1, 0.001).default(0.2).describe("Thickness"),
   innerShape: zFloat(0, 1, 0.01).default(0).describe("Inner Falloff"),
   fillColor: zColor().default([1, 1, 1]).describe("Fill"),
   strokeColor: zColor().default([0, 0, 0]).describe("Stroke"),
   strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe("Stroke Width"),
-  strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Ring",
@@ -26,12 +27,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Ring extends GeneratorNode<Config, Inputs> {
+export class Ring extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "ring";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly spatialControls: readonly SpatialControl[] = [
     {
@@ -46,9 +47,11 @@ export class Ring extends GeneratorNode<Config, Inputs> {
   ];
 
   structuralKey(): string {
-    // Soft-falloff path uses two smoothsteps and changes the meaning of the
-    // band centre. Toggle rebuilds the shader.
-    return this.config.innerShape > 0 ? "soft" : "crisp";
+    // Default would hash `config` (just `strokeMode`), but the soft-falloff
+    // path is gated on a uniform-side threshold (`innerShape > 0`) that flips
+    // which smoothsteps the shader emits — so we fold it in too.
+    const soft = this.uniforms.innerShape > 0 ? "soft" : "crisp";
+    return `${soft}|${this.config.strokeMode}`;
   }
 
   glsl(): GlslBlock {
@@ -73,7 +76,7 @@ export class Ring extends GeneratorNode<Config, Inputs> {
     // the (0.5 → 1.0) midpoint pulled inward by the thickness ratio. World-
     // space distances are reconstituted via the smaller half-extent for
     // stroke fidelity.
-    const useSoft = this.config.innerShape > 0;
+    const useSoft = this.uniforms.innerShape > 0;
     const fillABody = useSoft
       ? `
 // Soft-falloff ring: smooth alpha bump fading inward from the outer boundary.

@@ -10,13 +10,8 @@ export default {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
     const fp = b.add("floating-particles", {});
-    const z = b.add("const", { value: 0 });
-    const black = b.colorRamp(z, [
-      [0, 0, 0],
-      [0, 0, 0],
-    ]);
+    // mix(black, particle.color, particle.alpha) — `a` defaults to vec3(0).
     const mix = b.add("mix-color", {});
-    b.connect(black, mix.nodeId, "a");
     b.connect({ nodeId: fp.nodeId, pin: "color" }, mix.nodeId, "b");
     b.connect({ nodeId: fp.nodeId, pin: "alpha" }, mix.nodeId, "t");
     return b.output(mix);

@@ -4,15 +4,15 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   length: zFloat(0, 1, 0.01).default(0.3).describe("Length"),
   width: zFloat(0, 0.5, 0.005).default(0.05).describe("Width"),
   color: zColor().default([1.0, 0.9, 0.4]).describe("Color"),
   intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
   fade: zFloat(0.5, 0.99, 0.005).default(0.92).describe("Fade"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Cursor Trail",
@@ -23,12 +23,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class CursorTrail extends EffectNode<Config, Inputs> {
+export class CursorTrail extends EffectNode<Config, Uniforms> {
   static readonly typeId = "cursor-trail";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly scope = "scene" as const;
 

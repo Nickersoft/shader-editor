@@ -5,6 +5,10 @@ import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { edgeMode, zAngle, zCenterAxis, zColor, zEdges, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
+  edges: zEdges().default("stretch").describe("Edges"),
+});
+
+const uniforms = z.object({
   centerX: zCenterAxis().default(0.5).describe("Center X"),
   centerY: zCenterAxis().default(0.5).describe("Center Y"),
   radius: zFloat(0, 1, 0.01).default(0.5).describe("Radius"),
@@ -13,10 +17,7 @@ const config = z.object({
   lightIntensity: zFloat(0, 2, 0.01).default(0.5).describe("Light Intensity"),
   lightSoftness: zFloat(0, 1, 0.01).default(0.5).describe("Light Softness"),
   lightColor: zColor().default([1, 1, 1]).describe("Light Color"),
-  edges: zEdges().default("stretch").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Spherize",
@@ -27,12 +28,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Spherize extends EffectNode<Config, Inputs> {
+export class Spherize extends EffectNode<Config, Uniforms> {
   static readonly typeId = "spherize";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

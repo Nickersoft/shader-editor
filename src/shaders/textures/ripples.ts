@@ -11,7 +11,7 @@ export default {
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
-    const rw = b.add("ripple-wave", { frequency: 20, speed: 1, phase: 0 });
+    const rw = b.add("ripple-texture", { frequency: 20, speed: 1, phase: 0 });
     b.connect(p, rw.nodeId, "p");
     b.connect(t, rw.nodeId, "t");
     const ramp = b.colorRamp(rw, [

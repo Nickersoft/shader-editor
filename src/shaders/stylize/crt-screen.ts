@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   pixelSize: zFloat(0, 0.05, 0.001).default(0.005).describe("Pixel Size"),
   scanlineFrequency: zFloat(50, 500, 1).default(200).describe("Scanline Frequency"),
   brightness: zFloat(0, 2, 0.01).default(1.1).describe("Brightness"),
@@ -12,8 +14,6 @@ const config = z.object({
   vignetteRadius: zFloat(0, 2, 0.01).default(0.8).describe("Vignette Radius"),
   vignetteIntensity: zFloat(0, 1).default(0.5).describe("Vignette Intensity"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "CRT Screen",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class CrtScreen extends EffectNode<Config, Inputs> {
+export class CrtScreen extends EffectNode<Config, Uniforms> {
   static readonly typeId = "crt-screen";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

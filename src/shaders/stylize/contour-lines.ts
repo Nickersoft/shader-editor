@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   colorBack: zColor().default([0.02, 0.04, 0.05]).describe("Background"),
   colorFront: zColor().default([0.55, 0.95, 0.7]).describe("Lines"),
   scale: zFloat(0.5, 20, 0.1).default(3.0).describe("Scale"),
@@ -13,8 +15,6 @@ const config = z.object({
   softness: zFloat(0, 1).default(0.3).describe("Softness"),
   speed: zFloat(0, 4, 0.05).default(0.0).describe("Speed"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Contour Lines",
@@ -25,12 +25,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class ContourLines extends EffectNode<Config, Inputs> {
+export class ContourLines extends EffectNode<Config, Uniforms> {
   static readonly typeId = "contour-lines";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

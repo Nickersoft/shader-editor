@@ -5,14 +5,15 @@ import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { edgeMode, zCenterAxis, zEdges, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
+  edges: zEdges().default("stretch").describe("Edges"),
+});
+
+const uniforms = z.object({
   frequency: zFloat(1, 30, 0.1).default(10).describe("Frequency"),
   speed: zFloat(0, 5, 0.05).default(1.0).describe("Speed"),
   intensity: zFloat(0, 1).default(0.3).describe("Intensity"),
   decay: zFloat(0, 2, 0.05).default(0.5).describe("Decay"),
-  edges: zEdges().default("stretch").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Cursor Ripples",
@@ -23,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class CursorRipples extends EffectNode<Config, Inputs> {
+export class CursorRipples extends EffectNode<Config, Uniforms> {
   static readonly typeId = "cursor-ripples";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly scope = "scene" as const;
 

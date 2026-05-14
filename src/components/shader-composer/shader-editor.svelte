@@ -16,9 +16,7 @@
 </script>
 
 <div class="h-screen w-screen overflow-hidden flex flex-col">
-    <div
-        class="flex flex-col w-full px-4 pb-4 overflow-hidden flex-1 min-h-0"
-    >
+    <div class="flex flex-col w-full px-4 pb-4 overflow-hidden flex-1 min-h-0">
         <header
             class="flex h-[69px] items-center justify-between pl-4 pr-3 py-3 shrink-0"
         >

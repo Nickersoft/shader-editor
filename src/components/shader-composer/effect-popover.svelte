@@ -2,7 +2,6 @@
 	import { Popover as PopoverPrimitive } from 'bits-ui';
 	import { composer } from '@/lib/state/composer.svelte';
 	import {
-		inspectObjectSchema,
 		inspectUiFields,
 		type InspectedField,
 		type InspectedUiField
@@ -26,23 +25,30 @@
 	let { effect, open, onOpenChange, trigger }: Props = $props();
 
 	let cls = $derived(effect.cls);
-	let cfgFields = $derived(inspectUiFields(cls.config));
-	let inFields = $derived(inspectObjectSchema(cls.inputs));
+	// Both schemas render in the popover. `uniforms` first (the user-tweakable
+	// knobs); `config` after (structural switches). Same precedence as the
+	// main property panel.
+	let uniformFields = $derived(inspectUiFields(cls.uniforms));
+	let configFields = $derived(inspectUiFields(cls.config));
 
 	// Same visibleWhen filter the main property panel uses, so popovers respect
 	// conditional fields (e.g. Halftone style branches) without diverging.
-	let visibleCfgFields = $derived.by(() => {
-		const config = effect.config;
-		return cfgFields.filter((field) => {
+	function applyVisibleWhen(all: typeof uniformFields): typeof uniformFields {
+		const u = effect.uniforms;
+		const c = effect.config;
+		return all.filter((field) => {
 			const cond = getMetaDeep(field.schema)?.ui?.visibleWhen;
 			if (!cond) return true;
 			for (const [siblingKey, allowed] of Object.entries(cond)) {
-				const v = config[siblingKey];
+				const v = siblingKey in u ? u[siblingKey] : c[siblingKey];
 				if (!allowed.some((a) => a === v)) return false;
 			}
 			return true;
 		});
-	});
+	}
+
+	let visibleUniformFields = $derived(applyVisibleWhen(uniformFields));
+	let visibleConfigFields = $derived(applyVisibleWhen(configFields));
 
 	function fieldLabel(field: InspectedField | InspectedUiField): string {
 		return field.schema.description ?? field.key;
@@ -76,25 +82,25 @@
 			</div>
 			<ScrollArea class="flex-1 min-h-0">
 				<div class="px-3 py-3 space-y-4">
-					{#if visibleCfgFields.length + inFields.length === 0}
+					{#if visibleUniformFields.length + visibleConfigFields.length === 0}
 						<p class="px-1 text-[12px] text-white/50">No tweakable parameters.</p>
 					{:else}
-						{#each visibleCfgFields as field (field.key)}
+						{#each visibleUniformFields as field (field.key)}
+							{@const value = effect.uniforms[field.key]}
+							<FieldControl
+								{field}
+								label={fieldLabel(field)}
+								{value}
+								onChange={(v) => composer.updateUniform(effect.id, field.key, v)}
+							/>
+						{/each}
+						{#each visibleConfigFields as field (field.key)}
 							{@const value = effect.config[field.key]}
 							<FieldControl
 								{field}
 								label={fieldLabel(field)}
 								{value}
 								onChange={(v) => composer.updateConfig(effect.id, field.key, v)}
-							/>
-						{/each}
-						{#each inFields as field (field.key)}
-							{@const value = effect.inputs[field.key]}
-							<FieldControl
-								{field}
-								label={fieldLabel(field)}
-								{value}
-								onChange={(v) => composer.updateInput(effect.id, field.key, v)}
 							/>
 						{/each}
 					{/if}

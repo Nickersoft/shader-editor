@@ -11,9 +11,7 @@ export default {
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
-    const src = b.add("field-source", { scale: 1, speed: 0.4, seed: 0 });
-    b.connect(p, src.nodeId, "p");
-    b.connect(t, src.nodeId, "t");
+    const src = b.fieldTransform(p, t, { scale: 1, speed: 0.4, seed: 0 });
     const wv = b.add("wave-texture", {
       type: "bands",
       profile: "sine",
@@ -22,7 +20,7 @@ export default {
       distortion: 0,
       detail: 3,
     });
-    b.connect({ nodeId: src.nodeId, pin: "p" }, wv.nodeId, "p");
+    b.connect(src.p, wv.nodeId, "p");
     const ramp = b.colorRamp(wv, [
       [1, 1, 1],
       [0, 0, 0],

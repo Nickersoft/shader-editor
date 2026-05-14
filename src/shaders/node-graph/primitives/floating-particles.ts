@@ -2,8 +2,16 @@
 
 import { z } from "zod";
 import { zFloat, zInt, zVec3 } from "@/shaders/core/schemas";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { color, float } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const config = z.object({
   randomness: zFloat(0, 1, 0.01).default(0.9),
@@ -24,29 +32,26 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [];
-const OUTPUTS: readonly PinSpec[] = [
-  { id: "color", type: "vec3", label: "Color" },
-  { id: "alpha", type: "float", label: "Alpha" },
-];
+const pinOut = z.object({
+  color: color("Color"),
+  alpha: float("Alpha"),
+});
 
-export default registerPrimitive({
-  typeId: "floating-particles",
-  name: "Floating Particles",
-  category: "sources",
-  color: "#fbbf24",
-  description: "Layered drifting particles.",
-  config,
+type Out = z.infer<typeof pinOut>;
 
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
+class FloatingParticles extends BasePrimitive<Config, Record<string, never>, Out> {
+  static readonly typeId = "floating-particles";
+  static readonly meta: PrimitiveMeta = {
+    name: "Floating Particles",
+    category: "texture",
+    color: "#fbbf24",
+    description: "Layered drifting particles.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: z.object({}), out: pinOut };
 
-  uniforms(node) {
-    const c = node.config as Config;
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     return [
       { nameSuffix: "randomness", type: "float", value: c.randomness },
       { nameSuffix: "speed", type: "float", value: c.speed },
@@ -63,9 +68,9 @@ export default registerPrimitive({
       { nameSuffix: "angleVariance", type: "float", value: c.angleVariance },
       { nameSuffix: "particleDensity", type: "float", value: c.particleDensity },
     ] satisfies UniformSpec[];
-  },
+  }
 
-  emit(ctx) {
+  emit(ctx: EmitContext<Record<string, never>, Out>): EmitResult {
     ctx.addDependency("hash21");
     ctx.addDependency("hash22");
     ctx.addDependency("rotate2D");
@@ -121,5 +126,7 @@ for (int ${o}_i = 0; ${o}_i < 12; ${o}_i++) {
 vec3 ${o} = ${o}_acc;
 float ${a} = clamp(${o}_asum, 0.0, 1.0);`,
     };
-  },
-});
+  }
+}
+
+export default register(FloatingParticles);

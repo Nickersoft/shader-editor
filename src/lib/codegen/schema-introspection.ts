@@ -29,6 +29,8 @@ export interface InspectedUiField {
   arrayLength?: number;
   /** For enum strings, the allowed values. */
   enumValues?: readonly string[];
+  /** Optional display labels for enum string values. */
+  enumLabels?: Record<string, string>;
 }
 
 /**
@@ -134,6 +136,7 @@ export function inspectUiFields(schema: z.ZodType): InspectedUiField[] {
         glslType: "enumString",
         schema: fieldSchema,
         enumValues: innerField.options.filter((v): v is string => typeof v === "string"),
+        enumLabels: meta?.enumLabels,
       });
     }
   }

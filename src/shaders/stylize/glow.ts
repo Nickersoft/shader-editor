@@ -4,14 +4,14 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   threshold: zFloat(0, 1).default(0.5).describe("Threshold"),
   radius: zFloat(0, 40, 0.5).default(8).describe("Radius"),
   intensity: zFloat(0, 4, 0.05).default(1).describe("Intensity"),
   tint: zColor().default([1, 1, 1]).describe("Tint"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Glow",
@@ -22,12 +22,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Glow extends EffectNode<Config, Inputs> {
+export class Glow extends EffectNode<Config, Uniforms> {
   static readonly typeId = "glow";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

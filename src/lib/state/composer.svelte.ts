@@ -13,7 +13,19 @@ import { Scene } from "@/shaders/core/scene.svelte";
 import type { BlendMode } from "@/shaders/core/types";
 import { ProceduralField } from "@/shaders/textures/procedural-field.svelte";
 import { getProceduralPreset } from "@/shaders/textures/procedural-presets";
-import { getPrimitive } from "@/shaders/node-graph";
+import {
+  getPrimitive,
+  GROUP_TYPE_ID,
+  layoutGraph,
+  makeGroup as makeGroupOp,
+  ungroup as ungroupOp,
+  type Edge,
+  type Frame,
+  type GraphNode,
+  type NodeGraph,
+  type PinDefault,
+  type PinType,
+} from "@/shaders/node-graph";
 
 function fallbackSelection(scene: Scene): string | null {
   const lastLayer = scene.layers[scene.layers.length - 1];
@@ -31,6 +43,12 @@ class ComposerStore {
   openEffectId = $state<string | null>(null);
   // When set, the texture-graph editor's bottom sheet is mounted for this layer.
   editingTextureLayerId = $state<string | null>(null);
+  /**
+   * Path of group-node ids descended from the editing layer's root graph to
+   * the subgraph the user is currently viewing. Empty array == root. Reset
+   * whenever the editor opens or closes. Tab pushes; Shift+Tab pops.
+   */
+  graphEditStack = $state<string[]>([]);
 
   get selectedNode(): Node | null {
     return this.selectedNodeId ? (this.scene.findNode(this.selectedNodeId)?.node ?? null) : null;
@@ -261,22 +279,59 @@ class ComposerStore {
     (found.node.config as Record<string, unknown>)[key] = value;
   }
 
-  /**
-   * Apply several config writes as one logical mutation. Used by interactive
-   * drags that move correlated fields in lockstep (e.g. resize updates
-   * x/y/width/height/rotation together).
-   */
-  updateConfigBatch(nodeId: string, updates: Record<string, unknown>) {
+  updateUniform(nodeId: string, key: string, value: unknown) {
     const found = this.scene.findNode(nodeId);
     if (!found) return;
-    const cfg = found.node.config as Record<string, unknown>;
+    (found.node.uniforms as Record<string, unknown>)[key] = value;
+  }
+
+  /**
+   * Apply several uniform writes as one logical mutation. Used by interactive
+   * drags that move correlated fields in lockstep (e.g. resize updates
+   * x/y/width/height/rotation together — all of which live on `uniforms`).
+   */
+  updateUniformBatch(nodeId: string, updates: Record<string, unknown>) {
+    const found = this.scene.findNode(nodeId);
+    if (!found) return;
+    const u = found.node.uniforms as Record<string, unknown>;
+    for (const key in updates) u[key] = updates[key];
+  }
+
+  /**
+   * Write a single field on one of a ProceduralField's graph nodes. Used by
+   * canvas-overlay handles that address primitive-owned spatial fields (e.g.
+   * the `start`/`end` config of a linear-gradient-domain primitive) instead
+   * of layer-level uniforms.
+   */
+  updateGraphNodeConfig(
+    sourceId: string,
+    graphNodeId: string,
+    key: string,
+    value: unknown,
+  ) {
+    const node = this.findGraphNode(sourceId, graphNodeId);
+    if (!node) return;
+    (node.config as Record<string, unknown>)[key] = value;
+  }
+
+  /** Batch variant of `updateGraphNodeConfig`. */
+  updateGraphNodeConfigBatch(
+    sourceId: string,
+    graphNodeId: string,
+    updates: Record<string, unknown>,
+  ) {
+    const node = this.findGraphNode(sourceId, graphNodeId);
+    if (!node) return;
+    const cfg = node.config as Record<string, unknown>;
     for (const key in updates) cfg[key] = updates[key];
   }
 
-  updateInput(nodeId: string, key: string, value: unknown) {
-    const found = this.scene.findNode(nodeId);
-    if (!found) return;
-    (found.node.inputs as Record<string, unknown>)[key] = value;
+  private findGraphNode(sourceId: string, graphNodeId: string): GraphNode | null {
+    const found = this.scene.findNode(sourceId);
+    if (!found) return null;
+    const source = found.node;
+    if (!(source instanceof ProceduralField)) return null;
+    return source.graph.nodes.find((n) => n.id === graphNodeId) ?? null;
   }
 
   /**
@@ -287,6 +342,88 @@ class ComposerStore {
     const layer = this.scene.findLayer(layerId);
     const src = layer?.source;
     return src instanceof ProceduralField ? src : null;
+  }
+
+  /**
+   * Walk `graphEditStack` from the field's root graph down through each
+   * group node's `config.subGraph`. Returns the actively-edited graph (or
+   * the root, when the stack is empty). If any stack entry has drifted from
+   * reality (group renamed/removed, subGraph cleared), the stack is silently
+   * reset and the root is returned so the editor doesn't strand the user.
+   *
+   * This is the single source of truth for "which graph do mutations target";
+   * every graph-editing method below resolves through it.
+   */
+  activeGraphFor(layerId: string): NodeGraph | null {
+    const field = this.findFieldGroup(layerId);
+    if (!field) return null;
+    let graph: NodeGraph = field.graph;
+    for (const nodeId of this.graphEditStack) {
+      const node = graph.nodes.find((n) => n.id === nodeId);
+      const sub = node && (node.config as { subGraph?: NodeGraph }).subGraph;
+      if (!sub) {
+        this.graphEditStack = [];
+        return field.graph;
+      }
+      graph = sub;
+    }
+    return graph;
+  }
+
+  /**
+   * Push a group node onto the edit stack. The Tab key calls this with the
+   * currently-selected node id; nothing happens if the id doesn't resolve to
+   * a group on the active graph.
+   */
+  enterGraphGroup(nodeId: string) {
+    const layerId = this.editingTextureLayerId;
+    if (!layerId) return;
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return;
+    const node = graph.nodes.find((n) => n.id === nodeId);
+    if (!node || node.typeId !== GROUP_TYPE_ID) return;
+    this.graphEditStack = [...this.graphEditStack, nodeId];
+    // Clear selection so the inner Group Input doesn't appear pre-selected.
+    this.selectedNodeId = null;
+  }
+
+  /** Pop one level off the edit stack. No-op at root. */
+  exitGraphGroup() {
+    if (this.graphEditStack.length === 0) return;
+    this.graphEditStack = this.graphEditStack.slice(0, -1);
+    this.selectedNodeId = null;
+  }
+
+  /** Jump to a specific depth (0 == root). Used by the breadcrumb. */
+  navigateGraphToDepth(depth: number) {
+    if (depth < 0 || depth >= this.graphEditStack.length) return;
+    this.graphEditStack = this.graphEditStack.slice(0, depth);
+    this.selectedNodeId = null;
+  }
+
+  /**
+   * Breadcrumb entries from root → current. `nodeId` is null for the root
+   * step; depth is the position users would pass to `navigateGraphToDepth`.
+   */
+  graphBreadcrumb(): readonly { nodeId: string | null; label: string; depth: number }[] {
+    const layerId = this.editingTextureLayerId;
+    if (!layerId) return [];
+    const field = this.findFieldGroup(layerId);
+    if (!field) return [];
+    const out: { nodeId: string | null; label: string; depth: number }[] = [
+      { nodeId: null, label: "Root", depth: 0 },
+    ];
+    let graph: NodeGraph = field.graph;
+    for (let i = 0; i < this.graphEditStack.length; i++) {
+      const id = this.graphEditStack[i];
+      const node = graph.nodes.find((n) => n.id === id);
+      if (!node) break;
+      const cfg = node.config as { label?: string; subGraph?: NodeGraph };
+      out.push({ nodeId: id, label: cfg.label || "Group", depth: i + 1 });
+      if (!cfg.subGraph) break;
+      graph = cfg.subGraph;
+    }
+    return out;
   }
 
   /**
@@ -329,11 +466,13 @@ class ComposerStore {
     const group = this.findFieldGroup(layerId);
     if (!group) return;
     this.editingTextureLayerId = layerId;
+    this.graphEditStack = [];
     this.selectNode(group.id);
   }
 
   closeTextureEditor() {
     this.editingTextureLayerId = null;
+    this.graphEditStack = [];
   }
 
   // ==========================================================================
@@ -341,14 +480,14 @@ class ComposerStore {
   // ProceduralField — the canonical post-Phase-3 surface.
 
   addGraphNode(layerId: string, typeId: string, position?: { x: number; y: number }) {
-    const group = this.findFieldGroup(layerId);
-    if (!group) return null;
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return null;
     const prim = getPrimitive(typeId);
     if (!prim) return null;
     // Parse `{}` against the primitive's config schema so all defaults populate.
     const parsed = (prim.config ? prim.config.parse({}) : {}) as Record<string, unknown>;
     const id = makeId(typeId);
-    group.graph.nodes.push({
+    graph.nodes.push({
       id,
       typeId,
       config: parsed,
@@ -358,17 +497,17 @@ class ComposerStore {
   }
 
   removeGraphNode(layerId: string, nodeId: string) {
-    const group = this.findFieldGroup(layerId);
-    if (!group) return;
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return;
     // GroupInput / GroupOutput are structural — refuse to delete the only one.
-    const node = group.graph.nodes.find((n) => n.id === nodeId);
+    const node = graph.nodes.find((n) => n.id === nodeId);
     if (!node) return;
     if (node.typeId === "group-input" || node.typeId === "group-output") {
-      const count = group.graph.nodes.filter((n) => n.typeId === node.typeId).length;
+      const count = graph.nodes.filter((n) => n.typeId === node.typeId).length;
       if (count <= 1) return;
     }
-    group.graph.nodes = group.graph.nodes.filter((n) => n.id !== nodeId);
-    group.graph.edges = group.graph.edges.filter(
+    graph.nodes = graph.nodes.filter((n) => n.id !== nodeId);
+    graph.edges = graph.edges.filter(
       (e) => e.fromNodeId !== nodeId && e.toNodeId !== nodeId,
     );
   }
@@ -377,31 +516,134 @@ class ComposerStore {
     layerId: string,
     edge: { fromNodeId: string; fromPin: string; toNodeId: string; toPin: string },
   ) {
-    const group = this.findFieldGroup(layerId);
-    if (!group) return;
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return;
     if (edge.fromNodeId === edge.toNodeId) return;
+    this.coerceRerouteTypes(graph, edge);
     // One incoming wire per target pin — replace any existing edge to that pin.
-    const filtered = group.graph.edges.filter(
+    const filtered = graph.edges.filter(
       (e) => !(e.toNodeId === edge.toNodeId && e.toPin === edge.toPin),
     );
     filtered.push({ ...edge });
-    group.graph.edges = filtered;
+    graph.edges = filtered;
+  }
+
+  /**
+   * Reroutes carry their pin type in `config.pinType`; that type starts as
+   * `float` but should adopt whatever the user wires through them. Two cases:
+   *
+   *   1. Connection TO a reroute's `in` — clamp pinType to the source's type
+   *      (the source is committed; the reroute follows). Any downstream edges
+   *      whose target pin type no longer matches are dropped.
+   *   2. Connection FROM a reroute's `out` — only flex when the reroute is
+   *      "free" (no incoming edge AND no other outgoing edges). Flex it to the
+   *      target's type so the user can wire from a reroute first.
+   *
+   * Reroute chains (a reroute connected to another reroute) propagate via the
+   * same rules — when the upstream end mutates, the downstream reroute's
+   * incoming-edge handler fires later, since each user action is one edge.
+   */
+  private coerceRerouteTypes(
+    graph: { nodes: GraphNode[]; edges: Edge[] },
+    edge: { fromNodeId: string; fromPin: string; toNodeId: string; toPin: string },
+  ) {
+    const fromNode = graph.nodes.find((n) => n.id === edge.fromNodeId);
+    const toNode = graph.nodes.find((n) => n.id === edge.toNodeId);
+
+    if (toNode?.typeId === "reroute" && fromNode) {
+      const t = pinTypeOf(fromNode, edge.fromPin, "output");
+      if (t) setReroutePinType(graph, toNode, t);
+      return;
+    }
+    if (fromNode?.typeId === "reroute" && toNode) {
+      const incoming = graph.edges.find((e) => e.toNodeId === fromNode.id);
+      const otherOutgoing = graph.edges.some(
+        (e) => e.fromNodeId === fromNode.id && !(e.toNodeId === edge.toNodeId && e.toPin === edge.toPin),
+      );
+      if (!incoming && !otherOutgoing) {
+        const t = pinTypeOf(toNode, edge.toPin, "input");
+        if (t) setReroutePinType(graph, fromNode, t);
+      }
+    }
   }
 
   disconnectGraphEdge(layerId: string, target: { toNodeId: string; toPin: string }) {
-    const group = this.findFieldGroup(layerId);
-    if (!group) return;
-    group.graph.edges = group.graph.edges.filter(
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return;
+    graph.edges = graph.edges.filter(
       (e) => !(e.toNodeId === target.toNodeId && e.toPin === target.toPin),
     );
   }
 
   setGraphNodePosition(layerId: string, nodeId: string, position: { x: number; y: number }) {
-    const group = this.findFieldGroup(layerId);
-    if (!group) return;
-    const node = group.graph.nodes.find((n) => n.id === nodeId);
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return;
+    const node = graph.nodes.find((n) => n.id === nodeId);
     if (!node) return;
     node.position = position;
+  }
+
+  /**
+   * Set a single field on a graph node's config. Used by the inline node
+   * editor — Blender-style per-node controls render their own NumberInput /
+   * Select and call back here on commit.
+   */
+  setGraphNodeConfig(layerId: string, nodeId: string, key: string, value: unknown) {
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return;
+    const node = graph.nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+    (node.config as Record<string, unknown>)[key] = value;
+  }
+
+  /**
+   * Set (or clear, with `undefined`) the inline override value for a single
+   * input pin on a graph node. Reads at runtime via the promoted internal
+   * uniform's `originalPath`, so the new value lands in the next frame
+   * without rebuilding the shader.
+   */
+  setGraphNodePinValue(
+    layerId: string,
+    nodeId: string,
+    pinId: string,
+    value: PinDefault | undefined,
+  ) {
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return;
+    const node = graph.nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+    if (value === undefined) {
+      if (node.pinValues) delete node.pinValues[pinId];
+      return;
+    }
+    (node.pinValues ??= {})[pinId] = value;
+  }
+
+  /**
+   * Re-run the layered auto-layout against the layer's graph. Mutates each
+   * node's `position` in place rather than replacing the graph reference, so
+   * the structural fingerprint stays identical and no shader rebuild fires.
+   */
+  relayoutGraph(layerId: string) {
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return;
+    const laid = layoutGraph(graph);
+    const nodePosById = new Map(laid.nodes.map((n) => [n.id, n.position] as const));
+    for (const node of graph.nodes) {
+      const p = nodePosById.get(node.id);
+      if (p) node.position = p;
+    }
+    // Cluster-aware layout also resizes/repositions framed clusters; mirror
+    // that into composer state so the editor reflects the new layout.
+    if (laid.frames && graph.frames) {
+      const frameById = new Map(laid.frames.map((f) => [f.id, f] as const));
+      for (const f of graph.frames) {
+        const next = frameById.get(f.id);
+        if (!next) continue;
+        f.position = { ...next.position };
+        f.size = { ...next.size };
+      }
+    }
   }
 
   /**
@@ -409,15 +651,108 @@ class ComposerStore {
    * position so the copy doesn't sit underneath the source. Returns the new
    * node's id so callers can update the selection.
    */
+  // ==========================================================================
+  // Frames — non-emit visual groupings stored on `graph.frames`. They render
+  // behind nodes and are pure metadata; no ordering or selection semantics
+  // beyond what xyflow gives us out of the box.
+
+  private framesOf(layerId: string): Frame[] | null {
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return null;
+    if (!graph.frames) graph.frames = [];
+    return graph.frames;
+  }
+
+  addFrame(
+    layerId: string,
+    init?: { position?: { x: number; y: number }; size?: { width: number; height: number }; label?: string; color?: string },
+  ): string | null {
+    const frames = this.framesOf(layerId);
+    if (!frames) return null;
+    const id = makeId("frame");
+    frames.push({
+      id,
+      label: init?.label ?? "Group",
+      position: init?.position ?? { x: 0, y: 0 },
+      size: init?.size ?? { width: 320, height: 220 },
+      // Slate-300 by default — neutral enough that any content reads on top.
+      color: init?.color ?? "#94a3b8",
+    });
+    return id;
+  }
+
+  removeFrame(layerId: string, frameId: string) {
+    const frames = this.framesOf(layerId);
+    if (!frames) return;
+    const next = frames.filter((f) => f.id !== frameId);
+    const graph = this.activeGraphFor(layerId);
+    if (graph) graph.frames = next;
+  }
+
+  setFramePosition(layerId: string, frameId: string, position: { x: number; y: number }) {
+    const frames = this.framesOf(layerId);
+    if (!frames) return;
+    const frame = frames.find((f) => f.id === frameId);
+    if (frame) frame.position = position;
+  }
+
+  setFrameSize(layerId: string, frameId: string, size: { width: number; height: number }) {
+    const frames = this.framesOf(layerId);
+    if (!frames) return;
+    const frame = frames.find((f) => f.id === frameId);
+    if (frame) frame.size = size;
+  }
+
+  setFrameLabel(layerId: string, frameId: string, label: string) {
+    const frames = this.framesOf(layerId);
+    if (!frames) return;
+    const frame = frames.find((f) => f.id === frameId);
+    if (frame) frame.label = label;
+  }
+
+  setFrameColor(layerId: string, frameId: string, color: string) {
+    const frames = this.framesOf(layerId);
+    if (!frames) return;
+    const frame = frames.find((f) => f.id === frameId);
+    if (frame) frame.color = color;
+  }
+
+  /**
+   * Wrap the given selection of nodes into a new group node. Returns the new
+   * group's id (or null if the selection is invalid). The composer applies
+   * the operation in place on the active graph; if a successful group is
+   * created, selection follows it.
+   */
+  makeGroupFromSelection(layerId: string, selectedNodeIds: readonly string[]): string | null {
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return null;
+    const newId = makeGroupOp(graph, selectedNodeIds);
+    if (newId) this.selectNode(newId);
+    return newId;
+  }
+
+  /**
+   * Inverse of `makeGroupFromSelection`. Splices the group's subGraph back
+   * into the active graph; returns the ids of the surfaced child nodes (or
+   * null if `nodeId` is not a group on the active graph).
+   */
+  ungroupNode(layerId: string, nodeId: string): readonly string[] | null {
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return null;
+    const surfaced = ungroupOp(graph, nodeId);
+    if (surfaced && surfaced.length > 0) this.selectNode(surfaced[0]);
+    return surfaced;
+  }
+
   duplicateGraphNode(layerId: string, nodeId: string): string | null {
-    const group = this.findFieldGroup(layerId);
-    if (!group) return null;
-    const node = group.graph.nodes.find((n) => n.id === nodeId);
+    const graph = this.activeGraphFor(layerId);
+    if (!graph) return null;
+    const node = graph.nodes.find((n) => n.id === nodeId);
     if (!node) return null;
     // group-input / group-output are structural singletons.
     if (node.typeId === "group-input" || node.typeId === "group-output") return null;
     const newId = makeId(node.typeId);
-    group.graph.nodes.push({
+    graph.nodes.push({
       id: newId,
       typeId: node.typeId,
       config: structuredClone(node.config),
@@ -428,3 +763,37 @@ class ComposerStore {
 }
 
 export const composer = new ComposerStore();
+
+function pinTypeOf(node: GraphNode, pinId: string, side: "input" | "output"): PinType | null {
+  const prim = getPrimitive(node.typeId);
+  if (!prim) return null;
+  const pins = side === "input" ? prim.inputs(node.config) : prim.outputs(node.config);
+  return pins.find((p) => p.id === pinId)?.type ?? null;
+}
+
+/**
+ * Mutate a reroute's `config.pinType` and prune any downstream edges whose
+ * target pin no longer matches the new type. Inbound edges to the reroute
+ * are left alone — the caller is the one handing us the new type, either
+ * from the source they're connecting now or via their own constraints.
+ */
+function setReroutePinType(
+  graph: { nodes: GraphNode[]; edges: Edge[] },
+  reroute: GraphNode,
+  type: PinType,
+) {
+  const cfg = reroute.config as Record<string, unknown>;
+  if (cfg.pinType === type) return;
+  cfg.pinType = type;
+  graph.edges = graph.edges.filter((e) => {
+    if (e.fromNodeId !== reroute.id) return true;
+    const target = graph.nodes.find((n) => n.id === e.toNodeId);
+    if (!target) return false;
+    // Reroute downstream of a reroute: cascade-coerce instead of dropping.
+    if (target.typeId === "reroute") {
+      setReroutePinType(graph, target, type);
+      return true;
+    }
+    return pinTypeOf(target, e.toPin, "input") === type;
+  });
+}

@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 0.3, 0.005).default(0.04).describe("Intensity"),
   speed: zFloat(0, 30, 0.1).default(6.0).describe("Speed"),
   blockDensity: zFloat(0, 1).default(0.5).describe("Block Density"),
@@ -12,8 +14,6 @@ const config = z.object({
   mirrorChance: zFloat(0, 1).default(0).describe("Mirror Chance"),
   scanlineDistortion: zFloat(0, 1).default(0).describe("Scanline Distortion"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Glitch",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Glitch extends EffectNode<Config, Inputs> {
+export class Glitch extends EffectNode<Config, Uniforms> {
   static readonly typeId = "glitch";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

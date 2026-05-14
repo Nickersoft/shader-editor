@@ -13,8 +13,16 @@
 
 import { z } from "zod";
 import { zFloat, zVec3 } from "@/shaders/core/schemas";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { color, float } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const stopSchema = z.object({
   position: zFloat(0, 1).default(0),
@@ -33,27 +41,30 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [{ id: "t", type: "float", label: "T", default: 0 }];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "vec3", label: "Color" }];
+const pinIn = z.object({
+  t: float("Factor", 0),
+});
 
-export default registerPrimitive({
-  typeId: "color-ramp",
-  name: "Color Ramp",
-  category: "io",
-  color: "#ec4899",
-  description: "N-stop colour gradient driven by a scalar.",
-  config,
+const pinOut = z.object({
+  out: color("Color"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  outputs() {
-    return OUTPUTS;
-  },
+class ColorRamp extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "color-ramp";
+  static readonly meta: PrimitiveMeta = {
+    name: "Color Ramp",
+    category: "color",
+    color: "#ec4899",
+    description: "N-stop colour gradient driven by a scalar.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
 
-  uniforms(node) {
-    const c = node.config as Config;
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     const specs: UniformSpec[] = [];
     c.stops.forEach((stop, i) => {
       specs.push({
@@ -70,10 +81,10 @@ export default registerPrimitive({
       });
     });
     return specs;
-  },
+  }
 
-  emit(ctx) {
-    const c = ctx.config as Config;
+  emit(ctx: EmitContext<In, Out>): EmitResult {
+    const c = this.cfg(ctx.config);
     const t = ctx.inputs.t;
     const o = ctx.outputs.out;
     const n = c.stops.length;
@@ -113,5 +124,7 @@ export default registerPrimitive({
       }
     }
     return { statements: lines.join("\n") };
-  },
-});
+  }
+}
+
+export default register(ColorRamp);

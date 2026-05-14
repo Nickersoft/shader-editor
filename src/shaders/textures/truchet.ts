@@ -36,14 +36,12 @@ export default {
     const hashIn = b.add("vector-math", { op: "add" });
     b.connect(cell, hashIn.nodeId, "a");
     b.connect(seedV, hashIn.nodeId, "b");
-    const hOut = b.add("hash", {});
+    const hOut = b.add("white-noise-texture", {});
     b.connect(hashIn, hOut.nodeId, "p");
 
     // flip = step(h, 0.5)  → 1 if h < 0.5, else 0
-    const half = b.add("const", { value: 0.5 });
-    const flip = b.add("combine", { op: "step" });
+    const flip = b.add("math", { op: "step" }, { b: 0.5 });
     b.connect(hOut, flip.nodeId, "a");
-    b.connect(half, flip.nodeId, "b");
 
     // local_flipped = mix(local, vec2(local.x, 1 - local.y), flip)
     const sep = b.add("separate-xy", {});
@@ -69,46 +67,36 @@ export default {
     // d1 = abs(length(localF) - 0.5)
     const lenA = b.add("vector-math", { op: "length" });
     b.connect(localF, lenA.nodeId, "a");
-    const dA = b.add("combine", { op: "sub" });
+    const dA = b.add("math", { op: "sub" }, { b: 0.5 });
     b.connect(lenA, dA.nodeId, "a");
-    b.connect(half, dA.nodeId, "b");
     const d1 = b.add("math", { op: "abs" });
     b.connect(dA, d1.nodeId, "x");
 
     // d2 = abs(length(localF - vec2(1)) - 0.5)
-    const k1 = b.add("const", { value: 1 });
-    const oneV = b.add("combine-xy", {});
-    b.connect(k1, oneV.nodeId, "x");
-    b.connect(k1, oneV.nodeId, "y");
+    const oneV = b.add("combine-xy", {}, { x: 1, y: 1 });
     const localFm1 = b.add("vector-math", { op: "sub" });
     b.connect(localF, localFm1.nodeId, "a");
     b.connect(oneV, localFm1.nodeId, "b");
     const lenB = b.add("vector-math", { op: "length" });
     b.connect(localFm1, lenB.nodeId, "a");
-    const dB = b.add("combine", { op: "sub" });
+    const dB = b.add("math", { op: "sub" }, { b: 0.5 });
     b.connect(lenB, dB.nodeId, "a");
-    b.connect(half, dB.nodeId, "b");
     const d2 = b.add("math", { op: "abs" });
     b.connect(dB, d2.nodeId, "x");
 
     // dd = min(d1, d2)
-    const dd = b.add("combine", { op: "min" });
+    const dd = b.add("math", { op: "min" });
     b.connect(d1, dd.nodeId, "a");
     b.connect(d2, dd.nodeId, "b");
 
     // lw = lineWidth * 0.025; mask = 1 - smoothstep(lw - eps, lw + eps, dd)
     // Use a small fixed `eps` instead of fwidth so the falloff is uniform.
-    const k0025 = b.add("const", { value: 0.025 });
-    const lw = b.add("combine", { op: "mul" });
+    const lw = b.add("math", { op: "mul" }, { b: 0.025 });
     b.connect(gi.lineWidth, lw.nodeId, "a");
-    b.connect(k0025, lw.nodeId, "b");
-    const eps = b.add("const", { value: 0.01 });
-    const lwHi = b.add("combine", { op: "add" });
+    const lwHi = b.add("math", { op: "add" }, { b: 0.01 });
     b.connect(lw, lwHi.nodeId, "a");
-    b.connect(eps, lwHi.nodeId, "b");
-    const lwLo = b.add("combine", { op: "sub" });
+    const lwLo = b.add("math", { op: "sub" }, { b: 0.01 });
     b.connect(lw, lwLo.nodeId, "a");
-    b.connect(eps, lwLo.nodeId, "b");
     const ss = b.add("smoothstep", {});
     b.connect(lwLo, ss.nodeId, "edge0");
     b.connect(lwHi, ss.nodeId, "edge1");

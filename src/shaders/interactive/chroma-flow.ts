@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
   speed: zFloat(0, 2, 0.05).default(0.5).describe("Speed"),
   scale: zFloat(0.1, 5, 0.05).default(1.0).describe("Scale"),
@@ -15,8 +17,6 @@ const config = z.object({
   color5: zColor().default([1.0, 1.0, 0.2]).describe("Color 5"),
 });
 
-const inputs = z.object({});
-
 const meta: NodeMeta = {
   name: "Chroma Flow",
   description: "Animated multi-color simplex flow",
@@ -26,12 +26,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class ChromaFlow extends GeneratorNode<Config, Inputs> {
+export class ChromaFlow extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "chroma-flow";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

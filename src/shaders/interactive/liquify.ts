@@ -5,15 +5,16 @@ import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { edgeMode, zEdges, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
+  edges: zEdges().default("stretch").describe("Edges"),
+});
+
+const uniforms = z.object({
   amount: zFloat(0, 0.4, 0.005).default(0.05).describe("Amount"),
   scale: zFloat(0.5, 20, 0.1).default(3.0).describe("Scale"),
   speed: zFloat(0, 4, 0.05).default(0.5).describe("Speed"),
   stiffness: zFloat(0, 1, 0.01).default(0.5).describe("Stiffness"),
   damping: zFloat(0, 1, 0.01).default(0.5).describe("Damping"),
-  edges: zEdges().default("stretch").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Liquify",
@@ -24,12 +25,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Liquify extends EffectNode<Config, Inputs> {
+export class Liquify extends EffectNode<Config, Uniforms> {
   static readonly typeId = "liquify";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

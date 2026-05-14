@@ -1,16 +1,13 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Tint — graph-decomposed adjustment.
+//   tinted = mix(rgb, tintColor, amount)
+//   adjusted = tinted * (luma(rgb) / max(luma(tinted), 1e-4))
+//   result = mix(tinted, adjusted, preserveLuminosity ? 1 : 0)
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zBool, zColor, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  color: zColor().default([0.5, 0.5, 0.8]).describe("Tint Color"),
-  amount: zFloat(0, 1).default(0.5).describe("Amount"),
-  preserveLuminosity: zBool().default(false).describe("Preserve Luminosity"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Tint",
@@ -20,32 +17,60 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class Tint extends EffectNode<Config, Inputs> {
+export class Tint extends GraphEffectBase {
   static readonly typeId = "tint";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const color = this.uniformName("color");
-    const amount = this.uniformName("amount");
-    const preserveLuminosity = this.uniformName("preserveLuminosity");
-    return {
-      main: `
-base = texture(u_prevPass, uv);
-vec3 tinted = mix(base.rgb, ${color}, ${amount});
-vec3 result = tinted;
-if (${preserveLuminosity}) {
-  vec3 w = vec3(0.299, 0.587, 0.114);
-  float originalLum = dot(base.rgb, w);
-  float tintedLum = dot(tinted, w);
-  result = tinted * (originalLum / max(tintedLum, 1e-4));
-}
-return vec4(result, base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "color", type: "vec3", label: "Tint Color", default: [0.5, 0.5, 0.8] },
+      { id: "amount", type: "float", label: "Amount", default: 0.5 },
+      {
+        id: "preserveLuminosity",
+        type: "bool",
+        label: "Preserve Luminosity",
+        default: false,
+      },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+    const color = { nodeId: sample.nodeId, pin: "color" };
+    const alpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    const tinted = b.add("mix-color", { clampT: true });
+    b.connect(color, tinted.nodeId, "a");
+    b.connect(gi.color, tinted.nodeId, "b");
+    b.connect(gi.amount, tinted.nodeId, "t");
+
+    const origLum = b.add("color-math", { op: "luminance" });
+    b.connect(color, origLum.nodeId, "a");
+    const tintedLum = b.add("color-math", { op: "luminance" });
+    b.connect(tinted, tintedLum.nodeId, "a");
+
+    const eps = b.add("value", { value: 1e-4 });
+    const safeLum = b.add("math", { op: "max" });
+    b.connect(tintedLum, safeLum.nodeId, "a");
+    b.connect(eps, safeLum.nodeId, "b");
+
+    const ratio = b.add("math", { op: "div" });
+    b.connect(origLum, ratio.nodeId, "a");
+    b.connect(safeLum, ratio.nodeId, "b");
+
+    const adjusted = b.add("color-math", { op: "scale" });
+    b.connect(tinted, adjusted.nodeId, "a");
+    b.connect(ratio, adjusted.nodeId, "b");
+
+    // The bool→float conversion happens implicitly at mix-color's `t`
+    // input via the coercion layer — no explicit converter needed.
+    const result = b.add("mix-color", { clampT: true });
+    b.connect(tinted, result.nodeId, "a");
+    b.connect(adjusted, result.nodeId, "b");
+    b.connect(gi.preserveLuminosity, result.nodeId, "t");
+
+    return b.output(result, alpha);
   }
 }
 

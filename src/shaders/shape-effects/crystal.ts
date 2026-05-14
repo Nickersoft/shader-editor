@@ -4,14 +4,14 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 1, 0.01).default(0.5).describe("Intensity"),
   facets: zFloat(1, 30, 0.5).default(8).describe("Facets"),
   chromaticAberration: zFloat(0, 1, 0.01).default(0.3).describe("Chromatic Aberration"),
   fresnel: zFloat(0, 1, 0.01).default(0.5).describe("Fresnel"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Crystal",
@@ -22,12 +22,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Crystal extends EffectNode<Config, Inputs> {
+export class Crystal extends EffectNode<Config, Uniforms> {
   static readonly typeId = "crystal";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 

@@ -4,8 +4,16 @@
 import { z } from "zod";
 import { zFloat, zInt } from "@/shaders/core/schemas";
 import type { GlslHelperName } from "@/shaders/core/types";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { float, vec2 } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const config = z.object({
   type: z.enum(["bands", "rings"]).default("bands"),
@@ -18,36 +26,40 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [{ id: "p", type: "vec2", label: "P", default: [0, 0] }];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "float", label: "Out" }];
+const pinIn = z.object({
+  p: vec2("Position", [0, 0]),
+});
 
-export default registerPrimitive({
-  typeId: "wave-texture",
-  name: "Wave Texture",
-  category: "sources",
-  color: "#06b6d4",
-  description: "Linear or ring wave (sine/saw/triangle).",
-  config,
+const pinOut = z.object({
+  out: float("Out"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  uniforms(node) {
-    const c = node.config as Config;
+class WaveTexture extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "wave-texture";
+  static readonly meta: PrimitiveMeta = {
+    name: "Wave Texture",
+    category: "texture",
+    color: "#06b6d4",
+    description: "Linear or ring wave (sine/saw/triangle).",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
+
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     const u: UniformSpec[] = [
       { nameSuffix: "scale", type: "float", value: c.scale },
       { nameSuffix: "phaseOffset", type: "float", value: c.phaseOffset },
     ];
     if (c.distortion !== 0) u.push({ nameSuffix: "distortion", type: "float", value: c.distortion });
     return u;
-  },
+  }
 
-  emit(ctx) {
-    const c = ctx.config as Config;
+  emit(ctx: EmitContext<In, Out>): EmitResult {
+    const c = this.cfg(ctx.config);
     const p = ctx.inputs.p;
     const o = ctx.outputs.out;
     const phaseExpr = c.type === "rings" ? `length(${o}_wp)` : `${o}_wp.x`;
@@ -72,5 +84,7 @@ export default registerPrimitive({
 float ${o}_phase = ${phaseExpr} + ${ctx.uniforms.phaseOffset};${warp}
 float ${o} = clamp(${shape}, 0.0, 1.0);`,
     };
-  },
-});
+  }
+}
+
+export default register(WaveTexture);

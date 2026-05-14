@@ -4,8 +4,16 @@
 
 import { z } from "zod";
 import { zFloat, zInt, zVec2, zVec3 } from "@/shaders/core/schemas";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { color, float } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const config = z.object({
   speed: zFloat(0, 4, 0.05).default(0.5),
@@ -21,29 +29,26 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [];
-const OUTPUTS: readonly PinSpec[] = [
-  { id: "color", type: "vec3", label: "Color" },
-  { id: "alpha", type: "float", label: "Alpha" },
-];
+const pinOut = z.object({
+  color: color("Color"),
+  alpha: float("Alpha"),
+});
 
-export default registerPrimitive({
-  typeId: "strands",
-  name: "Strands",
-  category: "sources",
-  color: "#0ea5e9",
-  description: "Procedural wavy strands.",
-  config,
+type Out = z.infer<typeof pinOut>;
 
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
+class Strands extends BasePrimitive<Config, Record<string, never>, Out> {
+  static readonly typeId = "strands";
+  static readonly meta: PrimitiveMeta = {
+    name: "Strands",
+    category: "texture",
+    color: "#0ea5e9",
+    description: "Procedural wavy strands.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: z.object({}), out: pinOut };
 
-  uniforms(node) {
-    const c = node.config as Config;
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     return [
       { nameSuffix: "speed", type: "float", value: c.speed },
       { nameSuffix: "amplitude", type: "float", value: c.amplitude },
@@ -54,11 +59,11 @@ export default registerPrimitive({
       { nameSuffix: "start", type: "vec2", value: c.start },
       { nameSuffix: "end", type: "vec2", value: c.end },
     ] satisfies UniformSpec[];
-  },
+  }
 
-  emit(ctx) {
+  emit(ctx: EmitContext<Record<string, never>, Out>): EmitResult {
     ctx.addDependency("aastep");
-    const c = ctx.config as Config;
+    const c = this.cfg(ctx.config);
     const o = ctx.outputs.color;
     const a = ctx.outputs.alpha;
     const u = ctx.uniforms;
@@ -92,5 +97,7 @@ for (int ${o}_i = 0; ${o}_i < 80; ${o}_i++) {
 vec3 ${o} = ${u.waveColor};
 float ${a} = ${o}_acc;`,
     };
-  },
-});
+  }
+}
+
+export default register(Strands);

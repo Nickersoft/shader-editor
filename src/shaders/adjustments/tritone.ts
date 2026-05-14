@@ -1,18 +1,17 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Tritone — graph-decomposed adjustment.
+//   lum = luma(rgb)
+//   shadowToMid = smoothstep(blend - softness, blend, lum)
+//   lower = mix(colorA, colorB, shadowToMid)
+//   midToHi = smoothstep(blend, blend + softness, lum)
+//   upper = mix(colorB, colorC, midToHi)
+//   pick = smoothstep(blend - 0.4*softness, blend + 0.4*softness, lum)
+//   result = mix(lower, upper, pick)
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zColor, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  colorA: zColor().default([0.808, 0.106, 0.918]).describe("Color A (shadows)"),
-  colorB: zColor().default([0.184, 1.0, 0.0]).describe("Color B (midtones)"),
-  colorC: zColor().default([1.0, 1.0, 0.0]).describe("Color C (highlights)"),
-  blendMid: zFloat(0, 1).default(0.5).describe("Midpoint"),
-  softness: zFloat(0, 1).default(0.25).describe("Softness"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Tritone",
@@ -22,33 +21,92 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class Tritone extends EffectNode<Config, Inputs> {
+export class Tritone extends GraphEffectBase {
   static readonly typeId = "tritone";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const colorA = this.uniformName("colorA");
-    const colorB = this.uniformName("colorB");
-    const colorC = this.uniformName("colorC");
-    const blendMid = this.uniformName("blendMid");
-    const softness = this.uniformName("softness");
-    return {
-      main: `
-base = texture(u_prevPass, uv);
-float lum = dot(base.rgb, vec3(0.299, 0.587, 0.114));
-float w = ${softness};
-float shadowToMid = smoothstep(${blendMid} - w, ${blendMid}, lum);
-vec3 lower = mix(${colorA}, ${colorB}, shadowToMid);
-float midToHi = smoothstep(${blendMid}, ${blendMid} + w, lum);
-vec3 upper = mix(${colorB}, ${colorC}, midToHi);
-float blend = smoothstep(${blendMid} - w * 0.4, ${blendMid} + w * 0.4, lum);
-return vec4(mix(lower, upper, blend), base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      {
+        id: "colorA",
+        type: "vec3",
+        label: "Color A (shadows)",
+        default: [0.808, 0.106, 0.918],
+      },
+      {
+        id: "colorB",
+        type: "vec3",
+        label: "Color B (midtones)",
+        default: [0.184, 1, 0],
+      },
+      {
+        id: "colorC",
+        type: "vec3",
+        label: "Color C (highlights)",
+        default: [1, 1, 0],
+      },
+      { id: "blendMid", type: "float", label: "Midpoint", default: 0.5 },
+      { id: "softness", type: "float", label: "Softness", default: 0.25 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+    const color = { nodeId: sample.nodeId, pin: "color" };
+    const alpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    const lum = b.add("color-math", { op: "luminance" });
+    b.connect(color, lum.nodeId, "a");
+
+    // shadowToMid edges: (blend - softness, blend)
+    const e0Lower = b.add("math", { op: "sub" });
+    b.connect(gi.blendMid, e0Lower.nodeId, "a");
+    b.connect(gi.softness, e0Lower.nodeId, "b");
+    const shadowToMid = b.add("smoothstep", {});
+    b.connect(e0Lower, shadowToMid.nodeId, "edge0");
+    b.connect(gi.blendMid, shadowToMid.nodeId, "edge1");
+    b.connect(lum, shadowToMid.nodeId, "x");
+    const lower = b.add("mix-color", { clampT: true });
+    b.connect(gi.colorA, lower.nodeId, "a");
+    b.connect(gi.colorB, lower.nodeId, "b");
+    b.connect(shadowToMid, lower.nodeId, "t");
+
+    // midToHi edges: (blend, blend + softness)
+    const e1Upper = b.add("math", { op: "add" });
+    b.connect(gi.blendMid, e1Upper.nodeId, "a");
+    b.connect(gi.softness, e1Upper.nodeId, "b");
+    const midToHi = b.add("smoothstep", {});
+    b.connect(gi.blendMid, midToHi.nodeId, "edge0");
+    b.connect(e1Upper, midToHi.nodeId, "edge1");
+    b.connect(lum, midToHi.nodeId, "x");
+    const upper = b.add("mix-color", { clampT: true });
+    b.connect(gi.colorB, upper.nodeId, "a");
+    b.connect(gi.colorC, upper.nodeId, "b");
+    b.connect(midToHi, upper.nodeId, "t");
+
+    // pick edges: (blend - 0.4*softness, blend + 0.4*softness)
+    const narrow = b.add("value", { value: 0.4 });
+    const narrowed = b.add("math", { op: "mul" });
+    b.connect(gi.softness, narrowed.nodeId, "a");
+    b.connect(narrow, narrowed.nodeId, "b");
+    const pickE0 = b.add("math", { op: "sub" });
+    b.connect(gi.blendMid, pickE0.nodeId, "a");
+    b.connect(narrowed, pickE0.nodeId, "b");
+    const pickE1 = b.add("math", { op: "add" });
+    b.connect(gi.blendMid, pickE1.nodeId, "a");
+    b.connect(narrowed, pickE1.nodeId, "b");
+    const pick = b.add("smoothstep", {});
+    b.connect(pickE0, pick.nodeId, "edge0");
+    b.connect(pickE1, pick.nodeId, "edge1");
+    b.connect(lum, pick.nodeId, "x");
+
+    const result = b.add("mix-color", { clampT: true });
+    b.connect(lower, result.nodeId, "a");
+    b.connect(upper, result.nodeId, "b");
+    b.connect(pick, result.nodeId, "t");
+
+    return b.output(result, alpha);
   }
 }
 

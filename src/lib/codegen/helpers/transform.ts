@@ -18,6 +18,24 @@ vec2 rotate2D(vec2 v, float angle) {
 }`,
 });
 
+/**
+ * Build a 3D rotation matrix from per-axis Euler angles (radians, XYZ order:
+ * apply X then Y then Z). Used by the `mapping` primitive so saved graphs
+ * round-trip a single rotation vec3 instead of three composed matrices.
+ */
+export const rotateEulerXYZ = helper({
+  code: `
+mat3 rotateEulerXYZ(vec3 r) {
+  float cx = cos(r.x), sx = sin(r.x);
+  float cy = cos(r.y), sy = sin(r.y);
+  float cz = cos(r.z), sz = sin(r.z);
+  mat3 Rx = mat3(1.0, 0.0, 0.0,  0.0, cx, sx,   0.0, -sx, cx);
+  mat3 Ry = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0, sy, 0.0, cy);
+  mat3 Rz = mat3(cz, sz, 0.0,    -sz, cz, 0.0,  0.0, 0.0, 1.0);
+  return Rz * Ry * Rx;
+}`,
+});
+
 /** Alias kept alongside rotate2D so verbatim ports compile without rewriting. */
 export const rotate = helper({
   code: `

@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zBool, zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   density: zFloat(8, 300, 1).default(80).describe("Density"),
   gamma: zFloat(0.5, 3, 0.01).default(1).describe("Gamma"),
   alphaThreshold: zFloat(0, 1).default(0.05).describe("Alpha Threshold"),
@@ -12,8 +14,6 @@ const config = z.object({
   colorBack: zColor().default([0, 0, 0]).describe("Background"),
   colorChar: zColor().default([0.4, 1, 0.5]).describe("Character"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "ASCII",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Ascii extends EffectNode<Config, Inputs> {
+export class Ascii extends EffectNode<Config, Uniforms> {
   static readonly typeId = "ascii";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

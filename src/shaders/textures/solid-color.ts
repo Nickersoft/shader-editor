@@ -9,11 +9,18 @@ export default {
   graph: () => {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
-    const zero = b.add("const", { value: 0 });
-    const ramp = b.colorRamp(zero, [
-      [0.357, 0.094, 0.792],
-      [0.357, 0.094, 0.792],
-    ]);
+    // A two-stop ramp sampled at t=0 collapses to its first stop — no
+    // upstream wiring needed.
+    const ramp = b.add(
+      "color-ramp",
+      {
+        stops: [
+          { position: 0, color: [0.357, 0.094, 0.792] },
+          { position: 1, color: [0.357, 0.094, 0.792] },
+        ],
+      },
+      { t: 0 },
+    );
     return b.output(ramp);
   },
 } satisfies ProceduralPreset;

@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   scale: zFloat(0.3, 12, 0.05).default(2.5).describe("Scale"),
   speed: zFloat(0, 4, 0.05).default(0.4).describe("Speed"),
   density: zFloat(0, 1).default(0.5).describe("Density"),
@@ -12,8 +14,6 @@ const config = z.object({
   color1: zColor().default([0.99, 0.51, 0.98]).describe("Color 1"),
   color2: zColor().default([0.76, 0.11, 0.47]).describe("Color 2"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Smoke",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Smoke extends GeneratorNode<Config, Inputs> {
+export class Smoke extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "smoke";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

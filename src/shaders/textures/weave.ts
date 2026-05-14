@@ -25,10 +25,7 @@ export default {
     b.connect(scaled, cell.nodeId, "a");
     const frac = b.add("vector-math", { op: "fract" });
     b.connect(scaled, frac.nodeId, "a");
-    const half = b.add("const", { value: 0.5 });
-    const halfV = b.add("combine-xy", {});
-    b.connect(half, halfV.nodeId, "x");
-    b.connect(half, halfV.nodeId, "y");
+    const halfV = b.add("combine-xy", {}, { x: 0.5, y: 0.5 });
     const local = b.add("vector-math", { op: "sub" });
     b.connect(frac, local.nodeId, "a");
     b.connect(halfV, local.nodeId, "b");
@@ -40,16 +37,13 @@ export default {
     // over = step((cell.x + cell.y) mod 2, 0.5) — 1 when sum is even
     const sepCell = b.add("separate-xy", {});
     b.connect(cell, sepCell.nodeId, "v");
-    const sumXY = b.add("combine", { op: "add" });
+    const sumXY = b.add("math", { op: "add" });
     b.connect({ nodeId: sepCell.nodeId, pin: "x" }, sumXY.nodeId, "a");
     b.connect({ nodeId: sepCell.nodeId, pin: "y" }, sumXY.nodeId, "b");
-    const k2 = b.add("const", { value: 2 });
-    const modSum = b.add("combine", { op: "mod" });
+    const modSum = b.add("math", { op: "mod" }, { b: 2 });
     b.connect(sumXY, modSum.nodeId, "a");
-    b.connect(k2, modSum.nodeId, "b");
-    const over = b.add("combine", { op: "step" });
+    const over = b.add("math", { op: "step" }, { b: 0.5 });
     b.connect(modSum, over.nodeId, "a");
-    b.connect(half, over.nodeId, "b");
 
     // th = (0.5 - clamp(gap, 0, 0.5)) * 0.5 + 0.05
     const gapClamp = b.add("map-range", {
@@ -61,62 +55,56 @@ export default {
       clamp: true,
     });
     b.connect(gi.gap, gapClamp.nodeId, "x");
-    const halfMinus = b.add("combine", { op: "sub" });
-    b.connect(half, halfMinus.nodeId, "a");
+    const halfMinus = b.add("math", { op: "sub" }, { a: 0.5 });
     b.connect(gapClamp, halfMinus.nodeId, "b");
-    const halfMinusHalf = b.add("combine", { op: "mul" });
+    const halfMinusHalf = b.add("math", { op: "mul" }, { b: 0.5 });
     b.connect(halfMinus, halfMinusHalf.nodeId, "a");
-    b.connect(half, halfMinusHalf.nodeId, "b");
-    const k005 = b.add("const", { value: 0.05 });
-    const th = b.add("combine", { op: "add" });
+    const th = b.add("math", { op: "add" }, { b: 0.05 });
     b.connect(halfMinusHalf, th.nodeId, "a");
-    b.connect(k005, th.nodeId, "b");
 
     // h = 1 - step(th, |local.y|)    (horizontal strand from y)
     // v = 1 - step(th, |local.x|)
-    const stepH = b.add("combine", { op: "step" });
+    const stepH = b.add("math", { op: "step" });
     b.connect(th, stepH.nodeId, "a");
     b.connect({ nodeId: sepAbs.nodeId, pin: "y" }, stepH.nodeId, "b");
     const h = b.add("math", { op: "oneminus" });
     b.connect(stepH, h.nodeId, "x");
-    const stepV = b.add("combine", { op: "step" });
+    const stepV = b.add("math", { op: "step" });
     b.connect(th, stepV.nodeId, "a");
     b.connect({ nodeId: sepAbs.nodeId, pin: "x" }, stepV.nodeId, "b");
     const v = b.add("math", { op: "oneminus" });
     b.connect(stepV, v.nodeId, "x");
 
     // hHalf = h * 0.5; vHalf = v * 0.5
-    const hHalf = b.add("combine", { op: "mul" });
+    const hHalf = b.add("math", { op: "mul" }, { b: 0.5 });
     b.connect(h, hHalf.nodeId, "a");
-    b.connect(half, hHalf.nodeId, "b");
-    const vHalf = b.add("combine", { op: "mul" });
+    const vHalf = b.add("math", { op: "mul" }, { b: 0.5 });
     b.connect(v, vHalf.nodeId, "a");
-    b.connect(half, vHalf.nodeId, "b");
 
     // am = over ? h : hHalf      → hHalf + over * (h - hHalf)
-    const hDiff = b.add("combine", { op: "sub" });
+    const hDiff = b.add("math", { op: "sub" });
     b.connect(h, hDiff.nodeId, "a");
     b.connect(hHalf, hDiff.nodeId, "b");
-    const hContrib = b.add("combine", { op: "mul" });
+    const hContrib = b.add("math", { op: "mul" });
     b.connect(hDiff, hContrib.nodeId, "a");
     b.connect(over, hContrib.nodeId, "b");
-    const am = b.add("combine", { op: "add" });
+    const am = b.add("math", { op: "add" });
     b.connect(hHalf, am.nodeId, "a");
     b.connect(hContrib, am.nodeId, "b");
 
     // bm = over ? vHalf : v      → v + over * (vHalf - v)
-    const vDiff = b.add("combine", { op: "sub" });
+    const vDiff = b.add("math", { op: "sub" });
     b.connect(vHalf, vDiff.nodeId, "a");
     b.connect(v, vDiff.nodeId, "b");
-    const vContrib = b.add("combine", { op: "mul" });
+    const vContrib = b.add("math", { op: "mul" });
     b.connect(vDiff, vContrib.nodeId, "a");
     b.connect(over, vContrib.nodeId, "b");
-    const bm = b.add("combine", { op: "add" });
+    const bm = b.add("math", { op: "add" });
     b.connect(v, bm.nodeId, "a");
     b.connect(vContrib, bm.nodeId, "b");
 
     // out = max(am, bm)
-    const out = b.add("combine", { op: "max" });
+    const out = b.add("math", { op: "max" });
     b.connect(am, out.nodeId, "a");
     b.connect(bm, out.nodeId, "b");
 

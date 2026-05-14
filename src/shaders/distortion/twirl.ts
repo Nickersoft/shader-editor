@@ -1,18 +1,13 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Twirl — graph-decomposed distortion.
+//   falloff = 1 − smoothstep(0, radius, length(uv − center))
+//   angle_rad = angle_deg · π/180 · falloff
+//   finalUV = center + rotate2D(uv − center, angle_rad)
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { edgeMode, zCenterAxis, zEdges, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  centerX: zCenterAxis().default(0.5).describe("Center X"),
-  centerY: zCenterAxis().default(0.5).describe("Center Y"),
-  radius: zFloat(0.05, 1.5).default(0.4).describe("Radius"),
-  angle: zFloat(-720, 720, 1).default(90.0).describe("Angle (deg)"),
-  edges: zEdges().default("stretch").describe("Edges"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Twirl",
@@ -22,33 +17,64 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class Twirl extends EffectNode<Config, Inputs> {
+export class Twirl extends GraphEffectBase {
   static readonly typeId = "twirl";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const cx = this.uniformName("centerX");
-    const cy = this.uniformName("centerY");
-    const radius = this.uniformName("radius");
-    const angle = this.uniformName("angle");
-    return {
-      dependencies: ["applyEdgeHandling", "unpremultiplyAlpha"],
-      main: `
-vec2 c = vec2(${cx}, ${cy});
-vec2 d = uv - c;
-float r = length(d);
-float falloff = 1.0 - smoothstep(0.0, ${radius}, r);
-float a = ${angle} * 3.14159 / 180.0 * falloff;
-float ca = cos(a), sa = sin(a);
-vec2 rd = vec2(ca * d.x - sa * d.y, sa * d.x + ca * d.y);
-vec2 finalUV = c + rd;
-return unpremultiplyAlpha(applyEdgeHandling(u_prevPass, finalUV, ${edgeMode(this.config.edges)}));`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "centerX", type: "float", label: "Center X", default: 0.5 },
+      { id: "centerY", type: "float", label: "Center Y", default: 0.5 },
+      { id: "radius", type: "float", label: "Radius", default: 0.4 },
+      { id: "angle", type: "float", label: "Angle (deg)", default: 90 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    const c = b.add("combine-xy", {});
+    b.connect(gi.centerX, c.nodeId, "x");
+    b.connect(gi.centerY, c.nodeId, "y");
+
+    const d = b.add("vector-math", { op: "sub" });
+    b.connect(uv, d.nodeId, "a");
+    b.connect(c, d.nodeId, "b");
+
+    const r = b.add("vector-math", { op: "length" });
+    b.connect(d, r.nodeId, "a");
+
+    const zero = b.add("value", { value: 0 });
+    const ss = b.add("smoothstep", {});
+    b.connect(zero, ss.nodeId, "edge0");
+    b.connect(gi.radius, ss.nodeId, "edge1");
+    b.connect(r, ss.nodeId, "x");
+
+    const falloff = b.add("math", { op: "oneminus" });
+    b.connect(ss, falloff.nodeId, "x");
+
+    const deg2rad = b.add("value", { value: Math.PI / 180 });
+    const rad = b.add("math", { op: "mul" });
+    b.connect(gi.angle, rad.nodeId, "a");
+    b.connect(deg2rad, rad.nodeId, "b");
+    const angleRad = b.add("math", { op: "mul" });
+    b.connect(rad, angleRad.nodeId, "a");
+    b.connect(falloff, angleRad.nodeId, "b");
+
+    const rotated = b.add("vector-math", { op: "rotate-2d" });
+    b.connect(d, rotated.nodeId, "a");
+    b.connect(angleRad, rotated.nodeId, "b");
+
+    const finalUv = b.add("vector-math", { op: "add" });
+    b.connect(c, finalUv.nodeId, "a");
+    b.connect(rotated, finalUv.nodeId, "b");
+
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(finalUv, sample.nodeId, "uv");
+
+    return b.output(
+      { nodeId: sample.nodeId, pin: "color" },
+      { nodeId: sample.nodeId, pin: "alpha" },
+    );
   }
 }
 

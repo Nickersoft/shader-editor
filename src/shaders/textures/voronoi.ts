@@ -11,17 +11,15 @@ export default {
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
-    const src = b.add("field-source", { scale: 6, speed: 0.5, seed: 0 });
-    b.connect(p, src.nodeId, "p");
-    b.connect(t, src.nodeId, "t");
-    const vor = b.add("voronoi-sample", {
+    const src = b.fieldTransform(p, t, { scale: 6, speed: 0.5, seed: 0 });
+    const vor = b.add("voronoi-texture", {
       feature: "f1",
       metric: "euclidean",
       randomness: 1,
       smoothness: 0.25,
     });
-    b.connect({ nodeId: src.nodeId, pin: "p" }, vor.nodeId, "p");
-    b.connect({ nodeId: src.nodeId, pin: "t" }, vor.nodeId, "t");
+    b.connect(src.p, vor.nodeId, "p");
+    b.connect(src.t, vor.nodeId, "t");
     const ramp = b.colorRamp(vor, [
       [0.99, 0.01, 0.87],
       [0.19, 0.53, 0.81],

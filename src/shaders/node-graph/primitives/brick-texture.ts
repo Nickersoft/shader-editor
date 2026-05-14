@@ -2,8 +2,16 @@
 
 import { z } from "zod";
 import { zFloat } from "@/shaders/core/schemas";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { float, vec2 } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const config = z.object({
   scale: zFloat(0.1, 200, 0.1).default(4),
@@ -16,26 +24,30 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [{ id: "p", type: "vec2", label: "P", default: [0, 0] }];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "float", label: "Out" }];
+const pinIn = z.object({
+  p: vec2("Position", [0, 0]),
+});
 
-export default registerPrimitive({
-  typeId: "brick-texture",
-  name: "Brick",
-  category: "sources",
-  color: "#b45309",
-  description: "Running-bond brick courses.",
-  config,
+const pinOut = z.object({
+  out: float("Out"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  uniforms(node) {
-    const c = node.config as Config;
+class BrickTexture extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "brick-texture";
+  static readonly meta: PrimitiveMeta = {
+    name: "Brick Texture",
+    category: "texture",
+    color: "#b45309",
+    description: "Running-bond brick courses.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
+
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     return [
       { nameSuffix: "scale", type: "float", value: c.scale },
       { nameSuffix: "rowHeight", type: "float", value: c.rowHeight },
@@ -44,9 +56,9 @@ export default registerPrimitive({
       { nameSuffix: "mortarSize", type: "float", value: c.mortarSize },
       { nameSuffix: "bias", type: "float", value: c.bias },
     ] satisfies UniformSpec[];
-  },
+  }
 
-  emit(ctx) {
+  emit(ctx: EmitContext<In, Out>): EmitResult {
     ctx.addDependency("hash21");
     const p = ctx.inputs.p;
     const o = ctx.outputs.out;
@@ -65,5 +77,7 @@ float ${o}_r = hash21(vec2(${o}_col, ${o}_row));
 float ${o}_fill = clamp(0.5 + ${u.bias} * (${o}_r - 0.5) * 2.0 + (${o}_r - 0.5) * 0.5, 0.0, 1.0);
 float ${o} = ${o}_in * ${o}_fill;`,
     };
-  },
-});
+  }
+}
+
+export default register(BrickTexture);

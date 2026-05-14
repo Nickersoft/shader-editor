@@ -13,8 +13,16 @@
 
 import { z } from "zod";
 import { zFloat } from "@/shaders/core/schemas";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { float } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const config = z.object({
   fromMin: zFloat(-1000, 1000).default(0),
@@ -27,37 +35,40 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [{ id: "x", type: "float", label: "X", default: 0 }];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "float", label: "Out" }];
+const pinIn = z.object({
+  x: float("X", 0),
+});
 
-export default registerPrimitive({
-  typeId: "map-range",
-  name: "Map Range",
-  category: "math",
-  color: "#a78bfa",
-  description: "Remap a scalar across two ranges with optional curve.",
-  config,
+const pinOut = z.object({
+  out: float("Out"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  outputs() {
-    return OUTPUTS;
-  },
+class MapRange extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "map-range";
+  static readonly meta: PrimitiveMeta = {
+    name: "Map Range",
+    category: "converter",
+    color: "#a78bfa",
+    description: "Remap a scalar across two ranges with optional curve.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
 
-  uniforms(node) {
-    const c = node.config as Config;
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     return [
       { nameSuffix: "fromMin", type: "float", value: c.fromMin } satisfies UniformSpec,
       { nameSuffix: "fromMax", type: "float", value: c.fromMax } satisfies UniformSpec,
       { nameSuffix: "toMin", type: "float", value: c.toMin } satisfies UniformSpec,
       { nameSuffix: "toMax", type: "float", value: c.toMax } satisfies UniformSpec,
     ];
-  },
+  }
 
-  emit(ctx) {
-    const c = ctx.config as Config;
+  emit(ctx: EmitContext<In, Out>): EmitResult {
+    const c = this.cfg(ctx.config);
     const x = ctx.inputs.x;
     const fm = ctx.uniforms.fromMin;
     const fM = ctx.uniforms.fromMax;
@@ -82,5 +93,7 @@ float ${o} = mix(${tm}, ${tM}, ${tLocal}*${tLocal}*${tLocal}*(${tLocal}*(${tLoca
     return {
       statements: `float ${o} = mix(${tm}, ${tM}, ${tCurved});`,
     };
-  },
-});
+  }
+}
+
+export default register(MapRange);

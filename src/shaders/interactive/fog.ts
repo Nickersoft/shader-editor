@@ -4,15 +4,15 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
   speed: zFloat(0, 2, 0.05).default(0.3).describe("Speed"),
   scale: zFloat(0.1, 5, 0.05).default(1.0).describe("Scale"),
   color1: zColor().default([1.0, 1.0, 1.0]).describe("Color 1"),
   color2: zColor().default([0.5, 0.5, 0.5]).describe("Color 2"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Fog",
@@ -23,12 +23,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Fog extends EffectNode<Config, Inputs> {
+export class Fog extends EffectNode<Config, Uniforms> {
   static readonly typeId = "fog";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

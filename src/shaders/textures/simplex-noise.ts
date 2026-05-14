@@ -11,12 +11,10 @@ export default {
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
-    const src = b.add("field-source", { scale: 2, speed: 1, seed: 0 });
-    b.connect(p, src.nodeId, "p");
-    b.connect(t, src.nodeId, "t");
-    const fbm = b.add("fbm-sample", { detail: 5, lacunarity: 2, roughness: 0.5, distortion: 0 });
-    b.connect({ nodeId: src.nodeId, pin: "p" }, fbm.nodeId, "p");
-    b.connect({ nodeId: src.nodeId, pin: "t" }, fbm.nodeId, "t");
+    const src = b.fieldTransform(p, t, { scale: 2, speed: 1, seed: 0 });
+    const fbm = b.add("noise-texture", { kind: "fbm", detail: 5, lacunarity: 2, roughness: 0.5, distortion: 0 });
+    b.connect(src.p, fbm.nodeId, "p");
+    b.connect(src.t, fbm.nodeId, "t");
     const rm = b.add("remap", { balance: 0, contrast: 0 });
     b.connect(fbm, rm.nodeId, "x");
     const ramp = b.colorRamp(rm, [

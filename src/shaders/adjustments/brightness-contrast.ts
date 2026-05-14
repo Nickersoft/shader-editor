@@ -1,42 +1,73 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// BrightnessContrast — graph-decomposed adjustment.
+//
+//   col = (rgb − 0.5) · (contrast + 1) + 0.5 + brightness
+//
+// User-facing pins (`brightness`, `contrast`) live on the graph's GroupInput,
+// so the property pane shows them exactly as before. The graph body uses the
+// primitives in node-graph/primitives/.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  brightness: zFloat(-1, 1).default(0).describe("Brightness"),
-  contrast: zFloat(-1, 1).default(0).describe("Contrast"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Brightness/Contrast",
-  description: "Adjusts brightness and contrast of the rendered pixels — applied after shading (distinct from the Levels stage which shapes the field before colorization)",
+  description:
+    "Adjusts brightness and contrast of the rendered pixels — applied after shading.",
   color: "#a855f7",
   category: "adjustments",
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class BrightnessContrast extends EffectNode<Config, Inputs> {
+export class BrightnessContrast extends GraphEffectBase {
   static readonly typeId = "brightness-contrast";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const brightness = this.uniformName("brightness");
-    const contrast = this.uniformName("contrast");
-    return {
-      main: `
-base = texture(u_prevPass, uv);
-vec3 col = (base.rgb - 0.5) * (${contrast} + 1.0) + 0.5 + ${brightness};
-return vec4(col, base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "brightness", type: "float", label: "Brightness", default: 0 },
+      { id: "contrast", type: "float", label: "Contrast", default: 0 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+
+    const sampleColor = { nodeId: sample.nodeId, pin: "color" };
+    const sampleAlpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    // mid = rgb − 0.5
+    const negHalf = b.add("value", { value: -0.5 });
+    const mid = b.add("color-math", { op: "addScalar" });
+    b.connect(sampleColor, mid.nodeId, "a");
+    b.connect(negHalf, mid.nodeId, "b");
+
+    // gain = contrast + 1
+    const one = b.add("value", { value: 1 });
+    const gain = b.add("math", { op: "add" });
+    b.connect(gi.contrast, gain.nodeId, "a");
+    b.connect(one, gain.nodeId, "b");
+
+    // scaled = mid * gain
+    const scaled = b.add("color-math", { op: "scale" });
+    b.connect(mid, scaled.nodeId, "a");
+    b.connect(gain, scaled.nodeId, "b");
+
+    // shifted = scaled + 0.5
+    const half = b.add("value", { value: 0.5 });
+    const shifted = b.add("color-math", { op: "addScalar" });
+    b.connect(scaled, shifted.nodeId, "a");
+    b.connect(half, shifted.nodeId, "b");
+
+    // final = shifted + brightness
+    const final = b.add("color-math", { op: "addScalar" });
+    b.connect(shifted, final.nodeId, "a");
+    b.connect(gi.brightness, final.nodeId, "b");
+
+    return b.output(final, sampleAlpha);
   }
 }
 

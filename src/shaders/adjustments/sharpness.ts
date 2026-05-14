@@ -4,11 +4,11 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   amount: zFloat(0, 1).default(0.5).describe("Sharpness"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Sharpness",
@@ -19,12 +19,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Sharpness extends EffectNode<Config, Inputs> {
+export class Sharpness extends EffectNode<Config, Uniforms> {
   static readonly typeId = "sharpness";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

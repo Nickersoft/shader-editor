@@ -5,8 +5,8 @@
 // when a primitive file is imported (the primitive's index file imports each
 // class file, which calls `register(MyClass)` at module load).
 
-import type { Node, NodeClass } from "./node.svelte";
-import type { Category, SerializedNode } from "./types";
+import type { Node, NodeClass, SerializedNode } from "./node.svelte";
+import type { Category } from "./types";
 
 const REGISTRY = new Map<string, NodeClass>();
 
@@ -45,10 +45,16 @@ export function deserializeNode(json: SerializedNode): Node {
   if (!cls) {
     throw new Error(`Unknown node typeId "${json.typeId}" (instance id: ${json.id})`);
   }
+  // `inputs` is forwarded so legacy serialized scenes still hydrate — the
+  // Node constructor merges it into the parse pool alongside `config` and
+  // `uniforms`. Cast through unknown because the current SerializedNode
+  // type omits the deprecated `inputs` key.
+  const legacyInputs = (json as unknown as { inputs?: Record<string, unknown> }).inputs;
   return new cls({
     id: json.id,
     config: json.config,
-    inputs: json.inputs,
+    uniforms: json.uniforms,
+    inputs: legacyInputs,
     blendMode: json.blendMode,
     opacity: json.opacity,
     enabled: json.enabled,

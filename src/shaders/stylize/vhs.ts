@@ -4,14 +4,14 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   wobble: zFloat(0, 5, 0.01).default(1.0).describe("Wobble"),
   scanlineNoise: zFloat(0, 1, 0.01).default(0.6).describe("Scanline Noise"),
   smear: zFloat(-2, 2, 0.01).default(0.2).describe("Smear"),
   speed: zFloat(0.1, 3, 0.1).default(1.0).describe("Speed"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "VHS",
@@ -23,15 +23,15 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
 const SMEAR_SAMPLES = 6;
 const FIELD_LINES = 487;
 
-export class Vhs extends EffectNode<Config, Inputs> {
+export class Vhs extends EffectNode<Config, Uniforms> {
   static readonly typeId = "vhs";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

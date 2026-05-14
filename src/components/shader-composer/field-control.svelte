@@ -33,17 +33,19 @@
 
 {#if field.glslType === 'enumString'}
 	{@const opts = (field as InspectedUiField).enumValues ?? []}
+	{@const labels = (field as InspectedUiField).enumLabels}
 	{@const current = (value as string | undefined) ?? opts[0] ?? ''}
+	{@const labelFor = (opt: string) => labels?.[opt] ?? opt.charAt(0).toUpperCase() + opt.slice(1)}
 	<div class="space-y-2">
 		<Label class="text-xs text-muted-foreground">{label}</Label>
 		<Select.Root type="single" value={current} onValueChange={(v) => onChange(v)}>
 			<Select.Trigger class="w-full h-8 text-xs">
-				{current.charAt(0).toUpperCase() + current.slice(1)}
+				{labelFor(current)}
 			</Select.Trigger>
 			<Select.Content>
 				{#each opts as opt (opt)}
 					<Select.Item value={opt}>
-						{opt.charAt(0).toUpperCase() + opt.slice(1)}
+						{labelFor(opt)}
 					</Select.Item>
 				{/each}
 			</Select.Content>

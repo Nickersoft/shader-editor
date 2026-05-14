@@ -10,7 +10,7 @@ export default {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
     const p = b.position();
-    const noise = b.add("noise", { kind: "white", scale: 80, seed: 0 });
+    const noise = b.add("noise-texture", { kind: "white", scale: 80, seed: 0 });
     b.connect(p, noise.nodeId, "p");
     const ramp = b.colorRamp(noise, [
       [0, 0, 0],

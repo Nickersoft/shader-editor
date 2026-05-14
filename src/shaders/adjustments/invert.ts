@@ -1,14 +1,11 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Invert — graph-decomposed adjustment.
+//   result = mix(rgb, 1 - rgb, amount)
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  amount: zFloat(0, 1).default(1).describe("Amount"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Invert",
@@ -18,22 +15,31 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class Invert extends EffectNode<Config, Inputs> {
+export class Invert extends GraphEffectBase {
   static readonly typeId = "invert";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const amount = this.uniformName("amount");
-    return {
-      main: `
-base = texture(u_prevPass, uv);
-return vec4(mix(base.rgb, 1.0 - base.rgb, ${amount}), base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "amount", type: "float", label: "Amount", default: 1 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+    const color = { nodeId: sample.nodeId, pin: "color" };
+    const alpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    const inverted = b.add("color-math", { op: "oneminus" });
+    b.connect(color, inverted.nodeId, "a");
+
+    const result = b.add("mix-color", { clampT: true });
+    b.connect(color, result.nodeId, "a");
+    b.connect(inverted, result.nodeId, "b");
+    b.connect(gi.amount, result.nodeId, "t");
+
+    return b.output(result, alpha);
   }
 }
 

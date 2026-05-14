@@ -4,14 +4,14 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zBool, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 1).default(0.3).describe("Intensity"),
   size: zFloat(0, 1, 0.01).default(0.5).describe("Size"),
   bias: zFloat(-1, 1, 0.01).default(0).describe("Bias"),
   animated: zBool().default(false).describe("Animated"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Film Grain",
@@ -22,12 +22,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class FilmGrain extends EffectNode<Config, Inputs> {
+export class FilmGrain extends EffectNode<Config, Uniforms> {
   static readonly typeId = "film-grain";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

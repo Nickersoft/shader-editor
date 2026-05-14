@@ -4,14 +4,14 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   displacement: zFloat(0, 1).default(0.5).describe("Displacement"),
   frequency: zFloat(1, 50, 0.5).default(10).describe("Frequency"),
   roughness: zFloat(0, 1).default(0.5).describe("Roughness"),
   seed: zFloat(0, 10, 0.01).default(0).describe("Seed"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Paper",
@@ -22,12 +22,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Paper extends EffectNode<Config, Inputs> {
+export class Paper extends EffectNode<Config, Uniforms> {
   static readonly typeId = "paper";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

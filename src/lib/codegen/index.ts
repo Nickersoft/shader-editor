@@ -53,14 +53,13 @@ export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedSh
       });
     }
 
+    // Only the `uniforms` schema contributes GPU bindings. The `config`
+    // schema is editor-level state that branches the GLSL source itself
+    // (e.g. EdgeMode, halftone style) — those don't become uniforms.
     const cls = node.cls;
-    const cfgFields = inspectObjectSchema(cls.config);
-    const inFields = inspectObjectSchema(cls.inputs);
-    for (const field of [...cfgFields, ...inFields]) {
-      const value =
-        field.key in node.config
-          ? (node.config as Record<string, unknown>)[field.key]
-          : (node.inputs as Record<string, unknown>)[field.key];
+    const uniformFields = inspectObjectSchema(cls.uniforms);
+    for (const field of uniformFields) {
+      const value = (node.uniforms as Record<string, unknown>)[field.key];
       uniforms.push({
         name: `u_${prefix}_${field.key}`,
         type: field.glslType,

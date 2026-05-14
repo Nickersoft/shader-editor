@@ -1,11 +1,29 @@
-// VoronoiSample — full-featured voronoi (feature/metric/smoothness, time
-// jitter). Direct port of the legacy field-stage; preset-compatible.
+// VoronoiTexture — cellular noise with selectable feature and distance metric,
+// matching Blender's Voronoi Texture node.
+//
+//   feature:    f1            → distance to nearest point
+//               f2            → distance to second-nearest point
+//               smooth-f1     → smooth-min over all neighbours (k = smoothness)
+//               distance-to-edge → 1 − (f2 − f1)/2, the perpendicular bisector distance
+//   metric:     euclidean | manhattan | chebychev
+//
+// Inputs are `p` (sample point) and an optional `t` (per-frame jitter on the
+// per-cell point positions). `randomness` interpolates between a regular grid
+// (0) and fully hashed jitter (1). `smoothness` only matters for smooth-f1.
 
 import { z } from "zod";
 import { zFloat } from "@/shaders/core/schemas";
 import type { GlslHelperName } from "@/shaders/core/types";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { float, vec2 } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const config = z.object({
   feature: z.enum(["f1", "f2", "smooth-f1", "distance-to-edge"]).default("f1"),
@@ -16,37 +34,39 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [
-  { id: "p", type: "vec2", label: "P", default: [0, 0] },
-  { id: "t", type: "float", label: "T", default: 0 },
-];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "float", label: "Out" }];
+const pinIn = z.object({
+  p: vec2("Position", [0, 0]),
+  t: float("Time", 0),
+});
 
-export default registerPrimitive({
-  typeId: "voronoi-sample",
-  name: "Voronoi Sample",
-  category: "sources",
-  color: "#06b6d4",
-  description: "Voronoi (f1/f2/smooth/edge) with metric + time jitter.",
-  config,
+const pinOut = z.object({
+  out: float("Out"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  uniforms(node) {
-    const c = node.config as Config;
+class VoronoiTexture extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "voronoi-texture";
+  static readonly meta: PrimitiveMeta = {
+    name: "Voronoi Texture",
+    category: "texture",
+    color: "#06b6d4",
+    description: "Cellular noise (f1/f2/smooth/edge) with metric + time jitter.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
+
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     return [
       { nameSuffix: "randomness", type: "float", value: c.randomness },
       { nameSuffix: "smoothness", type: "float", value: c.smoothness },
     ] satisfies UniformSpec[];
-  },
+  }
 
-  emit(ctx) {
-    const c = ctx.config as Config;
+  emit(ctx: EmitContext<In, Out>): EmitResult {
+    const c = this.cfg(ctx.config);
     const p = ctx.inputs.p;
     const t = ctx.inputs.t;
     const o = ctx.outputs.out;
@@ -116,5 +136,7 @@ for (int ${o}_ny = -1; ${o}_ny <= 1; ${o}_ny++) {
 }
 ${featureWrite}`,
     };
-  },
-});
+  }
+}
+
+export default register(VoronoiTexture);

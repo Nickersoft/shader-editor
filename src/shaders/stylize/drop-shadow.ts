@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zAngle, zBool, zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   angle: zAngle().default(135).describe("Angle"),
   distance: zFloat(0, 1, 0.001).default(0.05).describe("Distance"),
   blur: zFloat(0, 50, 0.5).default(10).describe("Blur"),
@@ -12,8 +14,6 @@ const config = z.object({
   opacity: zFloat(0, 1).default(0.5).describe("Opacity"),
   cutout: zBool().default(false).describe("Cutout"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Drop Shadow",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class DropShadow extends EffectNode<Config, Inputs> {
+export class DropShadow extends EffectNode<Config, Uniforms> {
   static readonly typeId = "drop-shadow";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

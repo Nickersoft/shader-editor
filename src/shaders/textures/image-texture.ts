@@ -4,12 +4,11 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { noImage, zColorRgba, zImageInput } from "@/shaders/core/schemas";
 
-const config = z.object({
-  tint: zColorRgba().default([1, 1, 1, 1]).describe("Tint"),
-});
+const config = z.object({});
 
-const inputs = z.object({
+const uniforms = z.object({
   image: zImageInput().default(noImage).describe("Image"),
+  tint: zColorRgba().default([1, 1, 1, 1]).describe("Tint"),
 });
 
 const meta: NodeMeta = {
@@ -21,12 +20,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class ImageTexture extends GeneratorNode<Config, Inputs> {
+export class ImageTexture extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "image-texture";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

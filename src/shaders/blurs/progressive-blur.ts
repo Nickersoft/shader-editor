@@ -4,15 +4,15 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zAngle, zCenterAxis, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 1, 0.01).default(0.5).describe("Intensity"),
   angle: zAngle().default(90).describe("Angle"),
   centerX: zCenterAxis().default(0.5).describe("Center X"),
   centerY: zCenterAxis().default(0.5).describe("Center Y"),
   falloff: zFloat(0, 1, 0.01).default(0.5).describe("Falloff"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Progressive Blur",
@@ -23,12 +23,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class ProgressiveBlur extends EffectNode<Config, Inputs> {
+export class ProgressiveBlur extends EffectNode<Config, Uniforms> {
   static readonly typeId = "progressive-blur";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

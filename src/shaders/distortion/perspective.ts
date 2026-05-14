@@ -5,14 +5,15 @@ import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { edgeMode, zEdges, zFloat, zVec2 } from "@/shaders/core/schemas";
 
 const config = z.object({
+  edges: zEdges().default("transparent").describe("Edges"),
+});
+
+const uniforms = z.object({
   pan: zVec2(-1, 1, 0.01).default([0, 0]).describe("Pan"),
   tilt: zVec2(-1, 1, 0.01).default([0, 0]).describe("Tilt"),
   fov: zFloat(10, 120, 1).default(60.0).describe("FOV"),
   offset: zVec2(-1, 1, 0.01).default([0, 0]).describe("Offset"),
-  edges: zEdges().default("transparent").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Perspective",
@@ -23,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Perspective extends EffectNode<Config, Inputs> {
+export class Perspective extends EffectNode<Config, Uniforms> {
   static readonly typeId = "perspective";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

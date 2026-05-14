@@ -1,14 +1,13 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// HueShift — graph-decomposed adjustment.
+//   hsv = rgb2hsv(rgb)
+//   hsv.x = fract(hsv.x + shift / 360)
+//   result = hsv2rgb(hsv)
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  shift: zFloat(-180, 180, 1).default(0).describe("Shift"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Hue Shift",
@@ -18,25 +17,50 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class HueShift extends EffectNode<Config, Inputs> {
+export class HueShift extends GraphEffectBase {
   static readonly typeId = "hue-shift";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const shift = this.uniformName("shift");
-    return {
-      dependencies: ["rgb2hsv", "hsv2rgb"],
-      main: `
-base = texture(u_prevPass, uv);
-vec3 hsv = rgb2hsv(base.rgb);
-hsv.x = fract(hsv.x + ${shift} / 360.0);
-return vec4(hsv2rgb(hsv), base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "shift", type: "float", label: "Shift", default: 0 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+    const color = { nodeId: sample.nodeId, pin: "color" };
+    const alpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    const hsv = b.add("rgb-to-hsv", {}, undefined, "hsv");
+    b.connect(color, hsv.nodeId, "rgb");
+
+    const split = b.add("separate-color", {});
+    b.connect(hsv, split.nodeId, "v");
+
+    // Normalise shift (deg) into hue space [0,1] and wrap with fract.
+    const deg = b.add("value", { value: 1 / 360 });
+    const factor = b.add("math", { op: "mul" });
+    b.connect(gi.shift, factor.nodeId, "a");
+    b.connect(deg, factor.nodeId, "b");
+
+    const sumH = b.add("math", { op: "add" });
+    b.connect({ nodeId: split.nodeId, pin: "r" }, sumH.nodeId, "a");
+    b.connect(factor, sumH.nodeId, "b");
+
+    const wrapH = b.add("math", { op: "fract" });
+    b.connect(sumH, wrapH.nodeId, "x");
+
+    const newHsv = b.add("combine-color", {});
+    b.connect(wrapH, newHsv.nodeId, "r");
+    b.connect({ nodeId: split.nodeId, pin: "g" }, newHsv.nodeId, "g");
+    b.connect({ nodeId: split.nodeId, pin: "b" }, newHsv.nodeId, "b");
+
+    const result = b.add("hsv-to-rgb", {}, undefined, "rgb");
+    b.connect(newHsv, result.nodeId, "hsv");
+
+    return b.output(result, alpha);
   }
 }
 

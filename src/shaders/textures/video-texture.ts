@@ -9,7 +9,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zBool, zColor } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   url: z.string().default("https://shaders.com/sample.mp4").describe("URL"),
   objectFit: z
     .enum(["cover", "contain", "fill", "scale-down", "none"])
@@ -18,8 +20,6 @@ const config = z.object({
   loop: zBool().default(true).describe("Loop"),
   placeholder: zColor().default([0.1, 0.1, 0.12]).describe("Placeholder Color"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Video Texture",
@@ -30,12 +30,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class VideoTexture extends GeneratorNode<Config, Inputs> {
+export class VideoTexture extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "video-texture";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

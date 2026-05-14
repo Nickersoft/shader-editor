@@ -4,13 +4,13 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   cells: zFloat(4, 400, 1).default(80.0).describe("Cells"),
   gap: zFloat(0, 1).default(0).describe("Gap"),
   roundness: zFloat(0, 1).default(0).describe("Roundness"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Pixelate",
@@ -21,12 +21,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Pixelate extends EffectNode<Config, Inputs> {
+export class Pixelate extends EffectNode<Config, Uniforms> {
   static readonly typeId = "pixelate";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

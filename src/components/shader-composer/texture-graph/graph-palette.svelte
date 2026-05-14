@@ -24,18 +24,22 @@
 	// `category` is optional on a primitive; everything without one collapses
 	// into "Other" so the section list is always exhaustive.
 	const CATEGORY_LABELS: Record<string, string> = {
-		attributes: 'Attributes',
-		math: 'Math',
-		sources: 'Sources',
-		io: 'I/O',
+		input: 'Input',
+		texture: 'Texture',
+		color: 'Color',
+		vector: 'Vector',
+		converter: 'Converter',
+		group: 'Group',
 		other: 'Other'
 	};
 
 	const CATEGORY_ORDER: readonly string[] = [
-		'attributes',
-		'math',
-		'sources',
-		'io',
+		'input',
+		'texture',
+		'color',
+		'vector',
+		'converter',
+		'group',
 		'other'
 	];
 

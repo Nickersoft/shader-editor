@@ -9,10 +9,10 @@ export default {
   graph: () => {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
-    const p = b.position();
-    const grad = b.add("gradient-texture", { type: "linear" });
-    b.connect(p, grad.nodeId, "p");
-    const ramp = b.colorRamp(grad, [
+    const uv = b.screenUv();
+    const domain = b.add("linear-gradient-domain", {});
+    b.connect(uv, domain.nodeId, "p");
+    const ramp = b.colorRamp(domain, [
       [0.0, 0.0, 1.0],
       [0.1, 1.0, 0.0],
     ]);

@@ -27,155 +27,119 @@ export default {
     const t = b.time();
 
     // bt = t * speed
-    const bt = b.add("combine", { op: "mul" });
+    const bt = b.add("math", { op: "mul" });
     b.connect(t, bt.nodeId, "a");
     b.connect(gi.speed, bt.nodeId, "b");
 
     // Polar coords of p (centered at origin) → (r, a01)
-    const zero = b.add("const", { value: 0 });
-    const zero2 = b.add("combine-xy", {});
-    b.connect(zero, zero2.nodeId, "x");
-    b.connect(zero, zero2.nodeId, "y");
-    const polar = b.add("polar-transform", {});
-    b.connect(p, polar.nodeId, "p");
-    b.connect(zero2, polar.nodeId, "center");
+    const zero2 = b.add("combine-xy", {}, { x: 0, y: 0 });
+    const polar = b.polarTransform(p, zero2);
     const sep = b.add("separate-xy", {});
     b.connect(polar, sep.nodeId, "v");
 
     // ang_rad = a01 * 2π
-    const tau = b.add("const", { value: 6.2831853 });
-    const angRad = b.add("combine", { op: "mul" });
+    const angRad = b.add("math", { op: "mul" }, { b: 6.2831853 });
     b.connect({ nodeId: sep.nodeId, pin: "y" }, angRad.nodeId, "a");
-    b.connect(tau, angRad.nodeId, "b");
 
     // r0 = size * 0.45 + 0.05
-    const k045 = b.add("const", { value: 0.45 });
-    const k005 = b.add("const", { value: 0.05 });
-    const r0a = b.add("combine", { op: "mul" });
+    const r0a = b.add("math", { op: "mul" }, { b: 0.45 });
     b.connect(gi.size, r0a.nodeId, "a");
-    b.connect(k045, r0a.nodeId, "b");
-    const r0 = b.add("combine", { op: "add" });
+    const r0 = b.add("math", { op: "add" }, { b: 0.05 });
     b.connect(r0a, r0.nodeId, "a");
-    b.connect(k005, r0.nodeId, "b");
 
     // warp1 = sin(ang_rad * 3 + bt * 0.7 + seed) * 0.18
-    const k3 = b.add("const", { value: 3 });
-    const k07 = b.add("const", { value: 0.7 });
-    const k018 = b.add("const", { value: 0.18 });
-    const ang3 = b.add("combine", { op: "mul" });
+    const ang3 = b.add("math", { op: "mul" }, { b: 3 });
     b.connect(angRad, ang3.nodeId, "a");
-    b.connect(k3, ang3.nodeId, "b");
-    const bt07 = b.add("combine", { op: "mul" });
+    const bt07 = b.add("math", { op: "mul" }, { b: 0.7 });
     b.connect(bt, bt07.nodeId, "a");
-    b.connect(k07, bt07.nodeId, "b");
-    const w1arg1 = b.add("combine", { op: "add" });
+    const w1arg1 = b.add("math", { op: "add" });
     b.connect(ang3, w1arg1.nodeId, "a");
     b.connect(bt07, w1arg1.nodeId, "b");
-    const w1arg = b.add("combine", { op: "add" });
+    const w1arg = b.add("math", { op: "add" });
     b.connect(w1arg1, w1arg.nodeId, "a");
     b.connect(gi.seed, w1arg.nodeId, "b");
     const w1sin = b.add("math", { op: "sin" });
     b.connect(w1arg, w1sin.nodeId, "x");
-    const warp1 = b.add("combine", { op: "mul" });
+    const warp1 = b.add("math", { op: "mul" }, { b: 0.18 });
     b.connect(w1sin, warp1.nodeId, "a");
-    b.connect(k018, warp1.nodeId, "b");
 
     // warp2 = sin(ang_rad * 5 - bt * 1.1 + seed * 1.7) * 0.10
-    const k5 = b.add("const", { value: 5 });
-    const k11 = b.add("const", { value: 1.1 });
-    const k17 = b.add("const", { value: 1.7 });
-    const k010 = b.add("const", { value: 0.10 });
-    const ang5 = b.add("combine", { op: "mul" });
+    const ang5 = b.add("math", { op: "mul" }, { b: 5 });
     b.connect(angRad, ang5.nodeId, "a");
-    b.connect(k5, ang5.nodeId, "b");
-    const bt11 = b.add("combine", { op: "mul" });
+    const bt11 = b.add("math", { op: "mul" }, { b: 1.1 });
     b.connect(bt, bt11.nodeId, "a");
-    b.connect(k11, bt11.nodeId, "b");
-    const seed17 = b.add("combine", { op: "mul" });
+    const seed17 = b.add("math", { op: "mul" }, { b: 1.7 });
     b.connect(gi.seed, seed17.nodeId, "a");
-    b.connect(k17, seed17.nodeId, "b");
-    const w2arg1 = b.add("combine", { op: "sub" });
+    const w2arg1 = b.add("math", { op: "sub" });
     b.connect(ang5, w2arg1.nodeId, "a");
     b.connect(bt11, w2arg1.nodeId, "b");
-    const w2arg = b.add("combine", { op: "add" });
+    const w2arg = b.add("math", { op: "add" });
     b.connect(w2arg1, w2arg.nodeId, "a");
     b.connect(seed17, w2arg.nodeId, "b");
     const w2sin = b.add("math", { op: "sin" });
     b.connect(w2arg, w2sin.nodeId, "x");
-    const warp2 = b.add("combine", { op: "mul" });
+    const warp2 = b.add("math", { op: "mul" }, { b: 0.1 });
     b.connect(w2sin, warp2.nodeId, "a");
-    b.connect(k010, warp2.nodeId, "b");
 
     // warp3 = fbm(vec2(cos(ang), sin(ang)) * 2 + bt*0.2 + seed) * 0.25
-    const k2 = b.add("const", { value: 2 });
-    const k02 = b.add("const", { value: 0.2 });
-    const k025 = b.add("const", { value: 0.25 });
     const cosAng = b.add("math", { op: "cos" });
     b.connect(angRad, cosAng.nodeId, "x");
     const sinAng = b.add("math", { op: "sin" });
     b.connect(angRad, sinAng.nodeId, "x");
-    const cos2 = b.add("combine", { op: "mul" });
+    const cos2 = b.add("math", { op: "mul" }, { b: 2 });
     b.connect(cosAng, cos2.nodeId, "a");
-    b.connect(k2, cos2.nodeId, "b");
-    const sin2 = b.add("combine", { op: "mul" });
+    const sin2 = b.add("math", { op: "mul" }, { b: 2 });
     b.connect(sinAng, sin2.nodeId, "a");
-    b.connect(k2, sin2.nodeId, "b");
-    const bt02 = b.add("combine", { op: "mul" });
+    const bt02 = b.add("math", { op: "mul" }, { b: 0.2 });
     b.connect(bt, bt02.nodeId, "a");
-    b.connect(k02, bt02.nodeId, "b");
-    const offset = b.add("combine", { op: "add" });
+    const offset = b.add("math", { op: "add" });
     b.connect(bt02, offset.nodeId, "a");
     b.connect(gi.seed, offset.nodeId, "b");
-    const fbmX = b.add("combine", { op: "add" });
+    const fbmX = b.add("math", { op: "add" });
     b.connect(cos2, fbmX.nodeId, "a");
     b.connect(offset, fbmX.nodeId, "b");
-    const fbmY = b.add("combine", { op: "add" });
+    const fbmY = b.add("math", { op: "add" });
     b.connect(sin2, fbmY.nodeId, "a");
     b.connect(offset, fbmY.nodeId, "b");
     const fbmUv = b.add("combine-xy", {});
     b.connect(fbmX, fbmUv.nodeId, "x");
     b.connect(fbmY, fbmUv.nodeId, "y");
-    const tZero = b.add("const", { value: 0 });
-    const fbmN = b.add("fbm-sample", { detail: 3, lacunarity: 2, roughness: 0.5, distortion: 0 });
+    const fbmN = b.add(
+      "noise-texture",
+      { kind: "fbm", detail: 3, lacunarity: 2, roughness: 0.5, distortion: 0 },
+      { t: 0 },
+    );
     b.connect(fbmUv, fbmN.nodeId, "p");
-    b.connect(tZero, fbmN.nodeId, "t");
-    // fbm-sample outputs in [0,1] (it has a +0.5 remap). Bring back to [-1,1]
-    // so the warp keeps its bidirectional shape.
-    const k2x = b.add("const", { value: 2 });
-    const kNeg1 = b.add("const", { value: -1 });
-    const fbm2 = b.add("combine", { op: "mul" });
+    // noise-texture (fbm) outputs in [0,1]; bring back to [-1,1] so the warp
+    // keeps its bidirectional shape.
+    const fbm2 = b.add("math", { op: "mul" }, { b: 2 });
     b.connect(fbmN, fbm2.nodeId, "a");
-    b.connect(k2x, fbm2.nodeId, "b");
-    const fbmSigned = b.add("combine", { op: "add" });
+    const fbmSigned = b.add("math", { op: "sub" }, { b: 1 });
     b.connect(fbm2, fbmSigned.nodeId, "a");
-    b.connect(kNeg1, fbmSigned.nodeId, "b");
-    const warp3 = b.add("combine", { op: "mul" });
+    const warp3 = b.add("math", { op: "mul" }, { b: 0.25 });
     b.connect(fbmSigned, warp3.nodeId, "a");
-    b.connect(k025, warp3.nodeId, "b");
 
     // warp = warp1 + warp2 + warp3
-    const warpAB = b.add("combine", { op: "add" });
+    const warpAB = b.add("math", { op: "add" });
     b.connect(warp1, warpAB.nodeId, "a");
     b.connect(warp2, warpAB.nodeId, "b");
-    const warp = b.add("combine", { op: "add" });
+    const warp = b.add("math", { op: "add" });
     b.connect(warpAB, warp.nodeId, "a");
     b.connect(warp3, warp.nodeId, "b");
 
     // rad = r0 * (1 + warp * def)
-    const k1 = b.add("const", { value: 1 });
-    const wdef = b.add("combine", { op: "mul" });
+    const wdef = b.add("math", { op: "mul" });
     b.connect(warp, wdef.nodeId, "a");
     b.connect(gi.deformation, wdef.nodeId, "b");
-    const oneWdef = b.add("combine", { op: "add" });
-    b.connect(k1, oneWdef.nodeId, "a");
+    const oneWdef = b.add("math", { op: "add" }, { a: 1 });
     b.connect(wdef, oneWdef.nodeId, "b");
-    const rad = b.add("combine", { op: "mul" });
+    const rad = b.add("math", { op: "mul" });
     b.connect(r0, rad.nodeId, "a");
     b.connect(oneWdef, rad.nodeId, "b");
 
     // d = r - rad
     const r = { nodeId: sep.nodeId, pin: "x" };
-    const d = b.add("combine", { op: "sub" });
+    const d = b.add("math", { op: "sub" });
     b.connect(r, d.nodeId, "a");
     b.connect(rad, d.nodeId, "b");
 
@@ -200,8 +164,8 @@ export default {
     const mask = b.add("math", { op: "oneminus" });
     b.connect(ss, mask.nodeId, "x");
 
-    // fill = clamp(r / rad, 0, 1) → Combine div + MapRange clamp pass-through
-    const ratio = b.add("combine", { op: "div" });
+    // fill = clamp(r / rad, 0, 1) → MapRange clamp pass-through
+    const ratio = b.add("math", { op: "div" });
     b.connect(r, ratio.nodeId, "a");
     b.connect(rad, ratio.nodeId, "b");
     const fill = b.add("map-range", {
@@ -220,18 +184,11 @@ export default {
     b.connect(gi.colorB, bg.nodeId, "b");
     b.connect(fill, bg.nodeId, "t");
 
-    // out = mix(black, bg, mask)
-    const black = b.add("mix-color", {});
-    const kz = b.add("const", { value: 0 });
-    // mix-color default a = (0,0,0); using bg as both lets us reuse a black
-    // by leaving b=default. Simpler path: literal-zero ColorRamp.
-    const blackRamp = b.colorRamp(kz, [
-      [0, 0, 0],
-      [0, 0, 0],
-    ]);
-    b.connect(blackRamp, black.nodeId, "a");
-    b.connect(bg, black.nodeId, "b");
-    b.connect(mask, black.nodeId, "t");
-    return b.output(black);
+    // out = mix(black, bg, mask) — `a` defaults to vec3(0) so no wiring
+    // needed for the black side.
+    const out = b.add("mix-color", {});
+    b.connect(bg, out.nodeId, "b");
+    b.connect(mask, out.nodeId, "t");
+    return b.output(out);
   },
 } satisfies ProceduralPreset;

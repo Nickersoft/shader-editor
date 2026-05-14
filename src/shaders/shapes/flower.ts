@@ -6,16 +6,17 @@ import { transformFields, zColor, zFloat, zInt } from "@/shaders/core/schemas";
 import type { SpatialControl } from "@/shaders/core/spatial";
 
 const config = z.object({
+  strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
+});
+
+const uniforms = z.object({
   ...transformFields(),
   petals: zInt(3, 16).default(5).describe("Petals"),
   innerRatio: zFloat(0.1, 0.95, 0.01).default(0.4).describe("Inner Ratio"),
   fillColor: zColor().default([1, 1, 1]).describe("Fill"),
   strokeColor: zColor().default([0, 0, 0]).describe("Stroke"),
   strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe("Stroke Width"),
-  strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Flower",
@@ -26,12 +27,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Flower extends GeneratorNode<Config, Inputs> {
+export class Flower extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "flower";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly spatialControls: readonly SpatialControl[] = [
     {

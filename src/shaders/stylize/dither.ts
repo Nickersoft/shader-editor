@@ -9,13 +9,14 @@ const config = z.object({
     .enum(["bayer2", "bayer4", "bayer8", "whiteNoise"])
     .default("bayer4")
     .describe("Pattern"),
+});
+
+const uniforms = z.object({
   threshold: zFloat(0, 1).default(0.5).describe("Threshold"),
   spread: zFloat(0, 1).default(0.5).describe("Spread"),
   colorDark: zColor().default([0.05, 0.05, 0.1]).describe("Dark"),
   colorLight: zColor().default([1, 1, 0.95]).describe("Light"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Dither",
@@ -26,7 +27,7 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
 const BAYER2 = `
 const float bayer2[4] = float[4](
@@ -54,10 +55,10 @@ const float bayer8[64] = float[64](
   63.0/64.0, 31.0/64.0, 55.0/64.0, 23.0/64.0, 61.0/64.0, 29.0/64.0, 53.0/64.0, 21.0/64.0
 );`;
 
-export class Dither extends EffectNode<Config, Inputs> {
+export class Dither extends EffectNode<Config, Uniforms> {
   static readonly typeId = "dither";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

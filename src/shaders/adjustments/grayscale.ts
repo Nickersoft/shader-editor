@@ -1,14 +1,12 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Grayscale — graph-decomposed adjustment.
+//   lum = dot(rgb, [0.2126, 0.7152, 0.0722])   // Rec.709
+//   result = mix(rgb, vec3(lum), amount)
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  amount: zFloat(0, 1).default(1).describe("Amount"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Grayscale",
@@ -18,23 +16,46 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class Grayscale extends EffectNode<Config, Inputs> {
+export class Grayscale extends GraphEffectBase {
   static readonly typeId = "grayscale";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const amount = this.uniformName("amount");
-    return {
-      main: `
-base = texture(u_prevPass, uv);
-float lum = dot(base.rgb, vec3(0.2126, 0.7152, 0.0722));
-return vec4(mix(base.rgb, vec3(lum), ${amount}), base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "amount", type: "float", label: "Amount", default: 1 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+    const color = { nodeId: sample.nodeId, pin: "color" };
+    const alpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    // weights = vec3(0.2126, 0.7152, 0.0722)
+    const wR = b.add("value", { value: 0.2126 });
+    const wG = b.add("value", { value: 0.7152 });
+    const wB = b.add("value", { value: 0.0722 });
+    const weights = b.add("combine-color", {});
+    b.connect(wR, weights.nodeId, "r");
+    b.connect(wG, weights.nodeId, "g");
+    b.connect(wB, weights.nodeId, "b");
+
+    const lum = b.add("color-math", { op: "dot" });
+    b.connect(color, lum.nodeId, "a");
+    b.connect(weights, lum.nodeId, "b");
+
+    const lumVec3 = b.add("combine-color", {});
+    b.connect(lum, lumVec3.nodeId, "r");
+    b.connect(lum, lumVec3.nodeId, "g");
+    b.connect(lum, lumVec3.nodeId, "b");
+
+    const result = b.add("mix-color", { clampT: true });
+    b.connect(color, result.nodeId, "a");
+    b.connect(lumVec3, result.nodeId, "b");
+    b.connect(gi.amount, result.nodeId, "t");
+
+    return b.output(result, alpha);
   }
 }
 

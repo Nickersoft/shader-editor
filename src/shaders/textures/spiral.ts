@@ -11,11 +11,8 @@ export default {
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
-    const src = b.add("field-source", { scale: 1, speed: 1, seed: 0 });
-    b.connect(p, src.nodeId, "p");
-    b.connect(t, src.nodeId, "t");
-    const polar = b.add("polar-domain", { radialScale: 1, angularScale: 1 });
-    b.connect({ nodeId: src.nodeId, pin: "p" }, polar.nodeId, "p");
+    const src = b.fieldTransform(p, t, { scale: 1, speed: 1, seed: 0 });
+    const polar = b.polarDomain(src.p, 1, 1);
     const wv = b.add("wave-texture", {
       type: "bands",
       profile: "sine",

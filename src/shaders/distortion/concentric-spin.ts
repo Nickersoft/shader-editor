@@ -5,6 +5,10 @@ import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { edgeMode, zCenterAxis, zEdges, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
+  edges: zEdges().default("mirror").describe("Edges"),
+});
+
+const uniforms = z.object({
   centerX: zCenterAxis().default(0.5).describe("Center X"),
   centerY: zCenterAxis().default(0.5).describe("Center Y"),
   rings: zFloat(1, 30, 1).default(8.0).describe("Rings"),
@@ -12,10 +16,7 @@ const config = z.object({
   speed: zFloat(-4, 4, 0.05).default(0.5).describe("Speed"),
   speedRandomness: zFloat(0, 1, 0.01).default(0.5).describe("Speed Randomness"),
   seed: zFloat(0, 1, 0.01).default(0.0).describe("Seed"),
-  edges: zEdges().default("mirror").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Concentric Spin",
@@ -26,12 +27,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class ConcentricSpin extends EffectNode<Config, Inputs> {
+export class ConcentricSpin extends EffectNode<Config, Uniforms> {
   static readonly typeId = "concentric-spin";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

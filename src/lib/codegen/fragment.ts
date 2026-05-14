@@ -213,10 +213,9 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
     uniformDeclarations.push(`uniform float u_${prefix}_opacity;`);
 
     const cls = node.cls;
-    const cfgFields = inspectObjectSchema(cls.config);
-    const inFields = inspectObjectSchema(cls.inputs);
+    const uniformFields = inspectObjectSchema(cls.uniforms);
 
-    for (const field of [...cfgFields, ...inFields]) {
+    for (const field of uniformFields) {
       const baseName = `u_${prefix}_${field.key}`;
       if (field.glslType === "sampler2D") {
         uniformDeclarations.push(`uniform sampler2D ${baseName};`);

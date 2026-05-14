@@ -2,8 +2,16 @@
 
 import { z } from "zod";
 import { zFloat } from "@/shaders/core/schemas";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import type { PinSpec } from "../types";
+import { float } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import type { GraphNode } from "../types";
 
 const config = z.object({
   balance: zFloat(-1, 1, 0.01).default(0),
@@ -12,33 +20,37 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [{ id: "x", type: "float", label: "X", default: 0 }];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "float", label: "Out" }];
+const pinIn = z.object({
+  x: float("X", 0),
+});
 
-export default registerPrimitive({
-  typeId: "remap",
-  name: "Remap",
-  category: "math",
-  color: "#a78bfa",
-  description: "Balance + contrast on a scalar.",
-  config,
+const pinOut = z.object({
+  out: float("Out"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  uniforms(node) {
-    const c = node.config as Config;
+class Remap extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "remap";
+  static readonly meta: PrimitiveMeta = {
+    name: "Remap",
+    category: "converter",
+    color: "#a78bfa",
+    description: "Balance + contrast on a scalar.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
+
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     return [
       { nameSuffix: "balance", type: "float", value: c.balance },
       { nameSuffix: "contrast", type: "float", value: c.contrast },
     ] satisfies UniformSpec[];
-  },
+  }
 
-  emit(ctx) {
+  emit(ctx: EmitContext<In, Out>): EmitResult {
     const x = ctx.inputs.x;
     const o = ctx.outputs.out;
     const u = ctx.uniforms;
@@ -47,5 +59,7 @@ export default registerPrimitive({
 float ${o}_c = clamp(${u.contrast} + 1.0, 0.0, 5.0);
 float ${o} = clamp((${o}_a - 0.5) * ${o}_c + 0.5, 0.0, 1.0);`,
     };
-  },
-});
+  }
+}
+
+export default register(Remap);

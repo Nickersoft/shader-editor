@@ -162,12 +162,13 @@ export class JsLayerRunner {
 }
 
 /**
- * Stable serialization of a node's inputs for change detection. Hashes both
- * `config` and `inputs`. Image fields hash by URL only — fit/scale/rotation
- * don't affect CPU preprocessing (those are GLSL-side sampling concerns).
+ * Stable serialization of a node's parsed state for change detection. Hashes
+ * both `config` and `uniforms`. Image fields hash by URL only — fit/scale/
+ * rotation don't affect CPU preprocessing (those are GLSL-side sampling
+ * concerns).
  */
 function hashInputs(node: ProcessingNode): string {
-  return "cfg=" + serialize(node.config) + "|in=" + serialize(node.inputs);
+  return "cfg=" + serialize(node.config) + "|u=" + serialize(node.uniforms);
 }
 
 function serialize(v: unknown): string {

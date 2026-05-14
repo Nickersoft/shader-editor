@@ -4,15 +4,15 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   glowIntensity: zFloat(0, 2, 0.05).default(1.0).describe("Glow Intensity"),
   glowSize: zFloat(0, 1, 0.01).default(0.3).describe("Glow Size"),
   flicker: zFloat(0, 1, 0.01).default(0).describe("Flicker"),
   coreColor: zColor().default([1.0, 1.0, 1.0]).describe("Core Color"),
   glowColor: zColor().default([1.0, 0.6, 0.2]).describe("Glow Color"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Neon",
@@ -23,12 +23,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Neon extends EffectNode<Config, Inputs> {
+export class Neon extends EffectNode<Config, Uniforms> {
   static readonly typeId = "neon";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 

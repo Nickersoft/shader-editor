@@ -6,16 +6,17 @@ import { edgeMode, zCenterAxis, zEdges, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
   mode: z.enum(["directional", "radial-dilate"]).default("radial-dilate").describe("Mode"),
+  edges: zEdges().default("transparent").describe("Edges"),
+});
+
+const uniforms = z.object({
   centerX: zCenterAxis().default(0.5).describe("Center X"),
   centerY: zCenterAxis().default(0.5).describe("Center Y"),
   intensity: zFloat(0, 1, 0.01).default(0.5).describe("Intensity"),
   detail: zFloat(0, 5, 0.05).default(1.5).describe("Detail"),
   evolutionSpeed: zFloat(0, 2, 0.05).default(0.3).describe("Evolution Speed"),
   loopDuration: zFloat(0, 10, 0.1).default(0).describe("Loop Duration"),
-  edges: zEdges().default("transparent").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Polar Flow Field",
@@ -27,17 +28,13 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class PolarFlowField extends EffectNode<Config, Inputs> {
+export class PolarFlowField extends EffectNode<Config, Uniforms> {
   static readonly typeId = "polar-flow-field";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
-
-  structuralKey(): string {
-    return `${this.config.mode}|${this.config.edges}`;
-  }
 
   glsl(): GlslBlock {
     const cx = this.uniformName("centerX");

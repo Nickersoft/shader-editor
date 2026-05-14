@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   refraction: zFloat(0, 1, 0.01).default(0.5).describe("Refraction"),
   chromaticAberration: zFloat(0, 1, 0.01).default(0.3).describe("Chromatic Aberration"),
   blur: zFloat(0, 1, 0.01).default(0.2).describe("Blur"),
@@ -12,8 +14,6 @@ const config = z.object({
   tintIntensity: zFloat(0, 1, 0.01).default(0.2).describe("Tint Intensity"),
   fresnel: zFloat(0, 1, 0.01).default(0.3).describe("Fresnel"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Glass",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Glass extends EffectNode<Config, Inputs> {
+export class Glass extends EffectNode<Config, Uniforms> {
   static readonly typeId = "glass";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 

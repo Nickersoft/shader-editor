@@ -21,19 +21,13 @@ export default {
     const p = b.position();
 
     // angle (deg) → radians
-    const deg2rad = b.add("const", { value: Math.PI / 180 });
-    const rad = b.add("combine", { op: "mul" });
+    const rad = b.add("math", { op: "mul" }, { b: Math.PI / 180 });
     b.connect(gi.angle, rad.nodeId, "a");
-    b.connect(deg2rad, rad.nodeId, "b");
 
     // Beam normal = vec2(-sin(rad), cos(rad)). VectorMath.rotate2D applied to
     // (0, 1) by `rad` gives (-sin, cos), which is exactly the legacy normal.
-    const upX = b.add("const", { value: 0 });
-    const upY = b.add("const", { value: 1 });
-    const up = b.add("combine-xy", {});
-    b.connect(upX, up.nodeId, "x");
-    b.connect(upY, up.nodeId, "y");
-    const normal = b.add("vector-math", { op: "rotate2D" });
+    const up = b.add("combine-xy", {}, { x: 0, y: 1 });
+    const normal = b.add("vector-math", { op: "rotate-2d" });
     b.connect(up, normal.nodeId, "a");
     b.connect(rad, normal.nodeId, "b");
 
@@ -45,14 +39,11 @@ export default {
     b.connect(signed, dist.nodeId, "x");
 
     // Half-width and outer edge of the falloff band.
-    const half = b.add("const", { value: 0.5 });
-    const halfWidth = b.add("combine", { op: "mul" });
+    const halfWidth = b.add("math", { op: "mul" }, { b: 0.5 });
     b.connect(gi.width, halfWidth.nodeId, "a");
-    b.connect(half, halfWidth.nodeId, "b");
-    const halfSoft = b.add("combine", { op: "mul" });
+    const halfSoft = b.add("math", { op: "mul" }, { b: 0.5 });
     b.connect(gi.softness, halfSoft.nodeId, "a");
-    b.connect(half, halfSoft.nodeId, "b");
-    const outer = b.add("combine", { op: "add" });
+    const outer = b.add("math", { op: "add" });
     b.connect(halfWidth, outer.nodeId, "a");
     b.connect(halfSoft, outer.nodeId, "b");
 

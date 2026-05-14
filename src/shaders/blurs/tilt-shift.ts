@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zAngle, zCenterAxis, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 1, 0.01).default(0.5).describe("Intensity"),
   width: zFloat(0, 1, 0.01).default(0.3).describe("Width"),
   falloff: zFloat(0, 1, 0.01).default(0.3).describe("Falloff"),
@@ -12,8 +14,6 @@ const config = z.object({
   centerX: zCenterAxis().default(0.5).describe("Center X"),
   centerY: zCenterAxis().default(0.5).describe("Center Y"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Tilt Shift",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class TiltShift extends EffectNode<Config, Inputs> {
+export class TiltShift extends EffectNode<Config, Uniforms> {
   static readonly typeId = "tilt-shift";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

@@ -7,8 +7,15 @@
 // and emit() reads the uniform into the node-graph local.
 
 import { z } from "zod";
-import { registerPrimitive, type UniformSpec } from "../registry";
-import { glslTypeOf, type PinSpec, type PinType } from "../types";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+  type UniformSpec,
+} from "../registry";
+import { glslTypeOf, type GraphNode, type PinSpec, type PinType } from "../types";
 
 const pinType = z.enum(["float", "vec2", "vec3", "vec4", "bool", "int"]);
 
@@ -28,20 +35,18 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-export default registerPrimitive({
-  typeId: "group-input",
-  name: "Group Input",
-  category: "io",
-  color: "#22c55e",
-  description: "Layer parameters surfaced to the property pane.",
-  config,
+class GroupInput extends BasePrimitive<Config> {
+  static readonly typeId = "group-input";
+  static readonly meta: PrimitiveMeta = {
+    name: "Group Input",
+    category: "group",
+    color: "#22c55e",
+    description: "Layer parameters surfaced to the property pane.",
+  };
+  static readonly config = config;
 
-  inputs() {
-    return [];
-  },
-
-  outputs(cfg) {
-    const c = cfg as Config;
+  outputs(cfg: Record<string, unknown>): readonly PinSpec[] {
+    const c = this.cfg(cfg);
     return c.pins.map(
       (p): PinSpec => ({
         id: p.id,
@@ -50,10 +55,10 @@ export default registerPrimitive({
         default: p.default as PinSpec["default"],
       }),
     );
-  },
+  }
 
-  uniforms(node) {
-    const c = node.config as Config;
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const c = this.cfg(node.config);
     return c.pins.map(
       (p, i): UniformSpec => ({
         nameSuffix: p.id,
@@ -64,18 +69,20 @@ export default registerPrimitive({
         valuePath: ["pins", String(i), "default"],
       }),
     );
-  },
+  }
 
-  emit(ctx) {
-    const c = ctx.config as Config;
+  emit(ctx: EmitContext): EmitResult {
+    const c = this.cfg(ctx.config);
     const lines = c.pins.map((p) => {
       const local = ctx.outputs[p.id];
       const uniform = ctx.uniforms[p.id];
       return `${glslTypeOf(p.type)} ${local} = ${uniform};`;
     });
     return { statements: lines.join("\n") };
-  },
-});
+  }
+}
+
+export default register(GroupInput);
 
 function defaultValueFor(type: PinType, raw: unknown): unknown {
   switch (type) {

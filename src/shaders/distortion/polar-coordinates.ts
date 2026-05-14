@@ -6,14 +6,15 @@ import { edgeMode, zCenterAxis, zEdges, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
   mode: z.enum(["rect-to-polar", "polar-to-rect"]).default("rect-to-polar").describe("Mode"),
+  edges: zEdges().default("transparent").describe("Edges"),
+});
+
+const uniforms = z.object({
   centerX: zCenterAxis().default(0.5).describe("Center X"),
   centerY: zCenterAxis().default(0.5).describe("Center Y"),
   radius: zFloat(0, 1, 0.01).default(0.5).describe("Radius"),
   intensity: zFloat(0, 1, 0.01).default(1.0).describe("Intensity"),
-  edges: zEdges().default("transparent").describe("Edges"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Polar Coordinates",
@@ -24,17 +25,13 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class PolarCoordinates extends EffectNode<Config, Inputs> {
+export class PolarCoordinates extends EffectNode<Config, Uniforms> {
   static readonly typeId = "polar-coordinates";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
-
-  structuralKey(): string {
-    return `${this.config.mode}|${this.config.edges}`;
-  }
 
   glsl(): GlslBlock {
     const cx = this.uniformName("centerX");

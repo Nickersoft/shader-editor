@@ -23,7 +23,7 @@
   });
 
   let r = $derived(
-    ctx.radiusToPx((ctx.config[render.rKey] as number) ?? render.rDefault),
+    ctx.radiusToPx((ctx.read(render.rKey) as number) ?? render.rDefault),
   );
 </script>
 

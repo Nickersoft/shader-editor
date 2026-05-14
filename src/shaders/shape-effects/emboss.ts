@@ -4,13 +4,13 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zAngle, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   lightAngle: zAngle().default(45).describe("Light Angle"),
   intensity: zFloat(0, 1, 0.01).default(0.5).describe("Intensity"),
   softness: zFloat(0, 1, 0.01).default(0.5).describe("Softness"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Emboss",
@@ -21,12 +21,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Emboss extends EffectNode<Config, Inputs> {
+export class Emboss extends EffectNode<Config, Uniforms> {
   static readonly typeId = "emboss";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 

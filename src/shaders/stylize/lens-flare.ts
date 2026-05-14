@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat, zInt } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   lightX: zFloat(0, 1).default(0.5).describe("Light X"),
   lightY: zFloat(0, 1).default(0.5).describe("Light Y"),
   intensity: zFloat(0, 2).default(1).describe("Intensity"),
@@ -15,8 +17,6 @@ const config = z.object({
   color: zColor().default([1.0, 0.9, 0.7]).describe("Color"),
 });
 
-const inputs = z.object({});
-
 const meta: NodeMeta = {
   name: "Lens Flare",
   description: "Anamorphic lens flare with ghosts, halo, and streak",
@@ -26,12 +26,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class LensFlare extends EffectNode<Config, Inputs> {
+export class LensFlare extends EffectNode<Config, Uniforms> {
   static readonly typeId = "lens-flare";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

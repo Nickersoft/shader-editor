@@ -1,16 +1,22 @@
 <script lang="ts">
 	import { NumberInput } from '@/components/ui/number-input';
 	import ColorInput from './color-input.svelte';
-	import { GROUP_INPUT_TYPE_ID, type PinType } from '@/shaders/node-graph';
-	import type { ProceduralField } from '@/shaders/textures/procedural-field.svelte';
+	import { GROUP_INPUT_TYPE_ID, type NodeGraph, type PinType } from '@/shaders/node-graph';
 	import Settings from '@lucide/svelte/icons/settings-2';
 	import Plus from '@lucide/svelte/icons/plus';
 	import Trash from '@lucide/svelte/icons/trash-2';
 	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 
+	// The panel only cares that the node exposes a mutable `graph`; the property
+	// pane is reused for any GraphHost (ProceduralField generators and migrated
+	// graph-based effects all qualify).
+	interface GraphHost {
+		graph: NodeGraph;
+	}
+
 	interface Props {
-		field: ProceduralField;
+		field: GraphHost;
 	}
 
 	let { field }: Props = $props();

@@ -4,14 +4,14 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   amount: zFloat(0, 0.4, 0.005).default(0.05).describe("Amount"),
   scale: zFloat(1, 30, 0.5).default(4.0).describe("Scale"),
   speed: zFloat(0, 4, 0.05).default(0.5).describe("Speed"),
   decay: zFloat(0, 1, 0.01).default(0.9).describe("Decay"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Grid Distortion",
@@ -22,12 +22,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class GridDistortion extends EffectNode<Config, Inputs> {
+export class GridDistortion extends EffectNode<Config, Uniforms> {
   static readonly typeId = "grid-distortion";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

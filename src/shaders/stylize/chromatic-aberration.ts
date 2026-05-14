@@ -4,12 +4,12 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zAngle, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   strength: zFloat(0, 1).default(0.5).describe("Strength"),
   angle: zAngle().default(0).describe("Angle"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Chromatic Aberration",
@@ -20,12 +20,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class ChromaticAberration extends EffectNode<Config, Inputs> {
+export class ChromaticAberration extends EffectNode<Config, Uniforms> {
   static readonly typeId = "chromatic-aberration";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

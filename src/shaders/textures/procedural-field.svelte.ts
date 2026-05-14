@@ -11,6 +11,7 @@ import {
   emitGraph,
   GROUP_INPUT_TYPE_ID,
   GROUP_OUTPUT_TYPE_ID,
+  migrateGraph,
   requirePrimitive,
   type Edge as GraphEdge,
   type GraphNode,
@@ -21,7 +22,9 @@ const config = z.object({
   presetId: z.string().nullable().default(null),
 });
 
-const inputs = z.object({});
+// All actual uniforms come from the graph itself via `extraUniforms()` — the
+// schema stays empty, but the field is still required by the Node contract.
+const uniforms = z.object({});
 
 const meta: NodeMeta = {
   name: "Procedural Field",
@@ -32,12 +35,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class ProceduralField extends GeneratorNode<Config, Inputs> {
+export class ProceduralField extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "procedural-field";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   /**
@@ -54,7 +57,15 @@ export class ProceduralField extends GeneratorNode<Config, Inputs> {
     // graph subsystem's job; here we just round-trip the JSON.
     const raw = (init.config as { graph?: NodeGraph } | undefined)?.graph;
     if (raw && Array.isArray(raw.nodes) && Array.isArray(raw.edges)) {
-      this.graph = { nodes: raw.nodes.map(cloneNode), edges: raw.edges.map((e) => ({ ...e })) };
+      // Clone then migrate in place — typeId renames and structural
+      // rewrites land before the graph reaches state, so downstream
+      // primitives never see legacy ids.
+      const cloned: NodeGraph = {
+        nodes: raw.nodes.map(cloneNode),
+        edges: raw.edges.map((e) => ({ ...e })),
+        ...(raw.frames ? { frames: raw.frames.map((f) => ({ ...f, position: { ...f.position }, size: { ...f.size }, ...(f.nodeIds ? { nodeIds: [...f.nodeIds] } : {}) })) } : {}),
+      };
+      this.graph = migrateGraph(cloned);
     }
   }
 
@@ -70,7 +81,10 @@ export class ProceduralField extends GeneratorNode<Config, Inputs> {
         ? (prim.uniforms?.(node) ?? []).map((u) => u.valuePath ?? [u.nameSuffix])
         : [];
       const structural = excludePaths(node.config, livePaths);
-      parts.push(`${node.id}:${node.typeId}:${JSON.stringify(structural)}`);
+      // pinValues are baked into the GLSL as literals; any change to them
+      // changes the fragment source, so they belong in the fingerprint.
+      const pinKey = node.pinValues ? JSON.stringify(node.pinValues) : "";
+      parts.push(`${node.id}:${node.typeId}:${JSON.stringify(structural)}:${pinKey}`);
     }
     parts.sort();
     const edgePart = this.graph.edges
@@ -101,6 +115,7 @@ export class ProceduralField extends GeneratorNode<Config, Inputs> {
         graph: {
           nodes: this.graph.nodes.map(cloneNode),
           edges: this.graph.edges.map((e) => ({ ...e })),
+          ...(this.graph.frames ? { frames: this.graph.frames.map((f) => ({ ...f, position: { ...f.position }, size: { ...f.size }, ...(f.nodeIds ? { nodeIds: [...f.nodeIds] } : {}) })) } : {}),
         },
       },
     };
@@ -119,6 +134,7 @@ function cloneNode(n: GraphNode): GraphNode {
     typeId: n.typeId,
     config: structuredClone(n.config),
     position: { ...n.position },
+    ...(n.pinValues ? { pinValues: structuredClone(n.pinValues) } : {}),
   };
 }
 
@@ -187,7 +203,7 @@ function defaultGraph(): NodeGraph {
   };
   const mul: GraphNode = {
     id: "mul",
-    typeId: "combine",
+    typeId: "math",
     config: { op: "mul" },
     position: { x: 220, y: 0 },
   };

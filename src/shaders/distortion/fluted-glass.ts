@@ -1,22 +1,18 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// FlutedGlass — graph-decomposed refractive vertical fluting.
+//   t = sin(uv.x · frequency · π)
+//   ts = sign(t) · |t|^(mix(1, 0.3, softness))
+//   refrX = ts · refraction · 0.05
+//   finalUV = (uv.x + refrX, uv.y)
+//   chr = ts · aberration · 0.025
+//   sample R at (finalUV.x + chr, finalUV.y), G at finalUV, B at (finalUV.x − chr, finalUV.y)
+//   spec = pow(max(1 − |t|, 0), 1/max(highlightSoftness, 0.01)) · highlight · max(cos(lightAngle − uv.x · π), 0)
+//   lit = mix(sampledRGB, highlightColor, clamp(spec, 0, 1))
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { edgeMode, zAngle, zColor, zEdges, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  frequency: zFloat(1, 50, 0.5).default(8.0).describe("Frequency"),
-  softness: zFloat(0, 1, 0.01).default(0.5).describe("Softness"),
-  refraction: zFloat(0, 1, 0.01).default(0.5).describe("Refraction"),
-  aberration: zFloat(0, 1, 0.01).default(0.0).describe("Aberration"),
-  lightAngle: zAngle().default(45.0).describe("Light Angle"),
-  highlight: zFloat(0, 2, 0.01).default(0.5).describe("Highlight"),
-  highlightSoftness: zFloat(0, 1, 0.01).default(0.5).describe("Highlight Softness"),
-  highlightColor: zColor().default([1, 1, 1]).describe("Highlight Color"),
-  edges: zEdges().default("mirror").describe("Edges"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Fluted Glass",
@@ -26,44 +22,178 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class FlutedGlass extends EffectNode<Config, Inputs> {
+export class FlutedGlass extends GraphEffectBase {
   static readonly typeId = "fluted-glass";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const frequency = this.uniformName("frequency");
-    const softness = this.uniformName("softness");
-    const refraction = this.uniformName("refraction");
-    const aberration = this.uniformName("aberration");
-    const lightAngle = this.uniformName("lightAngle");
-    const highlight = this.uniformName("highlight");
-    const highlightSoftness = this.uniformName("highlightSoftness");
-    const highlightColor = this.uniformName("highlightColor");
-    return {
-      dependencies: ["pi", "applyEdgeHandling", "unpremultiplyAlpha"],
-      main: `
-float t = sin(uv.x * ${frequency} * PI);
-float ts = sign(t) * pow(abs(t), mix(1.0, 0.3, ${softness}));
-float refrX = ts * ${refraction} * 0.05;
-vec2 finalUV = vec2(uv.x + refrX, uv.y);
-float chr = ts * ${aberration} * 0.025;
-vec4 rS = applyEdgeHandling(u_prevPass, vec2(finalUV.x + chr, finalUV.y), ${edgeMode(this.config.edges)});
-vec4 gS = applyEdgeHandling(u_prevPass, finalUV, ${edgeMode(this.config.edges)});
-vec4 bS = applyEdgeHandling(u_prevPass, vec2(finalUV.x - chr, finalUV.y), ${edgeMode(this.config.edges)});
-vec4 sampled = unpremultiplyAlpha(vec4(rS.r, gS.g, bS.b, gS.a));
-float softInv = 1.0 / max(${highlightSoftness}, 0.01);
-float spec = pow(max(1.0 - abs(t), 0.0), softInv) * ${highlight};
-float la = ${lightAngle} * PI / 180.0;
-float lightFactor = max(cos(la - uv.x * PI), 0.0);
-spec *= lightFactor;
-vec3 lit = mix(sampled.rgb, ${highlightColor}, clamp(spec, 0.0, 1.0));
-return vec4(lit, sampled.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "frequency", type: "float", label: "Frequency", default: 8 },
+      { id: "softness", type: "float", label: "Softness", default: 0.5 },
+      { id: "refraction", type: "float", label: "Refraction", default: 0.5 },
+      { id: "aberration", type: "float", label: "Aberration", default: 0 },
+      { id: "lightAngle", type: "float", label: "Light Angle", default: 45 },
+      { id: "highlight", type: "float", label: "Highlight", default: 0.5 },
+      {
+        id: "highlightSoftness",
+        type: "float",
+        label: "Highlight Softness",
+        default: 0.5,
+      },
+      {
+        id: "highlightColor",
+        type: "vec3",
+        label: "Highlight Color",
+        default: [1, 1, 1],
+      },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const split = b.add("separate-xy", {});
+    b.connect(uv, split.nodeId, "v");
+    const uvx = { nodeId: split.nodeId, pin: "x" };
+    const uvy = { nodeId: split.nodeId, pin: "y" };
+
+    const pi = b.add("value", { value: Math.PI });
+    const uvxFreq = b.add("math", { op: "mul" });
+    b.connect(uvx, uvxFreq.nodeId, "a");
+    b.connect(gi.frequency, uvxFreq.nodeId, "b");
+    const uvxFreqPi = b.add("math", { op: "mul" });
+    b.connect(uvxFreq, uvxFreqPi.nodeId, "a");
+    b.connect(pi, uvxFreqPi.nodeId, "b");
+    const tSin = b.add("math", { op: "sin" });
+    b.connect(uvxFreqPi, tSin.nodeId, "x");
+
+    // ts = sign(t) · |t|^(mix(1, 0.3, softness))
+    const sgn = b.add("math", { op: "sign" });
+    b.connect(tSin, sgn.nodeId, "x");
+    const absT = b.add("math", { op: "abs" });
+    b.connect(tSin, absT.nodeId, "x");
+    // exp = 1 + (0.3 - 1) · softness = 1 - 0.7 · softness
+    const minus07 = b.add("value", { value: -0.7 });
+    const oneV = b.add("value", { value: 1 });
+    const softTerm = b.add("math", { op: "mul" });
+    b.connect(gi.softness, softTerm.nodeId, "a");
+    b.connect(minus07, softTerm.nodeId, "b");
+    const expVal = b.add("math", { op: "add" });
+    b.connect(oneV, expVal.nodeId, "a");
+    b.connect(softTerm, expVal.nodeId, "b");
+    const powT = b.add("math", { op: "pow" });
+    b.connect(absT, powT.nodeId, "a");
+    b.connect(expVal, powT.nodeId, "b");
+    const ts = b.add("math", { op: "mul" });
+    b.connect(sgn, ts.nodeId, "a");
+    b.connect(powT, ts.nodeId, "b");
+
+    // refrX = ts · refraction · 0.05
+    const c05 = b.add("value", { value: 0.05 });
+    const refrMul = b.add("math", { op: "mul" });
+    b.connect(gi.refraction, refrMul.nodeId, "a");
+    b.connect(c05, refrMul.nodeId, "b");
+    const refrX = b.add("math", { op: "mul" });
+    b.connect(ts, refrX.nodeId, "a");
+    b.connect(refrMul, refrX.nodeId, "b");
+
+    // finalUV
+    const finalX = b.add("math", { op: "add" });
+    b.connect(uvx, finalX.nodeId, "a");
+    b.connect(refrX, finalX.nodeId, "b");
+    const finalUv = b.add("combine-xy", {});
+    b.connect(finalX, finalUv.nodeId, "x");
+    b.connect(uvy, finalUv.nodeId, "y");
+
+    // chr = ts · aberration · 0.025
+    const c025 = b.add("value", { value: 0.025 });
+    const abMul = b.add("math", { op: "mul" });
+    b.connect(gi.aberration, abMul.nodeId, "a");
+    b.connect(c025, abMul.nodeId, "b");
+    const chr = b.add("math", { op: "mul" });
+    b.connect(ts, chr.nodeId, "a");
+    b.connect(abMul, chr.nodeId, "b");
+
+    // Per-channel sample UVs.
+    const rX = b.add("math", { op: "add" });
+    b.connect(finalX, rX.nodeId, "a");
+    b.connect(chr, rX.nodeId, "b");
+    const rUv = b.add("combine-xy", {});
+    b.connect(rX, rUv.nodeId, "x");
+    b.connect(uvy, rUv.nodeId, "y");
+
+    const bX = b.add("math", { op: "sub" });
+    b.connect(finalX, bX.nodeId, "a");
+    b.connect(chr, bX.nodeId, "b");
+    const bUv = b.add("combine-xy", {});
+    b.connect(bX, bUv.nodeId, "x");
+    b.connect(uvy, bUv.nodeId, "y");
+
+    const sampleR = b.add("sample-previous-pass", { edges: "mirror" });
+    b.connect(rUv, sampleR.nodeId, "uv");
+    const sampleG = b.add("sample-previous-pass", { edges: "mirror" });
+    b.connect(finalUv, sampleG.nodeId, "uv");
+    const sampleB = b.add("sample-previous-pass", { edges: "mirror" });
+    b.connect(bUv, sampleB.nodeId, "uv");
+
+    // Recombine: sampled.rgb = vec3(R.r, G.g, B.b)
+    const splitR = b.add("separate-color", {});
+    b.connect({ nodeId: sampleR.nodeId, pin: "color" }, splitR.nodeId, "v");
+    const splitG = b.add("separate-color", {});
+    b.connect({ nodeId: sampleG.nodeId, pin: "color" }, splitG.nodeId, "v");
+    const splitB = b.add("separate-color", {});
+    b.connect({ nodeId: sampleB.nodeId, pin: "color" }, splitB.nodeId, "v");
+    const sampled = b.add("combine-color", {});
+    b.connect({ nodeId: splitR.nodeId, pin: "r" }, sampled.nodeId, "r");
+    b.connect({ nodeId: splitG.nodeId, pin: "g" }, sampled.nodeId, "g");
+    b.connect({ nodeId: splitB.nodeId, pin: "b" }, sampled.nodeId, "b");
+
+    // spec = pow(max(1 − |t|, 0), 1/max(highlightSoftness, 0.01)) · highlight · max(cos(lightAngle·π/180 − uv.x · π), 0)
+    const oneMinusAbsT = b.add("math", { op: "sub" });
+    b.connect(oneV, oneMinusAbsT.nodeId, "a");
+    b.connect(absT, oneMinusAbsT.nodeId, "b");
+    const zeroV = b.add("value", { value: 0 });
+    const oneMinusAbsTclamp = b.add("math", { op: "max" });
+    b.connect(zeroV, oneMinusAbsTclamp.nodeId, "a");
+    b.connect(oneMinusAbsT, oneMinusAbsTclamp.nodeId, "b");
+    const c001 = b.add("value", { value: 0.01 });
+    const safeHS = b.add("math", { op: "max" });
+    b.connect(gi.highlightSoftness, safeHS.nodeId, "a");
+    b.connect(c001, safeHS.nodeId, "b");
+    const softInv = b.add("math", { op: "div" });
+    b.connect(oneV, softInv.nodeId, "a");
+    b.connect(safeHS, softInv.nodeId, "b");
+    const specBase = b.add("math", { op: "pow" });
+    b.connect(oneMinusAbsTclamp, specBase.nodeId, "a");
+    b.connect(softInv, specBase.nodeId, "b");
+    const specHigh = b.add("math", { op: "mul" });
+    b.connect(specBase, specHigh.nodeId, "a");
+    b.connect(gi.highlight, specHigh.nodeId, "b");
+
+    const deg2rad = b.add("value", { value: Math.PI / 180 });
+    const laR = b.add("math", { op: "mul" });
+    b.connect(gi.lightAngle, laR.nodeId, "a");
+    b.connect(deg2rad, laR.nodeId, "b");
+    const uvxPi = b.add("math", { op: "mul" });
+    b.connect(uvx, uvxPi.nodeId, "a");
+    b.connect(pi, uvxPi.nodeId, "b");
+    const dLight = b.add("math", { op: "sub" });
+    b.connect(laR, dLight.nodeId, "a");
+    b.connect(uvxPi, dLight.nodeId, "b");
+    const cosLight = b.add("math", { op: "cos" });
+    b.connect(dLight, cosLight.nodeId, "x");
+    const lightFactor = b.add("math", { op: "max" });
+    b.connect(cosLight, lightFactor.nodeId, "a");
+    b.connect(zeroV, lightFactor.nodeId, "b");
+
+    const spec = b.add("math", { op: "mul" });
+    b.connect(specHigh, spec.nodeId, "a");
+    b.connect(lightFactor, spec.nodeId, "b");
+
+    const lit = b.add("mix-color", { clampT: true });
+    b.connect(sampled, lit.nodeId, "a");
+    b.connect(gi.highlightColor, lit.nodeId, "b");
+    b.connect(spec, lit.nodeId, "t");
+
+    return b.output(lit, { nodeId: sampleG.nodeId, pin: "alpha" });
   }
 }
 

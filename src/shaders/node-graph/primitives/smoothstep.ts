@@ -6,36 +6,46 @@
 // surfaces the full signature.
 
 import { z } from "zod";
-import { registerPrimitive } from "../registry";
-import type { PinSpec } from "../types";
+import { float } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+} from "../registry";
 
 const config = z.object({});
 
-const INPUTS: readonly PinSpec[] = [
-  { id: "edge0", type: "float", label: "Edge 0", default: 0 },
-  { id: "edge1", type: "float", label: "Edge 1", default: 1 },
-  { id: "x", type: "float", label: "X", default: 0 },
-];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "float", label: "Out" }];
+const pinIn = z.object({
+  edge0: float("Edge 0", 0),
+  edge1: float("Edge 1", 1),
+  x: float("X", 0),
+});
 
-export default registerPrimitive({
-  typeId: "smoothstep",
-  name: "Smooth Step",
-  category: "math",
-  color: "#a78bfa",
-  description: "GLSL smoothstep(edge0, edge1, x) — 0 below edge0, 1 above edge1, smooth between.",
-  config,
+const pinOut = z.object({
+  out: float("Out"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  emit(ctx) {
+class Smoothstep extends BasePrimitive<Record<string, never>, In, Out> {
+  static readonly typeId = "smoothstep";
+  static readonly meta: PrimitiveMeta = {
+    name: "Smoothstep",
+    category: "converter",
+    color: "#a78bfa",
+    description: "GLSL smoothstep(edge0, edge1, x) — 0 below edge0, 1 above edge1, smooth between.",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
+
+  emit(ctx: EmitContext<In, Out>): EmitResult {
     return {
       statements: `float ${ctx.outputs.out} = smoothstep(${ctx.inputs.edge0}, ${ctx.inputs.edge1}, ${ctx.inputs.x});`,
     };
-  },
-});
+  }
+}
+
+export default register(Smoothstep);

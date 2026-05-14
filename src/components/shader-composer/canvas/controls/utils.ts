@@ -19,7 +19,7 @@ export function pointHandleXY(
   dy = 0.5,
 ): PointHandle {
   return {
-    read: () => [(ctx.config[xKey] as number) ?? dx, (ctx.config[yKey] as number) ?? dy],
+    read: () => [(ctx.read(xKey) as number) ?? dx, (ctx.read(yKey) as number) ?? dy],
     write: ([x, y]) => ctx.setFields({ [xKey]: x, [yKey]: y }),
   };
 }
@@ -30,7 +30,7 @@ export function pointHandleVec2(
   defaults: [number, number] = [0.5, 0.5],
 ): PointHandle {
   return {
-    read: () => (ctx.config[key] as [number, number] | undefined) ?? defaults,
+    read: () => (ctx.read(key) as [number, number] | undefined) ?? defaults,
     write: (v) => ctx.setField(key, v),
   };
 }
@@ -40,7 +40,7 @@ export function tintFrom(
   colorKey: string | undefined,
   fallback: string,
 ): string {
-  return colorKey ? rgbFromColor(ctx.config[colorKey], fallback) : fallback;
+  return colorKey ? rgbFromColor(ctx.read(colorKey), fallback) : fallback;
 }
 
 export type PointRender = { handle: PointHandle; fill: string; size: number };

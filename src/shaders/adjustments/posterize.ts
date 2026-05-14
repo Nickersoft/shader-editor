@@ -1,14 +1,15 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Posterize — graph-decomposed adjustment.
+//   result = floor(rgb * levels + 0.5) / levels
+//
+// The original effect declared levels as `int`; the graph version uses a
+// `float` pin with step=1 in the UI so it composes cleanly through math nodes
+// without an int→float conversion primitive.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zInt } from "@/shaders/core/schemas";
-
-const config = z.object({
-  levels: zInt(2, 16).default(6).describe("Levels"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Posterize",
@@ -18,24 +19,45 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class Posterize extends EffectNode<Config, Inputs> {
+export class Posterize extends GraphEffectBase {
   static readonly typeId = "posterize";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const levels = this.uniformName("levels");
-    return {
-      main: `
-base = texture(u_prevPass, uv);
-float steps = float(${levels});
-vec3 col = floor(base.rgb * steps + 0.5) / steps;
-return vec4(col, base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "levels", type: "float", label: "Levels", default: 6 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+    const color = { nodeId: sample.nodeId, pin: "color" };
+    const alpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    const scaled = b.add("color-math", { op: "scale" });
+    b.connect(color, scaled.nodeId, "a");
+    b.connect(gi.levels, scaled.nodeId, "b");
+
+    const half = b.add("value", { value: 0.5 });
+    const shifted = b.add("color-math", { op: "addScalar" });
+    b.connect(scaled, shifted.nodeId, "a");
+    b.connect(half, shifted.nodeId, "b");
+
+    const floored = b.add("color-math", { op: "floor" });
+    b.connect(shifted, floored.nodeId, "a");
+
+    // result = floored / levels — there's no vec3/scale-divide op, so invert.
+    const invLevels = b.add("math", { op: "div" });
+    const one = b.add("value", { value: 1 });
+    b.connect(one, invLevels.nodeId, "a");
+    b.connect(gi.levels, invLevels.nodeId, "b");
+
+    const result = b.add("color-math", { op: "scale" });
+    b.connect(floored, result.nodeId, "a");
+    b.connect(invLevels, result.nodeId, "b");
+
+    return b.output(result, alpha);
   }
 }
 

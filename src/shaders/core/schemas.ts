@@ -45,6 +45,11 @@ export interface UiMeta {
      */
     shortLabel?: string;
   };
+  /**
+   * Display labels for enum option values — `{ mul: 'Multiply', sub: 'Subtract' }`.
+   * UI uses these in dropdowns when the raw enum value is too terse.
+   */
+  enumLabels?: Record<string, string>;
   // Tagged kinds the codegen and UI dispatch on. `image-input` and `sampler2D`
   // both refer to image data; the difference is where they live:
   //   - `image-input` lives on `Node.inputs` (chain-typed input). For
@@ -312,19 +317,19 @@ export const ImageInputSchema = z.object({
 export type ImageInputValue = z.infer<typeof ImageInputSchema>;
 
 /**
- * For typed chain inputs on `Node.inputs`. The codegen + UI both dispatch on
- * the `image-input` kind: GeneratorNode/EffectNode bind it as a sampler2D
- * (with companion meta/offset uniforms); ProcessingNode receives it as
- * resolved data in `preprocess()`.
+ * Image-typed uniform field. Lives on `Node.uniforms`. The codegen + UI both
+ * dispatch on the `image-input` kind: GeneratorNode/EffectNode bind it as a
+ * sampler2D (with companion meta/offset uniforms); ProcessingNode receives it
+ * as resolved data in `preprocess()`.
  */
 export function zImageInput() {
   return withMeta(ImageInputSchema, { kind: "image-input" });
 }
 
 /**
- * Plain sampler2D uniform on `Node.config`. Use only when a primitive needs a
- * raw texture binding without participating in the typed-input system.
- * Prefer `zImageInput()` on `Node.inputs` for almost all cases.
+ * Plain sampler2D uniform on `Node.uniforms`. Use only when a primitive needs
+ * a raw texture binding without participating in the typed-input system.
+ * Prefer `zImageInput()` for almost all cases.
  */
 export function zSampler() {
   return withMeta(ImageInputSchema, { kind: "sampler2D" });

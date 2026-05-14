@@ -4,12 +4,12 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zAngle, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   intensity: zFloat(0, 1, 0.01).default(0.3).describe("Intensity"),
   angle: zAngle().default(0).describe("Angle"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Linear Blur",
@@ -20,7 +20,7 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
 const WEIGHTS = `const float W[32] = float[32](
   0.018339, 0.020218, 0.022146, 0.024100, 0.026056, 0.027988, 0.029869, 0.031669,
@@ -29,10 +29,10 @@ const WEIGHTS = `const float W[32] = float[32](
   0.031669, 0.029869, 0.027988, 0.026056, 0.024100, 0.022146, 0.020218, 0.018339
 );`;
 
-export class LinearBlur extends EffectNode<Config, Inputs> {
+export class LinearBlur extends EffectNode<Config, Uniforms> {
   static readonly typeId = "linear-blur";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

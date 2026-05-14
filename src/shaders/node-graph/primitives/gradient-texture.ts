@@ -1,8 +1,14 @@
 // GradientTexture — `p`-derived scalar across a set of canned gradient shapes.
 
 import { z } from "zod";
-import { registerPrimitive } from "../registry";
-import type { PinSpec } from "../types";
+import { float, vec2 } from "../pins";
+import {
+  BasePrimitive,
+  register,
+  type EmitContext,
+  type EmitResult,
+  type PrimitiveMeta,
+} from "../registry";
 
 const config = z.object({
   type: z
@@ -12,26 +18,30 @@ const config = z.object({
 
 type Config = z.infer<typeof config>;
 
-const INPUTS: readonly PinSpec[] = [{ id: "p", type: "vec2", label: "P", default: [0, 0] }];
-const OUTPUTS: readonly PinSpec[] = [{ id: "out", type: "float", label: "Out" }];
+const pinIn = z.object({
+  p: vec2("Position", [0, 0]),
+});
 
-export default registerPrimitive({
-  typeId: "gradient-texture",
-  name: "Gradient Texture",
-  category: "sources",
-  color: "#06b6d4",
-  description: "Canned gradient shapes — linear, radial, spherical, …",
-  config,
+const pinOut = z.object({
+  out: float("Out"),
+});
 
-  inputs() {
-    return INPUTS;
-  },
-  outputs() {
-    return OUTPUTS;
-  },
+type In = z.infer<typeof pinIn>;
+type Out = z.infer<typeof pinOut>;
 
-  emit(ctx) {
-    const c = ctx.config as Config;
+class GradientTexture extends BasePrimitive<Config, In, Out> {
+  static readonly typeId = "gradient-texture";
+  static readonly meta: PrimitiveMeta = {
+    name: "Gradient Texture",
+    category: "texture",
+    color: "#06b6d4",
+    description: "Canned gradient shapes — linear, radial, spherical, …",
+  };
+  static readonly config = config;
+  static readonly pins = { in: pinIn, out: pinOut };
+
+  emit(ctx: EmitContext<In, Out>): EmitResult {
+    const c = this.cfg(ctx.config);
     const p = ctx.inputs.p;
     const o = ctx.outputs.out;
     let expr: string;
@@ -64,5 +74,7 @@ export default registerPrimitive({
         break;
     }
     return { statements: `float ${o} = ${expr};` };
-  },
-});
+  }
+}
+
+export default register(GradientTexture);

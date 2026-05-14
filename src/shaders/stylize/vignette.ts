@@ -4,7 +4,9 @@ import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zCenterAxis, zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({
+const config = z.object({});
+
+const uniforms = z.object({
   centerX: zCenterAxis().default(0.5).describe("Center X"),
   centerY: zCenterAxis().default(0.5).describe("Center Y"),
   radius: zFloat(0, 2, 0.01).default(0.7).describe("Radius"),
@@ -12,8 +14,6 @@ const config = z.object({
   intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
   color: zColor().default([0, 0, 0]).describe("Color"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Vignette",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Vignette extends EffectNode<Config, Inputs> {
+export class Vignette extends EffectNode<Config, Uniforms> {
   static readonly typeId = "vignette";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

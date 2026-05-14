@@ -6,14 +6,15 @@ import { zColor, zFloat } from "@/shaders/core/schemas";
 
 const config = z.object({
   style: z.enum(["classic", "cmyk"]).default("classic").describe("Style"),
+});
+
+const uniforms = z.object({
   cells: zFloat(4, 400, 1).default(60).describe("Cells"),
   angle: zFloat(0, 90, 1).default(30).describe("Angle"),
   softness: zFloat(0.001, 0.4, 0.001).default(0.05).describe("Softness"),
   colorBack: zColor().default([1, 1, 1]).describe("Background"),
   colorDot: zColor().default([0, 0, 0]).describe("Dot"),
 });
-
-const inputs = z.object({});
 
 const meta: NodeMeta = {
   name: "Halftone",
@@ -24,17 +25,13 @@ const meta: NodeMeta = {
 };
 
 type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
+type Uniforms = z.infer<typeof uniforms>;
 
-export class Halftone extends EffectNode<Config, Inputs> {
+export class Halftone extends EffectNode<Config, Uniforms> {
   static readonly typeId = "halftone";
   static readonly config = config;
-  static readonly inputs = inputs;
+  static readonly uniforms = uniforms;
   static readonly meta = meta;
-
-  structuralKey(): string {
-    return this.config.style;
-  }
 
   glsl(): GlslBlock {
     const cells = this.uniformName("cells");

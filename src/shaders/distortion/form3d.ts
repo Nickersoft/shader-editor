@@ -1,19 +1,17 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Form3D — graph-decomposed pseudo-3D pan/tilt projection.
+//   p = uv − c
+//   p *= tan(fov · π/360)
+//   denomY = 1 + p.x · tan(pan)
+//   warpedY = p.y / max(denomY, ε)
+//   denomX = 1 + warpedY · tan(tilt)
+//   warpedX = p.x / max(denomX, ε)
+//   finalUV = vec2(warpedX, warpedY) + c
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { edgeMode, zCenterAxis, zEdges, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({
-  centerX: zCenterAxis().default(0.5).describe("Center X"),
-  centerY: zCenterAxis().default(0.5).describe("Center Y"),
-  pan: zFloat(-90, 90, 0.5).default(0.0).describe("Pan (deg)"),
-  tilt: zFloat(-90, 90, 0.5).default(0.0).describe("Tilt (deg)"),
-  fov: zFloat(30, 120, 1).default(60.0).describe("FOV (deg)"),
-  edges: zEdges().default("transparent").describe("Edges"),
-});
-
-const inputs = z.object({});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Form 3D",
@@ -23,38 +21,101 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Inputs = z.infer<typeof inputs>;
-
-export class Form3D extends EffectNode<Config, Inputs> {
+export class Form3D extends GraphEffectBase {
   static readonly typeId = "form3d";
-  static readonly config = config;
-  static readonly inputs = inputs;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const cx = this.uniformName("centerX");
-    const cy = this.uniformName("centerY");
-    const pan = this.uniformName("pan");
-    const tilt = this.uniformName("tilt");
-    const fov = this.uniformName("fov");
-    return {
-      dependencies: ["pi", "applyEdgeHandling", "unpremultiplyAlpha"],
-      main: `
-vec2 c = vec2(${cx}, ${cy});
-vec2 p = uv - c;
-float panR = ${pan} * PI / 180.0;
-float tiltR = ${tilt} * PI / 180.0;
-float fovScale = tan(${fov} * PI / 360.0);
-p *= fovScale;
-float denomY = 1.0 + p.x * tan(panR);
-float warpedX = p.x;
-float warpedY = p.y / max(denomY, 0.001);
-float denomX = 1.0 + warpedY * tan(tiltR);
-warpedX = warpedX / max(denomX, 0.001);
-vec2 finalUV = vec2(warpedX, warpedY) + c;
-return unpremultiplyAlpha(applyEdgeHandling(u_prevPass, finalUV, ${edgeMode(this.config.edges)}));`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "centerX", type: "float", label: "Center X", default: 0.5 },
+      { id: "centerY", type: "float", label: "Center Y", default: 0.5 },
+      { id: "pan", type: "float", label: "Pan (deg)", default: 0 },
+      { id: "tilt", type: "float", label: "Tilt (deg)", default: 0 },
+      { id: "fov", type: "float", label: "FOV (deg)", default: 60 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const c = b.add("combine-xy", {});
+    b.connect(gi.centerX, c.nodeId, "x");
+    b.connect(gi.centerY, c.nodeId, "y");
+
+    const deg2rad = b.add("value", { value: Math.PI / 180 });
+    const deg360 = b.add("value", { value: Math.PI / 360 });
+    const eps = b.add("value", { value: 0.001 });
+
+    const panR = b.add("math", { op: "mul" });
+    b.connect(gi.pan, panR.nodeId, "a");
+    b.connect(deg2rad, panR.nodeId, "b");
+    const tiltR = b.add("math", { op: "mul" });
+    b.connect(gi.tilt, tiltR.nodeId, "a");
+    b.connect(deg2rad, tiltR.nodeId, "b");
+    const halfFov = b.add("math", { op: "mul" });
+    b.connect(gi.fov, halfFov.nodeId, "a");
+    b.connect(deg360, halfFov.nodeId, "b");
+
+    const fovScale = b.add("math", { op: "tan" });
+    b.connect(halfFov, fovScale.nodeId, "x");
+    const tanPan = b.add("math", { op: "tan" });
+    b.connect(panR, tanPan.nodeId, "x");
+    const tanTilt = b.add("math", { op: "tan" });
+    b.connect(tiltR, tanTilt.nodeId, "x");
+
+    const dCenter = b.add("vector-math", { op: "sub" });
+    b.connect(uv, dCenter.nodeId, "a");
+    b.connect(c, dCenter.nodeId, "b");
+    const p = b.add("vector-math", { op: "scale" });
+    b.connect(dCenter, p.nodeId, "a");
+    b.connect(fovScale, p.nodeId, "b");
+
+    const split = b.add("separate-xy", {});
+    b.connect(p, split.nodeId, "v");
+    const px = { nodeId: split.nodeId, pin: "x" };
+    const py = { nodeId: split.nodeId, pin: "y" };
+
+    // denomY = 1 + p.x · tan(pan)
+    const one = b.add("value", { value: 1 });
+    const pxTan = b.add("math", { op: "mul" });
+    b.connect(px, pxTan.nodeId, "a");
+    b.connect(tanPan, pxTan.nodeId, "b");
+    const denomY = b.add("math", { op: "add" });
+    b.connect(one, denomY.nodeId, "a");
+    b.connect(pxTan, denomY.nodeId, "b");
+    const safeDenomY = b.add("math", { op: "max" });
+    b.connect(denomY, safeDenomY.nodeId, "a");
+    b.connect(eps, safeDenomY.nodeId, "b");
+    const warpedY = b.add("math", { op: "div" });
+    b.connect(py, warpedY.nodeId, "a");
+    b.connect(safeDenomY, warpedY.nodeId, "b");
+
+    const wyTan = b.add("math", { op: "mul" });
+    b.connect(warpedY, wyTan.nodeId, "a");
+    b.connect(tanTilt, wyTan.nodeId, "b");
+    const denomX = b.add("math", { op: "add" });
+    b.connect(one, denomX.nodeId, "a");
+    b.connect(wyTan, denomX.nodeId, "b");
+    const safeDenomX = b.add("math", { op: "max" });
+    b.connect(denomX, safeDenomX.nodeId, "a");
+    b.connect(eps, safeDenomX.nodeId, "b");
+    const warpedX = b.add("math", { op: "div" });
+    b.connect(px, warpedX.nodeId, "a");
+    b.connect(safeDenomX, warpedX.nodeId, "b");
+
+    const warped = b.add("combine-xy", {});
+    b.connect(warpedX, warped.nodeId, "x");
+    b.connect(warpedY, warped.nodeId, "y");
+
+    const finalUv = b.add("vector-math", { op: "add" });
+    b.connect(warped, finalUv.nodeId, "a");
+    b.connect(c, finalUv.nodeId, "b");
+
+    const sample = b.add("sample-previous-pass", { edges: "transparent" });
+    b.connect(finalUv, sample.nodeId, "uv");
+
+    return b.output(
+      { nodeId: sample.nodeId, pin: "color" },
+      { nodeId: sample.nodeId, pin: "alpha" },
+    );
   }
 }
 

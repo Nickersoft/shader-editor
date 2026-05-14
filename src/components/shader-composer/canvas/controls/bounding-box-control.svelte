@@ -24,8 +24,8 @@
     const config = ctx.config;
     const height = ctx.size.h;
     const center = ctx.toPx({
-      x: (config[c.cx] as number) ?? 0.5,
-      y: (config[c.cy] as number) ?? 0.5,
+      x: (ctx.read(c.cx) as number) ?? 0.5,
+      y: (ctx.read(c.cy) as number) ?? 0.5,
     });
     const halfMul = c.halfExtent ? 1 : 0.5;
     if (c.extents) {
@@ -41,8 +41,8 @@
     return {
       cx: center.x,
       cy: center.y,
-      halfW: ((config[c.w] as number) ?? 0.5) * halfMul * height,
-      halfH: ((config[c.h] as number) ?? 0.5) * halfMul * height,
+      halfW: ((ctx.read(c.w) as number) ?? 0.5) * halfMul * height,
+      halfH: ((ctx.read(c.h) as number) ?? 0.5) * halfMul * height,
       halfMul,
     };
   });
@@ -78,11 +78,11 @@
         scaleW = s;
         scaleH = s;
       }
-      const oldW = (config[c.w] as number) ?? 0;
+      const oldW = (ctx.read(c.w) as number) ?? 0;
       if (isUniformField) {
         ctx.setField(c.w, oldW * scaleW);
       } else {
-        const oldH = (config[c.h] as number) ?? 0;
+        const oldH = (ctx.read(c.h) as number) ?? 0;
         ctx.setFields({ [c.w]: oldW * scaleW, [c.h]: oldH * scaleH });
       }
       return;
@@ -92,8 +92,8 @@
     let halfHPx = newHalfHPx;
 
     if (isUniformField || uniformModifier) {
-      const oldW = (config[c.w] as number) ?? 0;
-      const oldH = (config[c.h] as number) ?? 0;
+      const oldW = (ctx.read(c.w) as number) ?? 0;
+      const oldH = (ctx.read(c.h) as number) ?? 0;
       const oldHalfWPx = oldW * halfMul * height;
       const oldHalfHPx = oldH * halfMul * height;
       if (isUniformField || oldHalfWPx < 0.5 || oldHalfHPx < 0.5) {

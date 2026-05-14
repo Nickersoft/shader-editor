@@ -17,8 +17,8 @@
 <g>
   {#each control.points as [xKey, yKey] (xKey + ":" + yKey)}
     {@const pos = ctx.toPx({
-      x: (ctx.config[xKey] as number) ?? 0.5,
-      y: (ctx.config[yKey] as number) ?? 0.5,
+      x: (ctx.read(xKey) as number) ?? 0.5,
+      y: (ctx.read(yKey) as number) ?? 0.5,
     })}
     <DraggableHandle
       cx={pos.x}
