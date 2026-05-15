@@ -78,46 +78,6 @@
         };
     });
 
-    // visibleWhen siblings can reference either schema, so we look up by key in
-    // uniforms first, falling back to config. (No node currently uses this, but
-    // the cross-schema lookup costs nothing.)
-    function applyVisibleWhen(
-        all: InspectedUiField[],
-        uniforms: Record<string, unknown>,
-        config: Record<string, unknown>,
-    ): InspectedUiField[] {
-        return all.filter((field) => {
-            const cond = getMetaDeep(field.schema)?.ui?.visibleWhen;
-            if (!cond) return true;
-            for (const [siblingKey, allowed] of Object.entries(cond)) {
-                const v =
-                    siblingKey in uniforms
-                        ? uniforms[siblingKey]
-                        : config[siblingKey];
-                if (!allowed.some((a) => a === v)) return false;
-            }
-            return true;
-        });
-    }
-
-    let visibleUniformFields = $derived.by(() => {
-        if (!selectedNode || !fields) return [] as InspectedUiField[];
-        return applyVisibleWhen(
-            fields.uniformFields,
-            selectedNode.uniforms,
-            selectedNode.config,
-        );
-    });
-
-    let visibleConfigFields = $derived.by(() => {
-        if (!selectedNode || !fields) return [] as InspectedUiField[];
-        return applyVisibleWhen(
-            fields.configFields,
-            selectedNode.uniforms,
-            selectedNode.config,
-        );
-    });
-
     // Split uniforms into Transform / Properties sections. Transform always
     // renders first when present so position/size/rotation sit at the top of
     // every shape's panel.
@@ -149,7 +109,8 @@
     let groupedFields = $derived.by(() => {
         const transform: InspectedUiField[] = [];
         const other: InspectedUiField[] = [];
-        for (const f of visibleUniformFields) {
+        const uniformFields = fields?.uniformFields ?? [];
+        for (const f of uniformFields) {
             if (getMetaDeep(f.schema)?.ui?.group === "transform")
                 transform.push(f);
             else other.push(f);
@@ -164,7 +125,7 @@
         ].filter((s) => s.entries.length > 0);
     });
 
-    let configEntries = $derived(pairUp(visibleConfigFields));
+    let configEntries = $derived(pairUp(fields?.configFields ?? []));
 
     function fieldLabel(field: InspectedField | InspectedUiField): string {
         return field.schema.description ?? field.key;
@@ -233,7 +194,8 @@
 {:else}
     {@const meta = selectedNode.meta}
     {@const allFieldsCount =
-        visibleUniformFields.length + visibleConfigFields.length}
+        (fields?.uniformFields.length ?? 0) +
+        (fields?.configFields.length ?? 0)}
     <div class="flex flex-col h-full min-h-0">
         <CardHeader class="border-b">
             <span

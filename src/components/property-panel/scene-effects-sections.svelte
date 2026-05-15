@@ -1,0 +1,179 @@
+<script lang="ts">
+	import {
+		EffectNode,
+		getEffectScope,
+		type NodeClass
+	} from '@/shaders/core/node.svelte';
+	import { listNodeClasses } from '@/shaders/core/registry';
+	import type { Category } from '@/shaders/core/types';
+	import { composer } from '@/lib/state/composer.svelte';
+	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
+	import { cn } from '@/lib/utils';
+	import Plus from '@lucide/svelte/icons/plus';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Eye from '@lucide/svelte/icons/eye';
+	import EyeOff from '@lucide/svelte/icons/eye-off';
+	import EffectPopover from './effect-popover.svelte';
+
+	// Display filter for the scene's flat `postEffects` list. Same grouping as
+	// the layer panel so users have a consistent mental model — these are the
+	// composited-canvas equivalents of layer effects.
+	const SECTIONS: Array<{
+		key: string;
+		label: string;
+		categories: Category[];
+	}> = [
+		{
+			key: 'effects',
+			label: 'Effects',
+			categories: ['shape-effects', 'stylize', 'interactive']
+		},
+		{ key: 'distortions', label: 'Distortions', categories: ['distortion', 'blurs'] },
+		{ key: 'adjustments', label: 'Adjustments', categories: ['adjustments'] }
+	];
+
+	function pickerOptions(categories: Category[]): NodeClass[] {
+		return listNodeClasses()
+			.filter((cls) => {
+				const proto = (cls as unknown as typeof EffectNode).prototype;
+				if (!(proto instanceof EffectNode)) return false;
+				if (!categories.includes(cls.meta.category)) return false;
+				const scope = getEffectScope(cls);
+				// Layer-only effects can't sit at the composited-canvas stage —
+				// they need a layer's source as input.
+				return scope === 'scene' || scope === 'both';
+			})
+			.sort((a, b) => a.meta.name.localeCompare(b.meta.name));
+	}
+
+	let postEffects = $derived(composer.scene.postEffects);
+	let groupedEffects = $derived.by(() => {
+		const out: Record<string, typeof postEffects> = {};
+		for (const s of SECTIONS) out[s.key] = [];
+		for (const fx of postEffects) {
+			for (const s of SECTIONS) {
+				if (s.categories.includes(fx.meta.category)) {
+					out[s.key].push(fx);
+					break;
+				}
+			}
+		}
+		return out;
+	});
+
+	function handlePick(typeId: string) {
+		composer.addSceneEffect(typeId);
+	}
+</script>
+
+{#each SECTIONS as section (section.key)}
+	{@const items = groupedEffects[section.key]}
+	{@const options = pickerOptions(section.categories)}
+	<section class="px-3 py-3 space-y-3 border-b border-[rgba(255,255,255,0.1)] last:border-b-0">
+		<div class="flex items-center justify-between px-1">
+			<p class="text-[14px] font-medium text-white">{section.label}</p>
+			{#if options.length > 0}
+				<DropdownMenuPrimitive.Root>
+					<DropdownMenuPrimitive.Trigger
+						class="h-6 w-6 p-0 inline-flex items-center justify-center rounded text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+						aria-label={`Add ${section.label.toLowerCase()}`}
+					>
+						<Plus class="size-4" />
+					</DropdownMenuPrimitive.Trigger>
+					<DropdownMenuPrimitive.Portal>
+						<DropdownMenuPrimitive.Content
+							side="bottom"
+							align="end"
+							sideOffset={4}
+							class="bg-popover text-popover-foreground ring-1 ring-foreground/10 rounded-lg p-1 shadow-md min-w-[160px] z-50 outline-none"
+						>
+							{#each options as cls (cls.typeId)}
+								<DropdownMenuPrimitive.Item
+									class="flex items-center gap-2 px-2 py-1.5 text-[13px] rounded-md cursor-pointer text-white/90 hover:bg-white/5 data-highlighted:bg-white/5 outline-none"
+									onclick={() => handlePick(cls.typeId)}
+								>
+									<span
+										class="size-2.5 rounded-[3px] shrink-0"
+										style:background-color={cls.meta.color}
+										aria-hidden="true"
+									></span>
+									{cls.meta.name}
+								</DropdownMenuPrimitive.Item>
+							{/each}
+						</DropdownMenuPrimitive.Content>
+					</DropdownMenuPrimitive.Portal>
+				</DropdownMenuPrimitive.Root>
+			{/if}
+		</div>
+
+		{#if items.length === 0}
+			<p class="px-1 text-[12px] text-white/40">
+				No {section.label.toLowerCase()} added.
+			</p>
+		{:else}
+			<div class="space-y-1">
+				{#each items as fx (fx.id)}
+					{@const isOpen = composer.openEffectId === fx.id}
+					<EffectPopover
+						effect={fx}
+						open={isOpen}
+						onOpenChange={(o) => composer.openEffect(o ? fx.id : null)}
+					>
+						{#snippet trigger({ props })}
+							<div
+								{...props}
+								class={cn(
+									'group/fxrow relative flex items-center gap-2 h-9 rounded-lg px-3 transition-colors w-full cursor-pointer',
+									isOpen
+										? 'bg-[var(--indigo-700)] text-white'
+										: 'bg-[var(--surface-strong)] text-white hover:bg-[var(--surface-hover)]',
+									!fx.enabled && 'opacity-60'
+								)}
+							>
+								<span
+									class="size-3 rounded-[3px] shrink-0"
+									style:background-color={fx.meta.color}
+									aria-hidden="true"
+								></span>
+								<span class="flex-1 min-w-0 text-left text-[13px] font-medium truncate">
+									{fx.meta.name}
+								</span>
+								<span
+									class="flex items-center gap-0.5 opacity-0 group-hover/fxrow:opacity-100 transition-opacity"
+									class:opacity-100={isOpen}
+								>
+									<button
+										type="button"
+										class="p-1 text-white/70 hover:text-white"
+										onclick={(e) => {
+											e.stopPropagation();
+											composer.toggleNode(fx.id);
+										}}
+										aria-label="Toggle effect"
+									>
+										{#if fx.enabled}
+											<Eye class="size-3.5" />
+										{:else}
+											<EyeOff class="size-3.5" />
+										{/if}
+									</button>
+									<button
+										type="button"
+										class="p-1 text-white/70 hover:text-white"
+										onclick={(e) => {
+											e.stopPropagation();
+											composer.removeSceneEffect(fx.id);
+										}}
+										aria-label="Remove effect"
+									>
+										<Trash2 class="size-3.5" />
+									</button>
+								</span>
+							</div>
+						{/snippet}
+					</EffectPopover>
+				{/each}
+			</div>
+		{/if}
+	</section>
+{/each}

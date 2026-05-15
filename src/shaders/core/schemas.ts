@@ -22,12 +22,6 @@ export interface UiMeta {
     color?: boolean;
     array?: { minLength?: number; maxLength?: number };
     /**
-     * Hide this field in the property panel unless the listed sibling-field
-     * values match the current config — e.g. `{ type: ['linear'] }` on a
-     * gradient's `start` field will only show it when `config.type === 'linear'`.
-     */
-    visibleWhen?: Record<string, readonly (string | number | boolean)[]>;
-    /**
      * Group key for the property panel. Fields sharing a group render under one
      * section header. Reserved values: `'transform'` (rendered first as the
      * universal Transform group on shape primitives).
@@ -147,18 +141,6 @@ export function zAngle(step = 1) {
 
 export function zBool() {
   return z.boolean();
-}
-
-/**
- * Mark a schema as conditionally visible based on sibling field values. Used
- * by the property panel to hide irrelevant fields (e.g. on a unified Gradient
- * node, hide `radius` unless `type === 'radial'`).
- */
-export function zVisibleWhen<S extends z.ZodTypeAny>(
-  schema: S,
-  conditions: Record<string, readonly (string | number | boolean)[]>,
-): S {
-  return withMeta(schema, { ui: { visibleWhen: conditions } });
 }
 
 // === Vectors / colors ===
