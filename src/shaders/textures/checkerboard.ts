@@ -10,7 +10,7 @@ export default {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
     const p = b.position();
-    const ck = b.add("checker-texture", { scale: 8 });
+    const ck = b.add("lattice-mask", { mode: "checker", scale: 8 });
     b.connect(p, ck.nodeId, "p");
     const ramp = b.colorRamp(ck, [
       [0.95, 0.95, 0.95],

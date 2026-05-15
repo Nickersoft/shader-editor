@@ -1,20 +1,12 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// ContourLines — graph-decomposed. A single-octave simplex sample produces
+// the height field; `abs(fract(n·freq) − 0.5) · 2` builds isolines that
+// taper across `thickness + softness` via smoothstep.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zColor, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  colorBack: zColor().default([0.02, 0.04, 0.05]).describe("Background"),
-  colorFront: zColor().default([0.55, 0.95, 0.7]).describe("Lines"),
-  scale: zFloat(0.5, 20, 0.1).default(3.0).describe("Scale"),
-  frequency: zFloat(1, 30, 0.5).default(5.0).describe("Line Frequency"),
-  thickness: zFloat(0, 1).default(0.5).describe("Thickness"),
-  softness: zFloat(0, 1).default(0.3).describe("Softness"),
-  speed: zFloat(0, 4, 0.05).default(0.0).describe("Speed"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Contour Lines",
@@ -24,37 +16,98 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class ContourLines extends EffectNode<Config, Uniforms> {
+export class ContourLines extends GraphEffectBase {
   static readonly typeId = "contour-lines";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const colorBack = this.uniformName("colorBack");
-    const colorFront = this.uniformName("colorFront");
-    const scale = this.uniformName("scale");
-    const frequency = this.uniformName("frequency");
-    const thickness = this.uniformName("thickness");
-    const softness = this.uniformName("softness");
-    const speed = this.uniformName("speed");
-    return {
-      dependencies: ["simplex2D"],
-      main: `
-base = texture(u_prevPass, uv);
-vec2 _ar = vec2(u_resolution.x / u_resolution.y, 1.0);
-vec2 p = (uv - 0.5) * _ar;
-vec2 q = p * ${scale} + u_time * ${speed} * 0.3;
-float n = simplex2D(q) * 0.5 + 0.5;
-float lines = abs(fract(n * ${frequency}) - 0.5) * 2.0;
-float halfWidth = clamp(${thickness}, 0.0, 1.0) * 0.5;
-float soft = max(${softness}, 0.001) * 0.5;
-float m = 1.0 - smoothstep(halfWidth, halfWidth + soft, lines);
-return vec4(mix(${colorBack}, ${colorFront}, m), 1.0);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "colorBack", type: "vec3", label: "Background", default: [0.02, 0.04, 0.05] },
+      { id: "colorFront", type: "vec3", label: "Lines", default: [0.55, 0.95, 0.7] },
+      { id: "scale", type: "float", label: "Scale", default: 3 },
+      { id: "frequency", type: "float", label: "Line Frequency", default: 5 },
+      { id: "thickness", type: "float", label: "Thickness", default: 0.5 },
+      { id: "softness", type: "float", label: "Softness", default: 0.3 },
+      { id: "speed", type: "float", label: "Speed", default: 0 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const t = b.add("time", {}, undefined, "out");
+
+    // p = (uv − 0.5) — centred coords.
+    const half = b.add("value", { value: 0.5 });
+    const halfV = b.add("combine-xy", {});
+    b.connect(half, halfV.nodeId, "x");
+    b.connect(half, halfV.nodeId, "y");
+    const centred = b.add("vector-math", { op: "sub" });
+    b.connect(uv, centred.nodeId, "a");
+    b.connect(halfV, centred.nodeId, "b");
+
+    // q = centred · scale
+    const q = b.add("vector-math", { op: "scale" });
+    b.connect(centred, q.nodeId, "a");
+    b.connect(gi.scale, q.nodeId, "b");
+
+    // time offset: t · speed · 0.3
+    const tOff = b.add("math", { op: "mul" }, { b: 0.3 });
+    const tScaled = b.add("math", { op: "mul" });
+    b.connect(t, tScaled.nodeId, "a");
+    b.connect(gi.speed, tScaled.nodeId, "b");
+    b.connect(tScaled, tOff.nodeId, "a");
+
+    const n = b.add("noise-texture", {
+      kind: "simplex",
+      scale: 1,
+      seed: 0,
+      detail: 5,
+      lacunarity: 2,
+      roughness: 0.5,
+      distortion: 0,
+    });
+    b.connect(q, n.nodeId, "p");
+    b.connect(tOff, n.nodeId, "t");
+
+    // lines = abs(fract(n · freq) − 0.5) · 2
+    const ringed = b.add("math", { op: "mul" });
+    b.connect(n, ringed.nodeId, "a");
+    b.connect(gi.frequency, ringed.nodeId, "b");
+    const fr = b.add("math", { op: "fract" });
+    b.connect(ringed, fr.nodeId, "x");
+    const fm = b.add("math", { op: "sub" }, { b: 0.5 });
+    b.connect(fr, fm.nodeId, "a");
+    const ab = b.add("math", { op: "abs" });
+    b.connect(fm, ab.nodeId, "x");
+    const lines = b.add("math", { op: "mul" }, { b: 2 });
+    b.connect(ab, lines.nodeId, "a");
+
+    // halfWidth = thickness · 0.5
+    const halfW = b.add("math", { op: "mul" }, { b: 0.5 });
+    b.connect(gi.thickness, halfW.nodeId, "a");
+    // soft = softness · 0.5
+    const soft = b.add("math", { op: "mul" }, { b: 0.5 });
+    b.connect(gi.softness, soft.nodeId, "a");
+    // edge1 = halfWidth + soft
+    const edge1 = b.add("math", { op: "add" });
+    b.connect(halfW, edge1.nodeId, "a");
+    b.connect(soft, edge1.nodeId, "b");
+
+    const ss = b.add("smoothstep", {});
+    b.connect(halfW, ss.nodeId, "edge0");
+    b.connect(edge1, ss.nodeId, "edge1");
+    b.connect(lines, ss.nodeId, "x");
+
+    const m = b.add("math", { op: "oneminus" });
+    b.connect(ss, m.nodeId, "x");
+
+    const mixed = b.add("mix-color", {});
+    b.connect(gi.colorBack, mixed.nodeId, "a");
+    b.connect(gi.colorFront, mixed.nodeId, "b");
+    b.connect(m, mixed.nodeId, "t");
+
+    // Alpha is always 1 in the legacy effect (paints a fully-opaque overlay).
+    const one = b.add("value", { value: 1 });
+    return b.output(mixed, one);
   }
 }
 

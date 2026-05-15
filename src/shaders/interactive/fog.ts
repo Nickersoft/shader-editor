@@ -1,18 +1,11 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Fog — graph-decomposed. fbm noise driven by uv (offset by mouse drift)
+// plus a horizontal time scroll; mixed with the underlying frame.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zColor, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
-  speed: zFloat(0, 2, 0.05).default(0.3).describe("Speed"),
-  scale: zFloat(0.1, 5, 0.05).default(1.0).describe("Scale"),
-  color1: zColor().default([1.0, 1.0, 1.0]).describe("Color 1"),
-  color2: zColor().default([0.5, 0.5, 0.5]).describe("Color 2"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Fog",
@@ -22,29 +15,85 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class Fog extends EffectNode<Config, Uniforms> {
+export class Fog extends GraphEffectBase {
   static readonly typeId = "fog";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const intensity = this.uniformName("intensity");
-    const speed = this.uniformName("speed");
-    const scale = this.uniformName("scale");
-    const c1 = this.uniformName("color1");
-    const c2 = this.uniformName("color2");
-    return {
-      dependencies: ["fbm", "simplex2D"],
-      main: `
-vec2 mouseDrift = (u_mouse - vec2(0.5)) * 0.5;
-float n = fbm((uv + mouseDrift) * ${scale} + vec2(u_time * ${speed}, 0.0), 4.0, 2.0, 0.5) * 0.5 + 0.5;
-vec3 fog = mix(${c1}, ${c2}, n);
-return vec4(mix(base.rgb, fog, n * ${intensity}), base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "intensity", type: "float", label: "Intensity", default: 0.5 },
+      { id: "speed", type: "float", label: "Speed", default: 0.3 },
+      { id: "scale", type: "float", label: "Scale", default: 1 },
+      { id: "color1", type: "vec3", label: "Color 1", default: [1, 1, 1] },
+      { id: "color2", type: "vec3", label: "Color 2", default: [0.5, 0.5, 0.5] },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const t = b.add("time", {}, undefined, "out");
+    const mouse = b.add("mouse", {}, undefined, "position");
+
+    // mouseDrift = (mouse − 0.5) · 0.5
+    const half = b.add("value", { value: 0.5 });
+    const halfV = b.add("combine-xy", {});
+    b.connect(half, halfV.nodeId, "x");
+    b.connect(half, halfV.nodeId, "y");
+    const md1 = b.add("vector-math", { op: "sub" });
+    b.connect(mouse, md1.nodeId, "a");
+    b.connect(halfV, md1.nodeId, "b");
+    const drift = b.add("vector-math", { op: "scale" });
+    b.connect(md1, drift.nodeId, "a");
+    b.connect(half, drift.nodeId, "b");
+
+    // sample point: (uv + drift) · scale, plus time scroll along x.
+    const offset = b.add("vector-math", { op: "add" });
+    b.connect(uv, offset.nodeId, "a");
+    b.connect(drift, offset.nodeId, "b");
+    const q = b.add("vector-math", { op: "scale" });
+    b.connect(offset, q.nodeId, "a");
+    b.connect(gi.scale, q.nodeId, "b");
+
+    const ts = b.add("math", { op: "mul" });
+    b.connect(t, ts.nodeId, "a");
+    b.connect(gi.speed, ts.nodeId, "b");
+    const tsV = b.add("combine-xy", {}, { y: 0 });
+    b.connect(ts, tsV.nodeId, "x");
+    const sampleP = b.add("vector-math", { op: "add" });
+    b.connect(q, sampleP.nodeId, "a");
+    b.connect(tsV, sampleP.nodeId, "b");
+
+    const n = b.add("noise-texture", {
+      kind: "fbm",
+      scale: 1,
+      seed: 0,
+      detail: 4,
+      lacunarity: 2,
+      roughness: 0.5,
+      distortion: 0,
+    });
+    b.connect(sampleP, n.nodeId, "p");
+
+    // fogColor = mix(c1, c2, n)
+    const fogColor = b.add("mix-color", {});
+    b.connect(gi.color1, fogColor.nodeId, "a");
+    b.connect(gi.color2, fogColor.nodeId, "b");
+    b.connect(n, fogColor.nodeId, "t");
+
+    // Underlying frame
+    const base = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, base.nodeId, "uv");
+
+    // mixT = n · intensity
+    const mixT = b.add("math", { op: "mul" });
+    b.connect(n, mixT.nodeId, "a");
+    b.connect(gi.intensity, mixT.nodeId, "b");
+
+    const out = b.add("mix-color", {});
+    b.connect({ nodeId: base.nodeId, pin: "color" }, out.nodeId, "a");
+    b.connect(fogColor, out.nodeId, "b");
+    b.connect(mixT, out.nodeId, "t");
+
+    return b.output(out, { nodeId: base.nodeId, pin: "alpha" });
   }
 }
 

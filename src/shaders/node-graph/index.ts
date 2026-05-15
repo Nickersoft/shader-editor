@@ -38,9 +38,9 @@ export {
   vector2,
   vector3,
 } from "./pins";
-export { canCoerce, canCoerceType, coerce } from "./coerce";
+export { canCoerce, coerce } from "./coerce";
 export type { CoerceResult } from "./coerce";
-export { migrateGraph, migrateNode, migrateTypeId } from "./migrations";
+export { migrateGraph, migrateTypeId } from "./migrations";
 export { layoutGraph, relayoutGraph } from "./layout";
 export { makeGroup, ungroup } from "./group-ops";
 export {
@@ -50,5 +50,13 @@ export {
   parseGraphAddress,
 } from "./spatial-controls";
 export type { ParsedGraphAddress } from "./spatial-controls";
-export { glslLiteral, glslTypeOf } from "./types";
+export {
+  coerceToPinDefault,
+  defaultForPinType,
+  floatLit,
+  glslLiteral,
+  glslTypeOf,
+  PIN_TYPES,
+} from "./types";
 export type { Edge, Frame, GraphNode, NodeGraph, PinDefault, PinSpec, PinType } from "./types";
+export { zPinType } from "./pins";

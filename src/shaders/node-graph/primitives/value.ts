@@ -14,9 +14,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   value: zFloat(-1000, 1000).default(1),
@@ -40,11 +38,7 @@ class Const extends BasePrimitive<Config, Record<string, never>, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: z.object({}), out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [{ nameSuffix: "value", type: "float", value: c.value } satisfies UniformSpec];
-  }
+  static readonly uniformKeys = { value: "float" } as const;
 
   emit(ctx: EmitContext<Record<string, never>, Out>): EmitResult {
     return { statements: `float ${ctx.outputs.out} = ${ctx.uniforms.value};` };

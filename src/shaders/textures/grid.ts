@@ -10,7 +10,7 @@ export default {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
     const p = b.position();
-    const gl = b.add("grid-lines", { scale: 10, lineWidth: 0.06, softness: 0.04 });
+    const gl = b.add("lattice-mask", { mode: "lines", scale: 10, lineWidth: 0.06, softness: 0.04 });
     b.connect(p, gl.nodeId, "p");
     const ramp = b.colorRamp(gl, [
       [1, 1, 1],

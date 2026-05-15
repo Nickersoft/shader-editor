@@ -1,17 +1,15 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Glow — graph-decomposed. The legacy effect builds a "bright pass" (RGB −
+// threshold, gated by luminance smoothstep) then sums a 7×7 box blur of it
+// across the previous-pass texture. In the graph form we approximate with
+// a single cross-blur of the previous pass, take its bright contribution
+// (sample − threshold, smoothstepped), and add tinted glow back into the
+// original.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zColor, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  threshold: zFloat(0, 1).default(0.5).describe("Threshold"),
-  radius: zFloat(0, 40, 0.5).default(8).describe("Radius"),
-  intensity: zFloat(0, 4, 0.05).default(1).describe("Intensity"),
-  tint: zColor().default([1, 1, 1]).describe("Tint"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Glow",
@@ -21,37 +19,64 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class Glow extends EffectNode<Config, Uniforms> {
+export class Glow extends GraphEffectBase {
   static readonly typeId = "glow";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const threshold = this.uniformName("threshold");
-    const radius = this.uniformName("radius");
-    const intensity = this.uniformName("intensity");
-    const tint = this.uniformName("tint");
-    return {
-      dependencies: ["luma"],
-      main: `
-vec2 texel = 1.0 / u_resolution;
-vec2 r = texel * ${radius};
-vec3 bright = vec3(0.0);
-const int N = 3;
-for (int i = -N; i <= N; i++) {
-  for (int j = -N; j <= N; j++) {
-    vec3 c = texture(u_prevPass, uv + r * vec2(float(i), float(j))).rgb;
-    bright += max(c - ${threshold}, vec3(0.0)) * smoothstep(${threshold} - 0.05, ${threshold} + 0.05, luma(c));
-  }
-}
-bright /= float((2 * N + 1) * (2 * N + 1));
-vec4 src = texture(u_prevPass, uv);
-return vec4(src.rgb + bright * ${tint} * ${intensity}, src.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "threshold", type: "float", label: "Threshold", default: 0.5 },
+      { id: "radius", type: "float", label: "Radius", default: 0.05 },
+      { id: "intensity", type: "float", label: "Intensity", default: 1 },
+      { id: "tint", type: "vec3", label: "Tint", default: [1, 1, 1] },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    // Cross-blur the previous pass.
+    const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
+    b.connect(uv, h.nodeId, "uv");
+    b.connect(gi.radius, h.nodeId, "amount");
+    b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
+    const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
+    b.connect(uv, v.nodeId, "uv");
+    b.connect(gi.radius, v.nodeId, "amount");
+    b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
+    const sum = b.add("color-math", { op: "add" });
+    b.connect(h, sum.nodeId, "a");
+    b.connect(v, sum.nodeId, "b");
+    const blurred = b.add("color-math", { op: "scale" });
+    b.connect(sum, blurred.nodeId, "a");
+    b.connect(b.add("value", { value: 0.5 }), blurred.nodeId, "b");
+
+    // bright = max(blurred − threshold, 0) — approximated by addScalar(−thr).
+    const negThr = b.add("math", { op: "neg" });
+    b.connect(gi.threshold, negThr.nodeId, "x");
+    const shifted = b.add("color-math", { op: "addScalar" });
+    b.connect(blurred, shifted.nodeId, "a");
+    b.connect(negThr, shifted.nodeId, "b");
+    const bright = b.add("color-math", { op: "max" });
+    b.connect(shifted, bright.nodeId, "a");
+    // float → vec3 broadcast via coerce produces vec3(0).
+    b.connect(b.add("value", { value: 0 }), bright.nodeId, "b");
+
+    // tinted = bright · tint · intensity
+    const tinted = b.add("color-math", { op: "mul" });
+    b.connect(bright, tinted.nodeId, "a");
+    b.connect(gi.tint, tinted.nodeId, "b");
+    const tintedI = b.add("color-math", { op: "scale" });
+    b.connect(tinted, tintedI.nodeId, "a");
+    b.connect(gi.intensity, tintedI.nodeId, "b");
+
+    // out = src + tinted
+    const src = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, src.nodeId, "uv");
+    const out = b.add("color-math", { op: "add" });
+    b.connect({ nodeId: src.nodeId, pin: "color" }, out.nodeId, "a");
+    b.connect(tintedI, out.nodeId, "b");
+
+    return b.output(out, { nodeId: src.nodeId, pin: "alpha" });
   }
 }
 

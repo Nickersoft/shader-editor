@@ -113,14 +113,24 @@ export function inspectObjectSchema(schema: z.ZodType): InspectedField[] {
   return out;
 }
 
+// Schemas are class-static, so the result of inspection is stable for the
+// lifetime of a class. A WeakMap keyed by schema avoids re-walking the shape
+// on every property-panel render.
+const uiFieldsCache = new WeakMap<z.ZodType, InspectedUiField[]>();
+
 /**
  * Like `inspectObjectSchema` but additionally includes enum-string fields so
  * the property panel can render dropdowns for non-uniform config fields
  * (e.g. a Gradient node's `type: 'linear' | 'radial'`).
  */
 export function inspectUiFields(schema: z.ZodType): InspectedUiField[] {
+  const cached = uiFieldsCache.get(schema);
+  if (cached) return cached;
   const inner = unwrap(schema);
-  if (!(inner instanceof z.ZodObject)) return [];
+  if (!(inner instanceof z.ZodObject)) {
+    uiFieldsCache.set(schema, EMPTY_FIELDS);
+    return EMPTY_FIELDS;
+  }
   const out: InspectedUiField[] = [];
   for (const [key, fieldSchema] of Object.entries(inner.shape)) {
     const meta = getMetaDeep(fieldSchema);
@@ -140,5 +150,8 @@ export function inspectUiFields(schema: z.ZodType): InspectedUiField[] {
       });
     }
   }
+  uiFieldsCache.set(schema, out);
   return out;
 }
+
+const EMPTY_FIELDS: InspectedUiField[] = [];

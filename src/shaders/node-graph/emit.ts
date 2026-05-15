@@ -99,6 +99,27 @@ export function emitGraph(graph: NodeGraph, opts: EmitOptions): EmittedGraph {
   };
 }
 
+// Per-emit mutable accumulators + read-only graph context. Threaded through
+// every node handler so each one shares the same uniform/dep/resolved tables.
+interface EmitState {
+  graph: NodeGraph;
+  opts: EmitGraphIntoOpts;
+  edgesByTarget: Map<string, Edge[]>;
+  indexById: Map<string, number>;
+  resolved: Map<string, ResolvedNode>;
+  uniforms: ExtraUniformDecl[];
+  lines: string[];
+  deps: Set<GlslHelperName>;
+}
+
+interface NodeFrame {
+  node: GraphNode;
+  inputs: readonly PinSpec[];
+  outputs: readonly PinSpec[];
+  slug: string;
+  outputLocals: Record<string, string>;
+}
+
 function emitGraphInto(graph: NodeGraph, opts: EmitGraphIntoOpts): SubgraphResult {
   const groupOutput = graph.nodes.find((n) => n.typeId === GROUP_OUTPUT_TYPE_ID);
   if (!groupOutput) {
@@ -111,9 +132,10 @@ function emitGraphInto(graph: NodeGraph, opts: EmitGraphIntoOpts): SubgraphResul
     };
   }
 
-  const order = topoSort(graph, groupOutput.id);
-
-  // Index helpers
+  // Index helpers — built once and shared with topoSort so we don't walk the
+  // edge list twice on every emit. Node index lookup is used for
+  // `originalPath`, which walks into `graph.nodes[index].config.<...>` to read
+  // the live value; the path prefix supplies the outer descent.
   const nodeById = new Map(graph.nodes.map((n) => [n.id, n] as const));
   const edgesByTarget = new Map<string, Edge[]>();
   for (const e of graph.edges) {
@@ -122,137 +144,191 @@ function emitGraphInto(graph: NodeGraph, opts: EmitGraphIntoOpts): SubgraphResul
     else edgesByTarget.set(e.toNodeId, [e]);
   }
 
-  // Node-index lookup — used for `originalPath`, which walks into
-  // `graph.nodes[index].config.<...>` to read the live value. Indexes refer to
-  // `graph.nodes` at this recursion level; the path prefix supplies the outer
-  // descent.
-  const indexById = new Map(graph.nodes.map((n, i) => [n.id, i] as const));
+  const order = topoSort(groupOutput.id, edgesByTarget);
 
-  const resolved = new Map<string, ResolvedNode>();
-  const uniforms: ExtraUniformDecl[] = [];
-  const lines: string[] = [];
-  const deps = new Set<GlslHelperName>();
+  const state: EmitState = {
+    graph,
+    opts,
+    edgesByTarget,
+    indexById: new Map(graph.nodes.map((n, i) => [n.id, i] as const)),
+    resolved: new Map(),
+    uniforms: [],
+    lines: [],
+    deps: new Set(),
+  };
 
   for (const nodeId of order) {
     const node = nodeById.get(nodeId);
     if (!node) continue;
     const prim = requirePrimitive(node.typeId);
-    const inputs = prim.inputs(node.config);
-    const outputs = prim.outputs(node.config);
-    const slug = `${opts.slugPrefix}${sanitizeName(node.id)}`;
-    const outputLocals: Record<string, string> = {};
-    for (const pin of outputs) {
-      outputLocals[pin.id] = `n_${slug}_${pin.id}`;
+    const frame: NodeFrame = {
+      node,
+      inputs: prim.inputs(node.config),
+      outputs: prim.outputs(node.config),
+      slug: `${opts.slugPrefix}${sanitizeName(node.id)}`,
+      outputLocals: {},
+    };
+    for (const pin of frame.outputs) {
+      frame.outputLocals[pin.id] = `n_${frame.slug}_${pin.id}`;
     }
 
-    // --- Special case: nested GroupInput. Bound by a parent group node, so
-    // emit direct assignments to the parent's input expressions instead of
-    // uniform reads. Uniforms aren't contributed at this depth — they'd be
-    // orphan locations the property pane can't drive.
     if (node.typeId === GROUP_INPUT_TYPE_ID && opts.inputBindings) {
-      const stmtLines: string[] = [];
-      for (const pin of outputs) {
-        const local = outputLocals[pin.id];
-        const bound = opts.inputBindings[pin.id];
-        const override = node.pinValues?.[pin.id];
-        const expr = bound ?? glslLiteral(pin.type, override ?? pin.default);
-        stmtLines.push(`${glslTypeOf(pin.type)} ${local} = ${expr};`);
-      }
-      lines.push(`// ${node.typeId} (${node.id})`);
-      lines.push(stmtLines.join("\n"));
-      resolved.set(nodeId, { node, inputs, outputs, outputLocals, uniformNames: {}, uniformSpecs: [] });
-      continue;
+      emitGroupInputBoundNode(state, frame);
+    } else if (node.typeId === GROUP_TYPE_ID) {
+      emitGroupNode(state, frame);
+    } else {
+      emitStandardNode(state, frame, prim);
     }
-
-    // --- Special case: group node. Recurse into config.subGraph.
-    if (node.typeId === GROUP_TYPE_ID) {
-      const inputExprs = resolveInputExprs(inputs, edgesByTarget.get(nodeId) ?? [], resolved, node);
-      const sub = (node.config as { subGraph?: NodeGraph }).subGraph;
-      const nodeIndex = indexById.get(nodeId) ?? 0;
-
-      if (sub && Array.isArray(sub.nodes) && sub.nodes.length > 0) {
-        const subResult = emitGraphInto(sub, {
-          containerPrefix: opts.containerPrefix,
-          slugPrefix: `${slug}_`,
-          pathPrefix: [...opts.pathPrefix, "nodes", String(nodeIndex), "config", "subGraph"],
-          inputBindings: inputExprs,
-        });
-        lines.push(`// group (${node.id})`);
-        lines.push(...subResult.statements);
-        // Alias each external output to the inner GroupOutput's pin expression
-        // so downstream consumers can read `n_<group>_<pin>` like any other node.
-        for (const pin of outputs) {
-          const innerExpr =
-            subResult.outputExpressions[pin.id] ?? glslLiteral(pin.type, pin.default);
-          lines.push(`${glslTypeOf(pin.type)} ${outputLocals[pin.id]} = ${innerExpr};`);
-        }
-        for (const dep of subResult.dependencies) deps.add(dep);
-        uniforms.push(...subResult.uniforms);
-      } else {
-        // Empty / missing subgraph: feed each external output its default.
-        for (const pin of outputs) {
-          lines.push(
-            `${glslTypeOf(pin.type)} ${outputLocals[pin.id]} = ${glslLiteral(pin.type, pin.default)};`,
-          );
-        }
-      }
-      resolved.set(nodeId, { node, inputs, outputs, outputLocals, uniformNames: {}, uniformSpecs: [] });
-      continue;
-    }
-
-    // --- Standard primitive path.
-    const uniformSpecs = prim.uniforms?.(node) ?? [];
-    const uniformNames: Record<string, string> = {};
-    const nodeIndex = indexById.get(nodeId) ?? 0;
-    for (const u of uniformSpecs) {
-      const name = `u_${opts.containerPrefix}_${slug}_${u.nameSuffix}`;
-      uniformNames[u.nameSuffix] = name;
-      const valuePath = u.valuePath ?? [u.nameSuffix];
-      uniforms.push({
-        nameSuffix: `${slug}_${u.nameSuffix}`,
-        type: u.type,
-        value: u.value,
-        originalPath: [...opts.pathPrefix, "nodes", String(nodeIndex), "config", ...valuePath],
-        originalName: `${prim.name} · ${u.nameSuffix}`,
-      });
-    }
-
-    resolved.set(nodeId, { node, inputs, outputs, outputLocals, uniformNames, uniformSpecs });
-
-    // GroupOutput contributes no statements at any depth — its expressions are
-    // surfaced via `outputExpressions` (root: wrapped into `return vec4(...)`;
-    // nested: aliased into the parent group's external output locals). Skipping
-    // its emit also avoids the `_final_color` / `_final_alpha` sentinel locals
-    // colliding when groups are nested inside groups.
-    if (node.typeId === GROUP_OUTPUT_TYPE_ID) continue;
-
-    const inputExprs = resolveInputExprs(inputs, edgesByTarget.get(nodeId) ?? [], resolved, node);
-
-    const result = prim.emit({
-      inputs: inputExprs,
-      outputs: outputLocals,
-      uniforms: uniformNames,
-      config: node.config,
-      addDependency: (name) => deps.add(name),
-    });
-
-    lines.push(`// ${node.typeId} (${node.id})`);
-    lines.push(result.statements.trim());
   }
 
   // Surface the GroupOutput's per-pin expressions to the caller.
-  const goResolved = resolved.get(groupOutput.id);
+  const goResolved = state.resolved.get(groupOutput.id);
   const goIncoming = edgesByTarget.get(groupOutput.id) ?? [];
   const outputExpressions: Record<string, string> = {};
   let outputPins: readonly PinSpec[] = [];
   if (goResolved) {
     outputPins = goResolved.inputs;
     for (const pin of goResolved.inputs) {
-      outputExpressions[pin.id] = extractFinalPin(goResolved, goIncoming, resolved, pin.id);
+      outputExpressions[pin.id] = extractFinalPin(goResolved, goIncoming, state.resolved, pin.id);
     }
   }
 
-  return { statements: lines, outputExpressions, outputPins, dependencies: deps, uniforms };
+  return {
+    statements: state.lines,
+    outputExpressions,
+    outputPins,
+    dependencies: state.deps,
+    uniforms: state.uniforms,
+  };
+}
+
+/**
+ * Nested GroupInput, bound by an enclosing group node. Emits direct
+ * assignments to the parent's input expressions instead of uniform reads —
+ * uniforms aren't contributed at this depth, as they'd be orphan locations
+ * the property pane can't drive.
+ */
+function emitGroupInputBoundNode(state: EmitState, frame: NodeFrame): void {
+  const { node, outputs, outputLocals } = frame;
+  const bindings = state.opts.inputBindings!;
+  const stmts: string[] = [];
+  for (const pin of outputs) {
+    const bound = bindings[pin.id];
+    const override = node.pinValues?.[pin.id];
+    const expr = bound ?? glslLiteral(pin.type, override ?? pin.default);
+    stmts.push(`${glslTypeOf(pin.type)} ${outputLocals[pin.id]} = ${expr};`);
+  }
+  state.lines.push(`// ${node.typeId} (${node.id})`);
+  state.lines.push(stmts.join("\n"));
+  state.resolved.set(node.id, {
+    node,
+    inputs: frame.inputs,
+    outputs,
+    outputLocals,
+    uniformNames: {},
+    uniformSpecs: [],
+  });
+}
+
+/**
+ * Group node — recurse into config.subGraph with a fresh prefix so nested
+ * locals/uniforms don't collide, then alias each external output to the
+ * inner GroupOutput's pin expression.
+ */
+function emitGroupNode(state: EmitState, frame: NodeFrame): void {
+  const { node, inputs, outputs, slug, outputLocals } = frame;
+  const inputExprs = resolveInputExprs(
+    inputs,
+    state.edgesByTarget.get(node.id) ?? [],
+    state.resolved,
+    node,
+  );
+  const sub = (node.config as { subGraph?: NodeGraph }).subGraph;
+  const nodeIndex = state.indexById.get(node.id) ?? 0;
+
+  if (sub && Array.isArray(sub.nodes) && sub.nodes.length > 0) {
+    const subResult = emitGraphInto(sub, {
+      containerPrefix: state.opts.containerPrefix,
+      slugPrefix: `${slug}_`,
+      pathPrefix: [...state.opts.pathPrefix, "nodes", String(nodeIndex), "config", "subGraph"],
+      inputBindings: inputExprs,
+    });
+    state.lines.push(`// group (${node.id})`);
+    state.lines.push(...subResult.statements);
+    for (const pin of outputs) {
+      const innerExpr = subResult.outputExpressions[pin.id] ?? glslLiteral(pin.type, pin.default);
+      state.lines.push(`${glslTypeOf(pin.type)} ${outputLocals[pin.id]} = ${innerExpr};`);
+    }
+    for (const dep of subResult.dependencies) state.deps.add(dep);
+    state.uniforms.push(...subResult.uniforms);
+  } else {
+    // Empty / missing subgraph: feed each external output its default.
+    for (const pin of outputs) {
+      state.lines.push(
+        `${glslTypeOf(pin.type)} ${outputLocals[pin.id]} = ${glslLiteral(pin.type, pin.default)};`,
+      );
+    }
+  }
+  state.resolved.set(node.id, {
+    node,
+    inputs,
+    outputs,
+    outputLocals,
+    uniformNames: {},
+    uniformSpecs: [],
+  });
+}
+
+/**
+ * Standard primitive path — declare uniforms, resolve inputs, invoke
+ * `prim.emit()`. GroupOutput follows this path too but contributes no
+ * statements; its expressions are surfaced via `outputExpressions` (root:
+ * wrapped into `return vec4(...)`; nested: aliased into the parent group's
+ * external output locals). Skipping its emit also avoids the `_final_color`
+ * / `_final_alpha` sentinel locals colliding when groups nest in groups.
+ */
+function emitStandardNode(
+  state: EmitState,
+  frame: NodeFrame,
+  prim: ReturnType<typeof requirePrimitive>,
+): void {
+  const { node, inputs, outputs, slug, outputLocals } = frame;
+  const uniformSpecs = prim.uniforms(node);
+  const uniformNames: Record<string, string> = {};
+  const nodeIndex = state.indexById.get(node.id) ?? 0;
+  for (const u of uniformSpecs) {
+    const name = `u_${state.opts.containerPrefix}_${slug}_${u.nameSuffix}`;
+    uniformNames[u.nameSuffix] = name;
+    const valuePath = u.valuePath ?? [u.nameSuffix];
+    state.uniforms.push({
+      nameSuffix: `${slug}_${u.nameSuffix}`,
+      type: u.type,
+      value: u.value,
+      originalPath: [...state.opts.pathPrefix, "nodes", String(nodeIndex), "config", ...valuePath],
+      originalName: `${prim.name} · ${u.nameSuffix}`,
+    });
+  }
+
+  state.resolved.set(node.id, { node, inputs, outputs, outputLocals, uniformNames, uniformSpecs });
+
+  if (node.typeId === GROUP_OUTPUT_TYPE_ID) return;
+
+  const inputExprs = resolveInputExprs(
+    inputs,
+    state.edgesByTarget.get(node.id) ?? [],
+    state.resolved,
+    node,
+  );
+  const result = prim.emit({
+    inputs: inputExprs,
+    outputs: outputLocals,
+    uniforms: uniformNames,
+    config: node.config,
+    addDependency: (name) => state.deps.add(name),
+  });
+
+  state.lines.push(`// ${node.typeId} (${node.id})`);
+  state.lines.push(result.statements.trim());
 }
 
 /**
@@ -322,14 +398,7 @@ function extractFinalPin(
  * Returns nodes in dependency order: a node appears after all nodes its inputs
  * depend on. Throws on cycle.
  */
-function topoSort(graph: NodeGraph, rootId: string): string[] {
-  const incomingByTarget = new Map<string, Edge[]>();
-  for (const e of graph.edges) {
-    const list = incomingByTarget.get(e.toNodeId);
-    if (list) list.push(e);
-    else incomingByTarget.set(e.toNodeId, [e]);
-  }
-
+function topoSort(rootId: string, edgesByTarget: Map<string, Edge[]>): string[] {
   // Gather reachable set.
   const reachable = new Set<string>();
   const stack = [rootId];
@@ -337,7 +406,7 @@ function topoSort(graph: NodeGraph, rootId: string): string[] {
     const id = stack.pop()!;
     if (reachable.has(id)) continue;
     reachable.add(id);
-    const incoming = incomingByTarget.get(id);
+    const incoming = edgesByTarget.get(id);
     if (!incoming) continue;
     for (const e of incoming) {
       if (!reachable.has(e.fromNodeId)) stack.push(e.fromNodeId);
@@ -355,7 +424,7 @@ function topoSort(graph: NodeGraph, rootId: string): string[] {
     if (s === VISITED) return;
     if (s === VISITING) throw new Error(`Cycle detected in node graph at ${id}`);
     state.set(id, VISITING);
-    const incoming = incomingByTarget.get(id);
+    const incoming = edgesByTarget.get(id);
     if (incoming) for (const e of incoming) if (reachable.has(e.fromNodeId)) visit(e.fromNodeId);
     state.set(id, VISITED);
     order.push(id);

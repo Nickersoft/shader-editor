@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps, type Node } from '@xyflow/svelte';
 	import {
+		defaultForPinType,
 		getPrimitive,
 		type PinDefault,
 		type PinSpec,
-		type PinType,
 	} from '@/shaders/node-graph';
-	import { colorForPin } from './pin-color';
+	import { categoryColorFor, colorForPin } from './pin-color';
+	import PinEditor from './pin-editor.svelte';
 	import { inspectUiFields, type InspectedUiField } from '@/lib/codegen/schema-introspection';
 	import { composer } from '@/lib/state/composer.svelte';
 	import { NumberInput } from '@/components/ui/number-input';
-	import { VecScrubber } from '@/components/ui/vec-scrubber';
-	import { ColorSwatch } from '@/components/ui/color-swatch';
 	import * as Select from '@/components/ui/select';
 
 	type PrimitiveNodeData = {
@@ -91,27 +90,7 @@
 		return out;
 	});
 
-	// Pin handle colour comes from the shared `pin-color` module so the same
-	// scheme is reused by the minimap and any future pin-aware UI. Subtype-
-	// aware: a vec3 with `subtype: "vector"` renders purple, a vec3 with
-	// `subtype: "color"` renders yellow.
-
-	// Category palette — header tint colour by primitive category. The eye
-	// groups by category at a glance, so a node's colour says "I am a
-	// converter" before its title says "I am a Sine". Falls back to the
-	// per-primitive `meta.color` for primitives without a categorised tint.
-	const CATEGORY_COLOR: Record<string, string> = {
-		input: '#0ea5e9', //  sky
-		texture: '#f59e0b', // amber
-		color: '#ec4899', //   pink
-		vector: '#8b5cf6', //  violet
-		converter: '#10b981', // emerald
-		group: '#94a3b8', //   slate
-	};
-
-	let categoryColor = $derived(
-		(prim?.category && CATEGORY_COLOR[prim.category]) ?? prim?.color ?? '#888'
-	);
+	let categoryColor = $derived(categoryColorFor(prim?.category, prim?.color ?? '#888'));
 	let categoryLabel = $derived(prim?.category ?? '');
 
 	function setConfig(key: string, value: unknown) {
@@ -141,25 +120,6 @@
 
 	function pinValueOf(pin: PinSpec): PinDefault | undefined {
 		return drafts[pin.id] ?? data.pinValues?.[pin.id] ?? pin.default;
-	}
-
-	// Per-type fallbacks for when neither pinValues nor pin.default is set.
-	// Mirrors emit.ts's `typedZero` — same shape on the JS side so the inline
-	// editor and the uniform binder agree.
-	function typedZero(t: PinType): PinDefault {
-		switch (t) {
-			case 'float':
-			case 'int':
-				return 0;
-			case 'bool':
-				return false;
-			case 'vec2':
-				return [0, 0];
-			case 'vec3':
-				return [0, 0, 0];
-			case 'vec4':
-				return [0, 0, 0, 1];
-		}
 	}
 
 	function configLabel(field: InspectedUiField): string {
@@ -283,7 +243,7 @@
 
 	{#each inputs as pin, i (pin.id)}
 		{@const wired = data.wiredInputIds.has(pin.id)}
-		{@const val = pinValueOf(pin) ?? typedZero(pin.type)}
+		{@const val = pinValueOf(pin) ?? defaultForPinType(pin.type)}
 		<div
 			class="flex items-center pl-4 pr-2 gap-2 text-[11px] text-white/70 nodrag"
 			style:height="{inputRowHeights[i]}px"
@@ -292,75 +252,12 @@
 				<span class="truncate">{pin.label ?? pin.id}</span>
 			{:else}
 				<span class="truncate shrink-0 max-w-[64px]">{pin.label ?? pin.id}</span>
-				{#if pin.type === 'float'}
-					<NumberInput
-						class="flex-1 min-w-0"
-						value={val as number}
-						onChange={(v) => draftPin(pin.id, v)}
-						onCommit={(v) => commitPin(pin.id, v)}
-						step={0.01}
-					/>
-				{:else if pin.type === 'int'}
-					<NumberInput
-						class="flex-1 min-w-0"
-						value={val as number}
-						onChange={(v) => draftPin(pin.id, v)}
-						onCommit={(v) => commitPin(pin.id, v)}
-						step={1}
-						integer
-					/>
-				{:else if pin.type === 'bool'}
-					<input
-						type="checkbox"
-						class="accent-indigo-400 ml-auto"
-						checked={Boolean(val)}
-						onchange={(e) =>
-							commitPin(pin.id, (e.currentTarget as HTMLInputElement).checked)}
-					/>
-				{:else if pin.type === 'vec2'}
-					<VecScrubber
-						class="flex-1 min-w-0"
-						axes={['X', 'Y']}
-						value={val as readonly [number, number]}
-						onChange={(v) => draftPin(pin.id, v)}
-						onCommit={(v) => commitPin(pin.id, v)}
-					/>
-				{:else if pin.type === 'vec3'}
-					{#if pin.subtype === 'color'}
-						<ColorSwatch
-							class="flex-1 min-w-0"
-							value={val as readonly [number, number, number]}
-							onChange={(v) => draftPin(pin.id, v)}
-							onCommit={(v) => commitPin(pin.id, v)}
-						/>
-					{:else}
-						<VecScrubber
-							class="flex-1 min-w-0"
-							axes={['X', 'Y', 'Z']}
-							value={val as readonly [number, number, number]}
-							onChange={(v) => draftPin(pin.id, v)}
-							onCommit={(v) => commitPin(pin.id, v)}
-						/>
-					{/if}
-				{:else if pin.type === 'vec4'}
-					{#if pin.subtype === 'color'}
-						<ColorSwatch
-							class="flex-1 min-w-0"
-							alpha
-							value={val as readonly [number, number, number, number]}
-							onChange={(v) => draftPin(pin.id, v)}
-							onCommit={(v) => commitPin(pin.id, v)}
-						/>
-					{:else}
-						<VecScrubber
-							class="flex-1 min-w-0"
-							axes={['X', 'Y', 'Z', 'W']}
-							value={val as readonly [number, number, number, number]}
-							onChange={(v) => draftPin(pin.id, v)}
-							onCommit={(v) => commitPin(pin.id, v)}
-						/>
-					{/if}
-				{/if}
+				<PinEditor
+					{pin}
+					value={val}
+					onDraft={(v) => draftPin(pin.id, v)}
+					onCommit={(v) => commitPin(pin.id, v)}
+				/>
 			{/if}
 		</div>
 	{/each}

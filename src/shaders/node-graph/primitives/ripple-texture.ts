@@ -9,9 +9,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   frequency: zFloat(1, 200, 1).default(20),
@@ -43,15 +41,11 @@ class RippleWave extends BasePrimitive<Config, In, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: pinIn, out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [
-      { nameSuffix: "frequency", type: "float", value: c.frequency },
-      { nameSuffix: "speed", type: "float", value: c.speed },
-      { nameSuffix: "phase", type: "float", value: c.phase },
-    ] satisfies UniformSpec[];
-  }
+  static readonly uniformKeys = {
+    frequency: "float",
+    speed: "float",
+    phase: "float",
+  } as const;
 
   emit(ctx: EmitContext<In, Out>): EmitResult {
     const p = ctx.inputs.p;

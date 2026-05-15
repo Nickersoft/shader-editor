@@ -1,14 +1,12 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Sharpness — graph-decomposed adjustment built on the `sampler` primitive in
+// `kernel-3x3` mode. The Laplacian-style sharpen kernel is parameterised by
+// `amount`: centre weight `(1 + 4·amount)`, neighbours `−amount`.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  amount: zFloat(0, 1).default(0.5).describe("Sharpness"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Sharpness",
@@ -18,37 +16,40 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class Sharpness extends EffectNode<Config, Uniforms> {
+export class Sharpness extends GraphEffectBase {
   static readonly typeId = "sharpness";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const amount = this.uniformName("amount");
-    return {
-      main: `
-vec2 texel = 1.0 / u_resolution;
-vec4 center = texture(u_prevPass, uv);
-vec4 top = texture(u_prevPass, uv + vec2(0.0, texel.y));
-vec4 bottom = texture(u_prevPass, uv - vec2(0.0, texel.y));
-vec4 left = texture(u_prevPass, uv - vec2(texel.x, 0.0));
-vec4 right = texture(u_prevPass, uv + vec2(texel.x, 0.0));
-float centerWeight = 1.0 + 4.0 * ${amount};
-float neighborWeight = -${amount};
-vec3 col = clamp(
-  center.rgb * centerWeight
-    + top.rgb * neighborWeight
-    + bottom.rgb * neighborWeight
-    + left.rgb * neighborWeight
-    + right.rgb * neighborWeight,
-  0.0, 1.0
-);
-return vec4(col, center.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "amount", type: "float", label: "Sharpness", default: 0.5 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    // Kernel weights are static — the sampler bakes them into emit time.
+    // Default tuple `[0,-1,0,-1,5,-1,0,-1,0]` mirrors the legacy expression
+    // when amount=1; pin-wired amount applies via post-scale below.
+    const sample = b.add(
+      "sampler",
+      { mode: "kernel-3x3", edges: "stretch", kernel: [0, -1, 0, -1, 5, -1, 0, -1, 0] },
+    );
+    b.connect(uv, sample.nodeId, "uv");
+
+    // The sampler emits 5·rgb − 4·rgb_neighbours. The original effect
+    // interpolates between identity and that delta by `amount`. Equivalent:
+    //   out = mix(centerSample, sharpened, amount)
+    // Centre tap as a separate sample-previous-pass for the mix base.
+    const center = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, center.nodeId, "uv");
+
+    const mixed = b.add("mix-color", {});
+    b.connect({ nodeId: center.nodeId, pin: "color" }, mixed.nodeId, "a");
+    b.connect(sample, mixed.nodeId, "b");
+    b.connect(gi.amount, mixed.nodeId, "t");
+
+    return b.output(mixed, { nodeId: center.nodeId, pin: "alpha" });
   }
 }
 

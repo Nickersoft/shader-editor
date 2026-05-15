@@ -9,9 +9,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   randomness: zFloat(0, 1, 0.01).default(0.9),
@@ -49,26 +47,22 @@ class FloatingParticles extends BasePrimitive<Config, Record<string, never>, Out
   };
   static readonly config = config;
   static readonly pins = { in: z.object({}), out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [
-      { nameSuffix: "randomness", type: "float", value: c.randomness },
-      { nameSuffix: "speed", type: "float", value: c.speed },
-      { nameSuffix: "angle", type: "float", value: c.angle },
-      { nameSuffix: "rotation", type: "float", value: c.rotation },
-      { nameSuffix: "particleSize", type: "float", value: c.particleSize },
-      { nameSuffix: "particleSoftness", type: "float", value: c.particleSoftness },
-      { nameSuffix: "sizeVariance", type: "float", value: c.sizeVariance },
-      { nameSuffix: "sway", type: "float", value: c.sway },
-      { nameSuffix: "twinkle", type: "float", value: c.twinkle },
-      { nameSuffix: "count", type: "int", value: c.count },
-      { nameSuffix: "particleColor", type: "vec3", value: c.particleColor },
-      { nameSuffix: "speedVariance", type: "float", value: c.speedVariance },
-      { nameSuffix: "angleVariance", type: "float", value: c.angleVariance },
-      { nameSuffix: "particleDensity", type: "float", value: c.particleDensity },
-    ] satisfies UniformSpec[];
-  }
+  static readonly uniformKeys = {
+    randomness: "float",
+    speed: "float",
+    angle: "float",
+    rotation: "float",
+    particleSize: "float",
+    particleSoftness: "float",
+    sizeVariance: "float",
+    sway: "float",
+    twinkle: "float",
+    count: "int",
+    particleColor: "vec3",
+    speedVariance: "float",
+    angleVariance: "float",
+    particleDensity: "float",
+  } as const;
 
   emit(ctx: EmitContext<Record<string, never>, Out>): EmitResult {
     ctx.addDependency("hash21");

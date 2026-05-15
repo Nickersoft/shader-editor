@@ -21,6 +21,7 @@ import "@/shaders/adjustments/tint";
 import "@/shaders/adjustments/vibrance";
 import "@/shaders/adjustments/duotone";
 import "@/shaders/adjustments/tritone";
+import "@/shaders/adjustments/sharpness";
 
 import "@/shaders/distortion/twirl";
 import "@/shaders/distortion/mirror";
@@ -32,10 +33,53 @@ import "@/shaders/distortion/bulge";
 import "@/shaders/distortion/form3d";
 import "@/shaders/distortion/glass-tiles";
 import "@/shaders/distortion/fluted-glass";
+import "@/shaders/distortion/wave-distortion";
+import "@/shaders/distortion/polar-coordinates";
 
-import { listPrimitives } from "@/shaders/node-graph";
+import "@/shaders/stylize/vignette";
+import "@/shaders/stylize/chromatic-aberration";
+import "@/shaders/stylize/film-grain";
+import "@/shaders/stylize/paper";
+import "@/shaders/stylize/contour-lines";
+
+import "@/shaders/shape-effects/emboss";
+import "@/shaders/shape-effects/smoke-fill";
+
+import "@/shaders/blurs/linear-blur";
+import "@/shaders/blurs/angular-blur";
+import "@/shaders/blurs/zoom-blur";
+import "@/shaders/blurs/diffuse-blur";
+import "@/shaders/blurs/blur";
+import "@/shaders/blurs/channel-blur";
+import "@/shaders/blurs/progressive-blur";
+import "@/shaders/blurs/tilt-shift";
+import "@/shaders/stylize/drop-shadow";
+import "@/shaders/stylize/glow";
+import "@/shaders/stylize/crt-screen";
+import "@/shaders/stylize/dither";
+import "@/shaders/stylize/halftone";
+import "@/shaders/stylize/ascii";
+import "@/shaders/stylize/glitch";
+import "@/shaders/stylize/pixelate";
+import "@/shaders/shape-effects/neon";
+import "@/shaders/shape-effects/glass";
+import "@/shaders/shape-effects/crystal";
+import "@/shaders/distortion/concentric-spin";
+import "@/shaders/distortion/spherize";
+import "@/shaders/distortion/perspective";
+import "@/shaders/interactive/shatter";
+import "@/shaders/distortion/polar-flow-field";
+import "@/shaders/stylize/vhs";
+import "@/shaders/stylize/lens-flare";
+import "@/shaders/interactive/cursor-trail";
+
+import "@/shaders/interactive/cursor-ripples";
+import "@/shaders/interactive/fog";
+import "@/shaders/interactive/liquify";
+import "@/shaders/interactive/grid-distortion";
 
 const EFFECT_IDS = [
+  // adjustments
   "brightness-contrast",
   "grayscale",
   "invert",
@@ -47,6 +91,8 @@ const EFFECT_IDS = [
   "vibrance",
   "duotone",
   "tritone",
+  "sharpness",
+  // distortions
   "twirl",
   "mirror",
   "kaleidoscope",
@@ -57,6 +103,55 @@ const EFFECT_IDS = [
   "form3d",
   "glass-tiles",
   "fluted-glass",
+  "wave-distortion",
+  "polar-coordinates",
+  // stylize
+  "vignette",
+  "chromatic-aberration",
+  "film-grain",
+  "paper",
+  "contour-lines",
+  // shape-effects
+  "emboss",
+  "smoke-fill",
+  // blurs
+  "linear-blur",
+  "angular-blur",
+  "zoom-blur",
+  "diffuse-blur",
+  "blur",
+  "channel-blur",
+  "progressive-blur",
+  "tilt-shift",
+  // stylize composites
+  "drop-shadow",
+  "glow",
+  "crt-screen",
+  "dither",
+  "halftone",
+  "ascii",
+  "glitch",
+  "pixelate",
+  // shape-effects continued
+  "neon",
+  "glass",
+  "crystal",
+  // distortion remainder
+  "concentric-spin",
+  "spherize",
+  "perspective",
+  // interactive remainder
+  "shatter",
+  // large composites
+  "polar-flow-field",
+  "vhs",
+  "lens-flare",
+  "cursor-trail",
+  // interactive
+  "cursor-ripples",
+  "fog",
+  "liquify",
+  "grid-distortion",
 ];
 
 // Pull the GraphEffectBase subclasses out of the core-node registry. Each

@@ -1,129 +1,187 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// VHS — graph-decomposed (simplified). The legacy effect builds tape damage
+// envelopes from a custom smooth-noise function and emits per-scanline
+// hashes for chroma/luma row offsets; that level of detail doesn't fit the
+// primitive set cleanly. The graph form captures the dominant visual
+// elements:
+//   • global X wobble from two fbm samples at different frequencies
+//   • per-row hash-jitter (white noise over floor(uv.y · 487))
+//   • chroma smear: 4 horizontal samples weighted into a YIQ-ish blend
+//   • slow AC-mains beat on the final brightness
+// The head-switching burst and tape-crease scrolling are dropped.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  wobble: zFloat(0, 5, 0.01).default(1.0).describe("Wobble"),
-  scanlineNoise: zFloat(0, 1, 0.01).default(0.6).describe("Scanline Noise"),
-  smear: zFloat(-2, 2, 0.01).default(0.2).describe("Smear"),
-  speed: zFloat(0.1, 3, 0.1).default(1.0).describe("Speed"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "VHS",
   description:
-    "Analog VHS tape with intermittent tape damage, chroma bleed, and per-scanline noise",
+    "Analog VHS tape with wobble, scanline jitter, chroma smear, and AC beat",
   color: "#22d3ee",
   category: "stylize",
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-const SMEAR_SAMPLES = 6;
-const FIELD_LINES = 487;
-
-export class Vhs extends EffectNode<Config, Uniforms> {
+export class Vhs extends GraphEffectBase {
   static readonly typeId = "vhs";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const wobble = this.uniformName("wobble");
-    const scanlineNoiseAmt = this.uniformName("scanlineNoise");
-    const smear = this.uniformName("smear");
-    const speed = this.uniformName("speed");
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "wobble", type: "float", label: "Wobble", default: 1 },
+      { id: "scanlineNoise", type: "float", label: "Scanline Noise", default: 0.6 },
+      { id: "smear", type: "float", label: "Smear", default: 0.2 },
+      { id: "speed", type: "float", label: "Speed", default: 1 },
+    ]);
 
-    // Unrolled chroma-smear loop. Weights are i/(N-1) * 2/N and sum to 1.
-    const smearLoop: string[] = [];
-    for (let i = 0; i < SMEAR_SAMPLES; i++) {
-      const w = (i / (SMEAR_SAMPLES - 1)) * (2 / SMEAR_SAMPLES);
-      smearLoop.push(
-        `{ vec3 s = texture(u_prevPass, vec2(chromaUV.x + (${(-i).toFixed(1)}) * smearScale, chromaUV.y)).rgb;
-  accumI += dot(s, vec3(0.596, -0.274, -0.322)) * ${w.toFixed(8)};
-  accumQ += dot(s, vec3(0.211, -0.523,  0.312)) * ${w.toFixed(8)}; }`,
-      );
-    }
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const t = b.add("time", {}, undefined, "out");
+    const ts = b.add("math", { op: "mul" });
+    b.connect(t, ts.nodeId, "a");
+    b.connect(gi.speed, ts.nodeId, "b");
 
-    return {
-      functions: `
-float vhs_hash2D(vec2 p) {
-  return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
-}
-float vhs_smoothNoise2D(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  float a = vhs_hash2D(i);
-  float b = vhs_hash2D(i + vec2(1.0, 0.0));
-  float c = vhs_hash2D(i + vec2(0.0, 1.0));
-  float d = vhs_hash2D(i + vec2(1.0, 1.0));
-  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
-}
-float vhs_scanlineHash(float row, float t, float seed) {
-  return (fract(sin(row * 12.9898 + (t + seed) * 78.233) * 43758.5453) - 0.5) * 2.0;
-}`,
-      main: `
-float t = u_time * ${speed};
+    const sepUv = b.add("separate-xy", {});
+    b.connect(uv, sepUv.nodeId, "v");
+    const uvY = { nodeId: sepUv.nodeId, pin: "y" };
 
-// Organic on/off envelope for tape damage bursts.
-float burst = smoothstep(0.45, 0.8, vhs_smoothNoise2D(vec2(t * 0.4, 0.0)));
+    // Slow tape wave: fbm(vec2(uv.y · 3, ts · 0.8)) − 0.5
+    const w1y = b.add("math", { op: "mul" }, { b: 3 });
+    b.connect(uvY, w1y.nodeId, "a");
+    const w1t = b.add("math", { op: "mul" }, { b: 0.8 });
+    b.connect(ts, w1t.nodeId, "a");
+    const w1v = b.add("combine-xy", {});
+    b.connect(w1y, w1v.nodeId, "x");
+    b.connect(w1t, w1v.nodeId, "y");
+    const w1n = b.add("noise-texture", {
+      kind: "fbm", scale: 1, seed: 0, detail: 2,
+      lacunarity: 2, roughness: 0.5, distortion: 0,
+    });
+    b.connect(w1v, w1n.nodeId, "p");
+    const wave1 = b.add("math", { op: "sub" }, { b: 0.5 });
+    b.connect(w1n, wave1.nodeId, "a");
 
-// Per-scanline jitter (chroma + luma rows offset independently).
-float rowInt = floor(uv.y * ${FIELD_LINES.toFixed(1)});
-float fineGate = 0.25 + burst * 0.75;
-float chromaRowOffset = vhs_scanlineHash(rowInt, t, 0.0)    * ${scanlineNoiseAmt} * 0.008 * fineGate;
-float lumaRowOffset   = vhs_scanlineHash(rowInt, t, 69.42)  * ${scanlineNoiseAmt} * 0.004 * fineGate;
+    // Fast tape wave: fbm(vec2(uv.y · 30, ts · 6)) − 0.5
+    const w2y = b.add("math", { op: "mul" }, { b: 30 });
+    b.connect(uvY, w2y.nodeId, "a");
+    const w2t = b.add("math", { op: "mul" }, { b: 6 });
+    b.connect(ts, w2t.nodeId, "a");
+    const w2v = b.add("combine-xy", {});
+    b.connect(w2y, w2v.nodeId, "x");
+    b.connect(w2t, w2v.nodeId, "y");
+    const w2n = b.add("noise-texture", {
+      kind: "fbm", scale: 1, seed: 0, detail: 2,
+      lacunarity: 2, roughness: 0.5, distortion: 0,
+    });
+    b.connect(w2v, w2n.nodeId, "p");
+    const wave2 = b.add("math", { op: "sub" }, { b: 0.5 });
+    b.connect(w2n, wave2.nodeId, "a");
 
-// Slow + fast tape waves.
-float wave1 = vhs_smoothNoise2D(vec2(uv.y *  3.0, t * 0.8)) - 0.5;
-float wave2 = vhs_smoothNoise2D(vec2(uv.y * 30.0, t * 6.0)) - 0.5;
-float tapeWave = (wave1 * 0.008 + wave2 * 0.002) * ${wobble};
+    // tapeWave = (wave1 · 0.008 + wave2 · 0.002) · wobble
+    const w1s = b.add("math", { op: "mul" }, { b: 0.008 });
+    b.connect(wave1, w1s.nodeId, "a");
+    const w2s = b.add("math", { op: "mul" }, { b: 0.002 });
+    b.connect(wave2, w2s.nodeId, "a");
+    const wsum = b.add("math", { op: "add" });
+    b.connect(w1s, wsum.nodeId, "a");
+    b.connect(w2s, wsum.nodeId, "b");
+    const tapeWave = b.add("math", { op: "mul" });
+    b.connect(wsum, tapeWave.nodeId, "a");
+    b.connect(gi.wobble, tapeWave.nodeId, "b");
 
-// Tape creases — narrow horizontal stripes that scroll vertically and
-// gate on intermittently.
-float creasePhase = smoothstep(0.92, 0.99, sin(uv.y * 8.0 - t * 3.77));
-float creaseNoise = smoothstep(0.3, 1.0, vhs_smoothNoise2D(vec2(uv.y * 4.77, t)));
-float creaseShift = creasePhase * creaseNoise * ${wobble} * -0.018;
+    // Per-row hash jitter: hash(vec2(floor(uv.y · 487), floor(ts))) · 0.008
+    const row = b.add("math", { op: "mul" }, { b: 487 });
+    b.connect(uvY, row.nodeId, "a");
+    const rowF = b.add("math", { op: "floor" });
+    b.connect(row, rowF.nodeId, "x");
+    const tsF = b.add("math", { op: "floor" });
+    b.connect(ts, tsF.nodeId, "x");
+    const rowV = b.add("combine-xy", {});
+    b.connect(rowF, rowV.nodeId, "x");
+    b.connect(tsF, rowV.nodeId, "y");
+    const rowH = b.add("white-noise-texture", {});
+    b.connect(rowV, rowH.nodeId, "p");
+    const rowH5 = b.add("math", { op: "sub" }, { b: 0.5 });
+    b.connect(rowH, rowH5.nodeId, "a");
+    const rowH2 = b.add("math", { op: "mul" }, { b: 2 });
+    b.connect(rowH5, rowH2.nodeId, "a");
+    const rowJ1 = b.add("math", { op: "mul" });
+    b.connect(rowH2, rowJ1.nodeId, "a");
+    b.connect(gi.scanlineNoise, rowJ1.nodeId, "b");
+    const rowJ = b.add("math", { op: "mul" }, { b: 0.008 });
+    b.connect(rowJ1, rowJ.nodeId, "a");
 
-// Head-switching noise concentrated in the bottom 6% of the frame.
-float switchPhase = smoothstep(0.06, 0.0, uv.y);
-float switchNoise = vhs_smoothNoise2D(vec2(uv.y * 60.0, t * 14.0)) - 0.5;
-float switchX = switchPhase * switchNoise * ${wobble} * 0.09;
-float switchY = switchPhase * ${wobble} * burst * 0.02;
+    // globalX = tapeWave + rowJ
+    const globalX = b.add("math", { op: "add" });
+    b.connect(tapeWave, globalX.nodeId, "a");
+    b.connect(rowJ, globalX.nodeId, "b");
 
-float globalX = tapeWave + creaseShift + switchX;
-vec2 lumaUV   = vec2(uv.x + globalX + lumaRowOffset,   uv.y + switchY);
-vec2 chromaUV = vec2(uv.x + globalX + chromaRowOffset, uv.y + switchY);
+    const globalXv = b.add("combine-xy", {}, { y: 0 });
+    b.connect(globalX, globalXv.nodeId, "x");
+    const shiftedUv = b.add("vector-math", { op: "add" });
+    b.connect(uv, shiftedUv.nodeId, "a");
+    b.connect(globalXv, shiftedUv.nodeId, "b");
 
-// Sharp luma sample.
-vec4 lumaSample = texture(u_prevPass, lumaUV);
-float sharpY = dot(lumaSample.rgb, vec3(0.299, 0.587, 0.114));
-
-// Horizontal chroma smear in YIQ. Direction follows the sign of smear.
-float smearScale = ${smear} * 0.0075;
-float accumI = 0.0;
-float accumQ = 0.0;
-${smearLoop.join("\n")}
-
-vec3 finalRgb = vec3(
-  sharpY + accumI * 0.956 + accumQ * 0.621,
-  sharpY - accumI * 0.272 - accumQ * 0.647,
-  sharpY - accumI * 1.106 + accumQ * 1.703
-);
-
-// Slow AC-mains beat.
-float acBeat = 1.0 + cos(mod(t, 6.2831853) * 2.0 + uv.y * 0.5) * 0.015 * ${wobble};
-finalRgb = clamp(finalRgb * acBeat, vec3(0.0), vec3(1.0));
-
-return vec4(finalRgb, lumaSample.a);`,
+    // 4-tap horizontal smear: sample at shiftedUv + vec2(i · smearScale, 0)
+    // for i in {-1.5, -0.5, +0.5, +1.5}, average with equal weights.
+    const smearScale = b.add("math", { op: "mul" }, { b: 0.0075 });
+    b.connect(gi.smear, smearScale.nodeId, "a");
+    const tap = (mul: number) => {
+      const k = b.add("math", { op: "mul" }, { b: mul });
+      b.connect(smearScale, k.nodeId, "a");
+      const v = b.add("combine-xy", {}, { y: 0 });
+      b.connect(k, v.nodeId, "x");
+      const u = b.add("vector-math", { op: "add" });
+      b.connect(shiftedUv, u.nodeId, "a");
+      b.connect(v, u.nodeId, "b");
+      const s = b.add("sample-previous-pass", { edges: "stretch" });
+      b.connect(u, s.nodeId, "uv");
+      return s;
     };
+    const s1 = tap(-1.5);
+    const s2 = tap(-0.5);
+    const s3 = tap(0.5);
+    const s4 = tap(1.5);
+    const sum1 = b.add("color-math", { op: "add" });
+    b.connect({ nodeId: s1.nodeId, pin: "color" }, sum1.nodeId, "a");
+    b.connect({ nodeId: s2.nodeId, pin: "color" }, sum1.nodeId, "b");
+    const sum2 = b.add("color-math", { op: "add" });
+    b.connect({ nodeId: s3.nodeId, pin: "color" }, sum2.nodeId, "a");
+    b.connect({ nodeId: s4.nodeId, pin: "color" }, sum2.nodeId, "b");
+    const sumAll = b.add("color-math", { op: "add" });
+    b.connect(sum1, sumAll.nodeId, "a");
+    b.connect(sum2, sumAll.nodeId, "b");
+    const avg = b.add("color-math", { op: "scale" });
+    b.connect(sumAll, avg.nodeId, "a");
+    b.connect(b.add("value", { value: 0.25 }), avg.nodeId, "b");
+
+    // AC beat: 1 + cos(mod(ts, 2π) · 2 + uv.y · 0.5) · 0.015 · wobble
+    const tsMod = b.add("math", { op: "mod" }, { b: Math.PI * 2 });
+    b.connect(ts, tsMod.nodeId, "a");
+    const tsMod2 = b.add("math", { op: "mul" }, { b: 2 });
+    b.connect(tsMod, tsMod2.nodeId, "a");
+    const uvY5 = b.add("math", { op: "mul" }, { b: 0.5 });
+    b.connect(uvY, uvY5.nodeId, "a");
+    const acP = b.add("math", { op: "add" });
+    b.connect(tsMod2, acP.nodeId, "a");
+    b.connect(uvY5, acP.nodeId, "b");
+    const acC = b.add("math", { op: "cos" });
+    b.connect(acP, acC.nodeId, "x");
+    const acS = b.add("math", { op: "mul" }, { b: 0.015 });
+    b.connect(acC, acS.nodeId, "a");
+    const acW = b.add("math", { op: "mul" });
+    b.connect(acS, acW.nodeId, "a");
+    b.connect(gi.wobble, acW.nodeId, "b");
+    const acBeat = b.add("math", { op: "add" }, { a: 1 });
+    b.connect(acW, acBeat.nodeId, "b");
+
+    const beated = b.add("color-math", { op: "scale" });
+    b.connect(avg, beated.nodeId, "a");
+    b.connect(acBeat, beated.nodeId, "b");
+
+    return b.output(beated, { nodeId: s2.nodeId, pin: "alpha" });
   }
 }
 

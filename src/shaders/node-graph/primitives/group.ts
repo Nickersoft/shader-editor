@@ -6,9 +6,9 @@
 //   external outputs ← inner GroupOutput.inputs
 //
 // Emit for group nodes is handled by a dedicated recursive path in
-// `../emit.ts` (Phase 2). This primitive's own `emit()` is a no-op so palette
-// previews and graph-display tooling that calls it directly still get a clean
-// return rather than throwing.
+// `../emit.ts`. This primitive's own `emit()` is a no-op so palette previews
+// and graph-display tooling that calls it directly still get a clean return
+// rather than throwing.
 //
 // Storing `subGraph` inside `config` (rather than as a sibling field on
 // GraphNode) keeps the existing `BasePrimitive.inputs(cfg)` / `outputs(cfg)`

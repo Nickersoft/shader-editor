@@ -15,16 +15,15 @@ import {
   type PrimitiveMeta,
   type UniformSpec,
 } from "../registry";
-import { glslTypeOf, type GraphNode, type PinSpec, type PinType } from "../types";
-
-const pinType = z.enum(["float", "vec2", "vec3", "vec4", "bool", "int"]);
+import { zPinType } from "../pins";
+import { coerceToPinDefault, glslTypeOf, type GraphNode, type PinSpec } from "../types";
 
 // Pin declaration as authored by a preset / saved with the graph. `default`
 // is structurally any because its shape depends on the pin type; the property
 // pane and emit() inspect `type` to interpret it.
 const pinSchema = z.object({
   id: z.string(),
-  type: pinType,
+  type: zPinType,
   label: z.string().optional(),
   default: z.unknown().optional(),
 });
@@ -63,7 +62,7 @@ class GroupInput extends BasePrimitive<Config> {
       (p, i): UniformSpec => ({
         nameSuffix: p.id,
         type: p.type,
-        value: defaultValueFor(p.type, p.default),
+        value: coerceToPinDefault(p.type, p.default),
         // Live value reads from the pin's `default` field — the property pane
         // edits it in place, so `default` doubles as the current value.
         valuePath: ["pins", String(i), "default"],
@@ -83,24 +82,3 @@ class GroupInput extends BasePrimitive<Config> {
 }
 
 export default register(GroupInput);
-
-function defaultValueFor(type: PinType, raw: unknown): unknown {
-  switch (type) {
-    case "float":
-      return typeof raw === "number" ? raw : 0;
-    case "int":
-      return typeof raw === "number" ? Math.trunc(raw) : 0;
-    case "bool":
-      return raw === true;
-    case "vec2":
-      return Array.isArray(raw) && raw.length >= 2 ? [Number(raw[0]) || 0, Number(raw[1]) || 0] : [0, 0];
-    case "vec3":
-      return Array.isArray(raw) && raw.length >= 3
-        ? [Number(raw[0]) || 0, Number(raw[1]) || 0, Number(raw[2]) || 0]
-        : [0, 0, 0];
-    case "vec4":
-      return Array.isArray(raw) && raw.length >= 4
-        ? [Number(raw[0]) || 0, Number(raw[1]) || 0, Number(raw[2]) || 0, Number(raw[3]) || 1]
-        : [0, 0, 0, 1];
-  }
-}

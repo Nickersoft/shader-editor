@@ -28,6 +28,10 @@ const meta: NodeMeta = {
 type Config = z.infer<typeof config>;
 type Uniforms = z.infer<typeof uniforms>;
 
+// ChromaFlow is a generator layer (mixes onto the base layer below it). It
+// can't migrate to GraphEffectBase without changing scene-graph semantics
+// (effects must live inside a layer's `effects[]` rather than as a standalone
+// layer). Stays monolithic until a graph-generator base lands.
 export class ChromaFlow extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "chroma-flow";
   static readonly config = config;

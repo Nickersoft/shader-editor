@@ -15,9 +15,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   scale: zFloat(0.1, 200).default(8),
@@ -47,11 +45,7 @@ class CellGrid extends BasePrimitive<Config, In, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: pinIn, out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [{ nameSuffix: "scale", type: "float", value: c.scale } satisfies UniformSpec];
-  }
+  static readonly uniformKeys = { scale: "float" } as const;
 
   emit(ctx: EmitContext<In, Out>): EmitResult {
     ctx.addDependency("hash21");

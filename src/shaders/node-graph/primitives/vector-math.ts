@@ -22,7 +22,7 @@ import {
   type EmitResult,
   type PrimitiveMeta,
 } from "../registry";
-import type { PinSpec, PinType } from "../types";
+import { glslLiteral, type PinSpec, type PinType } from "../types";
 import { withMeta } from "@/shaders/core/schemas";
 
 const OPS = [
@@ -200,7 +200,7 @@ class VectorMath extends BasePrimitive<Config> {
         return { statements: `float ${o} = distance(${a}, ${b});` };
       case "normalize":
         // Guard against zero-length input.
-        return { statements: `${dim} ${o} = (length(${a}) > 1e-6) ? normalize(${a}) : ${zeroLit(dim)};` };
+        return { statements: `${dim} ${o} = (length(${a}) > 1e-6) ? normalize(${a}) : ${glslLiteral(dim, undefined)};` };
       case "add":
         return { statements: `${dim} ${o} = ${a} + ${b};` };
       case "sub":
@@ -209,10 +209,12 @@ class VectorMath extends BasePrimitive<Config> {
         return { statements: `${dim} ${o} = abs(${a});` };
       case "neg":
         return { statements: `${dim} ${o} = -${a};` };
-      case "oneminus":
-        return { statements: `${dim} ${o} = ${oneLit(dim)} - ${a};` };
+      case "oneminus": {
+        const one = dim === "vec2" ? "vec2(1.0)" : "vec3(1.0)";
+        return { statements: `${dim} ${o} = ${one} - ${a};` };
+      }
       case "sqrt":
-        return { statements: `${dim} ${o} = sqrt(max(${a}, ${zeroLit(dim)}));` };
+        return { statements: `${dim} ${o} = sqrt(max(${a}, ${glslLiteral(dim, undefined)}));` };
       case "floor":
         return { statements: `${dim} ${o} = floor(${a});` };
       case "fract":
@@ -243,11 +245,3 @@ class VectorMath extends BasePrimitive<Config> {
 }
 
 export default register(VectorMath);
-
-function zeroLit(dim: PinType): string {
-  return dim === "vec2" ? "vec2(0.0)" : dim === "vec3" ? "vec3(0.0)" : "0.0";
-}
-
-function oneLit(dim: PinType): string {
-  return dim === "vec2" ? "vec2(1.0)" : dim === "vec3" ? "vec3(1.0)" : "1.0";
-}

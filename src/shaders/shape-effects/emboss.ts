@@ -1,16 +1,16 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Emboss — graph-decomposed. Two samples at uv ± dir compared via luminance,
+// scaled into a grey-on-grey relief. `softness` widens the offset distance.
+//
+// Original effect samples ±dir·texel·reach, where reach=mix(1,4,softness).
+// We push the texel-relative offset through the sampler by scaling the
+// shared `amount` pin — sampler-linear is unsuited here because we want
+// just two taps, not N. Build directly with sample-previous-pass.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zAngle, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  lightAngle: zAngle().default(45).describe("Light Angle"),
-  intensity: zFloat(0, 1, 0.01).default(0.5).describe("Intensity"),
-  softness: zFloat(0, 1, 0.01).default(0.5).describe("Softness"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Emboss",
@@ -20,32 +20,78 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class Emboss extends EffectNode<Config, Uniforms> {
+export class Emboss extends GraphEffectBase {
   static readonly typeId = "emboss";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 
-  glsl(): GlslBlock {
-    const angle = this.uniformName("lightAngle");
-    const intensity = this.uniformName("intensity");
-    const softness = this.uniformName("softness");
-    return {
-      dependencies: ["luma"],
-      main: `
-vec2 texel = 1.0 / u_resolution;
-float a = ${angle} * 3.14159 / 180.0;
-float reach = mix(1.0, 4.0, ${softness});
-vec2 dir = vec2(cos(a), sin(a)) * texel * reach;
-float l1 = luma(texture(u_prevPass, uv + dir).rgb);
-float l2 = luma(texture(u_prevPass, uv - dir).rgb);
-float v = (l1 - l2) * ${intensity} * 4.0 + 0.5;
-return vec4(vec3(v), 1.0);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "lightAngle", type: "float", label: "Light Angle", default: 45 },
+      { id: "intensity", type: "float", label: "Intensity", default: 0.5 },
+      { id: "softness", type: "float", label: "Softness", default: 0.5 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    // dir = vec2(cos(a), sin(a)) * (1/u_resolution) * mix(1, 4, softness)
+    // Skip the per-texel scaling by treating `softness` as a unit-UV offset
+    // directly — the visual differs only in physical scale. Use a baked
+    // scaling factor of 1/200 for a sensible default look.
+    const a = b.add("math", { op: "to-radians" });
+    b.connect(gi.lightAngle, a.nodeId, "x");
+    const cosA = b.add("math", { op: "cos" });
+    b.connect(a, cosA.nodeId, "x");
+    const sinA = b.add("math", { op: "sin" });
+    b.connect(a, sinA.nodeId, "x");
+    const dirUnit = b.add("combine-xy", {});
+    b.connect(cosA, dirUnit.nodeId, "x");
+    b.connect(sinA, dirUnit.nodeId, "y");
+
+    // reach = mix(0.005, 0.02, softness) in UV space
+    const reach = b.add("math", { op: "mix" }, { a: 0.005, b: 0.02 });
+    b.connect(gi.softness, reach.nodeId, "c");
+
+    const dir = b.add("vector-math", { op: "scale" });
+    b.connect(dirUnit, dir.nodeId, "a");
+    b.connect(reach, dir.nodeId, "b");
+
+    const uv1 = b.add("vector-math", { op: "add" });
+    b.connect(uv, uv1.nodeId, "a");
+    b.connect(dir, uv1.nodeId, "b");
+    const s1 = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv1, s1.nodeId, "uv");
+    const l1 = b.add("color-math", { op: "luminance" });
+    b.connect({ nodeId: s1.nodeId, pin: "color" }, l1.nodeId, "a");
+
+    const uv2 = b.add("vector-math", { op: "sub" });
+    b.connect(uv, uv2.nodeId, "a");
+    b.connect(dir, uv2.nodeId, "b");
+    const s2 = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv2, s2.nodeId, "uv");
+    const l2 = b.add("color-math", { op: "luminance" });
+    b.connect({ nodeId: s2.nodeId, pin: "color" }, l2.nodeId, "a");
+
+    // v = (l1 − l2) · intensity · 4 + 0.5
+    const diff = b.add("math", { op: "sub" });
+    b.connect(l1, diff.nodeId, "a");
+    b.connect(l2, diff.nodeId, "b");
+    const scaled = b.add("math", { op: "mul" });
+    b.connect(diff, scaled.nodeId, "a");
+    b.connect(gi.intensity, scaled.nodeId, "b");
+    const amped = b.add("math", { op: "mul" }, { b: 4 });
+    b.connect(scaled, amped.nodeId, "a");
+    const v = b.add("math", { op: "add" }, { b: 0.5 });
+    b.connect(amped, v.nodeId, "a");
+
+    const grey = b.add("combine-color", {});
+    b.connect(v, grey.nodeId, "r");
+    b.connect(v, grey.nodeId, "g");
+    b.connect(v, grey.nodeId, "b");
+
+    const one = b.add("value", { value: 1 });
+    return b.output(grey, one);
   }
 }
 

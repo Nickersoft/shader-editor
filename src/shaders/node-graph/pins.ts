@@ -14,7 +14,15 @@
 
 import { z } from "zod";
 import { getMetaDeep, tryUnwrap, withMeta } from "@/shaders/core/schemas";
-import type { PinDefault, PinSpec, PinType } from "./types";
+import { PIN_TYPES, type PinDefault, type PinSpec, type PinType } from "./types";
+
+/**
+ * Zod enum mirroring the `PinType` union. Lives here (not in types.ts) so
+ * types.ts stays Zod-free and primitives that need to validate a serialised
+ * pin type can import a single canonical schema rather than redeclaring the
+ * enum each time.
+ */
+export const zPinType = z.enum(PIN_TYPES);
 
 interface PinMetaBag {
   pinType: PinType;

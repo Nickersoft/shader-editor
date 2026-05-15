@@ -1,6 +1,15 @@
 import type { ProceduralPreset } from "./procedural-presets";
 import { PresetGraphBuilder } from "./preset-graphs/builders";
 
+// Aurora preset: thin wrapper around the `aurora-texture` primitive. Every
+// shaders.com Aurora prop is surfaced as a GroupInput pin so the layer's
+// property pane drives them directly; the primitive owns the unrolled curtain
+// loop, ray modulation, and depth-graded three-colour ramp. `colorSpace` is
+// an int pin (0=linear, 1=oklch, 2=oklab, 3=hsl, 4=hsv, 5=lch) — the graph
+// system has no enum pin type yet, so the property pane renders it as a
+// 0–5 scrubber. The composite output is mixed onto black via alpha so the
+// transparent regions read against the procedural-field background, matching
+// every other composite-output preset (floating-particles, strands).
 export default {
   id: "aurora",
   name: "Aurora",
@@ -8,25 +17,42 @@ export default {
   color: "#22ee88",
   graph: () => {
     const b = new PresetGraphBuilder();
-    b.groupInput([]);
-    const p = b.position();
-    const t = b.time();
-    const src = b.fieldTransform(p, t, { scale: 1.2, speed: 0.4, seed: 0 });
-    const w1 = b.domainWarp(src.p, src.t, {
-      amplitude: 0.8, detail: 4, scale: 1.0, timePhase: 0.6,
-    });
-    const w2 = b.domainWarp(w1, src.t, {
-      amplitude: 0.5, detail: 4, scale: 1.8, timePhase: 1.1,
-    });
-    const fbm = b.add("noise-texture", { kind: "fbm", detail: 5, lacunarity: 2, roughness: 0.5, distortion: 0 });
-    b.connect(w2, fbm.nodeId, "p");
-    b.connect(src.t, fbm.nodeId, "t");
-    const ramp = b.colorRamp(fbm, [
-      [0.04, 0.0, 0.08],
-      [0.09, 0.58, 0.91],
-      [0.13, 0.93, 0.53],
-      [0.65, 0.2, 0.97],
+    const gi = b.groupInput([
+      { id: "colorA", type: "vec3", label: "Color 1", default: [0.65, 0.2, 0.97] },
+      { id: "colorB", type: "vec3", label: "Color 2", default: [0.13, 0.93, 0.53] },
+      { id: "colorC", type: "vec3", label: "Color 3", default: [0.09, 0.58, 0.91] },
+      { id: "balance", type: "float", label: "Balance", default: 50 },
+      { id: "intensity", type: "float", label: "Intensity", default: 80 },
+      { id: "curtainCount", type: "int", label: "Curtain Count", default: 4 },
+      { id: "speed", type: "float", label: "Speed", default: 5 },
+      { id: "waviness", type: "float", label: "Waviness", default: 50 },
+      { id: "rayDensity", type: "float", label: "Ray Density", default: 20 },
+      { id: "height", type: "float", label: "Height", default: 120 },
+      { id: "center", type: "vec2", label: "Center", default: [0.5, 0] },
+      { id: "seed", type: "float", label: "Seed", default: 0 },
+      { id: "colorSpace", type: "int", label: "Color Space", default: 0 },
     ]);
-    return b.output(ramp);
+    const au = b.add("aurora-texture", {});
+    for (const id of [
+      "colorA",
+      "colorB",
+      "colorC",
+      "balance",
+      "intensity",
+      "curtainCount",
+      "speed",
+      "waviness",
+      "rayDensity",
+      "height",
+      "center",
+      "seed",
+      "colorSpace",
+    ] as const) {
+      b.connect(gi[id], au.nodeId, id);
+    }
+    const mix = b.add("mix-color", {});
+    b.connect({ nodeId: au.nodeId, pin: "color" }, mix.nodeId, "b");
+    b.connect({ nodeId: au.nodeId, pin: "alpha" }, mix.nodeId, "t");
+    return b.output(mix);
   },
 } satisfies ProceduralPreset;

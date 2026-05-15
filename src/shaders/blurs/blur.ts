@@ -1,14 +1,16 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Blur — graph-decomposed. The legacy effect runs two separable Gaussian
+// passes (horizontal then vertical) and writes each to its own FBO. The
+// node-graph form can't chain samplers because each `sampler` reads
+// `u_prevPass`, not another sampler's output — so we approximate the 2D
+// Gaussian as the average of an H-only and a V-only sampler. Visually
+// softer than the 13-tap separable blur, but the character is preserved
+// and the single-pass form fits inside `GraphEffectBase`.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  intensity: zFloat(0, 200, 1).default(50).describe("Intensity"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Blur",
@@ -18,34 +20,40 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class Blur extends EffectNode<Config, Uniforms> {
+export class Blur extends GraphEffectBase {
   static readonly typeId = "blur";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock[] {
-    const intensity = this.uniformName("intensity");
-    const deps = ["gaussian13"] as const;
-    return [
-      {
-        dependencies: deps,
-        main: `
-vec2 texel = 1.0 / u_resolution;
-float r = ${intensity} * 0.36;
-return gaussian13(u_prevPass, uv, vec2(texel.x * r, 0.0));`,
-      },
-      {
-        dependencies: deps,
-        main: `
-vec2 texel = 1.0 / u_resolution;
-float r = ${intensity} * 0.36;
-return gaussian13(u_prevPass, uv, vec2(0.0, texel.y * r));`,
-      },
-    ];
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "intensity", type: "float", label: "Intensity", default: 0.25 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
+    b.connect(uv, h.nodeId, "uv");
+    b.connect(gi.intensity, h.nodeId, "amount");
+    b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
+
+    const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
+    b.connect(uv, v.nodeId, "uv");
+    b.connect(gi.intensity, v.nodeId, "amount");
+    b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
+
+    // out = (H + V) * 0.5
+    const sum = b.add("color-math", { op: "add" });
+    b.connect(h, sum.nodeId, "a");
+    b.connect(v, sum.nodeId, "b");
+    const avg = b.add("color-math", { op: "scale" });
+    b.connect(sum, avg.nodeId, "a");
+    b.connect(b.add("value", { value: 0.5 }), avg.nodeId, "b");
+
+    const center = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, center.nodeId, "uv");
+
+    return b.output(avg, { nodeId: center.nodeId, pin: "alpha" });
   }
 }
 

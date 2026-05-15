@@ -9,9 +9,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   balance: zFloat(-1, 1, 0.01).default(0),
@@ -41,14 +39,10 @@ class Remap extends BasePrimitive<Config, In, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: pinIn, out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [
-      { nameSuffix: "balance", type: "float", value: c.balance },
-      { nameSuffix: "contrast", type: "float", value: c.contrast },
-    ] satisfies UniformSpec[];
-  }
+  static readonly uniformKeys = {
+    balance: "float",
+    contrast: "float",
+  } as const;
 
   emit(ctx: EmitContext<In, Out>): EmitResult {
     const x = ctx.inputs.x;

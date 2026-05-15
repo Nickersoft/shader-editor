@@ -9,7 +9,7 @@
 // ambiguous (a uv vec2 cannot meaningfully become a float), the conversion
 // is rejected.
 
-import type { PinSpec, PinType } from "./types";
+import type { PinSpec } from "./types";
 
 export interface CoerceResult {
   /** Whether the conversion is defined. */
@@ -69,15 +69,4 @@ export function coerce(expr: string, from: PinSpec, to: PinSpec): CoerceResult {
 export function canCoerce(from: PinSpec, to: PinSpec): boolean {
   if (from.type === to.type) return true;
   return coerce("__probe__", from, to).ok;
-}
-
-/**
- * Compatibility helper for old call sites that only carried PinType. Falls
- * back to a default-subtype check; subtype-sensitive callers should pass
- * full PinSpecs instead.
- */
-export function canCoerceType(from: PinType, to: PinType): boolean {
-  const a: PinSpec = { id: "", type: from };
-  const b: PinSpec = { id: "", type: to };
-  return canCoerce(a, b);
 }

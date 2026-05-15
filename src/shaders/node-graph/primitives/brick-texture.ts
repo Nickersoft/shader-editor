@@ -9,9 +9,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   scale: zFloat(0.1, 200, 0.1).default(4),
@@ -45,18 +43,14 @@ class BrickTexture extends BasePrimitive<Config, In, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: pinIn, out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [
-      { nameSuffix: "scale", type: "float", value: c.scale },
-      { nameSuffix: "rowHeight", type: "float", value: c.rowHeight },
-      { nameSuffix: "brickWidth", type: "float", value: c.brickWidth },
-      { nameSuffix: "offset", type: "float", value: c.offset },
-      { nameSuffix: "mortarSize", type: "float", value: c.mortarSize },
-      { nameSuffix: "bias", type: "float", value: c.bias },
-    ] satisfies UniformSpec[];
-  }
+  static readonly uniformKeys = {
+    scale: "float",
+    rowHeight: "float",
+    brickWidth: "float",
+    offset: "float",
+    mortarSize: "float",
+    bias: "float",
+  } as const;
 
   emit(ctx: EmitContext<In, Out>): EmitResult {
     ctx.addDependency("hash21");

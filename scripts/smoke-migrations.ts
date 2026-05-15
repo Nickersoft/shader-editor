@@ -78,6 +78,67 @@ check("vector-math op rotate2D → rotate-2d", () => {
   );
 });
 
+check("gradient-domain collapse: linear-gradient-domain → mode=linear", () => {
+  const g: NodeGraph = {
+    nodes: [
+      {
+        id: "g",
+        typeId: "linear-gradient-domain",
+        config: { start: [0, 0.5], end: [1, 0.5] },
+        position: { x: 0, y: 0 },
+      },
+    ],
+    edges: [],
+  };
+  migrateGraph(g);
+  assert(g.nodes[0].typeId === "gradient-domain", "typeId should be gradient-domain");
+  assert(
+    (g.nodes[0].config as { mode?: string }).mode === "linear",
+    "mode should be 'linear'",
+  );
+});
+
+check("gradient-domain collapse: radial-gradient-domain → mode=radial", () => {
+  const g: NodeGraph = {
+    nodes: [{ id: "g", typeId: "radial-gradient-domain", config: {}, position: { x: 0, y: 0 } }],
+    edges: [],
+  };
+  migrateGraph(g);
+  assert(g.nodes[0].typeId === "gradient-domain", "typeId should be gradient-domain");
+  assert(
+    (g.nodes[0].config as { mode?: string }).mode === "radial",
+    "mode should be 'radial'",
+  );
+});
+
+check("lattice-mask collapse: checker-texture → mode=checker", () => {
+  const g: NodeGraph = {
+    nodes: [
+      { id: "n", typeId: "checker-texture", config: { scale: 8 }, position: { x: 0, y: 0 } },
+    ],
+    edges: [],
+  };
+  migrateGraph(g);
+  assert(g.nodes[0].typeId === "lattice-mask", "typeId should be lattice-mask");
+  assert(
+    (g.nodes[0].config as { mode?: string }).mode === "checker",
+    "mode should be 'checker'",
+  );
+});
+
+check("lattice-mask collapse: dot-grid → mode=dots", () => {
+  const g: NodeGraph = {
+    nodes: [{ id: "n", typeId: "dot-grid", config: {}, position: { x: 0, y: 0 } }],
+    edges: [],
+  };
+  migrateGraph(g);
+  assert(g.nodes[0].typeId === "lattice-mask", "typeId should be lattice-mask");
+  assert(
+    (g.nodes[0].config as { mode?: string }).mode === "dots",
+    "mode should be 'dots'",
+  );
+});
+
 check("idempotent on already-migrated graph", () => {
   const g: NodeGraph = {
     nodes: [{ id: "n1", typeId: "combine-color", config: {}, position: { x: 0, y: 0 } }],

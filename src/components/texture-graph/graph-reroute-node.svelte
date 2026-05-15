@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps, type Node } from '@xyflow/svelte';
 	import { getPrimitive, type PinType } from '@/shaders/node-graph';
+	import { colorForPinType } from './pin-color';
 
 	type RerouteNodeData = {
 		nodeId: string;
@@ -12,18 +13,9 @@
 
 	let { data, selected }: NodeProps<RerouteGraphNodeType> = $props();
 
-	const PIN_COLOR: Record<PinType, string> = {
-		float: '#9ca3af',
-		int: '#60a5fa',
-		bool: '#f87171',
-		vec2: '#22d3ee',
-		vec3: '#facc15',
-		vec4: '#fb923c'
-	};
-
 	let prim = $derived(getPrimitive(data.typeId));
 	let pinType = $derived(((data.config.pinType as PinType | undefined) ?? 'float') as PinType);
-	let dotColor = $derived(PIN_COLOR[pinType] ?? '#cbd5e1');
+	let dotColor = $derived(colorForPinType(pinType));
 	let label = $derived(prim?.displayTitle?.(data.config) ?? `Reroute · ${pinType}`);
 </script>
 

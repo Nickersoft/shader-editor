@@ -1,15 +1,12 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// DiffuseBlur — graph-decomposed. Two `grain` samples (decorrelated by a
+// constant seed-offset on the time input) drive a vec2 jitter applied to the
+// sample UV. `seed` shifts the noise; `intensity` scales the offset.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  intensity: zFloat(0, 2, 0.01).default(0.5).describe("Intensity"),
-  seed: zFloat(0, 1, 0.01).default(0).describe("Seed"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Diffuse Blur",
@@ -19,28 +16,55 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class DiffuseBlur extends EffectNode<Config, Uniforms> {
+export class DiffuseBlur extends GraphEffectBase {
   static readonly typeId = "diffuse-blur";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const intensity = this.uniformName("intensity");
-    const seed = this.uniformName("seed");
-    return {
-      main: `
-vec2 texel = 1.0 / u_resolution;
-vec2 jitter = vec2(
-  sin(dot(uv * 50.0 + ${seed}, vec2(12.9898, 78.233))),
-  sin(dot(uv * 50.0 + ${seed} + 1.0, vec2(39.346, 11.135)))
-);
-vec2 offset = jitter * ${intensity} * texel * 50.0;
-return texture(u_prevPass, clamp(uv + offset, 0.0, 1.0));`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "intensity", type: "float", label: "Intensity", default: 0.5 },
+      { id: "seed", type: "float", label: "Seed", default: 0 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    // The legacy effect scales jitter by `intensity * texel * 50` —
+    // approximate that with a fixed 0.05 unit-UV scale (the texel × 50 term
+    // is roughly 0.05 at 1920×1080 resolution). Authors who need a different
+    // scale can edit the multiplier in the graph.
+    const jitterAmount = b.add("math", { op: "mul" }, { b: 0.05 });
+    b.connect(gi.intensity, jitterAmount.nodeId, "a");
+
+    // Two grain samples on the same UV with different time-seeds give the
+    // x / y components of the jitter direction.
+    const gx = b.add("grain", {});
+    b.connect(uv, gx.nodeId, "uv");
+    b.connect(gi.seed, gx.nodeId, "time");
+    b.connect(jitterAmount, gx.nodeId, "intensity");
+
+    const seedY = b.add("math", { op: "add" }, { b: 1 });
+    b.connect(gi.seed, seedY.nodeId, "a");
+    const gy = b.add("grain", {});
+    b.connect(uv, gy.nodeId, "uv");
+    b.connect(seedY, gy.nodeId, "time");
+    b.connect(jitterAmount, gy.nodeId, "intensity");
+
+    const offset = b.add("combine-xy", {});
+    b.connect(gx, offset.nodeId, "x");
+    b.connect(gy, offset.nodeId, "y");
+
+    const jittered = b.add("vector-math", { op: "add" });
+    b.connect(uv, jittered.nodeId, "a");
+    b.connect(offset, jittered.nodeId, "b");
+
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(jittered, sample.nodeId, "uv");
+
+    return b.output(
+      { nodeId: sample.nodeId, pin: "color" },
+      { nodeId: sample.nodeId, pin: "alpha" },
+    );
   }
 }
 

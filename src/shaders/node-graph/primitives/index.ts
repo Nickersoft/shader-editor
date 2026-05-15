@@ -13,6 +13,7 @@ import "./texture-coordinate";
 import "./screen-uv";
 import "./resolution";
 import "./value";
+import "./mouse";
 
 // Converter (math)
 import "./math";
@@ -40,18 +41,12 @@ import "./noise-texture";
 import "./voronoi-texture";
 import "./magic-texture";
 import "./gradient-texture";
-import "./linear-gradient-domain";
-import "./radial-gradient-domain";
-import "./conic-gradient-domain";
-import "./diamond-gradient-domain";
+import "./gradient-domain";
 import "./wave-texture";
-import "./checker-texture";
 import "./brick-texture";
 import "./ripple-texture";
 import "./cell-grid";
-import "./grid-lines";
-import "./dot-grid";
-import "./hex-grid";
+import "./lattice-mask";
 import "./floating-particles";
 import "./strands";
 
@@ -66,3 +61,4 @@ import "./hsv-to-rgb";
 
 // Effect-source
 import "./sample-previous-pass";
+import "./prev-frame-sample";

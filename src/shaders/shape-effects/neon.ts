@@ -1,18 +1,12 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Neon — graph-decomposed. Edge map from |Δluma| at four neighbour taps,
+// plus a cross-blur of the previous pass; both lightly tinted and summed.
+// Flicker is sin-of-time scaled by the `flicker` knob.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zColor, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  glowIntensity: zFloat(0, 2, 0.05).default(1.0).describe("Glow Intensity"),
-  glowSize: zFloat(0, 1, 0.01).default(0.3).describe("Glow Size"),
-  flicker: zFloat(0, 1, 0.01).default(0).describe("Flicker"),
-  coreColor: zColor().default([1.0, 1.0, 1.0]).describe("Core Color"),
-  glowColor: zColor().default([1.0, 0.6, 0.2]).describe("Glow Color"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder, type PrevRef } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Neon",
@@ -22,42 +16,118 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class Neon extends EffectNode<Config, Uniforms> {
+export class Neon extends GraphEffectBase {
   static readonly typeId = "neon";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 
-  glsl(): GlslBlock {
-    const glowIntensity = this.uniformName("glowIntensity");
-    const glowSize = this.uniformName("glowSize");
-    const flicker = this.uniformName("flicker");
-    const coreColor = this.uniformName("coreColor");
-    const glowColor = this.uniformName("glowColor");
-    return {
-      dependencies: ["luma", "gaussian13"],
-      main: `
-vec2 texel = 1.0 / u_resolution;
-float lc = luma(texture(u_prevPass, uv).rgb);
-float l1 = luma(texture(u_prevPass, uv + vec2(texel.x, 0.0)).rgb);
-float l2 = luma(texture(u_prevPass, uv - vec2(texel.x, 0.0)).rgb);
-float l3 = luma(texture(u_prevPass, uv + vec2(0.0, texel.y)).rgb);
-float l4 = luma(texture(u_prevPass, uv - vec2(0.0, texel.y)).rgb);
-float edge = clamp(abs(l1 - l2) + abs(l3 - l4), 0.0, 1.0);
-vec2 g = texel * ${glowSize} * 30.0;
-vec4 blurH = gaussian13(u_prevPass, uv, vec2(g.x, 0.0));
-vec4 blurV = gaussian13(u_prevPass, uv, vec2(0.0, g.y));
-float blurEdge = (luma(blurH.rgb) + luma(blurV.rgb)) * 0.5;
-float flick = 1.0 - ${flicker} * (0.5 + 0.5 * sin(u_time * 20.0));
-vec3 core = ${coreColor} * edge * 4.0;
-vec3 halo = ${glowColor} * blurEdge * 1.5;
-vec3 col = (core + halo) * ${glowIntensity} * flick;
-return vec4(col, 1.0);`,
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "glowIntensity", type: "float", label: "Glow Intensity", default: 1 },
+      { id: "glowSize", type: "float", label: "Glow Size", default: 0.05 },
+      { id: "flicker", type: "float", label: "Flicker", default: 0 },
+      { id: "coreColor", type: "vec3", label: "Core Color", default: [1, 1, 1] },
+      { id: "glowColor", type: "vec3", label: "Glow Color", default: [1, 0.6, 0.2] },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const t = b.add("time", {}, undefined, "out");
+
+    // Tap luma at uv ± 0.001 in X and Y, take |l1 − l2| in each axis.
+    const lumaAt = (dx: number, dy: number): PrevRef => {
+      const dv = b.add("combine-xy", {});
+      b.connect(b.add("value", { value: dx }), dv.nodeId, "x");
+      b.connect(b.add("value", { value: dy }), dv.nodeId, "y");
+      const u = b.add("vector-math", { op: "add" });
+      b.connect(uv, u.nodeId, "a");
+      b.connect(dv, u.nodeId, "b");
+      const s = b.add("sample-previous-pass", { edges: "stretch" });
+      b.connect(u, s.nodeId, "uv");
+      const l = b.add("color-math", { op: "luminance" });
+      b.connect({ nodeId: s.nodeId, pin: "color" }, l.nodeId, "a");
+      return l;
     };
+
+    const lX1 = lumaAt(0.002, 0);
+    const lX2 = lumaAt(-0.002, 0);
+    const lY1 = lumaAt(0, 0.002);
+    const lY2 = lumaAt(0, -0.002);
+
+    const dX = b.add("math", { op: "sub" });
+    b.connect(lX1, dX.nodeId, "a");
+    b.connect(lX2, dX.nodeId, "b");
+    const aX = b.add("math", { op: "abs" });
+    b.connect(dX, aX.nodeId, "x");
+    const dY = b.add("math", { op: "sub" });
+    b.connect(lY1, dY.nodeId, "a");
+    b.connect(lY2, dY.nodeId, "b");
+    const aY = b.add("math", { op: "abs" });
+    b.connect(dY, aY.nodeId, "x");
+    const edge = b.add("math", { op: "add" });
+    b.connect(aX, edge.nodeId, "a");
+    b.connect(aY, edge.nodeId, "b");
+
+    // Cross-blurred sample for the halo.
+    const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
+    b.connect(uv, h.nodeId, "uv");
+    b.connect(gi.glowSize, h.nodeId, "amount");
+    b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
+    const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
+    b.connect(uv, v.nodeId, "uv");
+    b.connect(gi.glowSize, v.nodeId, "amount");
+    b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
+    const sum = b.add("color-math", { op: "add" });
+    b.connect(h, sum.nodeId, "a");
+    b.connect(v, sum.nodeId, "b");
+    const blurred = b.add("color-math", { op: "scale" });
+    b.connect(sum, blurred.nodeId, "a");
+    b.connect(b.add("value", { value: 0.5 }), blurred.nodeId, "b");
+    const blurLuma = b.add("color-math", { op: "luminance" });
+    b.connect(blurred, blurLuma.nodeId, "a");
+
+    // flick = 1 − flicker · (0.5 + 0.5 · sin(t · 20))
+    const t20 = b.add("math", { op: "mul" }, { b: 20 });
+    b.connect(t, t20.nodeId, "a");
+    const s = b.add("math", { op: "sin" });
+    b.connect(t20, s.nodeId, "x");
+    const s5 = b.add("math", { op: "mul" }, { b: 0.5 });
+    b.connect(s, s5.nodeId, "a");
+    const wave = b.add("math", { op: "add" }, { b: 0.5 });
+    b.connect(s5, wave.nodeId, "a");
+    const fmul = b.add("math", { op: "mul" });
+    b.connect(gi.flicker, fmul.nodeId, "a");
+    b.connect(wave, fmul.nodeId, "b");
+    const flick = b.add("math", { op: "oneminus" });
+    b.connect(fmul, flick.nodeId, "x");
+
+    // core = coreColor · edge · 4
+    const e4 = b.add("math", { op: "mul" }, { b: 4 });
+    b.connect(edge, e4.nodeId, "a");
+    const core = b.add("color-math", { op: "scale" });
+    b.connect(gi.coreColor, core.nodeId, "a");
+    b.connect(e4, core.nodeId, "b");
+
+    // halo = glowColor · blurLuma · 1.5
+    const bl15 = b.add("math", { op: "mul" }, { b: 1.5 });
+    b.connect(blurLuma, bl15.nodeId, "a");
+    const halo = b.add("color-math", { op: "scale" });
+    b.connect(gi.glowColor, halo.nodeId, "a");
+    b.connect(bl15, halo.nodeId, "b");
+
+    // out = (core + halo) · glowIntensity · flick
+    const ch = b.add("color-math", { op: "add" });
+    b.connect(core, ch.nodeId, "a");
+    b.connect(halo, ch.nodeId, "b");
+    const iMul = b.add("math", { op: "mul" });
+    b.connect(gi.glowIntensity, iMul.nodeId, "a");
+    b.connect(flick, iMul.nodeId, "b");
+    const out = b.add("color-math", { op: "scale" });
+    b.connect(ch, out.nodeId, "a");
+    b.connect(iMul, out.nodeId, "b");
+
+    const one = b.add("value", { value: 1 });
+    return b.output(out, one);
   }
 }
 

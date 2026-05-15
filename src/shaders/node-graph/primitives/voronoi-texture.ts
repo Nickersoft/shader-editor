@@ -21,9 +21,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   feature: z.enum(["f1", "f2", "smooth-f1", "distance-to-edge"]).default("f1"),
@@ -56,14 +54,10 @@ class VoronoiTexture extends BasePrimitive<Config, In, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: pinIn, out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [
-      { nameSuffix: "randomness", type: "float", value: c.randomness },
-      { nameSuffix: "smoothness", type: "float", value: c.smoothness },
-    ] satisfies UniformSpec[];
-  }
+  static readonly uniformKeys = {
+    randomness: "float",
+    smoothness: "float",
+  } as const;
 
   emit(ctx: EmitContext<In, Out>): EmitResult {
     const c = this.cfg(ctx.config);

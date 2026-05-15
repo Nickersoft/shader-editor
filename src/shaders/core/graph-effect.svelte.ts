@@ -22,6 +22,7 @@ import {
   migrateGraph,
   requirePrimitive,
   type Edge as GraphEdge,
+  type EmittedGraph,
   type GraphNode,
   type NodeGraph,
 } from "@/shaders/node-graph";
@@ -69,7 +70,7 @@ export abstract class GraphEffectBase extends EffectNode<Config, Uniforms> {
     for (const node of this.graph.nodes) {
       const prim = safeRequire(node.typeId);
       const livePaths = prim
-        ? (prim.uniforms?.(node) ?? []).map((u) => u.valuePath ?? [u.nameSuffix])
+        ? prim.uniforms(node).map((u) => u.valuePath ?? [u.nameSuffix])
         : [];
       const structural = excludePaths(node.config, livePaths);
       parts.push(`${node.id}:${node.typeId}:${JSON.stringify(structural)}`);
@@ -82,12 +83,26 @@ export abstract class GraphEffectBase extends EffectNode<Config, Uniforms> {
     return `${parts.join("|")}#${edgePart}`;
   }
 
+  // Per-rebuild cache so `extraUniforms()` and `glsl()` share one emit pass.
+  // See `ProceduralField.getEmitted` for the same pattern.
+  private _emittedKey?: string;
+  private _emitted?: EmittedGraph;
+
+  private getEmitted(): EmittedGraph {
+    const key = this.structuralKey();
+    if (this._emittedKey === key && this._emitted) return this._emitted;
+    const emitted = emitGraph(this.graph, { containerPrefix: this.prefix });
+    this._emittedKey = key;
+    this._emitted = emitted;
+    return emitted;
+  }
+
   extraUniforms(): ExtraUniformDecl[] {
-    return emitGraph(this.graph, { containerPrefix: this.prefix }).uniforms;
+    return this.getEmitted().uniforms;
   }
 
   glsl(): GlslBlock {
-    const emitted = emitGraph(this.graph, { containerPrefix: this.prefix });
+    const emitted = this.getEmitted();
     return {
       dependencies: emitted.dependencies,
       main: emitted.main,

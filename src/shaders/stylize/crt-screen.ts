@@ -1,19 +1,12 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// CrtScreen — graph-decomposed. Pixelate the sample UV, then apply a
+// scanline modulation (sin of uv.y · freq · 2π), brightness/contrast, and
+// a final vignette darkening. Composes from existing primitives end-to-end.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  pixelSize: zFloat(0, 0.05, 0.001).default(0.005).describe("Pixel Size"),
-  scanlineFrequency: zFloat(50, 500, 1).default(200).describe("Scanline Frequency"),
-  brightness: zFloat(0, 2, 0.01).default(1.1).describe("Brightness"),
-  contrast: zFloat(0, 2, 0.01).default(1.1).describe("Contrast"),
-  vignetteRadius: zFloat(0, 2, 0.01).default(0.8).describe("Vignette Radius"),
-  vignetteIntensity: zFloat(0, 1).default(0.5).describe("Vignette Intensity"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "CRT Screen",
@@ -23,39 +16,105 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class CrtScreen extends EffectNode<Config, Uniforms> {
+export class CrtScreen extends GraphEffectBase {
   static readonly typeId = "crt-screen";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const pixelSize = this.uniformName("pixelSize");
-    const scanlineFrequency = this.uniformName("scanlineFrequency");
-    const brightness = this.uniformName("brightness");
-    const contrast = this.uniformName("contrast");
-    const vignetteRadius = this.uniformName("vignetteRadius");
-    const vignetteIntensity = this.uniformName("vignetteIntensity");
-    return {
-      dependencies: ["pi"],
-      main: `
-float ps = max(${pixelSize}, 1e-5);
-vec2 q = (floor(uv / ps) + 0.5) * ps;
-vec4 src = texture(u_prevPass, q);
-vec3 col = src.rgb;
-float scan = 0.5 + 0.5 * sin(uv.y * ${scanlineFrequency} * PI * 2.0);
-col *= mix(1.0, scan, 0.5);
-col = (col - 0.5) * ${contrast} + 0.5;
-col *= ${brightness};
-vec2 d = uv - 0.5;
-float r = length(d);
-float vig = smoothstep(${vignetteRadius}, ${vignetteRadius} - 0.5, r);
-col = mix(col, col * vig, ${vignetteIntensity});
-return vec4(col, src.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "pixelSize", type: "float", label: "Pixel Size", default: 0.005 },
+      { id: "scanlineFrequency", type: "float", label: "Scanline Frequency", default: 200 },
+      { id: "brightness", type: "float", label: "Brightness", default: 1.1 },
+      { id: "contrast", type: "float", label: "Contrast", default: 1.1 },
+      { id: "vignetteRadius", type: "float", label: "Vignette Radius", default: 0.8 },
+      { id: "vignetteIntensity", type: "float", label: "Vignette Intensity", default: 0.5 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    // cells = 1 / pixelSize; pixelate uses cells.
+    const cells = b.add("math", { op: "div" }, { a: 1 });
+    b.connect(gi.pixelSize, cells.nodeId, "b");
+    const cellsV = b.add("combine-xy", {});
+    b.connect(cells, cellsV.nodeId, "x");
+    b.connect(cells, cellsV.nodeId, "y");
+    const px = b.add("pixelate", {});
+    b.connect(uv, px.nodeId, "uv");
+    b.connect(cellsV, px.nodeId, "cells");
+
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(px, sample.nodeId, "uv");
+    const sampleColor = { nodeId: sample.nodeId, pin: "color" };
+    const sampleAlpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    // scan = 0.5 + 0.5 · sin(uv.y · freq · 2π)
+    const sepUv = b.add("separate-xy", {});
+    b.connect(uv, sepUv.nodeId, "v");
+    const ymul = b.add("math", { op: "mul" });
+    b.connect({ nodeId: sepUv.nodeId, pin: "y" }, ymul.nodeId, "a");
+    b.connect(gi.scanlineFrequency, ymul.nodeId, "b");
+    const y2pi = b.add("math", { op: "mul" }, { b: Math.PI * 2 });
+    b.connect(ymul, y2pi.nodeId, "a");
+    const ys = b.add("math", { op: "sin" });
+    b.connect(y2pi, ys.nodeId, "x");
+    const ys5 = b.add("math", { op: "mul" }, { b: 0.5 });
+    b.connect(ys, ys5.nodeId, "a");
+    const scan = b.add("math", { op: "add" }, { b: 0.5 });
+    b.connect(ys5, scan.nodeId, "a");
+
+    // scanned = sampleColor · mix(1, scan, 0.5)
+    const sMixHalf = b.add("math", { op: "mix" }, { a: 1 });
+    b.connect(scan, sMixHalf.nodeId, "b");
+    b.connect(b.add("value", { value: 0.5 }), sMixHalf.nodeId, "c");
+    const scanned = b.add("color-math", { op: "scale" });
+    b.connect(sampleColor, scanned.nodeId, "a");
+    b.connect(sMixHalf, scanned.nodeId, "b");
+
+    // contrast: col = (col − 0.5) · contrast + 0.5
+    const negHalf = b.add("value", { value: -0.5 });
+    const shifted = b.add("color-math", { op: "addScalar" });
+    b.connect(scanned, shifted.nodeId, "a");
+    b.connect(negHalf, shifted.nodeId, "b");
+    const cScaled = b.add("color-math", { op: "scale" });
+    b.connect(shifted, cScaled.nodeId, "a");
+    b.connect(gi.contrast, cScaled.nodeId, "b");
+    const reshifted = b.add("color-math", { op: "addScalar" });
+    b.connect(cScaled, reshifted.nodeId, "a");
+    b.connect(b.add("value", { value: 0.5 }), reshifted.nodeId, "b");
+
+    // brightness scale
+    const bright = b.add("color-math", { op: "scale" });
+    b.connect(reshifted, bright.nodeId, "a");
+    b.connect(gi.brightness, bright.nodeId, "b");
+
+    // Vignette: vig = smoothstep(vignetteRadius, vignetteRadius − 0.5, r)
+    const half = b.add("value", { value: 0.5 });
+    const halfV = b.add("combine-xy", {});
+    b.connect(half, halfV.nodeId, "x");
+    b.connect(half, halfV.nodeId, "y");
+    const d = b.add("vector-math", { op: "sub" });
+    b.connect(uv, d.nodeId, "a");
+    b.connect(halfV, d.nodeId, "b");
+    const r = b.add("vector-math", { op: "length" });
+    b.connect(d, r.nodeId, "a");
+    const innerR = b.add("math", { op: "sub" }, { b: 0.5 });
+    b.connect(gi.vignetteRadius, innerR.nodeId, "a");
+    const vig = b.add("smoothstep", {});
+    b.connect(gi.vignetteRadius, vig.nodeId, "edge0");
+    b.connect(innerR, vig.nodeId, "edge1");
+    b.connect(r, vig.nodeId, "x");
+
+    // col · vig as the darkened variant; mix(col, col · vig, vignetteIntensity)
+    const dark = b.add("color-math", { op: "scale" });
+    b.connect(bright, dark.nodeId, "a");
+    b.connect(vig, dark.nodeId, "b");
+    const out = b.add("mix-color", {});
+    b.connect(bright, out.nodeId, "a");
+    b.connect(dark, out.nodeId, "b");
+    b.connect(gi.vignetteIntensity, out.nodeId, "t");
+
+    return b.output(out, sampleAlpha);
   }
 }
 

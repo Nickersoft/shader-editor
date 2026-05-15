@@ -20,7 +20,13 @@
 
 	import { composer } from '@/lib/state/composer.svelte';
 	import { ProceduralField } from '@/shaders/textures/procedural-field.svelte';
-	import { canCoerce, getPrimitive, listPrimitives, type PinSpec } from '@/shaders/node-graph';
+	import {
+		canCoerce,
+		getPrimitive,
+		listPrimitives,
+		type GraphNode,
+		type PinSpec,
+	} from '@/shaders/node-graph';
 
 	import GraphPrimitiveNode from './graph-primitive-node.svelte';
 	import GraphRerouteNode from './graph-reroute-node.svelte';
@@ -29,19 +35,8 @@
 	import GraphEdge from './graph-edge.svelte';
 	import GraphPalette from './graph-palette.svelte';
 	import GraphShortcuts from './graph-shortcuts.svelte';
-
-	// Category palette mirrored from graph-primitive-node.svelte — kept in sync
-	// so the minimap reads as the same color system as the canvas. Worth a
-	// short duplicate to keep the node component self-contained instead of
-	// spawning a shared module for one constant.
-	const CATEGORY_COLOR: Record<string, string> = {
-		input: '#0ea5e9',
-		texture: '#f59e0b',
-		color: '#ec4899',
-		vector: '#8b5cf6',
-		converter: '#10b981',
-		group: '#94a3b8'
-	};
+	import { categoryColorFor } from './pin-color';
+	import { captureFrameContents } from './frame-drag';
 
 	const nodeTypes: NodeTypes = {
 		primitive: GraphPrimitiveNode,
@@ -75,6 +70,42 @@
 
 	let breadcrumb = $derived(composer.graphBreadcrumb());
 
+	// Node lookup map for fast pin/spec resolution in hot paths (connection
+	// validation fires on every cursor frame while dragging a wire). Derived
+	// off `graph.nodes` identity so position-only mutations don't rebuild it.
+	let nodeById = $derived.by(() => {
+		const map = new Map<string, GraphNode>();
+		const ns = activeGraph?.nodes;
+		if (ns) for (const n of ns) map.set(n.id, n);
+		return map;
+	});
+
+	// Per-target wired-pin sets and source-side "has any incoming" set.
+	// Derived off `graph.edges` identity so position-only mutations don't
+	// rebuild them (xyflow then doesn't see a new array of these on every
+	// drag tick, and the node renderer keeps its row state stable).
+	let wiredByTarget = $derived.by(() => {
+		const map = new Map<string, Set<string>>();
+		const es = activeGraph?.edges;
+		if (!es) return map;
+		for (const e of es) {
+			let set = map.get(e.toNodeId);
+			if (!set) {
+				set = new Set();
+				map.set(e.toNodeId, set);
+			}
+			set.add(e.toPin);
+		}
+		return map;
+	});
+
+	let nodesWithIncoming = $derived.by(() => {
+		const set = new Set<string>();
+		const es = activeGraph?.edges;
+		if (es) for (const e of es) set.add(e.toNodeId);
+		return set;
+	});
+
 	let nodes = $derived.by<XYNode[]>(() => {
 		const graph = activeGraph;
 		if (!graph) return [];
@@ -93,18 +124,7 @@
 			deletable: true,
 			zIndex: -1
 		}));
-		// Precompute the wired-input set per node so each primitive node can
-		// branch its pin row between an inline editor (unwired) and a passive
-		// label (wired) without scanning all edges itself.
-		const wiredByTarget = new Map<string, Set<string>>();
-		for (const e of graph.edges) {
-			let set = wiredByTarget.get(e.toNodeId);
-			if (!set) {
-				set = new Set();
-				wiredByTarget.set(e.toNodeId, set);
-			}
-			set.add(e.toPin);
-		}
+		const wired = wiredByTarget;
 		const primitiveNodes: XYNode[] = graph.nodes.map((n) => ({
 			id: n.id,
 			type:
@@ -119,7 +139,7 @@
 				typeId: n.typeId,
 				config: n.config,
 				pinValues: n.pinValues,
-				wiredInputIds: wiredByTarget.get(n.id) ?? new Set<string>()
+				wiredInputIds: wired.get(n.id) ?? new Set<string>()
 			},
 			draggable: true,
 			deletable: n.typeId !== 'group-input' && n.typeId !== 'group-output'
@@ -203,9 +223,7 @@
 	// subtype — is needed so the coercion check distinguishes colour vs.
 	// vector vec3 inputs.
 	function pinSpecOf(nodeId: string, pinId: string, side: 'input' | 'output'): PinSpec | null {
-		const graph = activeGraph;
-		if (!graph) return null;
-		const node = graph.nodes.find((n) => n.id === nodeId);
+		const node = nodeById.get(nodeId);
 		if (!node) return null;
 		const prim = getPrimitive(node.typeId);
 		if (!prim) return null;
@@ -223,18 +241,15 @@
 		targetHandle?: string | null;
 	}): boolean {
 		if (!c.source || !c.target || !c.sourceHandle || !c.targetHandle) return false;
-		const graph = activeGraph;
-		if (!graph) return false;
 		// Reroutes are typeless until something is wired through them; the
 		// composer's coerceRerouteTypes helper sets the right pinType when the
 		// edge lands. Skip the strict check on either end if it's a reroute (we
 		// only relax the source side when the reroute is genuinely free).
-		const sourceNode = graph.nodes.find((n) => n.id === c.source);
-		const targetNode = graph.nodes.find((n) => n.id === c.target);
+		const sourceNode = nodeById.get(c.source);
+		const targetNode = nodeById.get(c.target);
 		if (targetNode?.typeId === 'reroute') return true;
-		if (sourceNode?.typeId === 'reroute') {
-			const hasIncoming = graph.edges.some((e) => e.toNodeId === sourceNode.id);
-			if (!hasIncoming) return true;
+		if (sourceNode?.typeId === 'reroute' && !nodesWithIncoming.has(sourceNode.id)) {
+			return true;
 		}
 		const a = pinSpecOf(c.source, c.sourceHandle, 'output');
 		const b = pinSpecOf(c.target, c.targetHandle, 'input');
@@ -326,11 +341,6 @@
 		}
 	}
 
-	// Blender-style frame containment: when the user grabs a frame, every node
-	// (and nested frame) whose center lies inside the frame's bbox at drag
-	// start is captured and slides with the frame. Membership is purely spatial
-	// — there's no formal parenting relationship, so dropping a node into a
-	// frame later or sliding it out doesn't require any explicit action.
 	let frameDragState = $state<{
 		frameId: string;
 		frameStartPos: { x: number; y: number };
@@ -338,77 +348,12 @@
 		frameStartPositions: Map<string, { x: number; y: number }>;
 	} | null>(null);
 
-	// Approximate node footprint for center-in-bbox tests. Real DOM widths vary
-	// by primitive, but the user can resize the frame after the fact if a node
-	// straddles the boundary.
-	const NODE_W_EST = 200;
-	const NODE_H_EST = 110;
-
-	function captureFrameContents(frameId: string) {
-		const graph = activeGraph;
-		if (!graph) return null;
-		const frame = graph.frames?.find((f) => f.id === frameId);
-		if (!frame) return null;
-		const x1 = frame.position.x;
-		const y1 = frame.position.y;
-		const x2 = x1 + frame.size.width;
-		const y2 = y1 + frame.size.height;
-
-		const nodeStartPositions = new Map<string, { x: number; y: number }>();
-		for (const node of graph.nodes) {
-			const cx = node.position.x + NODE_W_EST / 2;
-			const cy = node.position.y + NODE_H_EST / 2;
-			if (cx >= x1 && cx <= x2 && cy >= y1 && cy <= y2) {
-				nodeStartPositions.set(node.id, { ...node.position });
-			}
-		}
-
-		// Recursively gather nested frames so dragging an outer frame carries
-		// any inner frames *and their members*, even if a member node sits just
-		// outside the outer frame's bbox.
-		const frameStartPositions = new Map<string, { x: number; y: number }>();
-		const visit = (fid: string) => {
-			const f = graph.frames?.find((g) => g.id === fid);
-			if (!f) return;
-			const fx1 = f.position.x;
-			const fy1 = f.position.y;
-			const fx2 = fx1 + f.size.width;
-			const fy2 = fy1 + f.size.height;
-			for (const other of graph.frames ?? []) {
-				if (other.id === fid) continue;
-				if (frameStartPositions.has(other.id)) continue;
-				const ocx = other.position.x + other.size.width / 2;
-				const ocy = other.position.y + other.size.height / 2;
-				if (ocx >= fx1 && ocx <= fx2 && ocy >= fy1 && ocy <= fy2) {
-					frameStartPositions.set(other.id, { ...other.position });
-					// Pull every node inside the nested frame into the outer
-					// drag set as well — they need to move even if the outer
-					// frame's bbox doesn't fully contain them.
-					const inner = captureFrameContents(other.id);
-					if (inner) {
-						for (const [nid, pos] of inner.nodeStartPositions) {
-							if (!nodeStartPositions.has(nid)) nodeStartPositions.set(nid, pos);
-						}
-					}
-					visit(other.id);
-				}
-			}
-		};
-		visit(frameId);
-
-		return {
-			frameStartPos: { ...frame.position },
-			nodeStartPositions,
-			frameStartPositions,
-		};
-	}
-
 	function handleNodeDragStart({ targetNode, nodes: dragged }: { targetNode: XYNode | null; nodes: XYNode[] }) {
-		if (!targetNode || targetNode.type !== 'frame') {
+		if (!targetNode || targetNode.type !== 'frame' || !activeGraph) {
 			frameDragState = null;
 			return;
 		}
-		const captured = captureFrameContents(targetNode.id);
+		const captured = captureFrameContents(activeGraph, targetNode.id);
 		if (!captured) {
 			frameDragState = null;
 			return;
@@ -618,9 +563,7 @@
 						const data = n.data as { typeId?: string } | undefined;
 						if (!data?.typeId) return '#666';
 						const prim = getPrimitive(data.typeId);
-						const cat = prim?.category;
-						if (cat && CATEGORY_COLOR[cat]) return CATEGORY_COLOR[cat];
-						return prim?.color ?? '#818cf8';
+						return categoryColorFor(prim?.category, prim?.color ?? '#818cf8');
 					}}
 				/>
 				<GraphShortcuts onDuplicate={handleDuplicate} bind:flowToScreenCenter={viewportCenter} />

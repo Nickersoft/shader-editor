@@ -22,13 +22,12 @@ import {
   type EmitResult,
   type PrimitiveMeta,
 } from "../registry";
+import { zPinType } from "../pins";
 import { type PinSpec, type PinType } from "../types";
-
-const pinType = z.enum(["float", "vec2", "vec3", "vec4", "bool", "int"]);
 
 const pinSchema = z.object({
   id: z.string(),
-  type: pinType,
+  type: zPinType,
   label: z.string().optional(),
   default: z.unknown().optional(),
   subtype: z.enum(["color", "vector", "uv", "angle", "channel"]).optional(),

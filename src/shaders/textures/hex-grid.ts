@@ -10,7 +10,7 @@ export default {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
     const p = b.position();
-    const hg = b.add("hex-grid", { scale: 8, lineWidth: 1 });
+    const hg = b.add("lattice-mask", { mode: "hex", scale: 8, lineWidth: 1 });
     b.connect(p, hg.nodeId, "p");
     const ramp = b.colorRamp(hg, [
       [1, 1, 1],

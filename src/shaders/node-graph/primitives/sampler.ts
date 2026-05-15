@@ -22,7 +22,8 @@ import {
   type EmitResult,
   type PrimitiveMeta,
 } from "../registry";
-import { edgeMode, withMeta, zEdges, zFloat, zInt } from "@/shaders/core/schemas";
+import { edgeMode, withMeta, zEdges, zInt } from "@/shaders/core/schemas";
+import { floatLit } from "../types";
 
 const MODES = ["kernel-3x3", "linear", "zoom", "angular"] as const;
 type Mode = (typeof MODES)[number];
@@ -49,7 +50,6 @@ const config = z.object({
   edges: zEdges().default("stretch").describe("Edges"),
   kernel: kernelTuple.describe("Kernel"),
   samples: zInt(2, 64).default(16).describe("Samples"),
-  direction: zFloat(-360, 360, 1).default(0).describe("Direction (deg)"),
 });
 
 type Config = z.infer<typeof config>;
@@ -58,6 +58,10 @@ const pinIn = z.object({
   uv: uv("UV", [0.5, 0.5]),
   amount: float("Amount", 0.05),
   center: vec2("Center", [0.5, 0.5]),
+  // Only meaningful in `linear` mode — degree-valued angle for the sample
+  // direction. Kept as a live pin so blur authors can wire angle from
+  // GroupInput; ignored entirely by the other modes.
+  direction: float("Direction (deg)", 0),
 });
 
 const pinOut = z.object({
@@ -125,8 +129,10 @@ class Sampler extends BasePrimitive<Config, In, Out> {
 
     if (c.mode === "linear") {
       // Sample along a direction vector, centred at `uv`. ti ∈ [0,1] maps to
-      // offset [-amount, +amount] along the direction.
-      const angleRad = `(${floatLit(c.direction)} * 0.01745329252)`;
+      // offset [-amount, +amount] along the direction. Direction is a live
+      // pin in degrees so authors can drive angle from GroupInput; convert
+      // here to radians.
+      const angleRad = `(${ctx.inputs.direction} * 0.01745329252)`;
       lines.push(`  vec2 ${o}_dir = vec2(cos(${angleRad}), sin(${angleRad}));`);
       lines.push(`  vec2 ${o}_uv = ${u} + ${o}_dir * (${o}_ti * 2.0 - 1.0) * ${amount};`);
     } else if (c.mode === "zoom") {
@@ -149,9 +155,3 @@ class Sampler extends BasePrimitive<Config, In, Out> {
 }
 
 export default register(Sampler);
-
-function floatLit(n: number): string {
-  if (!Number.isFinite(n)) return "0.0";
-  const s = String(n);
-  return s.includes(".") || s.includes("e") || s.includes("E") ? s : `${s}.0`;
-}

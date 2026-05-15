@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ShaderEditor from '@/components/shader-composer/shader-editor.svelte';
+    import ShaderEditor from "@/components/shader-editor.svelte";
 </script>
 
 <ShaderEditor />

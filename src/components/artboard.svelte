@@ -140,7 +140,7 @@
 
 <div
     bind:this={viewport}
-    class="artboard-viewport absolute inset-0 overflow-hidden select-none"
+    class="artboard-viewport bg-background absolute inset-0 overflow-hidden select-none"
     style:cursor
     onwheel={onWheel}
     onpointerdown={onPointerDown}
@@ -177,8 +177,7 @@
 </div>
 
 <style>
-    .artboard-viewport {
-        background-color: #0d0d0f;
+    .artboard-viewport { 
         background-image:
             radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.06) 1px, transparent 0);
         background-size: 24px 24px;

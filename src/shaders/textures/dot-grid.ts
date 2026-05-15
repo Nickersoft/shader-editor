@@ -10,7 +10,7 @@ export default {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
     const p = b.position();
-    const dg = b.add("dot-grid", { scale: 30, radius: 0.3, softness: 0.05 });
+    const dg = b.add("lattice-mask", { mode: "dots", scale: 30, radius: 0.3, softness: 0.05 });
     b.connect(p, dg.nodeId, "p");
     const ramp = b.colorRamp(dg, [
       [1, 1, 1],

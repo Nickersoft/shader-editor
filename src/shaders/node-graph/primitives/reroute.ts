@@ -14,12 +14,11 @@ import {
   type EmitResult,
   type PrimitiveMeta,
 } from "../registry";
-import { glslTypeOf, type PinSpec, type PinType } from "../types";
-
-const pinTypeSchema = z.enum(["float", "vec2", "vec3", "vec4", "bool", "int"]);
+import { zPinType } from "../pins";
+import { glslTypeOf, type PinSpec } from "../types";
 
 const config = z.object({
-  pinType: pinTypeSchema.default("float"),
+  pinType: zPinType.default("float"),
 });
 
 type Config = z.infer<typeof config>;
@@ -55,7 +54,3 @@ class Reroute extends BasePrimitive<Config> {
 }
 
 export default register(Reroute);
-
-export function isReroutePinType(s: string): s is PinType {
-  return pinTypeSchema.safeParse(s).success;
-}

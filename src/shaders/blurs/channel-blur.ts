@@ -1,16 +1,13 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// ChannelBlur — graph-decomposed. Three independent cross-blurs (H+V
+// average each), one per channel, with amounts driven by per-channel
+// intensity pins. The channel pick happens after the three separate blurs
+// via combine-color.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  redIntensity: zFloat(0, 100, 1).default(0).describe("Red Intensity"),
-  greenIntensity: zFloat(0, 100, 1).default(0).describe("Green Intensity"),
-  blueIntensity: zFloat(0, 100, 1).default(0).describe("Blue Intensity"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder, type PrevRef } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Channel Blur",
@@ -20,40 +17,58 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class ChannelBlur extends EffectNode<Config, Uniforms> {
+export class ChannelBlur extends GraphEffectBase {
   static readonly typeId = "channel-blur";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock[] {
-    const r = this.uniformName("redIntensity");
-    const g = this.uniformName("greenIntensity");
-    const b = this.uniformName("blueIntensity");
-    const deps = ["gaussian13"] as const;
-    return [
-      {
-        dependencies: deps,
-        main: `
-vec2 texel = 1.0 / u_resolution;
-vec4 rH = gaussian13(u_prevPass, uv, vec2(texel.x * ${r} * 0.36, 0.0));
-vec4 gH = gaussian13(u_prevPass, uv, vec2(texel.x * ${g} * 0.36, 0.0));
-vec4 bH = gaussian13(u_prevPass, uv, vec2(texel.x * ${b} * 0.36, 0.0));
-return vec4(rH.r, gH.g, bH.b, texture(u_prevPass, uv).a);`,
-      },
-      {
-        dependencies: deps,
-        main: `
-vec2 texel = 1.0 / u_resolution;
-vec4 rV = gaussian13(u_prevPass, uv, vec2(0.0, texel.y * ${r} * 0.36));
-vec4 gV = gaussian13(u_prevPass, uv, vec2(0.0, texel.y * ${g} * 0.36));
-vec4 bV = gaussian13(u_prevPass, uv, vec2(0.0, texel.y * ${b} * 0.36));
-return vec4(rV.r, gV.g, bV.b, texture(u_prevPass, uv).a);`,
-      },
-    ];
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "redIntensity", type: "float", label: "Red Intensity", default: 0 },
+      { id: "greenIntensity", type: "float", label: "Green Intensity", default: 0 },
+      { id: "blueIntensity", type: "float", label: "Blue Intensity", default: 0 },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    const crossBlur = (amount: PrevRef): PrevRef => {
+      const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
+      b.connect(uv, h.nodeId, "uv");
+      b.connect(amount, h.nodeId, "amount");
+      b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
+      const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
+      b.connect(uv, v.nodeId, "uv");
+      b.connect(amount, v.nodeId, "amount");
+      b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
+      const sum = b.add("color-math", { op: "add" });
+      b.connect(h, sum.nodeId, "a");
+      b.connect(v, sum.nodeId, "b");
+      const avg = b.add("color-math", { op: "scale" });
+      b.connect(sum, avg.nodeId, "a");
+      b.connect(b.add("value", { value: 0.5 }), avg.nodeId, "b");
+      return avg;
+    };
+
+    const rBlur = crossBlur(gi.redIntensity);
+    const gBlur = crossBlur(gi.greenIntensity);
+    const bBlur = crossBlur(gi.blueIntensity);
+
+    const sepR = b.add("separate-color", {});
+    b.connect(rBlur, sepR.nodeId, "v");
+    const sepG = b.add("separate-color", {});
+    b.connect(gBlur, sepG.nodeId, "v");
+    const sepB = b.add("separate-color", {});
+    b.connect(bBlur, sepB.nodeId, "v");
+
+    const out = b.add("combine-color", {});
+    b.connect({ nodeId: sepR.nodeId, pin: "r" }, out.nodeId, "r");
+    b.connect({ nodeId: sepG.nodeId, pin: "g" }, out.nodeId, "g");
+    b.connect({ nodeId: sepB.nodeId, pin: "b" }, out.nodeId, "b");
+
+    const center = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, center.nodeId, "uv");
+
+    return b.output(out, { nodeId: center.nodeId, pin: "alpha" });
   }
 }
 

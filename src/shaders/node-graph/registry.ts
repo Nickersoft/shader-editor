@@ -10,7 +10,7 @@ import { z } from "zod";
 import type { GlslHelperName } from "@/shaders/core/types";
 import type { SpatialControl } from "@/shaders/core/spatial";
 import { pinSpecsFromSchema } from "./pins";
-import type { GraphNode, PinSpec, PinType } from "./types";
+import type { GraphNode, PinSpec } from "./types";
 
 /**
  * Per-emit context handed to `emit()`. The three id-set generics narrow the
@@ -43,12 +43,15 @@ export interface EmitResult {
   statements: string;
 }
 
+/** GLSL uniform type — also the legal value set of `static uniformKeys`. */
+export type UniformType = "float" | "vec2" | "vec3" | "vec4" | "int" | "bool";
+
 /** Declaration of a uniform contributed by a primitive instance. */
 export interface UniformSpec {
   /** Suffix appended to the container's prefix to form the uniform name. */
   nameSuffix: string;
   /** GLSL uniform type. */
-  type: "float" | "vec2" | "vec3" | "vec4" | "int" | "bool";
+  type: UniformType;
   /** Initial value, in the same shape as the type. */
   value: unknown;
   /**
@@ -90,6 +93,15 @@ export interface PrimitiveClass<P extends BasePrimitive = BasePrimitive> {
   readonly meta: PrimitiveMeta;
   readonly config?: z.ZodTypeAny;
   readonly pins: PinSchemas;
+  /**
+   * Map of `config` key → GLSL uniform type. The default `uniforms()`
+   * implementation reads this table and produces one UniformSpec per entry,
+   * with `nameSuffix === key` and `value === node.config[key]`. Primitives
+   * with dynamic uniform sets (e.g. ColorRamp, per-stop colors) or
+   * non-default `valuePath` (e.g. GroupInput pins) override `uniforms()`
+   * directly instead.
+   */
+  readonly uniformKeys?: Readonly<Record<string, UniformType>>;
 }
 
 /**
@@ -124,6 +136,7 @@ export abstract class BasePrimitive<
   static readonly meta: PrimitiveMeta = { name: "" };
   static readonly config?: z.ZodTypeAny;
   static readonly pins: PinSchemas = { in: z.object({}), out: z.object({}) };
+  static readonly uniformKeys?: Readonly<Record<string, UniformType>>;
 
   // Memoized PinSpec[] views of the static pin schemas. Schemas are referentially
   // stable (declared at module load), so we project once per primitive instance.
@@ -182,8 +195,22 @@ export abstract class BasePrimitive<
     return undefined;
   }
 
-  /** Uniforms this instance contributes. Override when the primitive needs any. */
-  uniforms?(node: GraphNode): readonly UniformSpec[];
+  /**
+   * Uniforms this instance contributes. The default reads `static uniformKeys`
+   * — sufficient for the common case where every uniform's value lives at
+   * `node.config[key]`. Primitives with dynamic sets or nested `valuePath`s
+   * override this method directly.
+   */
+  uniforms(node: GraphNode): readonly UniformSpec[] {
+    const keys = this.cls.uniformKeys;
+    if (!keys) return [];
+    const cfg = node.config as Record<string, unknown>;
+    const specs: UniformSpec[] = [];
+    for (const key in keys) {
+      specs.push({ nameSuffix: key, type: keys[key], value: cfg[key] });
+    }
+    return specs;
+  }
 
   /**
    * Canvas-overlay handles this primitive contributes. Each control's address
@@ -241,9 +268,4 @@ export function requirePrimitive(typeId: string): BasePrimitive {
 
 export function listPrimitives(): readonly BasePrimitive[] {
   return Array.from(REGISTRY.values());
-}
-
-/** Pin-type guard for use during graph validation. */
-export function isPinType(s: string): s is PinType {
-  return s === "float" || s === "vec2" || s === "vec3" || s === "vec4" || s === "bool" || s === "int";
 }

@@ -12,7 +12,7 @@
 // All migrations are idempotent — running them on an already-migrated graph
 // returns the same shape.
 
-import type { Edge, GraphNode, NodeGraph } from "./types";
+import type { NodeGraph } from "./types";
 
 const TYPEID_RENAMES: Record<string, string> = {
   "combine-rgb": "combine-color",
@@ -41,6 +41,44 @@ const STRUCTURAL: Record<string, StructuralMigration> = {
     rewriteConfig: () => ({ pinType: "bool" }),
     renameInputs: { x: "in" },
     // `out` stays `out` — no rename needed.
+  },
+  // The four legacy fixed-shape gradient-domain primitives collapse into one
+  // `gradient-domain` with a `mode` config. Each migration injects the
+  // appropriate mode and preserves the existing config keys.
+  "linear-gradient-domain": {
+    typeId: "gradient-domain",
+    rewriteConfig: (c) => ({ ...c, mode: "linear" }),
+  },
+  "radial-gradient-domain": {
+    typeId: "gradient-domain",
+    rewriteConfig: (c) => ({ ...c, mode: "radial" }),
+  },
+  "conic-gradient-domain": {
+    typeId: "gradient-domain",
+    rewriteConfig: (c) => ({ ...c, mode: "conic" }),
+  },
+  "diamond-gradient-domain": {
+    typeId: "gradient-domain",
+    rewriteConfig: (c) => ({ ...c, mode: "diamond" }),
+  },
+  // The four single-shape lattice masks collapse into `lattice-mask` with a
+  // `mode` config. `cell-grid` stays separate — it returns cell UV + id
+  // rather than a binary mask, so it serves a different role.
+  "checker-texture": {
+    typeId: "lattice-mask",
+    rewriteConfig: (c) => ({ ...c, mode: "checker" }),
+  },
+  "dot-grid": {
+    typeId: "lattice-mask",
+    rewriteConfig: (c) => ({ ...c, mode: "dots" }),
+  },
+  "grid-lines": {
+    typeId: "lattice-mask",
+    rewriteConfig: (c) => ({ ...c, mode: "lines" }),
+  },
+  "hex-grid": {
+    typeId: "lattice-mask",
+    rewriteConfig: (c) => ({ ...c, mode: "hex" }),
   },
 };
 
@@ -100,48 +138,4 @@ export function migrateGraph(graph: NodeGraph): NodeGraph {
     if (rewriter) node.config = rewriter(node.config ?? {});
   }
   return graph;
-}
-
-/** Same as `migrateGraph` but operating on a single node (does NOT touch edges). */
-export function migrateNode(node: GraphNode): GraphNode {
-  const next = migrateTypeId(node.typeId);
-  if (next !== node.typeId) node.typeId = next;
-  return node;
-}
-
-/**
- * Migrate during clone: used by graph hosts that walk nodes one at a time.
- * Returns the new typeId without mutating; callers should also run
- * `migrateGraph` on the edges if structural migrations are in play.
- */
-export function migrateNodeStructural(
-  node: GraphNode,
-  edges: Edge[],
-): { typeId: string; config: Record<string, unknown> } {
-  const structural = STRUCTURAL[node.typeId];
-  if (!structural) {
-    return { typeId: migrateTypeId(node.typeId), config: node.config };
-  }
-  if (structural.renameInputs) {
-    for (const e of edges) {
-      if (e.toNodeId === node.id) {
-        const next = structural.renameInputs[e.toPin];
-        if (next) e.toPin = next;
-      }
-    }
-  }
-  if (structural.renameOutputs) {
-    for (const e of edges) {
-      if (e.fromNodeId === node.id) {
-        const next = structural.renameOutputs[e.fromPin];
-        if (next) e.fromPin = next;
-      }
-    }
-  }
-  return {
-    typeId: structural.typeId,
-    config: structural.rewriteConfig
-      ? structural.rewriteConfig(node.config ?? {})
-      : node.config,
-  };
 }

@@ -11,9 +11,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   speed: zFloat(0, 4, 0.05).default(0.5),
@@ -46,20 +44,16 @@ class Strands extends BasePrimitive<Config, Record<string, never>, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: z.object({}), out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [
-      { nameSuffix: "speed", type: "float", value: c.speed },
-      { nameSuffix: "amplitude", type: "float", value: c.amplitude },
-      { nameSuffix: "frequency", type: "float", value: c.frequency },
-      { nameSuffix: "lineCount", type: "int", value: c.lineCount },
-      { nameSuffix: "lineWidth", type: "float", value: c.lineWidth },
-      { nameSuffix: "waveColor", type: "vec3", value: c.waveColor },
-      { nameSuffix: "start", type: "vec2", value: c.start },
-      { nameSuffix: "end", type: "vec2", value: c.end },
-    ] satisfies UniformSpec[];
-  }
+  static readonly uniformKeys = {
+    speed: "float",
+    amplitude: "float",
+    frequency: "float",
+    lineCount: "int",
+    lineWidth: "float",
+    waveColor: "vec3",
+    start: "vec2",
+    end: "vec2",
+  } as const;
 
   emit(ctx: EmitContext<Record<string, never>, Out>): EmitResult {
     ctx.addDependency("aastep");

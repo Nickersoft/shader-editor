@@ -15,6 +15,8 @@ import blob from "./blob";
 import branchedNoise from "./branched-noise";
 import brick from "./brick";
 import checkerboard from "./checkerboard";
+import conicGradient from "./conic-gradient";
+import diamondGradient from "./diamond-gradient";
 import dotGrid from "./dot-grid";
 import fallingLines from "./falling-lines";
 import floatingParticles from "./floating-particles";
@@ -26,6 +28,7 @@ import hexGrid from "./hex-grid";
 import magic from "./magic";
 import multiPointGradient from "./multi-point-gradient";
 import plasma from "./plasma";
+import radialGradient from "./radial-gradient";
 import ripples from "./ripples";
 import simplexNoise from "./simplex-noise";
 import sineWave from "./sine-wave";
@@ -56,6 +59,8 @@ export const PROCEDURAL_PRESETS: readonly ProceduralPreset[] = [
   branchedNoise,
   brick,
   checkerboard,
+  conicGradient,
+  diamondGradient,
   dotGrid,
   fallingLines,
   floatingParticles,
@@ -67,6 +72,7 @@ export const PROCEDURAL_PRESETS: readonly ProceduralPreset[] = [
   magic,
   multiPointGradient,
   plasma,
+  radialGradient,
   ripples,
   simplexNoise,
   sineWave,

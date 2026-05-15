@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps, type Node } from '@xyflow/svelte';
-	import { getPrimitive, type PinType } from '@/shaders/node-graph';
+	import { defaultForPinType, getPrimitive, PIN_TYPES, type PinType } from '@/shaders/node-graph';
 	import { colorForPin } from './pin-color';
 	import { composer } from '@/lib/state/composer.svelte';
 	import Plus from '@lucide/svelte/icons/plus';
@@ -27,8 +27,6 @@
 
 	let { data, selected }: NodeProps<GroupInputGraphNodeType> = $props();
 
-	const PIN_TYPES: readonly PinType[] = ['float', 'int', 'bool', 'vec2', 'vec3', 'vec4'];
-
 	// Geometry mirrors graph-primitive-node.svelte so handle dots line up with
 	// row text baselines. The "add input" button at the foot adds a fixed
 	// trailing row that has no handle.
@@ -43,22 +41,6 @@
 	let displayTitle = $derived(prim?.displayTitle?.(data.config) ?? 'Group Input');
 
 	let outputOffsets = $derived(pins.map((_, i) => HEADER_H + i * PIN_ROW_H + PIN_ROW_H / 2));
-
-	function defaultFor(type: PinType): unknown {
-		switch (type) {
-			case 'float':
-			case 'int':
-				return 0;
-			case 'bool':
-				return false;
-			case 'vec2':
-				return [0, 0];
-			case 'vec3':
-				return [0, 0, 0];
-			case 'vec4':
-				return [0, 0, 0, 1];
-		}
-	}
 
 	// All structural mutations replace the `pins` array reference so the
 	// shader's structural fingerprint ticks and the GLSL recompiles.
@@ -158,7 +140,7 @@
 			if (!existing || existing.type === type) return;
 			// Reset the stored default when the type changes — a vec3 default
 			// can't survive a switch to float.
-			next[index] = { ...existing, type, default: defaultFor(type) };
+			next[index] = { ...existing, type, default: defaultForPinType(type) };
 			cfg.pins = next;
 		});
 	}

@@ -34,7 +34,7 @@ const cases: Case[] = [
   { name: "noise-texture seamless fbm", typeId: "noise-texture", config: { kind: "fbm", seamless: true, period: 1 }, outPin: "out", groupPin: "alpha" },
   // Sampler — each mode.
   { name: "sampler kernel-3x3", typeId: "sampler", config: { mode: "kernel-3x3" }, outPin: "out", groupPin: "color" },
-  { name: "sampler linear", typeId: "sampler", config: { mode: "linear", samples: 8, direction: 45 }, outPin: "out", groupPin: "color" },
+  { name: "sampler linear", typeId: "sampler", config: { mode: "linear", samples: 8 }, outPin: "out", groupPin: "color" },
   { name: "sampler zoom", typeId: "sampler", config: { mode: "zoom", samples: 16 }, outPin: "out", groupPin: "color" },
   { name: "sampler angular", typeId: "sampler", config: { mode: "angular", samples: 16 }, outPin: "out", groupPin: "color" },
   // Pixelate / grain / mask.

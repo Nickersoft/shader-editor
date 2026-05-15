@@ -9,9 +9,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   level: zFloat(0, 1, 0.01).default(0.5),
@@ -41,14 +39,10 @@ class Threshold extends BasePrimitive<Config, In, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: pinIn, out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [
-      { nameSuffix: "level", type: "float", value: c.level },
-      { nameSuffix: "softness", type: "float", value: c.softness },
-    ] satisfies UniformSpec[];
-  }
+  static readonly uniformKeys = {
+    level: "float",
+    softness: "float",
+  } as const;
 
   emit(ctx: EmitContext<In, Out>): EmitResult {
     const x = ctx.inputs.x;

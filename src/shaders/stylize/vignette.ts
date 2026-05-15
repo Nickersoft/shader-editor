@@ -1,19 +1,12 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// Vignette — graph-decomposed. Uses `mask:vignette` to build a 0→1 falloff
+// from centre to edge, then mixes the sampled image toward the tint colour
+// by that mask × intensity.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zCenterAxis, zColor, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  centerX: zCenterAxis().default(0.5).describe("Center X"),
-  centerY: zCenterAxis().default(0.5).describe("Center Y"),
-  radius: zFloat(0, 2, 0.01).default(0.7).describe("Radius"),
-  falloff: zFloat(0, 1).default(0.3).describe("Falloff"),
-  intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
-  color: zColor().default([0, 0, 0]).describe("Color"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Vignette",
@@ -23,31 +16,52 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class Vignette extends EffectNode<Config, Uniforms> {
+export class Vignette extends GraphEffectBase {
   static readonly typeId = "vignette";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
 
-  glsl(): GlslBlock {
-    const centerX = this.uniformName("centerX");
-    const centerY = this.uniformName("centerY");
-    const radius = this.uniformName("radius");
-    const falloff = this.uniformName("falloff");
-    const intensity = this.uniformName("intensity");
-    const color = this.uniformName("color");
-    return {
-      main: `
-base = texture(u_prevPass, uv);
-vec2 ar = vec2(u_resolution.x / max(u_resolution.y, 1.0), 1.0);
-vec2 d = (uv - vec2(${centerX}, ${centerY})) * ar;
-float r = length(d);
-float v = smoothstep(${radius}, ${radius} + max(${falloff}, 1e-4), r) * ${intensity};
-return vec4(mix(base.rgb, ${color}, v), base.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "centerX", type: "float", label: "Center X", default: 0.5 },
+      { id: "centerY", type: "float", label: "Center Y", default: 0.5 },
+      { id: "radius", type: "float", label: "Radius", default: 0.7 },
+      { id: "falloff", type: "float", label: "Falloff", default: 0.3 },
+      { id: "intensity", type: "float", label: "Intensity", default: 0.5 },
+      { id: "color", type: "vec3", label: "Color", default: [0, 0, 0] },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+
+    const center = b.add("combine-xy", {});
+    b.connect(gi.centerX, center.nodeId, "x");
+    b.connect(gi.centerY, center.nodeId, "y");
+
+    // mask:vignette outputs 1 inside the radius and falls to 0 across
+    // `softness`. The legacy effect's geometry is inverted (0 at centre,
+    // 1 at edge), so flip with oneminus and gate by intensity.
+    const mask = b.add("mask", { shape: "vignette" });
+    b.connect(uv, mask.nodeId, "uv");
+    b.connect(center, mask.nodeId, "center");
+    b.connect(gi.radius, mask.nodeId, "radius");
+    b.connect(gi.falloff, mask.nodeId, "softness");
+
+    const edge = b.add("math", { op: "oneminus" });
+    b.connect(mask, edge.nodeId, "x");
+
+    const gated = b.add("math", { op: "mul" });
+    b.connect(edge, gated.nodeId, "a");
+    b.connect(gi.intensity, gated.nodeId, "b");
+
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+
+    const mixed = b.add("mix-color", {});
+    b.connect({ nodeId: sample.nodeId, pin: "color" }, mixed.nodeId, "a");
+    b.connect(gi.color, mixed.nodeId, "b");
+    b.connect(gated, mixed.nodeId, "t");
+
+    return b.output(mixed, { nodeId: sample.nodeId, pin: "alpha" });
   }
 }
 

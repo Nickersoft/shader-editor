@@ -20,9 +20,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   fromMin: zFloat(-1000, 1000).default(0),
@@ -56,16 +54,12 @@ class MapRange extends BasePrimitive<Config, In, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: pinIn, out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [
-      { nameSuffix: "fromMin", type: "float", value: c.fromMin } satisfies UniformSpec,
-      { nameSuffix: "fromMax", type: "float", value: c.fromMax } satisfies UniformSpec,
-      { nameSuffix: "toMin", type: "float", value: c.toMin } satisfies UniformSpec,
-      { nameSuffix: "toMax", type: "float", value: c.toMax } satisfies UniformSpec,
-    ];
-  }
+  static readonly uniformKeys = {
+    fromMin: "float",
+    fromMax: "float",
+    toMin: "float",
+    toMax: "float",
+  } as const;
 
   emit(ctx: EmitContext<In, Out>): EmitResult {
     const c = this.cfg(ctx.config);

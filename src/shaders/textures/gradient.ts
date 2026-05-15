@@ -10,7 +10,7 @@ export default {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
-    const domain = b.add("linear-gradient-domain", {});
+    const domain = b.add("gradient-domain", { mode: "linear" });
     b.connect(uv, domain.nodeId, "p");
     const ramp = b.colorRamp(domain, [
       [0.0, 0.0, 1.0],

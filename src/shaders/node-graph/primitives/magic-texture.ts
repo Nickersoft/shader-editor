@@ -9,9 +9,7 @@ import {
   type EmitContext,
   type EmitResult,
   type PrimitiveMeta,
-  type UniformSpec,
 } from "../registry";
-import type { GraphNode } from "../types";
 
 const config = z.object({
   intensity: zFloat(0, 4, 0.05).default(1),
@@ -41,11 +39,7 @@ class PlasmaSample extends BasePrimitive<Config, In, Out> {
   };
   static readonly config = config;
   static readonly pins = { in: pinIn, out: pinOut };
-
-  uniforms(node: GraphNode): readonly UniformSpec[] {
-    const c = this.cfg(node.config);
-    return [{ nameSuffix: "intensity", type: "float", value: c.intensity } satisfies UniformSpec];
-  }
+  static readonly uniformKeys = { intensity: "float" } as const;
 
   emit(ctx: EmitContext<In, Out>): EmitResult {
     const p = ctx.inputs.p;

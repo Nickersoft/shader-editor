@@ -10,6 +10,8 @@
 
 export type PinType = "float" | "vec2" | "vec3" | "vec4" | "bool" | "int";
 
+export const PIN_TYPES = ["float", "vec2", "vec3", "vec4", "bool", "int"] as const;
+
 /**
  * Static description of one input or output pin on a primitive. Output pin
  * defaults are unused; input pin defaults serve as the GLSL literal for
@@ -133,8 +135,62 @@ export function glslLiteral(type: PinType, value: PinDefault | undefined): strin
   }
 }
 
-function floatLit(n: number): string {
+/**
+ * Format a JS number as a GLSL float literal. Adds a `.0` suffix if needed so
+ * the constant parses as `float` rather than `int` in GLSL.
+ */
+export function floatLit(n: number): string {
   if (!Number.isFinite(n)) return "0.0";
   const s = String(n);
   return s.includes(".") || s.includes("e") || s.includes("E") ? s : `${s}.0`;
+}
+
+/**
+ * JS-side zero/default value for a pin type. Mirrors the shape `glslLiteral`
+ * would produce when given `undefined`. Used by the editor's inline pin
+ * editors and by GroupInput uniform binding so a missing override produces
+ * the same value the GLSL would.
+ */
+export function defaultForPinType(type: PinType): PinDefault {
+  switch (type) {
+    case "float":
+    case "int":
+      return 0;
+    case "bool":
+      return false;
+    case "vec2":
+      return [0, 0];
+    case "vec3":
+      return [0, 0, 0];
+    case "vec4":
+      return [0, 0, 0, 1];
+  }
+}
+
+/**
+ * Coerce an arbitrary value to the canonical JS shape for a pin type. Used at
+ * graph hydration / GroupInput-uniform-binding time when the raw value may
+ * have come from JSON and is structurally unknown.
+ */
+export function coerceToPinDefault(type: PinType, raw: unknown): PinDefault {
+  switch (type) {
+    case "float":
+      return typeof raw === "number" ? raw : 0;
+    case "int":
+      return typeof raw === "number" ? Math.trunc(raw) : 0;
+    case "bool":
+      return raw === true;
+    case "vec2":
+      return Array.isArray(raw) && raw.length >= 2
+        ? [Number(raw[0]) || 0, Number(raw[1]) || 0]
+        : [0, 0];
+    case "vec3":
+      return Array.isArray(raw) && raw.length >= 3
+        ? [Number(raw[0]) || 0, Number(raw[1]) || 0, Number(raw[2]) || 0]
+        : [0, 0, 0];
+    case "vec4":
+      return Array.isArray(raw) && raw.length >= 4
+        ? [Number(raw[0]) || 0, Number(raw[1]) || 0, Number(raw[2]) || 0, Number(raw[3]) || 1]
+        : [0, 0, 0, 1];
+  }
 }

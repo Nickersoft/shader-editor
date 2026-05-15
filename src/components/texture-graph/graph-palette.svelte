@@ -85,6 +85,15 @@
 	// consistent regardless of section grouping.
 	let flatList = $derived.by(() => groups.flatMap((g) => g.items));
 
+	// Pre-indexed positions so the per-row hover/highlight check is O(1)
+	// instead of O(N) via Array.indexOf — the template renders one row per
+	// primitive, so a linear scan there is O(N²) per keystroke.
+	let flatIndex = $derived.by(() => {
+		const m = new Map<NodePrimitive, number>();
+		for (let i = 0; i < flatList.length; i++) m.set(flatList[i], i);
+		return m;
+	});
+
 	$effect(() => {
 		void flatList;
 		highlightedIndex = 0;
@@ -141,7 +150,7 @@
 					{group.label}
 				</p>
 				{#each group.items as prim (prim.typeId)}
-					{@const flatIdx = flatList.indexOf(prim)}
+					{@const flatIdx = flatIndex.get(prim) ?? -1}
 					{@const isHighlighted = flatIdx === highlightedIndex}
 					<button
 						class="flex items-start gap-3 px-3 py-2 rounded-lg text-left transition-colors {isHighlighted

@@ -10,7 +10,7 @@ export default {
     const b = new PresetGraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
-    const domain = b.add("radial-gradient-domain", {});
+    const domain = b.add("gradient-domain", { mode: "radial" });
     b.connect(uv, domain.nodeId, "p");
     const ramp = b.colorRamp(domain, [
       [1.0, 0.8, 0.4],

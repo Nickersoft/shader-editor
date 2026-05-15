@@ -1,18 +1,12 @@
-import { z } from "zod";
-import { EffectNode } from "@/shaders/core/node.svelte";
+// SmokeFill — graph-decomposed. fbm noise drives the smoke colour; the
+// underlying alpha mask gates where smoke paints, and `intensity` scales how
+// strongly the smoke replaces the base colour.
+
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
-import { zColor, zFloat } from "@/shaders/core/schemas";
-
-const config = z.object({});
-
-const uniforms = z.object({
-  intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
-  speed: zFloat(0, 2, 0.05).default(0.3).describe("Speed"),
-  scale: zFloat(0.1, 5, 0.05).default(2.0).describe("Scale"),
-  color1: zColor().default([0.55, 0.95, 1.0]).describe("Color 1"),
-  color2: zColor().default([0.02, 0.63, 0.84]).describe("Color 2"),
-});
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import type { NodeGraph } from "@/shaders/node-graph";
+import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
 
 const meta: NodeMeta = {
   name: "Smoke Fill",
@@ -22,33 +16,76 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
-
-export class SmokeFill extends EffectNode<Config, Uniforms> {
+export class SmokeFill extends GraphEffectBase {
   static readonly typeId = "smoke-fill";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 
-  glsl(): GlslBlock {
-    const intensity = this.uniformName("intensity");
-    const speed = this.uniformName("speed");
-    const scale = this.uniformName("scale");
-    const c1 = this.uniformName("color1");
-    const c2 = this.uniformName("color2");
-    return {
-      dependencies: ["fbm", "simplex2D", "unpremultiplyAlpha"],
-      main: `
-// Sample the previous pass directly — when SmokeFill runs as its own FBO pass
-// the codegen passes \`base\` as vec4(0), so we cannot rely on it. The previous
-// alpha mask (e.g. a shape) gates where the smoke actually paints.
-vec4 prev = unpremultiplyAlpha(texture(u_prevPass, uv));
-float n = fbm(uv * ${scale} + u_time * vec2(0.0, ${speed} * 0.1), 4.0, 2.0, 0.5) * 0.5 + 0.5;
-vec3 smoke = mix(${c1}, ${c2}, n);
-return vec4(mix(prev.rgb, smoke, prev.a * ${intensity} * n), prev.a);`,
-    };
+  static defaultGraph(): NodeGraph {
+    const b = new PresetGraphBuilder();
+    const gi = b.groupInput([
+      { id: "intensity", type: "float", label: "Intensity", default: 0.5 },
+      { id: "speed", type: "float", label: "Speed", default: 0.3 },
+      { id: "scale", type: "float", label: "Scale", default: 2 },
+      { id: "color1", type: "vec3", label: "Color 1", default: [0.55, 0.95, 1] },
+      { id: "color2", type: "vec3", label: "Color 2", default: [0.02, 0.63, 0.84] },
+    ]);
+
+    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const t = b.add("time", {}, undefined, "out");
+
+    const sample = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(uv, sample.nodeId, "uv");
+    const sampleColor = { nodeId: sample.nodeId, pin: "color" };
+    const sampleAlpha = { nodeId: sample.nodeId, pin: "alpha" };
+
+    // q = uv * scale + t * speed * 0.1  (along y axis only — matches the
+    // legacy vec2(0, speed*0.1) drift)
+    const scaled = b.add("vector-math", { op: "scale" });
+    b.connect(uv, scaled.nodeId, "a");
+    b.connect(gi.scale, scaled.nodeId, "b");
+    const drift = b.add("math", { op: "mul" }, { b: 0.1 });
+    const driftScaled = b.add("math", { op: "mul" });
+    b.connect(t, driftScaled.nodeId, "a");
+    b.connect(gi.speed, driftScaled.nodeId, "b");
+    b.connect(driftScaled, drift.nodeId, "a");
+    const driftV = b.add("combine-xy", {}, { x: 0 });
+    b.connect(drift, driftV.nodeId, "y");
+    const q = b.add("vector-math", { op: "add" });
+    b.connect(scaled, q.nodeId, "a");
+    b.connect(driftV, q.nodeId, "b");
+
+    const n = b.add("noise-texture", {
+      kind: "fbm",
+      scale: 1,
+      seed: 0,
+      detail: 4,
+      lacunarity: 2,
+      roughness: 0.5,
+      distortion: 0,
+    });
+    b.connect(q, n.nodeId, "p");
+
+    // smoke = mix(c1, c2, n)
+    const smoke = b.add("mix-color", {});
+    b.connect(gi.color1, smoke.nodeId, "a");
+    b.connect(gi.color2, smoke.nodeId, "b");
+    b.connect(n, smoke.nodeId, "t");
+
+    // mixT = alpha · intensity · n   (gates smoke by the existing alpha mask)
+    const mixT1 = b.add("math", { op: "mul" });
+    b.connect(sampleAlpha, mixT1.nodeId, "a");
+    b.connect(gi.intensity, mixT1.nodeId, "b");
+    const mixT = b.add("math", { op: "mul" });
+    b.connect(mixT1, mixT.nodeId, "a");
+    b.connect(n, mixT.nodeId, "b");
+
+    const mixed = b.add("mix-color", {});
+    b.connect(sampleColor, mixed.nodeId, "a");
+    b.connect(smoke, mixed.nodeId, "b");
+    b.connect(mixT, mixed.nodeId, "t");
+
+    return b.output(mixed, sampleAlpha);
   }
 }
 

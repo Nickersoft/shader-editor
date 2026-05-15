@@ -1,5 +1,6 @@
 <script lang="ts">
   import { cn } from "@/lib/utils";
+  import { hexToRgb, rgbToHex } from "@/lib/color";
   import { NumberInput } from "@/components/ui/number-input";
 
   type Vec3 = readonly [number, number, number];
@@ -27,27 +28,10 @@
   // 0..1 → #RRGGBB for the native colour picker. Round-trips losslessly for
   // pure on-screen colours; HDR colour values above 1.0 clip in the swatch
   // but are preserved in `value` until the next picker commit.
-  let hex = $derived(rgbToHex(value[0] ?? 0, value[1] ?? 0, value[2] ?? 0));
-
-  function rgbToHex(r: number, g: number, b: number): string {
-    const c = (n: number) =>
-      Math.max(0, Math.min(255, Math.round(n * 255)))
-        .toString(16)
-        .padStart(2, "0");
-    return `#${c(r)}${c(g)}${c(b)}`;
-  }
-
-  function hexToRgb(h: string): [number, number, number] {
-    const cleaned = h.trim().replace(/^#/, "");
-    if (!/^[0-9a-f]{6}$/i.test(cleaned)) {
-      return [value[0] ?? 0, value[1] ?? 0, value[2] ?? 0];
-    }
-    const n = parseInt(cleaned, 16);
-    return [((n >> 16) & 0xff) / 255, ((n >> 8) & 0xff) / 255, (n & 0xff) / 255];
-  }
+  let hex = $derived(`#${rgbToHex(value[0] ?? 0, value[1] ?? 0, value[2] ?? 0)}`);
 
   function colorVec(next: string): Vec {
-    const [r, g, b] = hexToRgb(next);
+    const [r, g, b] = hexToRgb(next) ?? [value[0] ?? 0, value[1] ?? 0, value[2] ?? 0];
     return (alpha ? [r, g, b, value[3] ?? 1] : [r, g, b]) as Vec;
   }
 

@@ -26,6 +26,9 @@ const meta: NodeMeta = {
 type Config = z.infer<typeof config>;
 type Uniforms = z.infer<typeof uniforms>;
 
+// Smoke is a layer source (GeneratorNode), not an effect — it cannot migrate
+// to GraphEffectBase without changing the scene-graph semantics. Mouse-driven
+// generators remain monolithic until a graph-generator base lands.
 export class Smoke extends GeneratorNode<Config, Uniforms> {
   static readonly typeId = "smoke";
   static readonly config = config;
