@@ -6,9 +6,9 @@
 //     splitIntoPasses(layer.source, ...layer.effects)
 //     mark the LAST pass with commitToLayer = layerIndex
 //   compositor pass (mode='compositor', bindLayerTextures=true)
-//   for each scene post-effect: an EffectNode pass (readsPrevPass)
+//   for each scene post-effect: an Effect pass (readsPrevPass)
 //
-// The compositor pass synthesizes a virtual EffectNode that emits a fragment
+// The compositor pass synthesizes a virtual Effect that emits a fragment
 // shader sampling N layer textures by name (`u_layer_0..u_layer_{N-1}`) and
 // blending them via each layer's blendMode + opacity.
 

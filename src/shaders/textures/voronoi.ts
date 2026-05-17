@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "voronoi",
+const meta: NodeMeta = {
   name: "Voronoi Cells",
-  description: "Cellular pattern — Procedural Field preset",
+  description: "Cellular pattern",
   color: "#06b6d4",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class Voronoi extends ProceduralShader {
+  static readonly typeId = "voronoi";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
@@ -25,5 +34,8 @@ export default {
       [0.19, 0.53, 0.81],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Voronoi);
+export default Voronoi;

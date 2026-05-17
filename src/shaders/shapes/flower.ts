@@ -1,15 +1,12 @@
 import { z } from "zod";
-import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { transformFields, zColor, zFloat, zInt } from "@/shaders/core/schemas";
 import type { SpatialControl } from "@/shaders/core/spatial";
 
-const config = z.object({
+const schema = z.object({
   strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
-});
-
-const uniforms = z.object({
   ...transformFields(),
   petals: zInt(3, 16).default(5).describe("Petals"),
   innerRatio: zFloat(0.1, 0.95, 0.01).default(0.4).describe("Inner Ratio"),
@@ -26,13 +23,11 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
+type Inputs = z.infer<typeof schema>;
 
-export class Flower extends GeneratorNode<Config, Uniforms> {
+export class Flower extends StaticShader<Inputs> {
   static readonly typeId = "flower";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
+  static readonly schema = schema;
   static readonly meta = meta;
   static readonly spatialControls: readonly SpatialControl[] = [
     {
@@ -58,9 +53,9 @@ export class Flower extends GeneratorNode<Config, Uniforms> {
     const stroke = this.uniformName("strokeColor");
     const sw = this.uniformName("strokeWidth");
     const offset =
-      this.config.strokeMode === "inside"
+      this.inputs.strokeMode === "inside"
         ? `(-${sw} * 0.5)`
-        : this.config.strokeMode === "outside"
+        : this.inputs.strokeMode === "outside"
           ? `(${sw} * 0.5)`
           : `0.0`;
     return {

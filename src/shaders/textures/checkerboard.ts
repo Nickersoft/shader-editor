@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "checker",
+const meta: NodeMeta = {
   name: "Checker",
-  description: "Hard checker pattern — Procedural Field preset",
+  description: "Hard checker pattern",
   color: "#0ea5e9",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class Checkerboard extends ProceduralShader {
+  static readonly typeId = "checker";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const ck = b.add("lattice-mask", { mode: "checker", scale: 8 });
@@ -17,5 +26,8 @@ export default {
       [0.05, 0.05, 0.05],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Checkerboard);
+export default Checkerboard;

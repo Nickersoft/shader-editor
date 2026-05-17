@@ -1,12 +1,10 @@
 import { z } from "zod";
-import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { noImage, zColorRgba, zImageInput } from "@/shaders/core/schemas";
 
-const config = z.object({});
-
-const uniforms = z.object({
+const schema = z.object({
   image: zImageInput().default(noImage).describe("Image"),
   tint: zColorRgba().default([1, 1, 1, 1]).describe("Tint"),
 });
@@ -19,13 +17,11 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
+type Inputs = z.infer<typeof schema>;
 
-export class ImageTexture extends GeneratorNode<Config, Uniforms> {
+export class ImageTexture extends StaticShader<Inputs> {
   static readonly typeId = "image-texture";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
+  static readonly schema = schema;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

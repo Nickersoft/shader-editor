@@ -1,62 +1,48 @@
 // Type-id → class registry.
 //
-// Every primitive class registers itself by typeId so the chain loader can
-// reconstruct nodes from `SerializedNode` JSON. Registration is automatic
-// when a primitive file is imported (the primitive's index file imports each
-// class file, which calls `register(MyClass)` at module load).
+// Every Shader subclass registers itself by typeId so the scene loader can
+// reconstruct instances from `SerializedShader` JSON. Registration is
+// automatic when a shader file is imported (each category's index file
+// imports each class file, which calls `register(MyClass)` at module load).
 
-import type { Node, NodeClass, SerializedNode } from "./node.svelte";
+import type { Shader, ShaderClass, SerializedShader } from "./shader.svelte";
 import type { Category } from "./types";
 
-const REGISTRY = new Map<string, NodeClass>();
+const REGISTRY = new Map<string, ShaderClass>();
 
-export function register<T extends Node>(cls: NodeClass<T>): NodeClass<T> {
+export function register<T extends Shader>(cls: ShaderClass<T>): ShaderClass<T> {
   if (!cls.typeId) {
     throw new Error(`Cannot register class ${cls.name}: missing static typeId`);
   }
   // Always overwrite on re-registration. The static `typeId` is the durable
   // identity — Vite HMR hands us a new class reference for the same typeId
   // when a module is hot-reloaded, and throwing would brick the editor on
-  // every save. Cross-class typeId collisions would still be caught by code
-  // review since name + module path are obvious.
-  REGISTRY.set(cls.typeId, cls as NodeClass);
+  // every save.
+  REGISTRY.set(cls.typeId, cls as ShaderClass);
   return cls;
 }
 
-export function getNodeClass(typeId: string): NodeClass | undefined {
+export function getShaderClass(typeId: string): ShaderClass | undefined {
   return REGISTRY.get(typeId);
 }
 
-export function listNodeClasses(): NodeClass[] {
+export function listShaderClasses(): ShaderClass[] {
   return Array.from(REGISTRY.values());
 }
 
-export function listByCategory(category: Category): NodeClass[] {
-  return listNodeClasses().filter((c) => c.meta.category === category);
+export function listByCategory(category: Category): ShaderClass[] {
+  return listShaderClasses().filter((c) => c.meta.category === category);
 }
 
 /**
- * Hydrate a serialized node into a class instance. Throws if the typeId is
+ * Hydrate a serialized shader into a class instance. Throws if the typeId is
  * unregistered (e.g. a save file references a primitive that's been renamed
  * or removed).
  */
-export function deserializeNode(json: SerializedNode): Node {
+export function deserializeShader(json: SerializedShader): Shader {
   const cls = REGISTRY.get(json.typeId);
   if (!cls) {
-    throw new Error(`Unknown node typeId "${json.typeId}" (instance id: ${json.id})`);
+    throw new Error(`Unknown shader typeId "${json.typeId}" (instance id: ${json.id})`);
   }
-  // `inputs` is forwarded so legacy serialized scenes still hydrate — the
-  // Node constructor merges it into the parse pool alongside `config` and
-  // `uniforms`. Cast through unknown because the current SerializedNode
-  // type omits the deprecated `inputs` key.
-  const legacyInputs = (json as unknown as { inputs?: Record<string, unknown> }).inputs;
-  return new cls({
-    id: json.id,
-    config: json.config,
-    uniforms: json.uniforms,
-    inputs: legacyInputs,
-    blendMode: json.blendMode,
-    opacity: json.opacity,
-    enabled: json.enabled,
-  });
+  return new cls(json);
 }

@@ -3,18 +3,19 @@
 // fragment shaders, a vertex shader, an enumerated uniform list (used by the
 // runtime to bind values), and the source-string exports.
 
-import { isProcessingNode } from "@/shaders/core/node.svelte";
 import { Scene } from "@/shaders/core/scene.svelte";
-import { splitIntoPasses } from "./passes";
-import { planScene } from "./scene-passes";
-import { buildFragment, buildCompositorFragment } from "./fragment";
-import { buildVertexShader, fragmentNeedsStructuredUv } from "./vertex";
-import { inspectObjectSchema } from "./schema-introspection";
-import { assignPrefixSlugs } from "./prefix-slugs";
-import { generateTypeScript } from "./export/typescript";
+import { isProcessingShader, type Shader, type StaticShaderClass } from "@/shaders/core/shader.svelte";
+
 import { generateReactComponent } from "./export/react";
+import { generateTypeScript } from "./export/typescript";
 import { generateVanillaJs } from "./export/vanilla";
+import { buildCompositorFragment, buildFragment } from "./fragment";
+import { splitIntoPasses } from "./passes";
+import { assignPrefixSlugs } from "./prefix-slugs";
+import { planScene } from "./scene-passes";
+import { inspectObjectSchema } from "./schema-introspection";
 import type { GeneratedPass, GeneratedShader, GeneratedUniform } from "./types";
+import { buildVertexShader, fragmentNeedsStructuredUv } from "./vertex";
 
 export type { GeneratedShader, GeneratedPass, GeneratedUniform } from "./types";
 export { planScene } from "./scene-passes";
@@ -28,9 +29,9 @@ export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedSh
   const plan = planScene(scene);
   const layerCount = plan.layers.length;
 
-  // 1. Collect uniforms from every contributing GLSL node.
+  // 1. Collect uniforms from every contributing shader.
   const uniforms: GeneratedUniform[] = [];
-  const collectFromNode = (node: import("@/shaders/core/node.svelte").Node) => {
+  const collectFromNode = (node: Shader) => {
     const prefix = node.prefix;
     const layerName = node.meta.name;
 
@@ -42,7 +43,7 @@ export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedSh
       originalName: "opacity",
     });
 
-    if (isProcessingNode(node)) {
+    if (isProcessingShader(node)) {
       uniforms.push({
         name: `u_${prefix}_jsOutput`,
         type: "sampler2D",
@@ -53,13 +54,15 @@ export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedSh
       });
     }
 
-    // Only the `uniforms` schema contributes GPU bindings. The `config`
-    // schema is editor-level state that branches the GLSL source itself
-    // (e.g. EdgeMode, halftone style) — those don't become uniforms.
-    const cls = node.cls;
-    const uniformFields = inspectObjectSchema(cls.uniforms);
+    // The unified `schema` declares every uniform-eligible field. Fields
+    // marked `.structural()` (and enum-string types) branch GLSL source
+    // and are filtered out of GPU bindings by `inspectObjectSchema` —
+    // they remain in the schema only for parsing + property-panel.
+    const cls = node.cls as StaticShaderClass;
+    const uniformFields = cls.schema ? inspectObjectSchema(cls.schema) : [];
+    const inputs = node.inputs as Record<string, unknown>;
     for (const field of uniformFields) {
-      const value = (node.uniforms as Record<string, unknown>)[field.key];
+      const value = inputs[field.key];
       uniforms.push({
         name: `u_${prefix}_${field.key}`,
         type: field.glslType,
@@ -71,8 +74,8 @@ export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedSh
       });
     }
 
-    // Container nodes (e.g. ProceduralField) may declare extra uniforms beyond
-    // the static config schema — one per stage parameter, etc.
+    // Container shaders (ProceduralShader / ProceduralEffect) declare extra
+    // uniforms beyond the static schema — one per graph-primitive parameter.
     const extras = node.extraUniforms?.() ?? [];
     for (const extra of extras) {
       uniforms.push({

@@ -10,7 +10,7 @@
 // Gradient that swaps handles based on its `type` field).
 
 import { isFunction } from "es-toolkit";
-import type { NodeClass } from "./node.svelte";
+import type { ShaderClass } from "./shader.svelte";
 
 // ---- Individual control variants ----
 
@@ -142,11 +142,11 @@ export type SpatialControlsSpec =
   | ((config: Record<string, unknown>) => readonly SpatialControl[]);
 
 /**
- * A `NodeClass` narrowed to guarantee `spatialControls` is defined. Returned by
+ * A `ShaderClass` narrowed to guarantee `spatialControls` is defined. Returned by
  * the `hasSpatialControls` guard so call sites can pass the spec directly to
  * `resolveSpatialControls` without `!` or fallback plumbing.
  */
-export type NodeClassWithSpatialControls = NodeClass & {
+export type ShaderClassWithSpatialControls = ShaderClass & {
   spatialControls: SpatialControlsSpec;
 };
 

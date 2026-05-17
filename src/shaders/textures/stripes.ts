@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "stripes",
+const meta: NodeMeta = {
   name: "Stripes",
-  description: "Banded wave (sine profile) — Procedural Field preset",
+  description: "Banded wave (sine profile)",
   color: "#475569",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class Stripes extends ProceduralShader {
+  static readonly typeId = "stripes";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
@@ -26,5 +35,8 @@ export default {
       [0, 0, 0],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Stripes);
+export default Stripes;

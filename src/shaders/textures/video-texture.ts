@@ -4,14 +4,12 @@
 // safely in chains until that lands.
 
 import { z } from "zod";
-import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zBool, zColor } from "@/shaders/core/schemas";
 
-const config = z.object({});
-
-const uniforms = z.object({
+const schema = z.object({
   url: z.string().default("https://shaders.com/sample.mp4").describe("URL"),
   objectFit: z
     .enum(["cover", "contain", "fill", "scale-down", "none"])
@@ -29,13 +27,11 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
+type Inputs = z.infer<typeof schema>;
 
-export class VideoTexture extends GeneratorNode<Config, Uniforms> {
+export class VideoTexture extends StaticShader<Inputs> {
   static readonly typeId = "video-texture";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
+  static readonly schema = schema;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

@@ -1,25 +1,31 @@
-// Pass splitting. Walks a flat node list and partitions it into render
+// Pass splitting. Walks a flat shader list and partitions it into render
 // passes:
-//   - A run of GeneratorNodes collapses into one pass (one fragment shader,
-//     N nodes blended together).
-//   - Each EffectNode triggers an FBO split: it becomes its own pass that
+//   - A run of generator Shaders collapses into one pass (one fragment shader,
+//     N shaders blended together).
+//   - Each Effect triggers an FBO split: it becomes its own pass that
 //     reads the previous pass via `u_prevPass` (bound as `vec4 prev`).
-//   - Each ProcessingNode emits two passes: a degenerate JS pass (the runtime
-//     binds the node's CPU-computed output as `u_<prefix>_jsOutput` and the
-//     fragment program just samples it through), then optionally a follow-on
-//     `glsl-render` pass running the node's `glsl()` block.
+//   - Each ProcessingShader (a Shader with a `preprocess()` hook) emits two
+//     passes: a degenerate JS pass (the runtime binds the shader's
+//     CPU-computed output as `u_<prefix>_jsOutput` and the fragment program
+//     just samples it through), then optionally a follow-on `glsl-render`
+//     pass running the shader's `glsl()` block.
 
-import { EffectNode, GeneratorNode, ProcessingNode, type Node } from "@/shaders/core/node.svelte";
+import {
+  Effect,
+  isGenerator,
+  isProcessingShader,
+  type Shader,
+} from "@/shaders/core/shader.svelte";
 
 export interface PassPlan {
-  nodes: Node[];
+  nodes: Shader[];
   readsPrevPass: boolean;
-  // 'js' = degenerate fragment pass that samples a ProcessingNode's CPU output.
-  // 'glsl-render' = ProcessingNode's follow-on render phase using its own glsl().
+  // 'js' = degenerate fragment pass that samples a ProcessingShader's CPU output.
+  // 'glsl-render' = ProcessingShader's follow-on render phase using its own glsl().
   // 'compositor' = scene compositor that blends layer textures via u_layer_*.
-  // Otherwise a normal GLSL pass containing one or more Generator/Effect nodes.
+  // Otherwise a normal GLSL pass containing one or more generator/Effect shaders.
   mode?: "js" | "glsl-render" | "compositor";
-  // For EffectNodes whose `glsl()` returns multiple blocks (multi-pass effects
+  // For Effects whose `glsl()` returns multiple blocks (multi-pass effects
   // like separable blurs), this is the index into that block array. Undefined
   // / 0 means "the first / only block." Each multi-block pass after the first
   // is implicitly `readsPrevPass: true`.
@@ -32,9 +38,9 @@ export interface PassPlan {
   bindLayerTextures?: boolean;
 }
 
-export function splitIntoPasses(nodes: Node[]): PassPlan[] {
+export function splitIntoPasses(nodes: Shader[]): PassPlan[] {
   const plans: PassPlan[] = [];
-  let current: Node[] = [];
+  let current: Shader[] = [];
   let isReader = false;
 
   const closeCurrent = () => {
@@ -46,12 +52,12 @@ export function splitIntoPasses(nodes: Node[]): PassPlan[] {
   };
 
   for (const node of nodes) {
-    if (node instanceof ProcessingNode) {
-      // Boundary: close any GeneratorNode run before us.
+    if (isProcessingShader(node)) {
+      // Boundary: close any generator run before us.
       closeCurrent();
       // Emit the JS pass (samples u_<prefix>_jsOutput).
       plans.push({ nodes: [node], readsPrevPass: false, mode: "js" });
-      // Follow-on GLSL render pass if the ProcessingNode provides one.
+      // Follow-on GLSL render pass if the ProcessingShader provides one.
       if (typeof node.glsl === "function") {
         plans.push({ nodes: [node], readsPrevPass: true, mode: "glsl-render" });
       }
@@ -60,10 +66,10 @@ export function splitIntoPasses(nodes: Node[]): PassPlan[] {
       continue;
     }
 
-    if (node instanceof EffectNode) {
-      // Boundary: close any GeneratorNode run before us. EffectNodes whose
-      // glsl() returns multiple blocks expand to one pass per block; each
-      // pass after the first reads the previous block's output.
+    if (node instanceof Effect) {
+      // Boundary: close any generator run before us. Effects whose glsl()
+      // returns multiple blocks expand to one pass per block; each pass
+      // after the first reads the previous block's output.
       closeCurrent();
       const out = node.glsl();
       const blocks = Array.isArray(out) ? out : [out];
@@ -74,12 +80,12 @@ export function splitIntoPasses(nodes: Node[]): PassPlan[] {
       continue;
     }
 
-    if (node instanceof GeneratorNode) {
+    if (isGenerator(node)) {
       current.push(node);
       continue;
     }
 
-    // Unknown node type — skip.
+    // Unknown shader type — skip.
   }
 
   closeCurrent();

@@ -1,7 +1,17 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-// Aurora preset: thin wrapper around the `aurora-texture` primitive. Every
+const meta: NodeMeta = {
+  name: "Aurora",
+  description: "Layered curtains of light",
+  color: "#22ee88",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+// Aurora: thin wrapper around the `aurora-texture` primitive. Every
 // shaders.com Aurora prop is surfaced as a GroupInput pin so the layer's
 // property pane drives them directly; the primitive owns the unrolled curtain
 // loop, ray modulation, and depth-graded three-colour ramp. `colorSpace` is
@@ -10,13 +20,12 @@ import { PresetGraphBuilder } from "./preset-graphs/builders";
 // 0–5 scrubber. The composite output is mixed onto black via alpha so the
 // transparent regions read against the procedural-field background, matching
 // every other composite-output preset (floating-particles, strands).
-export default {
-  id: "aurora",
-  name: "Aurora",
-  description: "Layered curtains of light — Procedural Field preset",
-  color: "#22ee88",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class Aurora extends ProceduralShader {
+  static readonly typeId = "aurora";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "colorA", type: "vec3", label: "Color 1", default: [0.65, 0.2, 0.97] },
       { id: "colorB", type: "vec3", label: "Color 2", default: [0.13, 0.93, 0.53] },
@@ -54,5 +63,8 @@ export default {
     b.connect({ nodeId: au.nodeId, pin: "color" }, mix.nodeId, "b");
     b.connect({ nodeId: au.nodeId, pin: "alpha" }, mix.nodeId, "t");
     return b.output(mix);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Aurora);
+export default Aurora;

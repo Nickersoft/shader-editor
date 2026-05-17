@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "solid-color",
+const meta: NodeMeta = {
   name: "Solid Color",
-  description: "Fill the canvas with a single solid color — Procedural Field preset",
+  description: "Fill the canvas with a single solid color",
   color: "#a3a3a3",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class SolidColor extends ProceduralShader {
+  static readonly typeId = "solid-color";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     // A two-stop ramp sampled at t=0 collapses to its first stop — no
     // upstream wiring needed.
@@ -22,5 +31,8 @@ export default {
       { t: 0 },
     );
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(SolidColor);
+export default SolidColor;

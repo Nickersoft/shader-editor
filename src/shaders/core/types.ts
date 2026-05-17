@@ -58,15 +58,15 @@ import type { GlslHelperName } from "@/lib/codegen/helpers";
 export type { GlslHelperName };
 
 // Layer dependency declaration. Either a static list of helper names, or a
-// function that derives the list from the node's live config. The function
-// form lets a layer that branches on a config enum (e.g. halftone classic vs
+// function that derives the list from the shader's live inputs. The function
+// form lets a layer that branches on an input enum (e.g. halftone classic vs
 // CMYK) declare only the helpers the active branch actually uses.
 //
 // Names are checked against the GLSL_UTILS registry at compile time — typos
 // like `'simplex2d'` (lowercase d) become TS errors.
 export type GlslDependencies =
   | readonly GlslHelperName[]
-  | ((config: Record<string, unknown>) => readonly GlslHelperName[]);
+  | ((inputs: Record<string, unknown>) => readonly GlslHelperName[]);
 
 export interface GlslBlock {
   dependencies?: GlslDependencies;

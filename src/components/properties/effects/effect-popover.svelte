@@ -5,7 +5,7 @@
     inspectUiFields,
     type InspectedUiField,
   } from "@/lib/codegen/schema-introspection";
-  import type { EffectNode } from "@/shaders/core/node.svelte";
+  import type { Effect, StaticShaderClass } from "@/shaders/core/shader.svelte";
   import { ScrollArea } from "@/components/ui/scroll-area";
   import FieldControl from "../field-control.svelte";
   import GraphParameterPanel, {
@@ -14,7 +14,7 @@
   import type { Snippet } from "svelte";
 
   interface Props {
-    effect: EffectNode;
+    effect: Effect;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     // Snippet receives the bits-ui trigger props bag — spread it onto your
@@ -25,15 +25,17 @@
 
   let { effect, open, onOpenChange, trigger }: Props = $props();
 
-  let cls = $derived(effect.cls);
-  // Graph-based effects declare empty static `config`/`uniforms` schemas —
-  // their user-facing knobs live as GroupInput pin defaults inside the
-  // effect's internal node graph. Defer to `GraphParameterPanel` for those.
+  let cls = $derived(effect.cls as StaticShaderClass);
+  // Graph-based effects don't expose a static schema — their user-facing knobs
+  // live as GroupInput pin defaults inside the effect's internal node graph.
+  // Defer to `GraphParameterPanel` for those.
   let graphEffect = $derived(asGraphHost(effect));
-  // For schema-based effects: `uniforms` first (the user-tweakable knobs);
-  // `config` after (structural switches). Same precedence as the main panel.
-  let uniformFields = $derived(inspectUiFields(cls.uniforms));
-  let configFields = $derived(inspectUiFields(cls.config));
+  // Schema-based effects: split fields by structural (enum dropdowns) vs live
+  // (numeric / vector / color / image). Live knobs come first; structural
+  // switches render after.
+  let allFields = $derived(cls.schema ? inspectUiFields(cls.schema) : []);
+  let uniformFields = $derived(allFields.filter((f) => f.glslType !== "enumString"));
+  let configFields = $derived(allFields.filter((f) => f.glslType === "enumString"));
 
   function fieldLabel(field: InspectedUiField): string {
     return field.schema.description ?? field.key;
@@ -76,22 +78,22 @@
               </p>
             {:else}
               {#each uniformFields as field (field.key)}
-                {@const value = effect.uniforms[field.key]}
+                {@const value = (effect.inputs as Record<string, unknown>)[field.key]}
                 <FieldControl
                   {field}
                   label={fieldLabel(field)}
                   {value}
                   onChange={(v) =>
-                    composer.updateUniform(effect.id, field.key, v)}
+                    composer.updateInput(effect.id, field.key, v)}
                 />
               {/each}
               {#each configFields as field (field.key)}
-                {@const value = effect.config[field.key]}
+                {@const value = (effect.inputs as Record<string, unknown>)[field.key]}
                 <FieldControl
                   {field}
                   label={fieldLabel(field)}
                   {value}
-                  onChange={(v) => composer.updateConfig(effect.id, field.key, v)}
+                  onChange={(v) => composer.updateInput(effect.id, field.key, v)}
                 />
               {/each}
             {/if}

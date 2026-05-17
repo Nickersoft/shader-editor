@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { EffectNode, NodeClass } from "@/shaders/core/node.svelte";
+  import type { Effect, ShaderClass } from "@/shaders/core/shader.svelte";
   import { composer } from "@/lib/state/composer.svelte";
   import * as DropdownMenu from "@/components/ui/dropdown-menu";
   import { cn } from "@/lib/utils";
@@ -11,8 +11,8 @@
 
   interface Props {
     label: string;
-    items: EffectNode[];
-    options: NodeClass[]; 
+    items: Effect[];
+    options: ShaderClass[];
     onPick: (typeId: string) => void;
     onRemove: (id: string) => void;
   }

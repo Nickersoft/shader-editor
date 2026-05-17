@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Layer } from "@/shaders/core/scene.svelte";
-  import { generatorSourceKind } from "@/shaders/core/node.svelte";
+  import { generatorSourceKind } from "@/shaders/core/shader.svelte";
   import type { Category } from "@/shaders/core/types";
   import { composer } from "@/lib/state/composer.svelte";
   import EffectSection from "../effects/effect-section.svelte";

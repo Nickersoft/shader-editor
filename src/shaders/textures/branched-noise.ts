@@ -1,17 +1,26 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+
+const meta: NodeMeta = {
+  name: "Branched Noise",
+  description: "Mix Fields demo — multiplies a Noise field by a Voronoi field, then colorizes",
+  color: "#f59e0b",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
 // Phase-3 migration: the legacy preset used a `mix-fields` stage with
 // `mode: multiply, factor: 0.7`. Decomposed here as `n = a * b` — the factor
 // knob is gone in favour of a legible two-input multiply; the visual is
 // essentially identical at factor=1, and tweakability lands in Phase 4.
-export default {
-  id: "branched-noise",
-  name: "Branched Noise",
-  description: "Mix Fields demo — multiplies a Noise field by a Voronoi field, then colorizes",
-  color: "#f59e0b",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class BranchedNoise extends ProceduralShader {
+  static readonly typeId = "branched-noise";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
@@ -41,5 +50,8 @@ export default {
       [0.99, 0.62, 0.16],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(BranchedNoise);
+export default BranchedNoise;

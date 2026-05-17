@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "hex-grid",
+const meta: NodeMeta = {
   name: "Hex Grid",
-  description: "Honeycomb hexagonal grid — Procedural Field preset",
+  description: "Honeycomb hexagonal grid",
   color: "#0ea5e9",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class HexGrid extends ProceduralShader {
+  static readonly typeId = "hex-grid";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const hg = b.add("lattice-mask", { mode: "hex", scale: 8, lineWidth: 1 });
@@ -17,5 +26,8 @@ export default {
       [0, 0, 0],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(HexGrid);
+export default HexGrid;

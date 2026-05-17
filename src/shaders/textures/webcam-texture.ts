@@ -3,14 +3,12 @@
 // wired in the host runtime; the GLSL renders a placeholder card.
 
 import { z } from "zod";
-import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zBool, zColor } from "@/shaders/core/schemas";
 
-const config = z.object({});
-
-const uniforms = z.object({
+const schema = z.object({
   objectFit: z
     .enum(["cover", "contain", "fill", "scale-down", "none"])
     .default("cover")
@@ -27,13 +25,11 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
+type Inputs = z.infer<typeof schema>;
 
-export class WebcamTexture extends GeneratorNode<Config, Uniforms> {
+export class WebcamTexture extends StaticShader<Inputs> {
   static readonly typeId = "webcam-texture";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
+  static readonly schema = schema;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

@@ -7,10 +7,11 @@
   } from "@/lib/codegen/schema-introspection";
   import { getMetaDeep } from "@/shaders/core/schemas";
   import {
-    EffectNode,
-    GeneratorNode,
+    Effect,
+    isGenerator,
     getEffectScope,
-  } from "@/shaders/core/node.svelte";
+    type StaticShaderClass,
+  } from "@/shaders/core/shader.svelte";
   import type { BlendMode } from "@/shaders/core/types";
   import { NumberInput } from "@/components/ui/number-input";
   import { Label } from "@/components/ui/label";
@@ -28,7 +29,7 @@
 
   let selectedNode = $derived.by(() => {
     if (!composer.selectedNodeId) return null;
-    return composer.scene.findNode(composer.selectedNodeId)?.node ?? null;
+    return composer.scene.findShader(composer.selectedNodeId)?.shader ?? null;
   });
   let selectedGraphHost = $derived(asGraphHost(selectedNode));
 
@@ -39,7 +40,7 @@
   // effect lists back into view.
   let selectedLayer = $derived.by(() => {
     if (!composer.selectedNodeId) return null;
-    return composer.scene.findNode(composer.selectedNodeId)?.layer ?? null;
+    return composer.scene.findShader(composer.selectedNodeId)?.layer ?? null;
   });
   let selectedIsLayerSource = $derived(
     selectedLayer && selectedNode && selectedNode === selectedLayer.source,
@@ -47,25 +48,27 @@
 
   let selectionScope = $derived.by(() => {
     if (!selectedNode) return "";
-    if (selectedNode instanceof GeneratorNode) return "Layer";
-    if (selectedNode instanceof EffectNode) {
+    if (selectedNode instanceof Effect) {
       return getEffectScope(selectedNode.cls) === "scene"
         ? "Scene Effect"
         : "Effect Layer";
     }
+    if (isGenerator(selectedNode)) return "Layer";
     return "";
   });
 
   let fields = $derived.by(() => {
     if (!selectedNode) return null;
-    const cls = selectedNode.cls;
+    const cls = selectedNode.cls as StaticShaderClass;
+    const schema = cls.schema;
+    if (!schema) return { uniformFields: [], configFields: [] };
+    const all = inspectUiFields(schema);
+    // Structural fields (enum-string dropdowns) split out of the live uniform
+    // bag — rendered under "Configuration"; everything else is a live uniform
+    // knob rendered under "Transform" / "Properties".
     return {
-      // `uniforms` schema → user-tweakable knobs (numerics, colors, samplers,
-      // transform). Renders under Transform / Properties.
-      uniformFields: inspectUiFields(cls.uniforms),
-      // `config` schema → editor-level structural switches (EdgeMode, halftone
-      // style, etc.) that branch the emitted GLSL. Renders under Configuration.
-      configFields: inspectUiFields(cls.config),
+      configFields: all.filter((f) => f.glslType === "enumString"),
+      uniformFields: all.filter((f) => f.glslType !== "enumString"),
     };
   });
 
@@ -131,10 +134,8 @@
       : entry.key;
   }
 
-  let blendModeLabel = $derived(
-    BLEND_MODES.find((m) => m.value === (selectedNode?.blendMode ?? "normal"))
-      ?.label ?? "Normal",
-  );
+  // Template below is currently commented out — the active SceneProperties
+  // path doesn't read this. Reinstated alongside the per-node template.
 </script>
 
 {#snippet header(name: string, label: string)}

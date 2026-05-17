@@ -31,7 +31,7 @@
 		type: 'effect'
 	});
 
-	let node = $derived(composer.scene.findNode(effectId)?.node);
+	let node = $derived(composer.scene.findShader(effectId)?.shader);
 	let isSelected = $derived(composer.selectedNodeId === effectId);
 	let leftPad = $derived(depth === 1 ? 36 : 60);
 </script>

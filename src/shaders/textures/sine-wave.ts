@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "sine-wave",
+const meta: NodeMeta = {
   name: "Sine Wave",
-  description: "Animated sine wave bands — Procedural Field preset",
+  description: "Animated sine wave bands",
   color: "#0ea5e9",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class SineWave extends ProceduralShader {
+  static readonly typeId = "sine-wave";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
@@ -26,5 +35,8 @@ export default {
       [1, 1, 1],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(SineWave);
+export default SineWave;

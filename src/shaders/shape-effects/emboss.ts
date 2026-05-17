@@ -8,9 +8,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Emboss",
@@ -20,13 +20,13 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Emboss extends GraphEffectBase {
+export class Emboss extends ProceduralEffect {
   static readonly typeId = "emboss";
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "lightAngle", type: "float", label: "Light Angle", default: 45 },
       { id: "intensity", type: "float", label: "Intensity", default: 0.5 },

@@ -1,23 +1,24 @@
 // Per-pass fragment-shader emission.
 //
-// For a normal pass: collects the GLSL block from each contributing node,
+// For a normal pass: collects the GLSL block from each contributing shader,
 // emits utility-function dependencies, layer wrappers, and a `main()` that
 // blends each layer onto the running color.
 //
 // For a 'js' pass: emits a degenerate program that samples the
-// ProcessingNode's CPU-computed output texture (`u_<prefix>_jsOutput`) and
-// writes it through with the node's opacity applied.
+// ProcessingShader's CPU-computed output texture (`u_<prefix>_jsOutput`)
+// and writes it through with the shader's opacity applied.
 //
-// For a 'glsl-render' pass: same code path as a normal EffectNode pass, but
-// the layer's `glsl()` block was provided by a ProcessingNode that consumes
-// `u_prevPass` (the preprocessed image).
+// For a 'glsl-render' pass: same code path as a normal Effect pass, but
+// the layer's `glsl()` block was provided by a ProcessingShader that
+// consumes `u_prevPass` (the preprocessed image).
 
-import { GLSL_HELPERS as GLSL_UTILS } from "./helpers";
+import { Effect, type Shader, type StaticShaderClass } from "@/shaders/core/shader.svelte";
+
 import { BLEND_MODE_FUNCTIONS } from "./blend-modes";
+import { GLSL_HELPERS as GLSL_UTILS } from "./helpers";
+import type { PassPlan } from "./passes";
 import { inspectObjectSchema } from "./schema-introspection";
 import type { GeneratedPass } from "./types";
-import type { PassPlan } from "./passes";
-import { EffectNode, GeneratorNode } from "@/shaders/core/node.svelte";
 import type { Layer } from "@/shaders/core/scene.svelte";
 
 interface BuildContext {
@@ -166,7 +167,7 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
     if (!block) continue;
     const deps =
       typeof block.dependencies === "function"
-        ? block.dependencies(node.config)
+        ? block.dependencies(node.inputs as Record<string, unknown>)
         : (block.dependencies ?? []);
     deps.forEach((d) => dependencies.add(d));
     if (node.blendMode !== "normal") blendModes.add(node.blendMode);
@@ -212,8 +213,11 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
     const prefix = node.prefix;
     uniformDeclarations.push(`uniform float u_${prefix}_opacity;`);
 
-    const cls = node.cls;
-    const uniformFields = inspectObjectSchema(cls.uniforms);
+    const cls = node.cls as StaticShaderClass;
+    // ProceduralShader/ProceduralEffect have no static schema — they emit
+    // their uniforms via `extraUniforms()` instead. Only iterate schema
+    // fields when the class actually declares one.
+    const uniformFields = cls.schema ? inspectObjectSchema(cls.schema) : [];
 
     for (const field of uniformFields) {
       const baseName = `u_${prefix}_${field.key}`;
@@ -238,7 +242,7 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
       }
     }
 
-    // Container-node extra uniforms (e.g. ProceduralField stages).
+    // Container-shader extra uniforms (e.g. ProceduralShader graph stages).
     const extras = node.extraUniforms?.() ?? [];
     for (const extra of extras) {
       const baseName = `u_${prefix}_${extra.nameSuffix}`;
@@ -347,17 +351,19 @@ ${mainCalls.length > 0 ? mainCalls.join("\n") : "  vec4 color = vec4(0.0, 0.0, 0
   };
 }
 
-function getGlslBlock(node: import("@/shaders/core/node.svelte").Node, blockIndex = 0) {
-  if (node instanceof GeneratorNode) {
-    return node.glsl();
-  }
-  if (node instanceof EffectNode) {
+function getGlslBlock(
+  node: Shader,
+  blockIndex = 0,
+): import("@/shaders/core/types").GlslBlock | null {
+  if (node instanceof Effect) {
     const out = node.glsl();
     return Array.isArray(out) ? (out[blockIndex] ?? null) : out;
   }
-  // ProcessingNode in glsl-render phase.
-  const proc = node as unknown as { glsl?: () => ReturnType<GeneratorNode["glsl"]> };
-  return proc.glsl ? proc.glsl() : null;
+  // Generator shader (or ProcessingShader in glsl-render phase) — both return
+  // a single GlslBlock from their (optional, for ProcessingShader) `glsl()`.
+  if (typeof node.glsl !== "function") return null;
+  const out = node.glsl();
+  return Array.isArray(out) ? (out[blockIndex] ?? null) : out;
 }
 
 function indent(code: string, spaces: number): string {

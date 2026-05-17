@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createSortable } from '@dnd-kit/svelte/sortable';
 	import type { Layer } from '@/shaders/core/scene.svelte';
+	import { isProceduralShader } from '@/shaders/core/procedural-shader.svelte';
 	import { composer } from '@/lib/state/composer.svelte';
 	import { dragIntent } from '@/lib/state/drag-intent.svelte';
 	import { cn } from '@/lib/utils';
@@ -53,16 +54,7 @@
 	// +16px per nest level so children visibly indent under their parent.
 	let leftPad = $derived(36 + depth * 16);
 
-	// True when the layer is a ProceduralField bound to a named preset — the
-	// context menu surfaces a "Separate" action to detach the chain for free
-	// editing.
-	let presetId = $derived.by<string | null>(() => {
-		if (layer.source.typeId !== 'procedural-field') return null;
-		const cfg = layer.source.config as { presetId?: string | null };
-		return cfg.presetId ?? null;
-	});
-
-	let isProceduralField = $derived(layer.source.typeId === 'procedural-field');
+	let isProceduralField = $derived(isProceduralShader(layer.source));
 </script>
 
 <ContextMenu.Root>
@@ -149,12 +141,6 @@
 		{#if isProceduralField}
 			<ContextMenu.Item onclick={() => composer.openTextureEditor(layer.id)}>
 				Edit texture graph
-			</ContextMenu.Item>
-			<ContextMenu.Separator />
-		{/if}
-		{#if presetId}
-			<ContextMenu.Item onclick={() => composer.separateProceduralPreset(layer.id)}>
-				Separate from preset
 			</ContextMenu.Item>
 			<ContextMenu.Separator />
 		{/if}

@@ -1,16 +1,25 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+
+const meta: NodeMeta = {
+  name: "Weave",
+  description: "Interlaced thread weave",
+  color: "#0ea5e9",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
 // Decomposed Weave — over/under threads. `over` (a boolean from `cell.x +
 // cell.y` parity) modulates the horizontal vs. vertical stroke amplitude.
 // The ternary lives as `mix(strand × 0.5, strand, over)`.
-export default {
-  id: "weave",
-  name: "Weave",
-  description: "Interlaced thread weave — Procedural Field preset",
-  color: "#0ea5e9",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class Weave extends ProceduralShader {
+  static readonly typeId = "weave";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "scale", type: "float", label: "Scale", default: 10 },
       { id: "gap", type: "float", label: "Gap", default: 0.25 },
@@ -113,5 +122,8 @@ export default {
       [0.77, 0.77, 0.77],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Weave);
+export default Weave;

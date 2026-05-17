@@ -11,9 +11,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "VHS",
@@ -24,12 +24,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Vhs extends GraphEffectBase {
+export class Vhs extends ProceduralEffect {
   static readonly typeId = "vhs";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "wobble", type: "float", label: "Wobble", default: 1 },
       { id: "scanlineNoise", type: "float", label: "Scanline Noise", default: 0.6 },

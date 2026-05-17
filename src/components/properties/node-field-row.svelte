@@ -4,26 +4,22 @@
 		InspectedField,
 		InspectedUiField
 	} from '@/lib/codegen/schema-introspection';
-	import type { Node } from '@/shaders/core/node.svelte';
+	import type { Shader } from '@/shaders/core/shader.svelte';
 	import FieldControl from './field-control.svelte';
 
 	interface Props {
-		node: Node;
+		node: Shader;
 		field: InspectedField | InspectedUiField;
-		kind: 'config' | 'uniform';
 		label?: string;
 	}
 
-	let { node, field, kind, label }: Props = $props();
+	let { node, field, label }: Props = $props();
 
-	let value = $derived(
-		kind === 'config' ? node.config[field.key] : node.uniforms[field.key]
-	);
+	let value = $derived((node.inputs as Record<string, unknown>)[field.key]);
 	let resolvedLabel = $derived(label ?? field.schema.description ?? field.key);
 
 	function handleChange(v: unknown) {
-		if (kind === 'config') composer.updateConfig(node.id, field.key, v);
-		else composer.updateUniform(node.id, field.key, v);
+		composer.updateInput(node.id, field.key, v);
 	}
 </script>
 

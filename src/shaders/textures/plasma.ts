@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "plasma",
+const meta: NodeMeta = {
   name: "Plasma",
-  description: "Animated plasma effect — Procedural Field preset",
+  description: "Animated plasma effect",
   color: "#ec4899",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class Plasma extends ProceduralShader {
+  static readonly typeId = "plasma";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
@@ -27,5 +36,8 @@ export default {
       [0.44, 0.09, 0.75],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Plasma);
+export default Plasma;

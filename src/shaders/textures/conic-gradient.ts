@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "conic-gradient",
+const meta: NodeMeta = {
   name: "Conic Gradient",
   description: "Angular sweep around a draggable center",
   color: "#a855f7",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class ConicGradient extends ProceduralShader {
+  static readonly typeId = "conic-gradient";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
     const domain = b.add("gradient-domain", { mode: "conic" });
@@ -19,5 +28,8 @@ export default {
       [0.95, 0.27, 0.42],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(ConicGradient);
+export default ConicGradient;

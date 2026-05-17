@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "dot-grid",
+const meta: NodeMeta = {
   name: "Dot Grid",
-  description: "Grid of dots — Procedural Field preset",
+  description: "Grid of dots",
   color: "#0ea5e9",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class DotGrid extends ProceduralShader {
+  static readonly typeId = "dot-grid";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const dg = b.add("lattice-mask", { mode: "dots", scale: 30, radius: 0.3, softness: 0.05 });
@@ -17,5 +26,8 @@ export default {
       [0, 0, 0],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(DotGrid);
+export default DotGrid;

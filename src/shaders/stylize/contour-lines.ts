@@ -4,9 +4,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Contour Lines",
@@ -16,12 +16,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class ContourLines extends GraphEffectBase {
+export class ContourLines extends ProceduralEffect {
   static readonly typeId = "contour-lines";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "colorBack", type: "vec3", label: "Background", default: [0.02, 0.04, 0.05] },
       { id: "colorFront", type: "vec3", label: "Lines", default: [0.55, 0.95, 0.7] },

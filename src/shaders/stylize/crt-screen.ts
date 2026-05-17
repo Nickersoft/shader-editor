@@ -4,9 +4,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "CRT Screen",
@@ -16,12 +16,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class CrtScreen extends GraphEffectBase {
+export class CrtScreen extends ProceduralEffect {
   static readonly typeId = "crt-screen";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "pixelSize", type: "float", label: "Pixel Size", default: 0.005 },
       { id: "scanlineFrequency", type: "float", label: "Scanline Frequency", default: 200 },

@@ -1,6 +1,6 @@
 // Effect-graph smoke test. Walks every effect that extends GraphEffectBase
 // (currently the migrated adjustments + distortions), invokes its
-// `static defaultGraph()`, and emits the GLSL to confirm the graph hydrates
+// `static graph()`, and emits the GLSL to confirm the graph hydrates
 // and the typeIds in it all resolve.
 //
 // Runs under Bun, bypassing the Svelte runes that would otherwise need a
@@ -9,7 +9,7 @@
 import { emitGraph } from "@/shaders/node-graph";
 
 // Side-effect imports — each one calls register() and surfaces a
-// defaultGraph() factory we can call statically.
+// graph() factory we can call statically.
 import "@/shaders/adjustments/brightness-contrast";
 import "@/shaders/adjustments/grayscale";
 import "@/shaders/adjustments/invert";
@@ -155,18 +155,18 @@ const EFFECT_IDS = [
 ];
 
 // Pull the GraphEffectBase subclasses out of the core-node registry. Each
-// has a `static defaultGraph()`.
-import { getNodeClass } from "@/shaders/core/registry";
+// has a `static graph()`.
+import { getShaderClass } from "@/shaders/core/registry";
 
 let pass = 0;
 let fail = 0;
 for (const id of EFFECT_IDS) {
   try {
-    const cls = getNodeClass(id) as unknown as { defaultGraph?: () => unknown };
-    if (!cls || typeof cls.defaultGraph !== "function") {
-      throw new Error(`missing defaultGraph factory`);
+    const cls = getShaderClass(id) as unknown as { graph?: () => unknown };
+    if (!cls || typeof cls.graph !== "function") {
+      throw new Error(`missing graph factory`);
     }
-    const graph = cls.defaultGraph() as Parameters<typeof emitGraph>[0];
+    const graph = cls.graph() as Parameters<typeof emitGraph>[0];
     if (!graph.nodes || graph.nodes.length === 0) throw new Error("empty graph");
     const out = graph.nodes.find((n) => n.typeId === "group-output");
     if (!out) throw new Error("missing group-output");

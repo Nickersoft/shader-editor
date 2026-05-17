@@ -1,12 +1,10 @@
 import { z } from "zod";
-import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({});
-
-const uniforms = z.object({
+const schema = z.object({
   scale: zFloat(0.3, 12, 0.05).default(2.5).describe("Scale"),
   speed: zFloat(0, 4, 0.05).default(0.4).describe("Speed"),
   density: zFloat(0, 1).default(0.5).describe("Density"),
@@ -23,16 +21,14 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
+type Inputs = z.infer<typeof schema>;
 
-// Smoke is a layer source (GeneratorNode), not an effect — it cannot migrate
+// Smoke is a layer source (StaticShader), not an effect — it cannot migrate
 // to GraphEffectBase without changing the scene-graph semantics. Mouse-driven
 // generators remain monolithic until a graph-generator base lands.
-export class Smoke extends GeneratorNode<Config, Uniforms> {
+export class Smoke extends StaticShader<Inputs> {
   static readonly typeId = "smoke";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
+  static readonly schema = schema;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

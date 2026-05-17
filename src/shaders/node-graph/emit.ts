@@ -10,7 +10,9 @@
 // uniform names) and a path prefix (so nested uniforms' `originalPath` points
 // at `config.subGraph.nodes[i].config.*` in the live graph).
 
-import { sanitizeName } from "@/shaders/core/node.svelte";
+import { Graph, alg } from "@dagrejs/graphlib";
+
+import { sanitizeName } from "@/shaders/core/shader.svelte";
 import type { GlslHelperName } from "@/shaders/core/types";
 import type { ExtraUniformDecl } from "@/lib/codegen/types";
 import { coerce } from "./coerce";
@@ -392,44 +394,31 @@ function extractFinalPin(
 }
 
 /**
- * Iterative topological sort of nodes reachable from `rootId`, walking edges
- * in the upstream direction (fromNodeId is a dependency of toNodeId).
+ * Topological sort of nodes reachable from `rootId`, walking edges in the
+ * upstream direction (fromNodeId is a dependency of toNodeId). Returns nodes
+ * in dependency order: a node appears after all nodes its inputs depend on.
+ * Throws on cycle (`alg.CycleException`).
  *
- * Returns nodes in dependency order: a node appears after all nodes its inputs
- * depend on. Throws on cycle.
+ * We seed a graphlib `Graph` only with the edges discovered while crawling
+ * backwards from `rootId`, so unreachable nodes are dropped — matching the
+ * emitter's contract that downstream consumers reference upstream locals.
  */
 function topoSort(rootId: string, edgesByTarget: Map<string, Edge[]>): string[] {
-  // Gather reachable set.
-  const reachable = new Set<string>();
+  const g = new Graph();
+  g.setNode(rootId);
   const stack = [rootId];
+  const seen = new Set<string>([rootId]);
   while (stack.length > 0) {
     const id = stack.pop()!;
-    if (reachable.has(id)) continue;
-    reachable.add(id);
     const incoming = edgesByTarget.get(id);
     if (!incoming) continue;
     for (const e of incoming) {
-      if (!reachable.has(e.fromNodeId)) stack.push(e.fromNodeId);
+      g.setEdge(e.fromNodeId, id);
+      if (!seen.has(e.fromNodeId)) {
+        seen.add(e.fromNodeId);
+        stack.push(e.fromNodeId);
+      }
     }
   }
-
-  // DFS postorder yields a topo sort; cycles trip the WIP guard.
-  const order: string[] = [];
-  const VISITING = 1;
-  const VISITED = 2;
-  const state = new Map<string, number>();
-
-  function visit(id: string): void {
-    const s = state.get(id);
-    if (s === VISITED) return;
-    if (s === VISITING) throw new Error(`Cycle detected in node graph at ${id}`);
-    state.set(id, VISITING);
-    const incoming = edgesByTarget.get(id);
-    if (incoming) for (const e of incoming) if (reachable.has(e.fromNodeId)) visit(e.fromNodeId);
-    state.set(id, VISITED);
-    order.push(id);
-  }
-
-  for (const id of reachable) visit(id);
-  return order;
+  return alg.topsort(g);
 }

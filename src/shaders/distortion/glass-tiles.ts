@@ -16,9 +16,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Glass Tiles",
@@ -28,12 +28,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class GlassTiles extends GraphEffectBase {
+export class GlassTiles extends ProceduralEffect {
   static readonly typeId = "glass-tiles";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "intensity", type: "float", label: "Intensity", default: 0.5 },
       { id: "tileCount", type: "float", label: "Tile Count", default: 8 },

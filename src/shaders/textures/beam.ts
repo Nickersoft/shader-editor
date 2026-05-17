@@ -1,17 +1,26 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+
+const meta: NodeMeta = {
+  name: "Beam",
+  description: "Directional light beam",
+  color: "#fde68a",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
 // Decomposed beam: angle pin → rotate-2D unit vector → dot with `p` → abs →
 // smoothstep falloff. Users can swap the rotate2D step for a Const-driven
 // vector to lock the beam, or wire the half-width to another signal (e.g. a
 // Noise) to get a pulsing or wobbling beam.
-export default {
-  id: "beam",
-  name: "Beam",
-  description: "Directional light beam — Procedural Field preset",
-  color: "#fde68a",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class Beam extends ProceduralShader {
+  static readonly typeId = "beam";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "angle", type: "float", label: "Angle (deg)", default: 0 },
       { id: "width", type: "float", label: "Width", default: 0.2 },
@@ -60,5 +69,8 @@ export default {
       [1, 0.5, 0.2],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Beam);
+export default Beam;

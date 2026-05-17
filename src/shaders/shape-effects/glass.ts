@@ -1,169 +1,211 @@
-// Glass — graph-decomposed. Simplex-noise gradient warps the sample UV;
-// a small cross-blur softens the refracted lookup; mild RGB split adds
-// chromatic edges; `tint` and `fresnel` colour-correct the result.
+// Glass — graph-decomposed port of the bergice/liquidglass shader. Within a
+// rounded-box region (center/size/radius), the previous pass is refracted
+// through an SDF-derived normal at the edges, with a dome-style radial
+// refraction biasing the centre. The refracted lookup is mixed with a small
+// Gaussian-blurred sample to produce the frosted feel, and a soft rim glow
+// is overlaid at the inner edge. Alpha tapers from `alpha` inside the shape
+// to 0 outside so the effect composites cleanly over whatever layer sits
+// beneath it.
+//
+// Built on the `rounded-box` (signed-distance + normal in one node) and
+// `sampler` (Gaussian mode) primitives — both authored alongside this port.
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Glass",
-  description: "Frosted-glass refraction",
+  description: "Liquid-glass refraction (rounded-box SDF + frosted blur + rim glow)",
   color: "#22d3ee",
   category: "shape-effects",
   defaultBlendMode: "normal",
 };
 
-export class Glass extends GraphEffectBase {
+export class Glass extends ProceduralEffect {
   static readonly typeId = "glass";
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
-      { id: "refraction", type: "float", label: "Refraction", default: 0.5 },
-      { id: "chromaticAberration", type: "float", label: "Chromatic Aberration", default: 0.3 },
-      { id: "blur", type: "float", label: "Blur", default: 0.05 },
-      { id: "tint", type: "vec3", label: "Tint", default: [1, 1, 1] },
-      { id: "tintIntensity", type: "float", label: "Tint Intensity", default: 0.2 },
-      { id: "fresnel", type: "float", label: "Fresnel", default: 0.3 },
+      { id: "center", type: "vec2", label: "Center", default: [0.5, 0.5] },
+      { id: "size", type: "vec2", label: "Size", default: [0.15, 0.06] },
+      { id: "radius", type: "float", label: "Corner Radius", default: 0.025 },
+      { id: "refraction", type: "float", label: "Refraction", default: 1 },
+      { id: "ior", type: "float", label: "IOR", default: 1.5 },
+      { id: "domeSize", type: "float", label: "Dome Size", default: 0.15 },
+      { id: "blur", type: "float", label: "Blur Mix", default: 0.5 },
+      { id: "glow", type: "float", label: "Edge Glow", default: 0.5 },
+      { id: "alpha", type: "float", label: "Alpha", default: 1 },
+      { id: "edgeSoftness", type: "float", label: "Edge Softness", default: 0.005 },
     ]);
 
     const uv = b.add("screen-uv", {}, undefined, "uv");
 
-    // q = uv · 8
-    const q = b.add("vector-math", { op: "scale" });
-    b.connect(uv, q.nodeId, "a");
-    b.connect(b.add("value", { value: 8 }), q.nodeId, "b");
+    // Rounded-box SDF — distance + outward normal in a single node.
+    const sdf = b.add("sdf", { shape: "rounded-box" }, { eps: 0.002 });
+    b.connect(uv, sdf.nodeId, "uv");
+    b.connect(gi.center, sdf.nodeId, "center");
+    b.connect(gi.size, sdf.nodeId, "size");
+    b.connect(gi.radius, sdf.nodeId, "radius");
+    const dist = { nodeId: sdf.nodeId, pin: "distance" };
+    const normal = { nodeId: sdf.nodeId, pin: "normal" };
 
-    const e = 0.01;
-    // Three simplex samples to approximate the gradient: at q, q + (e, 0),
-    // q + (0, e). Each via noise-texture/simplex (returns [0,1]) — the
-    // gradient sign is preserved through the subtraction.
-    const n0 = b.add("noise-texture", {
-      kind: "simplex", scale: 1, seed: 0, detail: 5,
-      lacunarity: 2, roughness: 0.5, distortion: 0,
+    // eta = 1 / ior  (Snell's ratio for entering the glass).
+    const one = b.add("value", { value: 1 });
+    const eta = b.add("math", { op: "div" });
+    b.connect(one, eta.nodeId, "a");
+    b.connect(gi.ior, eta.nodeId, "b");
+
+    // delta = uv − center; r = clamp(length(delta) / domeSize, 0, 1).
+    const delta = b.add("vector-math", { op: "sub" });
+    b.connect(uv, delta.nodeId, "a");
+    b.connect(gi.center, delta.nodeId, "b");
+    const dir = b.add("vector-math", { op: "normalize" });
+    b.connect(delta, dir.nodeId, "a");
+    const dLen = b.add("vector-math", { op: "length" });
+    b.connect(delta, dLen.nodeId, "a");
+    const rRaw = b.add("math", { op: "div" });
+    b.connect(dLen, rRaw.nodeId, "a");
+    b.connect(gi.domeSize, rRaw.nodeId, "b");
+    const r = b.add("math", { op: "min" }, { b: 1 });
+    b.connect(rRaw, r.nodeId, "a");
+
+    // Dome refraction: incident = −(dir · r); refract through dome normal
+    // (also dir · r). Offset the UV by the refracted vector scaled by 0.03
+    // and the user's refraction strength.
+    const domeN = b.add("vector-math", { op: "scale" });
+    b.connect(dir, domeN.nodeId, "a");
+    b.connect(r, domeN.nodeId, "b");
+    const incident = b.add("vector-math", { op: "neg" });
+    b.connect(domeN, incident.nodeId, "a");
+    const refrDome = b.add("vector-math", { op: "refract" });
+    b.connect(incident, refrDome.nodeId, "a");
+    b.connect(domeN, refrDome.nodeId, "b");
+    b.connect(eta, refrDome.nodeId, "c");
+    const domeScale = b.add("math", { op: "mul" }, { b: 0.03 });
+    b.connect(gi.refraction, domeScale.nodeId, "a");
+    const domeOff = b.add("vector-math", { op: "scale" });
+    b.connect(refrDome, domeOff.nodeId, "a");
+    b.connect(domeScale, domeOff.nodeId, "b");
+    const curvedUV = b.add("vector-math", { op: "add" });
+    b.connect(uv, curvedUV.nodeId, "a");
+    b.connect(domeOff, curvedUV.nodeId, "b");
+
+    // Edge-contour refraction: scale the SDF normal by an edge falloff so the
+    // refraction concentrates near the boundary, then refract a zero incident
+    // through it (matches the reference shader's `refract(vec2(0.0), N, eta)`).
+    const absDist = b.add("math", { op: "abs" });
+    b.connect(dist, absDist.nodeId, "x");
+    const negAbsDist = b.add("math", { op: "mul" }, { b: -0.4 });
+    b.connect(absDist, negAbsDist.nodeId, "a");
+    const contourFalloff = b.add("math", { op: "exp" });
+    b.connect(negAbsDist, contourFalloff.nodeId, "x");
+    const contourFallPow = b.add("math", { op: "pow" }, { b: 1.5 });
+    b.connect(contourFalloff, contourFallPow.nodeId, "a");
+    const contourN = b.add("vector-math", { op: "scale" });
+    b.connect(normal, contourN.nodeId, "a");
+    b.connect(contourFallPow, contourN.nodeId, "b");
+    // refract default `a` is (0, 0); leave it unconnected.
+    const refrContour = b.add("vector-math", { op: "refract" });
+    b.connect(contourN, refrContour.nodeId, "b");
+    b.connect(eta, refrContour.nodeId, "c");
+    const contourScaleA = b.add("math", { op: "mul" }, { b: 0.35 });
+    b.connect(gi.refraction, contourScaleA.nodeId, "a");
+    const contourScaleB = b.add("math", { op: "mul" });
+    b.connect(contourScaleA, contourScaleB.nodeId, "a");
+    b.connect(contourFalloff, contourScaleB.nodeId, "b");
+    const contourOff = b.add("vector-math", { op: "scale" });
+    b.connect(refrContour, contourOff.nodeId, "a");
+    b.connect(contourScaleB, contourOff.nodeId, "b");
+    const contourUV = b.add("vector-math", { op: "add" });
+    b.connect(uv, contourUV.nodeId, "a");
+    b.connect(contourOff, contourUV.nodeId, "b");
+
+    // Combined weight: smoothstep(0, 1, |dist|) − 0.5 · smoothstep(0.5, 1, r),
+    // clamped to [0, 1]. Near the edge, contour refraction dominates; deep
+    // inside (large r), dome refraction wins.
+    const edgeW = b.add("smoothstep", {}, { edge0: 0, edge1: 1 });
+    b.connect(absDist, edgeW.nodeId, "x");
+    const radialW = b.add("smoothstep", {}, { edge0: 0.5, edge1: 1 });
+    b.connect(r, radialW.nodeId, "x");
+    const halfRadialW = b.add("math", { op: "mul" }, { b: 0.5 });
+    b.connect(radialW, halfRadialW.nodeId, "a");
+    const weightRaw = b.add("math", { op: "sub" });
+    b.connect(edgeW, weightRaw.nodeId, "a");
+    b.connect(halfRadialW, weightRaw.nodeId, "b");
+    const weightLo = b.add("math", { op: "max" }, { b: 0 });
+    b.connect(weightRaw, weightLo.nodeId, "a");
+    const weight = b.add("math", { op: "min" }, { b: 1 });
+    b.connect(weightLo, weight.nodeId, "a");
+
+    // refractUV = curvedUV + (contourUV − curvedUV) · weight.
+    const uvDiff = b.add("vector-math", { op: "sub" });
+    b.connect(contourUV, uvDiff.nodeId, "a");
+    b.connect(curvedUV, uvDiff.nodeId, "b");
+    const uvBlend = b.add("vector-math", { op: "scale" });
+    b.connect(uvDiff, uvBlend.nodeId, "a");
+    b.connect(weight, uvBlend.nodeId, "b");
+    const refractUV = b.add("vector-math", { op: "add" });
+    b.connect(curvedUV, refractUV.nodeId, "a");
+    b.connect(uvBlend, refractUV.nodeId, "b");
+
+    // Sharp + Gaussian-blurred lookups of the previous pass, mixed by `blur`.
+    const sharp = b.add("sample-previous-pass", { edges: "stretch" });
+    b.connect(refractUV, sharp.nodeId, "uv");
+    const blurred = b.add("sampler", {
+      mode: "gaussian",
+      samples: 3,
+      edges: "stretch",
     });
-    b.connect(q, n0.nodeId, "p");
+    b.connect(refractUV, blurred.nodeId, "uv");
+    // `amount` controls texel stride — 2 matches the reference shader.
+    const blurAmount = b.add("value", { value: 2 });
+    b.connect(blurAmount, blurred.nodeId, "amount");
+    const base = b.add("mix-color", {});
+    b.connect({ nodeId: sharp.nodeId, pin: "color" }, base.nodeId, "a");
+    b.connect(blurred, base.nodeId, "b");
+    b.connect(gi.blur, base.nodeId, "t");
 
-    const ex = b.add("combine-xy", {}, { y: 0 });
-    b.connect(b.add("value", { value: e }), ex.nodeId, "x");
-    const qx = b.add("vector-math", { op: "add" });
-    b.connect(q, qx.nodeId, "a");
-    b.connect(ex, qx.nodeId, "b");
-    const nx = b.add("noise-texture", {
-      kind: "simplex", scale: 1, seed: 0, detail: 5,
-      lacunarity: 2, roughness: 0.5, distortion: 0,
-    });
-    b.connect(qx, nx.nodeId, "p");
+    // Edge glow: 1 − smoothstep(0, 0.03, dist · −2). Reaches 1 in a thin band
+    // just inside the boundary; 0 deep inside and outside the shape.
+    const distNeg2 = b.add("math", { op: "mul" }, { b: -2 });
+    b.connect(dist, distNeg2.nodeId, "a");
+    const glowBand = b.add("smoothstep", {}, { edge0: 0, edge1: 0.03 });
+    b.connect(distNeg2, glowBand.nodeId, "x");
+    const oneMinusGlow = b.add("math", { op: "sub" });
+    b.connect(one, oneMinusGlow.nodeId, "a");
+    b.connect(glowBand, oneMinusGlow.nodeId, "b");
+    const glowAmt = b.add("math", { op: "mul" });
+    b.connect(oneMinusGlow, glowAmt.nodeId, "a");
+    b.connect(gi.glow, glowAmt.nodeId, "b");
+    const glowColor = b.add("value", { value: 0.7 });
+    const glowVec = b.add("combine-color", {});
+    b.connect(glowColor, glowVec.nodeId, "r");
+    b.connect(glowColor, glowVec.nodeId, "g");
+    b.connect(glowColor, glowVec.nodeId, "b");
+    const out = b.add("mix-color", {});
+    b.connect(base, out.nodeId, "a");
+    b.connect(glowVec, out.nodeId, "b");
+    b.connect(glowAmt, out.nodeId, "t");
 
-    const ey = b.add("combine-xy", {}, { x: 0 });
-    b.connect(b.add("value", { value: e }), ey.nodeId, "y");
-    const qy = b.add("vector-math", { op: "add" });
-    b.connect(q, qy.nodeId, "a");
-    b.connect(ey, qy.nodeId, "b");
-    const ny = b.add("noise-texture", {
-      kind: "simplex", scale: 1, seed: 0, detail: 5,
-      lacunarity: 2, roughness: 0.5, distortion: 0,
-    });
-    b.connect(qy, ny.nodeId, "p");
+    // Alpha: full inside the shape, smoothly fading to 0 across `edgeSoftness`
+    // outside the boundary. Multiplied by the user's overall alpha.
+    const shapeMask = b.add("smoothstep", {}, { edge0: 0 });
+    b.connect(dist, shapeMask.nodeId, "x");
+    b.connect(gi.edgeSoftness, shapeMask.nodeId, "edge1");
+    const insideMask = b.add("math", { op: "sub" });
+    b.connect(one, insideMask.nodeId, "a");
+    b.connect(shapeMask, insideMask.nodeId, "b");
+    const finalAlpha = b.add("math", { op: "mul" });
+    b.connect(insideMask, finalAlpha.nodeId, "a");
+    b.connect(gi.alpha, finalAlpha.nodeId, "b");
 
-    // grad = ((nx − n0) / e, (ny − n0) / e)
-    const dx = b.add("math", { op: "sub" });
-    b.connect(nx, dx.nodeId, "a");
-    b.connect(n0, dx.nodeId, "b");
-    const gx = b.add("math", { op: "div" });
-    b.connect(dx, gx.nodeId, "a");
-    b.connect(b.add("value", { value: e }), gx.nodeId, "b");
-    const dy = b.add("math", { op: "sub" });
-    b.connect(ny, dy.nodeId, "a");
-    b.connect(n0, dy.nodeId, "b");
-    const gy = b.add("math", { op: "div" });
-    b.connect(dy, gy.nodeId, "a");
-    b.connect(b.add("value", { value: e }), gy.nodeId, "b");
-    const grad = b.add("combine-xy", {});
-    b.connect(gx, grad.nodeId, "x");
-    b.connect(gy, grad.nodeId, "y");
-
-    // refractedUV = uv + grad · refraction · 0.04
-    const r004 = b.add("math", { op: "mul" }, { b: 0.04 });
-    b.connect(gi.refraction, r004.nodeId, "a");
-    const off = b.add("vector-math", { op: "scale" });
-    b.connect(grad, off.nodeId, "a");
-    b.connect(r004, off.nodeId, "b");
-    const refUv = b.add("vector-math", { op: "add" });
-    b.connect(uv, refUv.nodeId, "a");
-    b.connect(off, refUv.nodeId, "b");
-
-    // CA offset: caDir = normalize(grad + tiny) · ca · 0.015
-    const eps = b.add("combine-xy", {});
-    b.connect(b.add("value", { value: 1e-5 }), eps.nodeId, "x");
-    b.connect(b.add("value", { value: 1e-5 }), eps.nodeId, "y");
-    const gradEps = b.add("vector-math", { op: "add" });
-    b.connect(grad, gradEps.nodeId, "a");
-    b.connect(eps, gradEps.nodeId, "b");
-    const caDir = b.add("vector-math", { op: "normalize" });
-    b.connect(gradEps, caDir.nodeId, "a");
-    const caStr = b.add("math", { op: "mul" }, { b: 0.015 });
-    b.connect(gi.chromaticAberration, caStr.nodeId, "a");
-    const caOff = b.add("vector-math", { op: "scale" });
-    b.connect(caDir, caOff.nodeId, "a");
-    b.connect(caStr, caOff.nodeId, "b");
-
-    // Three samples with channel pick.
-    const uvR = b.add("vector-math", { op: "add" });
-    b.connect(refUv, uvR.nodeId, "a");
-    b.connect(caOff, uvR.nodeId, "b");
-    const sampleR = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uvR, sampleR.nodeId, "uv");
-    const sampleG = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(refUv, sampleG.nodeId, "uv");
-    const uvB = b.add("vector-math", { op: "sub" });
-    b.connect(refUv, uvB.nodeId, "a");
-    b.connect(caOff, uvB.nodeId, "b");
-    const sampleB = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uvB, sampleB.nodeId, "uv");
-
-    const sepR = b.add("separate-color", {});
-    b.connect({ nodeId: sampleR.nodeId, pin: "color" }, sepR.nodeId, "v");
-    const sepG = b.add("separate-color", {});
-    b.connect({ nodeId: sampleG.nodeId, pin: "color" }, sepG.nodeId, "v");
-    const sepB = b.add("separate-color", {});
-    b.connect({ nodeId: sampleB.nodeId, pin: "color" }, sepB.nodeId, "v");
-    const split = b.add("combine-color", {});
-    b.connect({ nodeId: sepR.nodeId, pin: "r" }, split.nodeId, "r");
-    b.connect({ nodeId: sepG.nodeId, pin: "g" }, split.nodeId, "g");
-    b.connect({ nodeId: sepB.nodeId, pin: "b" }, split.nodeId, "b");
-
-    // tinted = mix(split, split · tint, tintIntensity)
-    const tinted = b.add("color-math", { op: "mul" });
-    b.connect(split, tinted.nodeId, "a");
-    b.connect(gi.tint, tinted.nodeId, "b");
-    const mixT = b.add("mix-color", {});
-    b.connect(split, mixT.nodeId, "a");
-    b.connect(tinted, mixT.nodeId, "b");
-    b.connect(gi.tintIntensity, mixT.nodeId, "t");
-
-    // rim = clamp(length(grad) · 0.5, 0, 1)
-    const gLen = b.add("vector-math", { op: "length" });
-    b.connect(grad, gLen.nodeId, "a");
-    const gLen5 = b.add("math", { op: "mul" }, { b: 0.5 });
-    b.connect(gLen, gLen5.nodeId, "a");
-    const rim = b.add("math", { op: "min" }, { b: 1 });
-    b.connect(gLen5, rim.nodeId, "a");
-
-    // out = tinted + rim · fresnel  (rim is float; broadcast to vec3 via coerce)
-    const rimF = b.add("math", { op: "mul" });
-    b.connect(rim, rimF.nodeId, "a");
-    b.connect(gi.fresnel, rimF.nodeId, "b");
-    const out = b.add("color-math", { op: "addScalar" });
-    b.connect(mixT, out.nodeId, "a");
-    b.connect(rimF, out.nodeId, "b");
-
-    return b.output(out, { nodeId: sampleG.nodeId, pin: "alpha" });
+    return b.output(out, finalAlpha);
   }
 }
 

@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "floating-particles",
+const meta: NodeMeta = {
   name: "Floating Particles",
-  description: "Layered drifting particles — Procedural Field preset",
+  description: "Layered drifting particles",
   color: "#fbbf24",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class FloatingParticles extends ProceduralShader {
+  static readonly typeId = "floating-particles";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const fp = b.add("floating-particles", {});
     // mix(black, particle.color, particle.alpha) — `a` defaults to vec3(0).
@@ -15,5 +24,8 @@ export default {
     b.connect({ nodeId: fp.nodeId, pin: "color" }, mix.nodeId, "b");
     b.connect({ nodeId: fp.nodeId, pin: "alpha" }, mix.nodeId, "t");
     return b.output(mix);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(FloatingParticles);
+export default FloatingParticles;

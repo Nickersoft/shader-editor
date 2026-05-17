@@ -4,9 +4,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Saturation",
@@ -16,12 +16,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Saturation extends GraphEffectBase {
+export class Saturation extends ProceduralEffect {
   static readonly typeId = "saturation";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "intensity", type: "float", label: "Intensity", default: 1 },
     ]);

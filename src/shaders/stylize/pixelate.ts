@@ -5,9 +5,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Pixelate",
@@ -17,12 +17,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Pixelate extends GraphEffectBase {
+export class Pixelate extends ProceduralEffect {
   static readonly typeId = "pixelate";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "cells", type: "float", label: "Cells", default: 80 },
       { id: "gap", type: "float", label: "Gap", default: 0 },

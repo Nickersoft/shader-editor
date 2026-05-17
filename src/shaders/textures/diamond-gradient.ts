@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "diamond-gradient",
+const meta: NodeMeta = {
   name: "Diamond Gradient",
   description: "Diamond-shaped iso-contours over a draggable center",
   color: "#f59e0b",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class DiamondGradient extends ProceduralShader {
+  static readonly typeId = "diamond-gradient";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
     const domain = b.add("gradient-domain", { mode: "diamond" });
@@ -17,5 +26,8 @@ export default {
       [0.86, 0.21, 0.27],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(DiamondGradient);
+export default DiamondGradient;

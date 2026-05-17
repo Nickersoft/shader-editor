@@ -19,7 +19,7 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 
 	import { composer } from '@/lib/state/composer.svelte';
-	import { ProceduralField } from '@/shaders/textures/procedural-field.svelte';
+	import { isProceduralShader } from '@/shaders/core/procedural-shader.svelte';
 	import {
 		canCoerce,
 		getPrimitive,
@@ -54,7 +54,7 @@
 
 	let proceduralField = $derived.by(() => {
 		const src = layer?.source;
-		return src instanceof ProceduralField ? src : null;
+		return src && isProceduralShader(src) ? src : null;
 	});
 
 	// The NodeGraph currently visible in the editor — root by default, or the

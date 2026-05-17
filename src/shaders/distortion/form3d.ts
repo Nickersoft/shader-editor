@@ -9,9 +9,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Form 3D",
@@ -21,12 +21,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Form3D extends GraphEffectBase {
+export class Form3D extends ProceduralEffect {
   static readonly typeId = "form3d";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "centerX", type: "float", label: "Center X", default: 0.5 },
       { id: "centerY", type: "float", label: "Center Y", default: 0.5 },

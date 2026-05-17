@@ -1,25 +1,24 @@
-// Render order:
-//   for each Layer (bottom → top): source + layer.effects → layer texture
-//   compositor pass: blend layer textures with each layer's blendMode/opacity
-//   for each post-effect: read prev pass, write next
+// One layer in a Scene — a generator Shader source plus its own ordered
+// Effect chain. Reads/writes round-trip through `Layer.fromJSON` /
+// `toJSON`.
 
 import { makeId } from "@/lib/utils";
+
+import { deserializeShader } from "./registry";
 import {
-  EffectNode,
-  GeneratorNode,
-  isEffectNode,
-  isGeneratorNode,
-  type Node,
-  type SerializedNode,
-} from "./node.svelte";
-import { deserializeNode } from "./registry";
+  Effect,
+  isEffect,
+  isGenerator,
+  type SerializedShader,
+  type Shader,
+} from "./shader.svelte";
 import type { BlendMode } from "./types";
 
 export interface SerializedLayer {
   id: string;
   name: string;
-  source: SerializedNode;
-  effects: SerializedNode[];
+  source: SerializedShader;
+  effects: SerializedShader[];
   blendMode: BlendMode;
   opacity: number;
   enabled: boolean;
@@ -42,8 +41,8 @@ export interface FlatLayer {
 export interface LayerInit {
   id?: string;
   name?: string;
-  source: GeneratorNode;
-  effects?: EffectNode[];
+  source: Shader;
+  effects?: Effect[];
   blendMode?: BlendMode;
   opacity?: number;
   enabled?: boolean;
@@ -53,8 +52,8 @@ export interface LayerInit {
 export class Layer {
   id: string;
   name = $state("");
-  source = $state<GeneratorNode>(null!);
-  effects = $state<EffectNode[]>([]);
+  source = $state<Shader>(null!);
+  effects = $state<Effect[]>([]);
   blendMode = $state<BlendMode>("normal");
   opacity = $state(1);
   enabled = $state(true);
@@ -71,8 +70,8 @@ export class Layer {
     this.children = init.children ?? [];
   }
 
-  /** All GLSL nodes inside this layer, in render order. */
-  get nodes(): Node[] {
+  /** All shaders inside this layer, in render order. */
+  get shaders(): Shader[] {
     return [this.source, ...this.effects];
   }
 
@@ -90,22 +89,22 @@ export class Layer {
   }
 
   static fromJSON(json: SerializedLayer): Layer {
-    const source = deserializeNode(json.source);
+    const source = deserializeShader(json.source);
 
-    if (!isGeneratorNode(source)) {
+    if (!isGenerator(source)) {
       throw new Error(
-        `Layer "${json.id}" source must be a GeneratorNode (got ${json.source.typeId})`,
+        `Layer "${json.id}" source must be a generator Shader (got ${json.source.typeId})`,
       );
     }
 
     const effects = json.effects.map((e) => {
-      const node = deserializeNode(e);
+      const shader = deserializeShader(e);
 
-      if (!isEffectNode(node)) {
-        throw new Error(`Layer "${json.id}" effect must be an EffectNode (got ${e.typeId})`);
+      if (!isEffect(shader)) {
+        throw new Error(`Layer "${json.id}" effect must be an Effect (got ${e.typeId})`);
       }
 
-      return node;
+      return shader;
     });
 
     const children = (json.children ?? []).map((c) => Layer.fromJSON(c));

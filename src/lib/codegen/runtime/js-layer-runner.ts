@@ -1,21 +1,17 @@
-// Runtime execution of ProcessingNodes.
+// Runtime execution of ProcessingShaders.
 //
-// A ProcessingNode publishes a single texture as its pass output. The runner
+// A ProcessingShader publishes a single texture as its pass output. The runner
 // tracks each enabled instance, hashes the inputs that would change its
-// output (the node's config + inputs), and re-invokes `preprocess()` only
-// when that hash actually changes. The resulting data URL is decoded into an
+// output (the shader's `inputs`), and re-invokes `preprocess()` only when
+// that hash actually changes. The resulting data URL is decoded into an
 // HTMLImageElement and uploaded to a WebGL texture; that texture is what
-// shader-preview binds to `u_<prefix>_jsOutput` during the node's pass.
+// shader-preview binds to `u_<prefix>_jsOutput` during the shader's pass.
 //
-// ProcessingNodes never run per-frame. They run once on creation, then again
-// only when their input hash changes — so even a 200ms Poisson solve is paid
-// once per upload, not 60 times per second.
-//
-// Generalization from the old js-layer-runner: this file no longer dispatches
-// on a `preprocessor: 'heatmap' | 'liquidMetal' | ...` enum. It just calls
-// `node.preprocess()` and trusts the node to localize its own logic.
+// ProcessingShaders never run per-frame. They run once on creation, then
+// again only when their input hash changes — so even a 200ms Poisson solve
+// is paid once per upload, not 60 times per second.
 
-import type { ProcessingNode } from "@/shaders/core/node.svelte";
+import type { ProcessingShader } from "@/shaders/core/shader.svelte";
 
 interface RunnerEntry {
   hash: string;
@@ -52,11 +48,11 @@ export class JsLayerRunner {
   }
 
   /**
-   * Returns the texture currently associated with this ProcessingNode
+   * Returns the texture currently associated with this ProcessingShader
    * instance. If the node's input hash changed, kicks off a re-run in the
    * background and calls `onReady` once the new texture has been uploaded.
    */
-  ensure(node: ProcessingNode, onReady: () => void): WebGLTexture {
+  ensure(node: ProcessingShader, onReady: () => void): WebGLTexture {
     const hash = hashInputs(node);
     const existing = this.entries.get(node.id);
     if (existing && existing.hash === hash) {
@@ -71,12 +67,12 @@ export class JsLayerRunner {
     return entry.texture ?? this.placeholder;
   }
 
-  private async run(node: ProcessingNode, hash: string, onReady: () => void) {
+  private async run(node: ProcessingShader, hash: string, onReady: () => void) {
     let result: { dataUrl: string } | null;
     try {
       result = await node.preprocess();
     } catch (err) {
-      console.error(`ProcessingNode "${node.typeId}" failed to preprocess:`, err);
+      console.error(`ProcessingShader "${node.typeId}" failed to preprocess:`, err);
       const entry = this.entries.get(node.id);
       if (entry && entry.hash === hash) entry.loading = false;
       return;
@@ -108,7 +104,7 @@ export class JsLayerRunner {
       stillCurrent.loading = false;
       onReady();
     } catch (err) {
-      console.error(`ProcessingNode "${node.typeId}" failed to upload texture:`, err);
+      console.error(`ProcessingShader "${node.typeId}" failed to upload texture:`, err);
       const entry = this.entries.get(node.id);
       if (entry && entry.hash === hash) entry.loading = false;
     }
@@ -121,7 +117,7 @@ export class JsLayerRunner {
         const gl = this.gl;
         const tex = gl.createTexture();
         if (!tex) {
-          reject(new Error("Failed to allocate ProcessingNode texture"));
+          reject(new Error("Failed to allocate ProcessingShader texture"));
           return;
         }
         gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -136,7 +132,7 @@ export class JsLayerRunner {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         resolve(tex);
       };
-      img.onerror = () => reject(new Error("Failed to decode ProcessingNode image"));
+      img.onerror = () => reject(new Error("Failed to decode ProcessingShader image"));
       img.src = dataUrl;
     });
   }
@@ -162,13 +158,13 @@ export class JsLayerRunner {
 }
 
 /**
- * Stable serialization of a node's parsed state for change detection. Hashes
- * both `config` and `uniforms`. Image fields hash by URL only — fit/scale/
+ * Stable serialization of a shader's parsed state for change detection.
+ * Hashes the whole `inputs` bag. Image fields hash by URL only — fit/scale/
  * rotation don't affect CPU preprocessing (those are GLSL-side sampling
  * concerns).
  */
-function hashInputs(node: ProcessingNode): string {
-  return "cfg=" + serialize(node.config) + "|u=" + serialize(node.uniforms);
+function hashInputs(node: ProcessingShader): string {
+  return serialize(node.inputs);
 }
 
 function serialize(v: unknown): string {

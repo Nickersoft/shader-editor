@@ -5,9 +5,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Mirror",
@@ -17,12 +17,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Mirror extends GraphEffectBase {
+export class Mirror extends ProceduralEffect {
   static readonly typeId = "mirror";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "angle", type: "float", label: "Axis Angle", default: 90 },
       { id: "centerX", type: "float", label: "Center X", default: 0.5 },

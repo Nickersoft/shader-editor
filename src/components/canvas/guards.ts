@@ -1,8 +1,8 @@
-import type { NodeClass } from "@/shaders/core/node.svelte";
-import type { NodeClassWithSpatialControls } from "@/shaders/core/spatial";
+import type { ShaderClass } from "@/shaders/core/shader.svelte";
+import type { ShaderClassWithSpatialControls } from "@/shaders/core/spatial";
 
 export function hasSpatialControls(
-  cls: NodeClass,
-): cls is NodeClassWithSpatialControls {
+  cls: ShaderClass,
+): cls is ShaderClassWithSpatialControls {
   return cls.spatialControls != null;
 }

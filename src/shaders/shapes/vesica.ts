@@ -1,15 +1,12 @@
 import { z } from "zod";
-import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { transformFields, zColor, zFloat } from "@/shaders/core/schemas";
 import type { SpatialControl } from "@/shaders/core/spatial";
 
-const config = z.object({
+const schema = z.object({
   strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
-});
-
-const uniforms = z.object({
   ...transformFields(),
   spread: zFloat(0.05, 0.95, 0.01).default(0.5).describe("Spread"),
   fillColor: zColor().default([1, 1, 1]).describe("Fill"),
@@ -25,13 +22,11 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
+type Inputs = z.infer<typeof schema>;
 
-export class Vesica extends GeneratorNode<Config, Uniforms> {
+export class Vesica extends StaticShader<Inputs> {
   static readonly typeId = "vesica";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
+  static readonly schema = schema;
   static readonly meta = meta;
   static readonly spatialControls: readonly SpatialControl[] = [
     {
@@ -56,9 +51,9 @@ export class Vesica extends GeneratorNode<Config, Uniforms> {
     const stroke = this.uniformName("strokeColor");
     const sw = this.uniformName("strokeWidth");
     const offset =
-      this.config.strokeMode === "inside"
+      this.inputs.strokeMode === "inside"
         ? `(-${sw} * 0.5)`
-        : this.config.strokeMode === "outside"
+        : this.inputs.strokeMode === "outside"
           ? `(${sw} * 0.5)`
           : `0.0`;
     return {

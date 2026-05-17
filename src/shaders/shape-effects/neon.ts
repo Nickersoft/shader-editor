@@ -4,9 +4,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder, type PrevRef } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder, type PrevRef } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Neon",
@@ -16,13 +16,13 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Neon extends GraphEffectBase {
+export class Neon extends ProceduralEffect {
   static readonly typeId = "neon";
   static readonly meta = meta;
   static readonly appliesTo = ["shape"] as const;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "glowIntensity", type: "float", label: "Glow Intensity", default: 1 },
       { id: "glowSize", type: "float", label: "Glow Size", default: 0.05 },

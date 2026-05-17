@@ -12,7 +12,7 @@
     aggregateGraphSpatialControls,
     parseGraphAddress,
   } from "@/shaders/node-graph";
-  import { ProceduralField } from "@/shaders/textures/procedural-field.svelte";
+  import { isProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 
   import { hasSpatialControls } from "./guards";
   import {
@@ -46,23 +46,23 @@
   const cls = $derived(layer?.source.cls);
 
   // Spatial control values (x/y/w/h/rotation, gradient endpoints, etc.) live
-  // on `uniforms` — that's the GPU-bound state. `config` carries structural
-  // switches that don't drive overlay handles, so we feed `uniforms` to
-  // both the resolver and the read/write paths.
-  const uniforms = $derived(layer?.source.uniforms ?? EMPTY_CONFIG);
+  // on `inputs` — the single live value bag on the Shader instance.
+  const inputs = $derived(
+    (layer?.source.inputs as Record<string, unknown> | undefined) ?? EMPTY_CONFIG,
+  );
 
-  // ProceduralField sources don't carry spatial controls on their class; we
+  // ProceduralShader sources don't carry spatial controls on their class; we
   // walk the graph and aggregate per-primitive declarations, rewriting their
-  // field references with graph:<nodeId>: prefixes. Shape nodes still use the
-  // legacy class-static path.
+  // field references with graph:<nodeId>: prefixes. Other shaders still use
+  // the class-static path.
   const procField = $derived(
-    layer?.source instanceof ProceduralField ? layer.source : null,
+    layer && isProceduralShader(layer.source) ? layer.source : null,
   );
 
   const controls = $derived.by(() => {
     if (procField) return aggregateGraphSpatialControls(procField.graph);
     if (cls && hasSpatialControls(cls)) {
-      return resolveSpatialControls(cls.spatialControls, uniforms);
+      return resolveSpatialControls(cls.spatialControls, inputs);
     }
     return [];
   });
@@ -81,7 +81,7 @@
       const node = walkGraphPath(procField.graph, parsed.nodePath);
       return node?.config[parsed.key];
     }
-    return uniforms[addr];
+    return inputs[addr];
   }
 
   /**
@@ -91,8 +91,8 @@
    */
   function writeAddrs(updates: Record<string, unknown>): void {
     const perNode = new Map<string, { nodePath: readonly string[]; bag: Record<string, unknown> }>();
-    const uniformUpdates: Record<string, unknown> = {};
-    let hasUniformUpdates = false;
+    const inputUpdates: Record<string, unknown> = {};
+    let hasInputUpdates = false;
     for (const addr in updates) {
       const parsed = parseGraphAddress(addr);
       if (parsed) {
@@ -104,15 +104,18 @@
         }
         entry.bag[parsed.key] = updates[addr];
       } else {
-        uniformUpdates[addr] = updates[addr];
-        hasUniformUpdates = true;
+        inputUpdates[addr] = updates[addr];
+        hasInputUpdates = true;
       }
     }
-    if (hasUniformUpdates) {
-      composer.updateUniformBatch(sourceId, uniformUpdates);
+    if (hasInputUpdates) {
+      composer.updateInputBatch(sourceId, inputUpdates);
     }
     for (const { nodePath, bag } of perNode.values()) {
-      composer.updateGraphNodeConfigBatch(sourceId, nodePath, bag);
+      // Composer addresses graph nodes by their leaf id; nested-graph routing
+      // happens internally via the composer's edit stack.
+      const leaf = nodePath[nodePath.length - 1];
+      if (leaf) composer.updateGraphNodeConfigBatch(sourceId, leaf, bag);
     }
   }
 
@@ -138,7 +141,7 @@
 
   const ctx: CanvasOverlayContext = {
     get config() {
-      return uniforms;
+      return inputs;
     },
     get size() {
       return size;

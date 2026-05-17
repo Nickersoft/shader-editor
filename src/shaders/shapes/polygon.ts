@@ -1,15 +1,12 @@
 import { z } from "zod";
-import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { transformFields, zColor, zFloat, zInt } from "@/shaders/core/schemas";
 import type { SpatialControl } from "@/shaders/core/spatial";
 
-const config = z.object({
+const schema = z.object({
   strokeMode: z.enum(["inside", "center", "outside"]).default("center").describe("Stroke Mode"),
-});
-
-const uniforms = z.object({
   ...transformFields(),
   sides: zInt(3, 16).default(6).describe("Sides"),
   rounding: zFloat(0, 1, 0.01).default(0).describe("Rounding"),
@@ -26,13 +23,11 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
+type Inputs = z.infer<typeof schema>;
 
-export class Polygon extends GeneratorNode<Config, Uniforms> {
+export class Polygon extends StaticShader<Inputs> {
   static readonly typeId = "polygon";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
+  static readonly schema = schema;
   static readonly meta = meta;
   static readonly spatialControls: readonly SpatialControl[] = [
     {
@@ -58,9 +53,9 @@ export class Polygon extends GeneratorNode<Config, Uniforms> {
     const stroke = this.uniformName("strokeColor");
     const sw = this.uniformName("strokeWidth");
     const offset =
-      this.config.strokeMode === "inside"
+      this.inputs.strokeMode === "inside"
         ? `(-${sw} * 0.5)`
-        : this.config.strokeMode === "outside"
+        : this.inputs.strokeMode === "outside"
           ? `(${sw} * 0.5)`
           : `0.0`;
     return {

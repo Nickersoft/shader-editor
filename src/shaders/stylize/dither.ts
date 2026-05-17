@@ -8,9 +8,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Dither",
@@ -20,12 +20,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Dither extends GraphEffectBase {
+export class Dither extends ProceduralEffect {
   static readonly typeId = "dither";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "threshold", type: "float", label: "Threshold", default: 0.5 },
       { id: "spread", type: "float", label: "Spread", default: 0.5 },

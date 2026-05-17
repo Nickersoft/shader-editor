@@ -5,9 +5,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "ASCII",
@@ -17,12 +17,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Ascii extends GraphEffectBase {
+export class Ascii extends ProceduralEffect {
   static readonly typeId = "ascii";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "density", type: "float", label: "Density", default: 80 },
       { id: "gamma", type: "float", label: "Gamma", default: 1 },

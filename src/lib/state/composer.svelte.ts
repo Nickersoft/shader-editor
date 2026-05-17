@@ -1,22 +1,23 @@
 // Editor state for the shader composer (Svelte 5 runes class).
 //
 // Canonical state is a `Scene` (Figma-style tree of Layers + scene-level
-// post-effects). Scene/Layer/Node class fields are themselves `$state`, so
+// post-effects). Scene/Layer/Shader class fields are themselves `$state`, so
 // direct mutation (`layer.opacity = 0.5`, `scene.layers.push(...)`) is fully
 // reactive — no snapshot/clone dance required.
 
 import { makeId, reorderById } from "@/lib/utils";
 import { Layer } from "@/shaders/core/layer.svelte";
-import { EffectNode, isEffectNode, isGeneratorNode, type Node } from "@/shaders/core/node.svelte";
-import { getNodeClass } from "@/shaders/core/registry";
+import {
+  isProceduralShader,
+  type ProceduralShader,
+} from "@/shaders/core/procedural-shader.svelte";
+import { getShaderClass } from "@/shaders/core/registry";
 import { Scene } from "@/shaders/core/scene.svelte";
+import { Effect, isEffect, isGenerator, type Shader } from "@/shaders/core/shader.svelte";
 import type { BlendMode } from "@/shaders/core/types";
-import { ProceduralField } from "@/shaders/textures/procedural-field.svelte";
-import { getProceduralPreset } from "@/shaders/textures/procedural-presets";
 import {
   getPrimitive,
   GROUP_TYPE_ID,
-  layoutGraph,
   makeGroup as makeGroupOp,
   ungroup as ungroupOp,
   type Edge,
@@ -26,6 +27,7 @@ import {
   type PinDefault,
   type PinType,
 } from "@/shaders/node-graph";
+import { layoutGraph } from "@/shaders/node-graph/layout";
 
 function fallbackSelection(scene: Scene): string | null {
   const lastLayer = scene.layers[scene.layers.length - 1];
@@ -50,51 +52,24 @@ class ComposerStore {
    */
   graphEditStack = $state<string[]>([]);
 
-  get selectedNode(): Node | null {
-    return this.selectedNodeId ? (this.scene.findNode(this.selectedNodeId)?.node ?? null) : null;
+  get selectedNode(): Shader | null {
+    return this.selectedNodeId ? (this.scene.findShader(this.selectedNodeId)?.shader ?? null) : null;
   }
 
   // Resolves an effect list by owner: `null` → scene-level post-effects;
   // otherwise the named layer's effects array (or undefined if missing).
-  private effectList(layerId: string | null): EffectNode[] | undefined {
+  private effectList(layerId: string | null): Effect[] | undefined {
     return layerId === null ? this.scene.postEffects : this.scene.findLayer(layerId)?.effects;
   }
 
   addLayer(generatorTypeId: string) {
-    const cls = getNodeClass(generatorTypeId);
+    const cls = getShaderClass(generatorTypeId);
     if (!cls) return;
     const node = new cls();
-    if (!isGeneratorNode(node)) return;
+    if (!isGenerator(node)) return;
     this.scene.layers.push(
       new Layer({
         source: node,
-        blendMode: node.blendMode,
-        opacity: node.opacity,
-        enabled: node.enabled,
-      }),
-    );
-    this.selectNode(node.id);
-  }
-
-  /**
-   * Instantiate a ProceduralField from a preset's hand-authored NodeGraph.
-   * The preset's `graph()` factory mints fresh node ids per call so two layers
-   * built from the same preset don't share state.
-   */
-  addProceduralPresetLayer(presetId: string) {
-    const cls = getNodeClass("procedural-field");
-    if (!cls) return;
-    const preset = getProceduralPreset(presetId);
-    if (!preset) return;
-
-    const node = new cls({
-      config: { presetId: preset.id, graph: preset.graph() },
-    });
-    if (!isGeneratorNode(node)) return;
-    this.scene.layers.push(
-      new Layer({
-        source: node,
-        name: preset.name,
         blendMode: node.blendMode,
         opacity: node.opacity,
         enabled: node.enabled,
@@ -177,10 +152,10 @@ class ComposerStore {
    * keeps its context.
    */
   private addEffect(layerId: string | null, effectTypeId: string): string | null {
-    const cls = getNodeClass(effectTypeId);
+    const cls = getShaderClass(effectTypeId);
     if (!cls) return null;
     const node = new cls();
-    if (!isEffectNode(node)) return null;
+    if (!isEffect(node)) return null;
     const list = this.effectList(layerId);
     if (!list) return null;
     list.push(node);
@@ -264,44 +239,39 @@ class ComposerStore {
   }
 
   toggleNode(id: string) {
-    const found = this.scene.findNode(id);
+    const found = this.scene.findShader(id);
     if (!found) return;
-    if (found.layer && found.node === found.layer.source) {
+    if (found.layer && found.shader === found.layer.source) {
       found.layer.enabled = !found.layer.enabled;
     } else {
-      found.node.enabled = !found.node.enabled;
+      found.shader.enabled = !found.shader.enabled;
     }
   }
 
-  updateConfig(nodeId: string, key: string, value: unknown) {
-    const found = this.scene.findNode(nodeId);
+  /** Write one input field on a shader. */
+  updateInput(nodeId: string, key: string, value: unknown) {
+    const found = this.scene.findShader(nodeId);
     if (!found) return;
-    (found.node.config as Record<string, unknown>)[key] = value;
-  }
-
-  updateUniform(nodeId: string, key: string, value: unknown) {
-    const found = this.scene.findNode(nodeId);
-    if (!found) return;
-    (found.node.uniforms as Record<string, unknown>)[key] = value;
+    (found.shader.inputs as Record<string, unknown>)[key] = value;
   }
 
   /**
-   * Apply several uniform writes as one logical mutation. Used by interactive
+   * Apply several input writes as one logical mutation. Used by interactive
    * drags that move correlated fields in lockstep (e.g. resize updates
-   * x/y/width/height/rotation together — all of which live on `uniforms`).
+   * x/y/width/height/rotation together).
    */
-  updateUniformBatch(nodeId: string, updates: Record<string, unknown>) {
-    const found = this.scene.findNode(nodeId);
+  updateInputBatch(nodeId: string, updates: Record<string, unknown>) {
+    const found = this.scene.findShader(nodeId);
     if (!found) return;
-    const u = found.node.uniforms as Record<string, unknown>;
-    for (const key in updates) u[key] = updates[key];
+    const bag = found.shader.inputs as Record<string, unknown>;
+    for (const key in updates) bag[key] = updates[key];
   }
 
   /**
-   * Write a single field on one of a ProceduralField's graph nodes. Used by
+   * Write a single field on one of a ProceduralShader's graph nodes. Used by
    * canvas-overlay handles that address primitive-owned spatial fields (e.g.
    * the `start`/`end` config of a linear-gradient-domain primitive) instead
-   * of layer-level uniforms.
+   * of layer-level inputs.
    */
   updateGraphNodeConfig(
     sourceId: string,
@@ -327,21 +297,21 @@ class ComposerStore {
   }
 
   private findGraphNode(sourceId: string, graphNodeId: string): GraphNode | null {
-    const found = this.scene.findNode(sourceId);
+    const found = this.scene.findShader(sourceId);
     if (!found) return null;
-    const source = found.node;
-    if (!(source instanceof ProceduralField)) return null;
+    const source = found.shader;
+    if (!isProceduralShader(source)) return null;
     return source.graph.nodes.find((n) => n.id === graphNodeId) ?? null;
   }
 
   /**
-   * Locate a ProceduralField by id and return it, or `null` if the layer or
-   * source isn't one. Used by the stage-manipulation helpers below.
+   * Locate a ProceduralShader source by layer id and return it, or `null` if
+   * the layer or source isn't one. Used by the graph-manipulation helpers.
    */
-  private findFieldGroup(layerId: string): ProceduralField | null {
+  private findFieldGroup(layerId: string): ProceduralShader | null {
     const layer = this.scene.findLayer(layerId);
     const src = layer?.source;
-    return src instanceof ProceduralField ? src : null;
+    return src && isProceduralShader(src) ? src : null;
   }
 
   /**
@@ -426,35 +396,18 @@ class ComposerStore {
     return out;
   }
 
-  /**
-   * Detach a Procedural Field layer from its named preset. The graph is kept
-   * intact (no shader rebuild) but the layer is renamed to the generic name
-   * and `presetId` is cleared so future edits can't snap back to the preset.
-   * One-way; there's no re-group counterpart by design.
-   */
-  separateProceduralPreset(layerId: string) {
-    const layer = this.scene.findLayer(layerId);
-    if (!layer) return;
-    const source = layer.source;
-    if (source.typeId !== "procedural-field") return;
-    const cfg = source.config as { presetId?: string | null };
-    if (!cfg.presetId) return;
-    cfg.presetId = null;
-    layer.name = source.meta.name;
-  }
-
   updateBlendMode(id: string, blendMode: BlendMode) {
-    const found = this.scene.findNode(id);
+    const found = this.scene.findShader(id);
     if (!found) return;
-    if (found.layer && found.node === found.layer.source) found.layer.blendMode = blendMode;
-    found.node.blendMode = blendMode;
+    if (found.layer && found.shader === found.layer.source) found.layer.blendMode = blendMode;
+    found.shader.blendMode = blendMode;
   }
 
   updateOpacity(id: string, opacity: number) {
-    const found = this.scene.findNode(id);
+    const found = this.scene.findShader(id);
     if (!found) return;
-    if (found.layer && found.node === found.layer.source) found.layer.opacity = opacity;
-    found.node.opacity = opacity;
+    if (found.layer && found.shader === found.layer.source) found.layer.opacity = opacity;
+    found.shader.opacity = opacity;
   }
 
   loadScene(scene: Scene) {
@@ -476,8 +429,8 @@ class ComposerStore {
   }
 
   // ==========================================================================
-  // Node-graph manipulation. Operates on the `graph: NodeGraph` field of
-  // ProceduralField — the canonical post-Phase-3 surface.
+  // Node-graph manipulation. Operates on the `graph: NodeGraph` field of a
+  // ProceduralShader source.
 
   addGraphNode(layerId: string, typeId: string, position?: { x: number; y: number }) {
     const graph = this.activeGraphFor(layerId);
@@ -646,11 +599,6 @@ class ComposerStore {
     }
   }
 
-  /**
-   * Clone a graph node — keeps config exactly, mints a fresh id, offsets the
-   * position so the copy doesn't sit underneath the source. Returns the new
-   * node's id so callers can update the selection.
-   */
   // ==========================================================================
   // Frames — non-emit visual groupings stored on `graph.frames`. They render
   // behind nodes and are pure metadata; no ordering or selection semantics

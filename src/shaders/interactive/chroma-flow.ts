@@ -1,12 +1,10 @@
 import { z } from "zod";
-import { GeneratorNode } from "@/shaders/core/node.svelte";
+import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
 import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
-const config = z.object({});
-
-const uniforms = z.object({
+const schema = z.object({
   intensity: zFloat(0, 1).default(0.5).describe("Intensity"),
   speed: zFloat(0, 2, 0.05).default(0.5).describe("Speed"),
   scale: zFloat(0.1, 5, 0.05).default(1.0).describe("Scale"),
@@ -25,17 +23,15 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-type Config = z.infer<typeof config>;
-type Uniforms = z.infer<typeof uniforms>;
+type Inputs = z.infer<typeof schema>;
 
 // ChromaFlow is a generator layer (mixes onto the base layer below it). It
 // can't migrate to GraphEffectBase without changing scene-graph semantics
 // (effects must live inside a layer's `effects[]` rather than as a standalone
 // layer). Stays monolithic until a graph-generator base lands.
-export class ChromaFlow extends GeneratorNode<Config, Uniforms> {
+export class ChromaFlow extends StaticShader<Inputs> {
   static readonly typeId = "chroma-flow";
-  static readonly config = config;
-  static readonly uniforms = uniforms;
+  static readonly schema = schema;
   static readonly meta = meta;
 
   glsl(): GlslBlock {

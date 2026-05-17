@@ -1,21 +1,21 @@
 import {
-  EffectNode,
+  Effect,
   type EffectAppliesTo,
   getEffectAppliesTo,
   getEffectScope,
-  type NodeClass,
-} from "@/shaders/core/node.svelte";
-import { listNodeClasses } from "@/shaders/core/registry";
+  type ShaderClass,
+} from "@/shaders/core/shader.svelte";
+import { listShaderClasses } from "@/shaders/core/registry";
 import type { Category } from "@/shaders/core/types";
 
 export function layerPickerOptions(
   categories: Category[],
   sourceKind: EffectAppliesTo,
-): NodeClass[] {
-  return listNodeClasses()
+): ShaderClass[] {
+  return listShaderClasses()
     .filter((cls) => {
-      const proto = (cls as unknown as typeof EffectNode).prototype;
-      if (!(proto instanceof EffectNode)) return false;
+      const proto = (cls as unknown as typeof Effect).prototype;
+      if (!(proto instanceof Effect)) return false;
       if (!categories.includes(cls.meta.category)) return false;
       if (getEffectScope(cls) === "scene") return false;
       const allowed = getEffectAppliesTo(cls);

@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { composer } from '@/lib/state/composer.svelte';
-	import { listNodeClasses } from '@/shaders/core/registry';
+	import { listShaderClasses } from '@/shaders/core/registry';
 	import {
-		GeneratorNode,
-		EffectNode,
 		generatorSourceKind,
 		getEffectAppliesTo,
 		getEffectScope,
-		type NodeClass
-	} from '@/shaders/core/node.svelte';
+		Effect,
+		type ShaderClass
+	} from '@/shaders/core/shader.svelte';
 	import type { Category } from '@/shaders/core/types';
-	import { PROCEDURAL_PRESETS, type ProceduralPreset } from '@/shaders/textures/procedural-presets';
 	import X from '@lucide/svelte/icons/x';
 
 	interface Props {
@@ -20,9 +18,13 @@
 
 	let { category, onClose }: Props = $props();
 
-	type Tile =
-		| { kind: 'class'; cls: NodeClass; key: string; name: string; description: string; color: string }
-		| { kind: 'preset'; preset: ProceduralPreset; key: string; name: string; description: string; color: string };
+	type Tile = {
+		cls: ShaderClass;
+		key: string;
+		name: string;
+		description: string;
+		color: string;
+	};
 
 	const TITLES: Record<string, string> = {
 		shapes: 'Shapes',
@@ -38,18 +40,18 @@
 		adjustments: ['adjustments']
 	};
 
-	function isGeneratorClass(cls: NodeClass): boolean {
-		return (cls as unknown as typeof GeneratorNode).prototype instanceof GeneratorNode;
+	function isEffectClass(cls: ShaderClass): boolean {
+		return (cls as unknown as typeof Effect).prototype instanceof Effect;
 	}
-	function isEffectClass(cls: NodeClass): boolean {
-		return (cls as unknown as typeof EffectNode).prototype instanceof EffectNode;
+	function isGeneratorClass(cls: ShaderClass): boolean {
+		return !isEffectClass(cls);
 	}
 
 	// When a layer is selected, narrow the picker to effects that may apply to
 	// that layer's source kind (e.g. exclude Glass when a texture is selected).
 	let activeLayer = $derived.by(() => {
 		if (!composer.selectedNodeId) return null;
-		return composer.scene.findNode(composer.selectedNodeId)?.layer ?? null;
+		return composer.scene.findShader(composer.selectedNodeId)?.layer ?? null;
 	});
 	let activeSourceKind = $derived(
 		activeLayer ? generatorSourceKind(activeLayer.source.cls) : 'any'
@@ -58,10 +60,9 @@
 	let items = $derived.by<Tile[]>(() => {
 		const cats = new Set(CATEGORIES[category] ?? []);
 
-		const classTiles: Tile[] = listNodeClasses()
+		return listShaderClasses()
 			.filter((cls) => {
 				if (!cats.has(cls.meta.category)) return false;
-				if (cls.typeId === 'procedural-field') return false;
 				if (isEffectClass(cls)) {
 					const allowed = getEffectAppliesTo(cls);
 					if (
@@ -75,34 +76,16 @@
 				return true;
 			})
 			.map((cls) => ({
-				kind: 'class' as const,
 				cls,
 				key: `class:${cls.typeId}`,
 				name: cls.meta.name,
 				description: cls.meta.description,
 				color: cls.meta.color
-			}));
-
-		const presetTiles: Tile[] = cats.has('textures')
-			? PROCEDURAL_PRESETS.map((preset) => ({
-					kind: 'preset' as const,
-					preset,
-					key: `preset:${preset.id}`,
-					name: preset.name,
-					description: preset.description,
-					color: preset.color
-				}))
-			: [];
-
-		return [...classTiles, ...presetTiles].sort((a, b) => a.name.localeCompare(b.name));
+			}))
+			.sort((a, b) => a.name.localeCompare(b.name));
 	});
 
 	function handlePick(tile: Tile) {
-		if (tile.kind === 'preset') {
-			composer.addProceduralPresetLayer(tile.preset.id);
-			onClose();
-			return;
-		}
 		const cls = tile.cls;
 		const typeId = cls.typeId;
 		if (isGeneratorClass(cls)) {
@@ -111,7 +94,7 @@
 			const scope = getEffectScope(cls);
 			if (scope === 'layer') {
 				const sel = composer.selectedNodeId
-					? composer.scene.findNode(composer.selectedNodeId)?.layer
+					? composer.scene.findShader(composer.selectedNodeId)?.layer
 					: null;
 				const target = sel ?? composer.scene.layers[composer.scene.layers.length - 1];
 				if (target) composer.addEffectToLayer(target.id, typeId);

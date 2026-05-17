@@ -1,5 +1,15 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder, type PrevRef } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph, type PrevRef } from "@/shaders/node-graph";
+
+const meta: NodeMeta = {
+  name: "Magic",
+  description: "Recursive sin/cos swirl",
+  color: "#a78bfa",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
 // Decomposed Magic Texture. Each recursion step transforms (mx, my) → (mx',
 // my'), where mx' = sin(mx*my + t), my' = cos(mx' + my + t), then both are
@@ -9,7 +19,7 @@ import { PresetGraphBuilder, type PrevRef } from "./preset-graphs/builders";
 const DEPTH = 2;
 
 function magicIter(
-  b: PresetGraphBuilder,
+  b: GraphBuilder,
   mx: PrevRef,
   my: PrevRef,
   t: PrevRef,
@@ -43,13 +53,12 @@ function magicIter(
   return { mx: mxD, my: myD };
 }
 
-export default {
-  id: "magic",
-  name: "Magic",
-  description: "Recursive sin/cos swirl — Procedural Field preset",
-  color: "#a78bfa",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class Magic extends ProceduralShader {
+  static readonly typeId = "magic";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "scale", type: "float", label: "Scale", default: 3 },
       { id: "distortion", type: "float", label: "Distortion", default: 1 },
@@ -140,5 +149,8 @@ export default {
       [0.07, 0.46, 0.85],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Magic);
+export default Magic;

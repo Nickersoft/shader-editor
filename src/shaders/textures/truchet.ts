@@ -1,16 +1,25 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+
+const meta: NodeMeta = {
+  name: "Truchet",
+  description: "Quarter-circle arc tiles",
+  color: "#0ea5e9",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
 // Decomposed Truchet — quarter-arc tiles. Per cell the hash picks one of two
 // arc orientations (flip y on hash<0.5). The legacy `if` is decomposed via
 // `mix + step`, which the GPU compiles to the same branchless code.
-export default {
-  id: "truchet",
-  name: "Truchet",
-  description: "Quarter-circle arc tiles — Procedural Field preset",
-  color: "#0ea5e9",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class Truchet extends ProceduralShader {
+  static readonly typeId = "truchet";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "scale", type: "float", label: "Scale", default: 10 },
       { id: "lineWidth", type: "float", label: "Line Width", default: 2 },
@@ -109,5 +118,8 @@ export default {
       [1, 1, 1],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Truchet);
+export default Truchet;

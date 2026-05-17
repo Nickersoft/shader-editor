@@ -6,9 +6,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Kaleidoscope",
@@ -18,12 +18,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class Kaleidoscope extends GraphEffectBase {
+export class Kaleidoscope extends ProceduralEffect {
   static readonly typeId = "kaleidoscope";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "segments", type: "float", label: "Segments", default: 8 },
       { id: "centerX", type: "float", label: "Center X", default: 0.5 },

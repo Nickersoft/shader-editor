@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "studio-background",
+const meta: NodeMeta = {
   name: "Studio Background",
-  description: "Radial studio key + fill wash — Procedural Field preset",
+  description: "Radial studio key + fill wash",
   color: "#94a3b8",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class StudioBackground extends ProceduralShader {
+  static readonly typeId = "studio-background";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
     const domain = b.add("gradient-domain", { mode: "radial" });
@@ -19,5 +28,8 @@ export default {
       [0.65, 0.71, 0.83],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(StudioBackground);
+export default StudioBackground;

@@ -1,16 +1,15 @@
-// Assigns human-readable GLSL uniform prefixes to every Node that contributes
-// GLSL to the scene. Without this pass the codegen would emit cryptic prefixes
-// derived from the node id (`u_l1a2b3c4_color`); with it, the emitted shader
-// uses the layer's display name (`u_voronoi_color`, `u_voronoi2_color` for a
-// second instance).
+// Assigns human-readable GLSL uniform prefixes to every Shader that
+// contributes GLSL to the scene. Without this pass the codegen would emit
+// cryptic prefixes derived from the shader id (`u_l1a2b3c4_color`); with it,
+// the emitted shader uses the layer's display name (`u_voronoi_color`,
+// `u_voronoi2_color` for a second instance).
 //
-// The assignment lives on the Node instance via `prefixOverride` so the
-// node's own `glsl()` method emits matching uniform references through
+// The assignment lives on the Shader instance via `prefixOverride` so the
+// shader's own `glsl()` method emits matching uniform references through
 // `this.uniformName(...)`.
 
-import type { Node } from "@/shaders/core/node.svelte";
 import type { Scene } from "@/shaders/core/scene.svelte";
-import { sanitizeName } from "@/shaders/core/node.svelte";
+import { sanitizeName, type Shader } from "@/shaders/core/shader.svelte";
 
 export function camelCase(s: string): string {
   const parts = s
@@ -38,7 +37,7 @@ export function camelCase(s: string): string {
 export function assignPrefixSlugs(scene: Scene): void {
   const seen = new Set<string>();
   const slugCount = new Map<string, number>();
-  const nodes: Node[] = [];
+  const nodes: Shader[] = [];
 
   for (const layer of scene.layers) {
     if (!layer.enabled) continue;

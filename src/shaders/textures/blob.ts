@@ -1,5 +1,15 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+
+const meta: NodeMeta = {
+  name: "Blob",
+  description: "Animated organic blob",
+  color: "#ff6b35",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
 // Decomposed blob: polar `r,θ` → warped radius via 3 sines + fbm → SDF mask
 // → ramp the interior fill, mix onto black. The legacy field-stage's
@@ -7,13 +17,12 @@ import { PresetGraphBuilder } from "./preset-graphs/builders";
 // have a pure node-graph equivalent without an fwidth primitive. Users who
 // want a lit blob can fork the graph and add their own normal calculation;
 // the loss of the cheap fake-3D highlight is the price for full editability.
-export default {
-  id: "blob",
-  name: "Blob",
-  description: "Animated organic blob — Procedural Field preset",
-  color: "#ff6b35",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class Blob extends ProceduralShader {
+  static readonly typeId = "blob";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "size", type: "float", label: "Size", default: 0.5 },
       { id: "deformation", type: "float", label: "Deformation", default: 0.5 },
@@ -190,5 +199,8 @@ export default {
     b.connect(bg, out.nodeId, "b");
     b.connect(mask, out.nodeId, "t");
     return b.output(out);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Blob);
+export default Blob;

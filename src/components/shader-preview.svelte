@@ -6,7 +6,7 @@
     type GeneratedPass,
     type GeneratedUniform,
   } from "@/lib/codegen";
-  import { isProcessingNode } from "@/shaders/core/node.svelte";
+  import { isProcessingShader } from "@/shaders/core/shader.svelte";
   import {
     createShaderPipeline,
     type PipelineHandle,
@@ -56,7 +56,7 @@
   let scene = $derived(composer.scene);
   let selectedLayer = $derived.by(() => {
     if (!composer.selectedNodeId) return null;
-    return composer.scene.findNode(composer.selectedNodeId)?.layer ?? null;
+    return composer.scene.findShader(composer.selectedNodeId)?.layer ?? null;
   });
 
   let structuralKey = $derived.by(() => {
@@ -115,7 +115,7 @@
     // node's `uniforms` schema since they're GPU-bound.
     type DragState = {
       sourceId: string;
-      startUniforms: Record<string, unknown>;
+      startInputs: Record<string, unknown>;
       spec: SpatialControlsSpec | undefined;
       startPx: number;
       startPy: number;
@@ -140,11 +140,11 @@
         // handles come from per-primitive aggregation in canvas-overlay), so
         // this naturally skips gradient/preset layers without extra plumbing.
         if (!hasSpatialControls(cls)) continue;
-        const uniforms = layer.source.uniforms;
+        const inputs = layer.source.inputs as Record<string, unknown>;
         if (
           hitTestLayerBody(
             cls.spatialControls,
-            uniforms,
+            inputs,
             px,
             py,
             rect.width,
@@ -154,7 +154,7 @@
           composer.selectNode(layer.source.id);
           drag = {
             sourceId: layer.source.id,
-            startUniforms: { ...uniforms },
+            startInputs: { ...inputs },
             spec: cls.spatialControls,
             startPx: px,
             startPy: py,
@@ -175,8 +175,8 @@
         (e.clientX - rect.left - drag.startPx) / Math.max(drag.rectWidth, 1);
       const dy =
         -(e.clientY - rect.top - drag.startPy) / Math.max(drag.rectHeight, 1);
-      const updates = translateShape(drag.spec, drag.startUniforms, dx, dy);
-      if (updates) composer.updateUniformBatch(drag.sourceId, updates);
+      const updates = translateShape(drag.spec, drag.startInputs, dx, dy);
+      if (updates) composer.updateInputBatch(drag.sourceId, updates);
     };
 
     const onPointerUp = () => {
@@ -216,7 +216,7 @@
         const pass = passes[renderCtx.passIndex];
         let textureUnit = renderCtx.nextTextureUnit;
         for (const nodeId of pass.nodeIds) {
-          const node = s.findNode(nodeId)?.node;
+          const node = s.findShader(nodeId)?.shader;
           if (!node) continue;
           const prefix = node.prefix;
 
@@ -226,7 +226,7 @@
           );
           if (opacityLocation) gl!.uniform1f(opacityLocation, node.opacity);
 
-          if (isProcessingNode(node) && pass.mode !== "glsl-render") {
+          if (isProcessingShader(node) && pass.mode !== "glsl-render") {
             if (!jsRunner) continue;
             const tex = jsRunner.ensure(node, () => {});
             gl!.activeTexture(gl!.TEXTURE0 + textureUnit);
@@ -243,13 +243,12 @@
             if (u.originalName === "jsOutput") continue;
             const baseName = u.name;
             const key = u.originalName;
-            const uRecord = node.uniforms as Record<string, unknown>;
+            const uRecord = node.inputs as Record<string, unknown>;
             let value: unknown;
             if (u.originalPath) {
               // Walk the dotted path from the node root — used by container
-              // nodes (e.g. ProceduralField) whose uniforms live inside nested
-              // substructure. The path includes the root key (config /
-              // uniforms / etc.).
+              // shaders (e.g. ProceduralShader) whose uniforms live inside
+              // nested substructure. The path includes the root key.
               let cursor: unknown = node;
               for (const seg of u.originalPath) {
                 if (cursor && typeof cursor === "object") {

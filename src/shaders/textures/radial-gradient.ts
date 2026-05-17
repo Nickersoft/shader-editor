@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "radial-gradient",
+const meta: NodeMeta = {
   name: "Radial Gradient",
   description: "Circular gradient with draggable center + radius",
   color: "#ec4899",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class RadialGradient extends ProceduralShader {
+  static readonly typeId = "radial-gradient";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
     const domain = b.add("gradient-domain", { mode: "radial" });
@@ -17,5 +26,8 @@ export default {
       [0.1, 0.05, 0.2],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(RadialGradient);
+export default RadialGradient;

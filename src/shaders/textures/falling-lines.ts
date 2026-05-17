@@ -1,17 +1,26 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+
+const meta: NodeMeta = {
+  name: "Falling Lines",
+  description: "Directional falling streaks",
+  color: "#0ea5e9",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
 // Decomposed Falling Lines. The legacy GLSL looks like it has a loop but
 // every per-pixel computation is independent — there's no actual iteration,
 // just `floor(p.x * density)` → per-column hash → lane offset → stroke mask.
 // Fully expressible as a DAG.
-export default {
-  id: "falling-lines",
-  name: "Falling Lines",
-  description: "Directional falling streaks — Procedural Field preset",
-  color: "#0ea5e9",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class FallingLines extends ProceduralShader {
+  static readonly typeId = "falling-lines";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "colorA", type: "vec3", label: "Color A", default: [1, 1, 1] },
       { id: "colorB", type: "vec3", label: "Color B", default: [1, 1, 1] },
@@ -181,5 +190,8 @@ export default {
     b.connect(mask, final.nodeId, "t");
 
     return b.output(final);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(FallingLines);
+export default FallingLines;

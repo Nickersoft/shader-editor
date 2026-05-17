@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "multi-point-gradient",
+const meta: NodeMeta = {
   name: "Multi-Point Gradient",
-  description: "Four-stop linear gradient — Procedural Field preset",
+  description: "Four-stop linear gradient",
   color: "#10b981",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class MultiPointGradient extends ProceduralShader {
+  static readonly typeId = "multi-point-gradient";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
     const domain = b.add("gradient-domain", { mode: "linear" });
@@ -19,5 +28,8 @@ export default {
       [0.16, 0.5, 0.95],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(MultiPointGradient);
+export default MultiPointGradient;

@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "flowing-gradient",
+const meta: NodeMeta = {
   name: "Flowing Gradient",
-  description: "Liquid silk gradient — Procedural Field preset",
+  description: "Liquid silk gradient",
   color: "#6b17e6",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class FlowingGradient extends ProceduralShader {
+  static readonly typeId = "flowing-gradient";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
@@ -28,5 +37,8 @@ export default {
       [1.0, 0.42, 0.21],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(FlowingGradient);
+export default FlowingGradient;

@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "brick",
+const meta: NodeMeta = {
   name: "Brick",
-  description: "Running-bond brick pattern — Procedural Field preset",
+  description: "Running-bond brick pattern",
   color: "#dc2626",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class Brick extends ProceduralShader {
+  static readonly typeId = "brick";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const br = b.add("brick-texture", {
@@ -24,5 +33,8 @@ export default {
       [0.18, 0.16, 0.15],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Brick);
+export default Brick;

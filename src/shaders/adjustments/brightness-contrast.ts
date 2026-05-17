@@ -8,9 +8,9 @@
 
 import { register } from "@/shaders/core/registry";
 import type { NodeMeta } from "@/shaders/core/types";
-import { GraphEffectBase } from "@/shaders/core/graph-effect.svelte";
+import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { PresetGraphBuilder } from "@/shaders/textures/preset-graphs/builders";
+import { GraphBuilder } from "@/shaders/node-graph";
 
 const meta: NodeMeta = {
   name: "Brightness/Contrast",
@@ -21,12 +21,12 @@ const meta: NodeMeta = {
   defaultBlendMode: "normal",
 };
 
-export class BrightnessContrast extends GraphEffectBase {
+export class BrightnessContrast extends ProceduralEffect {
   static readonly typeId = "brightness-contrast";
   static readonly meta = meta;
 
-  static defaultGraph(): NodeGraph {
-    const b = new PresetGraphBuilder();
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     const gi = b.groupInput([
       { id: "brightness", type: "float", label: "Brightness", default: 0 },
       { id: "contrast", type: "float", label: "Contrast", default: 0 },

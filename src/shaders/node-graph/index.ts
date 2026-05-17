@@ -40,8 +40,11 @@ export {
 } from "./pins";
 export { canCoerce, coerce } from "./coerce";
 export type { CoerceResult } from "./coerce";
-export { migrateGraph, migrateTypeId } from "./migrations";
-export { layoutGraph, relayoutGraph } from "./layout";
+export { GraphBuilder } from "./graph-builder";
+export type { GroupInputPin, PrevRef } from "./graph-builder";
+// layoutGraph / relayoutGraph live in ./layout — import them directly. They
+// pull in @dagrejs/dagre (~95 KB min), so keeping them off the barrel makes
+// the dependency explicit at every consuming site.
 export { makeGroup, ungroup } from "./group-ops";
 export {
   aggregateGraphSpatialControls,

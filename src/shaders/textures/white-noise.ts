@@ -1,13 +1,22 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
 
-export default {
-  id: "white-noise",
+const meta: NodeMeta = {
   name: "White Noise",
-  description: "Per-pixel hash random — Procedural Field preset",
+  description: "Per-pixel hash random",
   color: "#e5e7eb",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+  category: "textures",
+  defaultBlendMode: "normal",
+};
+
+export class WhiteNoise extends ProceduralShader {
+  static readonly typeId = "white-noise";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
     const noise = b.add("noise-texture", { kind: "white", scale: 80, seed: 0 });
@@ -17,5 +26,8 @@ export default {
       [1, 1, 1],
     ]);
     return b.output(ramp);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(WhiteNoise);
+export default WhiteNoise;

@@ -1,22 +1,12 @@
-// Tiny graph-builder DSL for preset files. The aim is to keep each preset
-// definition close to its old stage-chain shape (a list of primitives) without
-// hand-writing edge arrays. The builder maintains the previous-output cursor
-// (`prev`) plus a position cursor so authored presets get an automatic
-// left-to-right layout.
+// Tiny graph-builder DSL. The aim is to keep each graph definition close to
+// its old stage-chain shape (a list of primitives) without hand-writing edge
+// arrays. The builder maintains the previous-output cursor (`prev`) plus a
+// position cursor so authored graphs get an automatic left-to-right layout.
 
-import {
-  getPrimitive,
-  GROUP_INPUT_TYPE_ID,
-  GROUP_OUTPUT_TYPE_ID,
-  layoutGraph as layoutGraphWithFrames,
-} from "@/shaders/node-graph";
-import type {
-  Edge,
-  Frame,
-  GraphNode,
-  NodeGraph,
-  PinDefault,
-} from "@/shaders/node-graph";
+import { GROUP_INPUT_TYPE_ID, GROUP_OUTPUT_TYPE_ID } from "./emit";
+import { layoutGraph as layoutGraphWithFrames } from "./layout";
+import { getPrimitive } from "./registry";
+import type { Edge, Frame, GraphNode, NodeGraph, PinDefault } from "./types";
 
 const X_STEP = 220;
 const Y0 = 0;
@@ -33,7 +23,7 @@ export interface PrevRef {
   pin: string;
 }
 
-export class PresetGraphBuilder {
+export class GraphBuilder {
   nodes: GraphNode[] = [];
   edges: Edge[] = [];
   private nextId = new Map<string, number>();
@@ -201,12 +191,6 @@ export class PresetGraphBuilder {
   }
 
   /**
-   * Terminate the graph: places a GroupOutput at the cursor and wires the
-   * given color reference into its single input, then runs the layered
-   * auto-layout so authored presets land in tidy left-to-right columns
-   * regardless of the order `add` was called in.
-   */
-  /**
    * Terminate the graph. `color` wires into the GroupOutput's `color` pin;
    * `alpha`, when supplied, wires into the `alpha` pin. Pass alpha here
    * rather than as a post-output `b.connect()` — the new layout pass returns
@@ -224,9 +208,6 @@ export class PresetGraphBuilder {
     if (alpha) {
       this.edges.push({ fromNodeId: alpha.nodeId, fromPin: alpha.pin, toNodeId: id, toPin: "alpha" });
     }
-    // Hand layoutGraph the frames-with-members so the cluster-aware pass can
-    // run. layoutGraph populates final position+size on every frame from the
-    // sub-laid bbox of its members; the placeholder values here are ignored.
     const seedFrames: Frame[] = this.pendingFrames.map((pf) => ({
       id: pf.id,
       label: pf.label,
@@ -240,8 +221,7 @@ export class PresetGraphBuilder {
       edges: this.edges,
       ...(seedFrames.length > 0 ? { frames: seedFrames } : {}),
     };
-    const result = layoutGraphWithFrames(draft);
-    return result;
+    return layoutGraphWithFrames(draft);
   }
 
   /**

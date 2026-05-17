@@ -1,5 +1,15 @@
-import type { ProceduralPreset } from "./procedural-presets";
-import { PresetGraphBuilder } from "./preset-graphs/builders";
+import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
+import { register } from "@/shaders/core/registry";
+import type { NodeMeta } from "@/shaders/core/types";
+import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+
+const meta: NodeMeta = {
+  name: "God Rays",
+  description: "Volumetric light rays",
+  color: "#facc15",
+  category: "textures",
+  defaultBlendMode: "normal",
+};
 
 /**
  * God Rays — radial sun-rays driven by two multiplied value-noise layers.
@@ -20,13 +30,12 @@ import { PresetGraphBuilder } from "./preset-graphs/builders";
  * the radial seam on the −x axis is gone. Alpha is the radial decay alone,
  * so the layer reads as a continuous gold field fading at the edges.
  */
-export default {
-  id: "godrays",
-  name: "God Rays",
-  description: "Volumetric light rays — Procedural Field preset",
-  color: "#facc15",
-  graph: () => {
-    const b = new PresetGraphBuilder();
+export class Godrays extends ProceduralShader {
+  static readonly typeId = "godrays";
+  static readonly meta = meta;
+
+  static graph(): NodeGraph {
+    const b = new GraphBuilder();
 
     const gi = b.groupInput([
       { id: "center", type: "vec2", label: "Center", default: [0, 0] },
@@ -201,5 +210,8 @@ export default {
 
     // Alpha is the vignette alone — opaque centre, soft fade to the edges.
     return b.output(ramp, decf);
-  },
-} satisfies ProceduralPreset;
+  }
+}
+
+register(Godrays);
+export default Godrays;
