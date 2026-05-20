@@ -8,7 +8,7 @@
 import type { ExtraUniformDecl } from "@/lib/codegen/types";
 import {
   emitGraph,
-  requirePrimitive,
+  requireNode,
   type Edge as GraphEdge,
   type EmittedGraph,
   type GraphNode,
@@ -99,9 +99,9 @@ export function emittedExtras(emitted: EmittedGraph): ExtraUniformDecl[] {
 
 // === Internal helpers ===
 
-function safeRequire(typeId: string): ReturnType<typeof requirePrimitive> | null {
+function safeRequire(typeId: string): ReturnType<typeof requireNode> | null {
   try {
-    return requirePrimitive(typeId);
+    return requireNode(typeId);
   } catch {
     return null;
   }

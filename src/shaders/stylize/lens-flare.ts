@@ -6,12 +6,13 @@
 // modelled directly from the legacy expressions.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { GraphBuilder, type PrevRef } from "@/shaders/node-graph";
+import { GraphBuilder, type NodeHandle } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Lens Flare",
   description: "Anamorphic lens flare with ghosts, halo, and streak",
   color: "#fde047",
@@ -36,162 +37,162 @@ export class LensFlare extends ProceduralEffect {
       { id: "color", type: "vec3", label: "Color", default: [1, 0.9, 0.7] },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const centre = b.add("combine-xy", {});
-    b.connect(gi.lightX, centre.nodeId, "x");
-    b.connect(gi.lightY, centre.nodeId, "y");
+    const centre = b.add(new N.CombineXy());
+    b.connect(gi.lightX).to(centre, "x");
+    b.connect(gi.lightY).to(centre, "y");
 
     // p = uv − centre
-    const p = b.add("vector-math", { op: "sub" });
-    b.connect(uv, p.nodeId, "a");
-    b.connect(centre, p.nodeId, "b");
-    const r = b.add("vector-math", { op: "length" });
-    b.connect(p, r.nodeId, "a");
+    const p = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(uv).to(p, "a");
+    b.connect(centre).to(p, "b");
+    const r = b.add(new N.VectorMath({ op: "length" }));
+    b.connect(p).to(r, "a");
 
     // core = exp(−r² · 60)
-    const r2 = b.add("math", { op: "mul" });
-    b.connect(r, r2.nodeId, "a");
-    b.connect(r, r2.nodeId, "b");
-    const r2_60 = b.add("math", { op: "mul" }, { b: 60 });
-    b.connect(r2, r2_60.nodeId, "a");
-    const negR2_60 = b.add("math", { op: "neg" });
-    b.connect(r2_60, negR2_60.nodeId, "x");
-    const core = b.add("math", { op: "exp" });
-    b.connect(negR2_60, core.nodeId, "x");
+    const r2 = b.add(new N.Math({ op: "mul" }));
+    b.connect(r).to(r2, "a");
+    b.connect(r).to(r2, "b");
+    const r2_60 = b.add(new N.Math({ op: "mul" }), { b: 60 });
+    b.connect(r2).to(r2_60, "a");
+    const negR2_60 = b.add(new N.Math({ op: "neg" }));
+    b.connect(r2_60).to(negR2_60, "x");
+    const core = b.add(new N.Math({ op: "exp" }));
+    b.connect(negR2_60).to(core, "x");
 
     // halo = exp(−((|r − haloSize|) · 8)²)
-    const rDiff = b.add("math", { op: "sub" });
-    b.connect(r, rDiff.nodeId, "a");
-    b.connect(gi.haloSize, rDiff.nodeId, "b");
-    const rDiffAbs = b.add("math", { op: "abs" });
-    b.connect(rDiff, rDiffAbs.nodeId, "x");
-    const rd8 = b.add("math", { op: "mul" }, { b: 8 });
-    b.connect(rDiffAbs, rd8.nodeId, "a");
-    const rd8_2 = b.add("math", { op: "mul" });
-    b.connect(rd8, rd8_2.nodeId, "a");
-    b.connect(rd8, rd8_2.nodeId, "b");
-    const negRd8_2 = b.add("math", { op: "neg" });
-    b.connect(rd8_2, negRd8_2.nodeId, "x");
-    const halo = b.add("math", { op: "exp" });
-    b.connect(negRd8_2, halo.nodeId, "x");
+    const rDiff = b.add(new N.Math({ op: "sub" }));
+    b.connect(r).to(rDiff, "a");
+    b.connect(gi.haloSize).to(rDiff, "b");
+    const rDiffAbs = b.add(new N.Math({ op: "abs" }));
+    b.connect(rDiff).to(rDiffAbs, "x");
+    const rd8 = b.add(new N.Math({ op: "mul" }), { b: 8 });
+    b.connect(rDiffAbs).to(rd8, "a");
+    const rd8_2 = b.add(new N.Math({ op: "mul" }));
+    b.connect(rd8).to(rd8_2, "a");
+    b.connect(rd8).to(rd8_2, "b");
+    const negRd8_2 = b.add(new N.Math({ op: "neg" }));
+    b.connect(rd8_2).to(negRd8_2, "x");
+    const halo = b.add(new N.Math({ op: "exp" }));
+    b.connect(negRd8_2).to(halo, "x");
 
     // streak = exp(−|p.y| · 80) · exp(−|p.x| / max(streakLength, 1e-4))
-    const sepP = b.add("separate-xy", {});
-    b.connect(p, sepP.nodeId, "v");
-    const py = b.add("math", { op: "abs" });
-    b.connect({ nodeId: sepP.nodeId, pin: "y" }, py.nodeId, "x");
-    const py80 = b.add("math", { op: "mul" }, { b: 80 });
-    b.connect(py, py80.nodeId, "a");
-    const negPy80 = b.add("math", { op: "neg" });
-    b.connect(py80, negPy80.nodeId, "x");
-    const streakY = b.add("math", { op: "exp" });
-    b.connect(negPy80, streakY.nodeId, "x");
+    const sepP = b.add(new N.SeparateXy());
+    b.connect(p).to(sepP, "v");
+    const py = b.add(new N.Math({ op: "abs" }));
+    b.connect(sepP, "y").to(py, "x");
+    const py80 = b.add(new N.Math({ op: "mul" }), { b: 80 });
+    b.connect(py).to(py80, "a");
+    const negPy80 = b.add(new N.Math({ op: "neg" }));
+    b.connect(py80).to(negPy80, "x");
+    const streakY = b.add(new N.Math({ op: "exp" }));
+    b.connect(negPy80).to(streakY, "x");
 
-    const px = b.add("math", { op: "abs" });
-    b.connect({ nodeId: sepP.nodeId, pin: "x" }, px.nodeId, "x");
-    const slSafe = b.add("math", { op: "max" }, { b: 1e-4 });
-    b.connect(gi.streakLength, slSafe.nodeId, "a");
-    const pxOver = b.add("math", { op: "div" });
-    b.connect(px, pxOver.nodeId, "a");
-    b.connect(slSafe, pxOver.nodeId, "b");
-    const negPxOver = b.add("math", { op: "neg" });
-    b.connect(pxOver, negPxOver.nodeId, "x");
-    const streakX = b.add("math", { op: "exp" });
-    b.connect(negPxOver, streakX.nodeId, "x");
+    const px = b.add(new N.Math({ op: "abs" }));
+    b.connect(sepP, "x").to(px, "x");
+    const slSafe = b.add(new N.Math({ op: "max" }), { b: 1e-4 });
+    b.connect(gi.streakLength).to(slSafe, "a");
+    const pxOver = b.add(new N.Math({ op: "div" }));
+    b.connect(px).to(pxOver, "a");
+    b.connect(slSafe).to(pxOver, "b");
+    const negPxOver = b.add(new N.Math({ op: "neg" }));
+    b.connect(pxOver).to(negPxOver, "x");
+    const streakX = b.add(new N.Math({ op: "exp" }));
+    b.connect(negPxOver).to(streakX, "x");
 
-    const streak = b.add("math", { op: "mul" });
-    b.connect(streakY, streak.nodeId, "a");
-    b.connect(streakX, streak.nodeId, "b");
+    const streak = b.add(new N.Math({ op: "mul" }));
+    b.connect(streakY).to(streak, "a");
+    b.connect(streakX).to(streak, "b");
 
     // Unrolled ghosts loop. For i ∈ 1..8:
     //   g_i = (centre − uv) · (i / max(N, 1)) · ghostSpacing
     //   gp_i = ((uv + g_i) − centre)
     //   gd_i = length(gp_i)
     //   contribution = step(i, N) · exp(−gd_i² · 80) · (1 / i)
-    const cmu = b.add("vector-math", { op: "sub" });
-    b.connect(centre, cmu.nodeId, "a");
-    b.connect(uv, cmu.nodeId, "b");
-    const nMax = b.add("math", { op: "max" }, { b: 1 });
-    b.connect(gi.ghosts, nMax.nodeId, "a");
+    const cmu = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(centre).to(cmu, "a");
+    b.connect(uv).to(cmu, "b");
+    const nMax = b.add(new N.Math({ op: "max" }), { b: 1 });
+    b.connect(gi.ghosts).to(nMax, "a");
 
-    const ghostContrib = (i: number): PrevRef => {
-      const iVal = b.add("value", { value: i });
-      const iOverN = b.add("math", { op: "div" });
-      b.connect(iVal, iOverN.nodeId, "a");
-      b.connect(nMax, iOverN.nodeId, "b");
-      const k = b.add("math", { op: "mul" });
-      b.connect(iOverN, k.nodeId, "a");
-      b.connect(gi.ghostSpacing, k.nodeId, "b");
-      const g = b.add("vector-math", { op: "scale" });
-      b.connect(cmu, g.nodeId, "a");
-      b.connect(k, g.nodeId, "b");
+    const ghostContrib = (i: number): NodeHandle => {
+      const iVal = b.add(new N.Const({ value: i }));
+      const iOverN = b.add(new N.Math({ op: "div" }));
+      b.connect(iVal).to(iOverN, "a");
+      b.connect(nMax).to(iOverN, "b");
+      const k = b.add(new N.Math({ op: "mul" }));
+      b.connect(iOverN).to(k, "a");
+      b.connect(gi.ghostSpacing).to(k, "b");
+      const g = b.add(new N.VectorMath({ op: "scale" }));
+      b.connect(cmu).to(g, "a");
+      b.connect(k).to(g, "b");
       // gp = (uv + g) − centre  ⇒ gp = (uv − centre) + g = p + g
-      const gp = b.add("vector-math", { op: "add" });
-      b.connect(p, gp.nodeId, "a");
-      b.connect(g, gp.nodeId, "b");
-      const gd = b.add("vector-math", { op: "length" });
-      b.connect(gp, gd.nodeId, "a");
-      const gd2 = b.add("math", { op: "mul" });
-      b.connect(gd, gd2.nodeId, "a");
-      b.connect(gd, gd2.nodeId, "b");
-      const gd2_80 = b.add("math", { op: "mul" }, { b: 80 });
-      b.connect(gd2, gd2_80.nodeId, "a");
-      const negGd2 = b.add("math", { op: "neg" });
-      b.connect(gd2_80, negGd2.nodeId, "x");
-      const e = b.add("math", { op: "exp" });
-      b.connect(negGd2, e.nodeId, "x");
-      const eOverI = b.add("math", { op: "mul" }, { b: 1 / i });
-      b.connect(e, eOverI.nodeId, "a");
+      const gp = b.add(new N.VectorMath({ op: "add" }));
+      b.connect(p).to(gp, "a");
+      b.connect(g).to(gp, "b");
+      const gd = b.add(new N.VectorMath({ op: "length" }));
+      b.connect(gp).to(gd, "a");
+      const gd2 = b.add(new N.Math({ op: "mul" }));
+      b.connect(gd).to(gd2, "a");
+      b.connect(gd).to(gd2, "b");
+      const gd2_80 = b.add(new N.Math({ op: "mul" }), { b: 80 });
+      b.connect(gd2).to(gd2_80, "a");
+      const negGd2 = b.add(new N.Math({ op: "neg" }));
+      b.connect(gd2_80).to(negGd2, "x");
+      const e = b.add(new N.Math({ op: "exp" }));
+      b.connect(negGd2).to(e, "x");
+      const eOverI = b.add(new N.Math({ op: "mul" }), { b: 1 / i });
+      b.connect(e).to(eOverI, "a");
       // gate = step(i, ghosts)  (1 when ghosts ≥ i)
-      const gate = b.add("math", { op: "step" }, { a: i });
-      b.connect(gi.ghosts, gate.nodeId, "b");
-      const gated = b.add("math", { op: "mul" });
-      b.connect(eOverI, gated.nodeId, "a");
-      b.connect(gate, gated.nodeId, "b");
+      const gate = b.add(new N.Math({ op: "step" }), { a: i });
+      b.connect(gi.ghosts).to(gate, "b");
+      const gated = b.add(new N.Math({ op: "mul" }));
+      b.connect(eOverI).to(gated, "a");
+      b.connect(gate).to(gated, "b");
       return gated;
     };
 
     const ghostsAcc = [1, 2, 3, 4, 5, 6, 7, 8]
       .map(ghostContrib)
-      .reduce<PrevRef | null>((acc, contrib) => {
+      .reduce<NodeHandle | null>((acc, contrib) => {
         if (!acc) return contrib;
-        const sum = b.add("math", { op: "add" });
-        b.connect(acc, sum.nodeId, "a");
-        b.connect(contrib, sum.nodeId, "b");
+        const sum = b.add(new N.Math({ op: "add" }));
+        b.connect(acc).to(sum, "a");
+        b.connect(contrib).to(sum, "b");
         return sum;
       }, null)!;
 
     // v = (core + halo · 0.6 + streak · 0.7 + ghosts · 0.8) · intensity
-    const halo6 = b.add("math", { op: "mul" }, { b: 0.6 });
-    b.connect(halo, halo6.nodeId, "a");
-    const streak7 = b.add("math", { op: "mul" }, { b: 0.7 });
-    b.connect(streak, streak7.nodeId, "a");
-    const ghosts8 = b.add("math", { op: "mul" }, { b: 0.8 });
-    b.connect(ghostsAcc, ghosts8.nodeId, "a");
-    const s1 = b.add("math", { op: "add" });
-    b.connect(core, s1.nodeId, "a");
-    b.connect(halo6, s1.nodeId, "b");
-    const s2 = b.add("math", { op: "add" });
-    b.connect(s1, s2.nodeId, "a");
-    b.connect(streak7, s2.nodeId, "b");
-    const s3 = b.add("math", { op: "add" });
-    b.connect(s2, s3.nodeId, "a");
-    b.connect(ghosts8, s3.nodeId, "b");
-    const v = b.add("math", { op: "mul" });
-    b.connect(s3, v.nodeId, "a");
-    b.connect(gi.intensity, v.nodeId, "b");
+    const halo6 = b.add(new N.Math({ op: "mul" }), { b: 0.6 });
+    b.connect(halo).to(halo6, "a");
+    const streak7 = b.add(new N.Math({ op: "mul" }), { b: 0.7 });
+    b.connect(streak).to(streak7, "a");
+    const ghosts8 = b.add(new N.Math({ op: "mul" }), { b: 0.8 });
+    b.connect(ghostsAcc).to(ghosts8, "a");
+    const s1 = b.add(new N.Math({ op: "add" }));
+    b.connect(core).to(s1, "a");
+    b.connect(halo6).to(s1, "b");
+    const s2 = b.add(new N.Math({ op: "add" }));
+    b.connect(s1).to(s2, "a");
+    b.connect(streak7).to(s2, "b");
+    const s3 = b.add(new N.Math({ op: "add" }));
+    b.connect(s2).to(s3, "a");
+    b.connect(ghosts8).to(s3, "b");
+    const v = b.add(new N.Math({ op: "mul" }));
+    b.connect(s3).to(v, "a");
+    b.connect(gi.intensity).to(v, "b");
 
     // rgb = color · v
-    const rgb = b.add("color-math", { op: "scale" });
-    b.connect(gi.color, rgb.nodeId, "a");
-    b.connect(v, rgb.nodeId, "b");
+    const rgb = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(gi.color).to(rgb, "a");
+    b.connect(v).to(rgb, "b");
 
     // alpha = clamp(v, 0, 1)
-    const aMin = b.add("math", { op: "min" }, { b: 1 });
-    b.connect(v, aMin.nodeId, "a");
-    const alpha = b.add("math", { op: "max" }, { b: 0 });
-    b.connect(aMin, alpha.nodeId, "a");
+    const aMin = b.add(new N.Math({ op: "min" }), { b: 1 });
+    b.connect(v).to(aMin, "a");
+    const alpha = b.add(new N.Math({ op: "max" }), { b: 0 });
+    b.connect(aMin).to(alpha, "a");
 
     return b.output(rgb, alpha);
   }

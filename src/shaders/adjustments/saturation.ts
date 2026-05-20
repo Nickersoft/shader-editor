@@ -3,12 +3,13 @@
 //   result = mix(vec3(lum), rgb, intensity)    // unclamped — intensity > 1 oversaturates
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Saturation",
   description: "Adjust color saturation intensity",
   color: "#a855f7",
@@ -26,33 +27,33 @@ export class Saturation extends ProceduralEffect {
       { id: "intensity", type: "float", label: "Intensity", default: 1 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sample.nodeId, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sample, "uv");
     const color = { nodeId: sample.nodeId, pin: "color" };
     const alpha = { nodeId: sample.nodeId, pin: "alpha" };
 
-    const wR = b.add("value", { value: 0.2126 });
-    const wG = b.add("value", { value: 0.7152 });
-    const wB = b.add("value", { value: 0.0722 });
-    const weights = b.add("combine-color", {});
-    b.connect(wR, weights.nodeId, "r");
-    b.connect(wG, weights.nodeId, "g");
-    b.connect(wB, weights.nodeId, "b");
+    const wR = b.add(new N.Const({ value: 0.2126 }));
+    const wG = b.add(new N.Const({ value: 0.7152 }));
+    const wB = b.add(new N.Const({ value: 0.0722 }));
+    const weights = b.add(new N.CombineColor());
+    b.connect(wR).to(weights, "r");
+    b.connect(wG).to(weights, "g");
+    b.connect(wB).to(weights, "b");
 
-    const lum = b.add("color-math", { op: "dot" });
-    b.connect(color, lum.nodeId, "a");
-    b.connect(weights, lum.nodeId, "b");
+    const lum = b.add(new N.ColorMath({ op: "dot" }));
+    b.connect(color).to(lum, "a");
+    b.connect(weights).to(lum, "b");
 
-    const lumVec3 = b.add("combine-color", {});
-    b.connect(lum, lumVec3.nodeId, "r");
-    b.connect(lum, lumVec3.nodeId, "g");
-    b.connect(lum, lumVec3.nodeId, "b");
+    const lumVec3 = b.add(new N.CombineColor());
+    b.connect(lum).to(lumVec3, "r");
+    b.connect(lum).to(lumVec3, "g");
+    b.connect(lum).to(lumVec3, "b");
 
-    const result = b.add("mix-color", { clampT: false });
-    b.connect(lumVec3, result.nodeId, "a");
-    b.connect(color, result.nodeId, "b");
-    b.connect(gi.intensity, result.nodeId, "t");
+    const result = b.add(new N.MixColor({ clampT: false }));
+    b.connect(lumVec3).to(result, "a");
+    b.connect(color).to(result, "b");
+    b.connect(gi.intensity).to(result, "t");
 
     return b.output(result, alpha);
   }

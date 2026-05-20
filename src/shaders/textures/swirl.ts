@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Swirl",
   description: "Multi-layered noise swirl",
   color: "#22d3ee",
@@ -27,11 +28,11 @@ export class Swirl extends ProceduralShader {
     const w2 = b.domainWarp(w1, src.t, {
       amplitude: 1, detail: 4, scale: 1.6, timePhase: 1.3,
     });
-    const fbm = b.add("noise-texture", { kind: "fbm", detail: 5, lacunarity: 2, roughness: 0.5, distortion: 0 });
-    b.connect(w2, fbm.nodeId, "p");
-    b.connect(src.t, fbm.nodeId, "t");
-    const rm = b.add("remap", { balance: 0, contrast: 0 });
-    b.connect(fbm, rm.nodeId, "x");
+    const fbm = b.add(new N.NoiseTexture({ kind: "fbm", detail: 5, lacunarity: 2, roughness: 0.5, distortion: 0 }));
+    b.connect(w2).to(fbm, "p");
+    b.connect(src.t).to(fbm, "t");
+    const rm = b.add(new N.Remap({ balance: 0, contrast: 0 }));
+    b.connect(fbm).to(rm, "x");
     const ramp = b.colorRamp(rm, [
       [0.88, 0.57, 0.21],
       [0.07, 0.46, 0.85],

@@ -4,12 +4,13 @@
 // via combine-color.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { GraphBuilder, type PrevRef } from "@/shaders/node-graph";
+import { GraphBuilder, type NodeHandle } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Channel Blur",
   description: "Independent blur for red, green, and blue channels",
   color: "#94a3b8",
@@ -29,23 +30,23 @@ export class ChannelBlur extends ProceduralEffect {
       { id: "blueIntensity", type: "float", label: "Blue Intensity", default: 0 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const crossBlur = (amount: PrevRef): PrevRef => {
-      const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-      b.connect(uv, h.nodeId, "uv");
-      b.connect(amount, h.nodeId, "amount");
-      b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
-      const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-      b.connect(uv, v.nodeId, "uv");
-      b.connect(amount, v.nodeId, "amount");
-      b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
-      const sum = b.add("color-math", { op: "add" });
-      b.connect(h, sum.nodeId, "a");
-      b.connect(v, sum.nodeId, "b");
-      const avg = b.add("color-math", { op: "scale" });
-      b.connect(sum, avg.nodeId, "a");
-      b.connect(b.add("value", { value: 0.5 }), avg.nodeId, "b");
+    const crossBlur = (amount: NodeHandle): NodeHandle => {
+      const h = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+      b.connect(uv).to(h, "uv");
+      b.connect(amount).to(h, "amount");
+      b.connect(b.add(new N.Const({ value: 0 }))).to(h, "direction");
+      const v = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+      b.connect(uv).to(v, "uv");
+      b.connect(amount).to(v, "amount");
+      b.connect(b.add(new N.Const({ value: 90 }))).to(v, "direction");
+      const sum = b.add(new N.ColorMath({ op: "add" }));
+      b.connect(h).to(sum, "a");
+      b.connect(v).to(sum, "b");
+      const avg = b.add(new N.ColorMath({ op: "scale" }));
+      b.connect(sum).to(avg, "a");
+      b.connect(b.add(new N.Const({ value: 0.5 }))).to(avg, "b");
       return avg;
     };
 
@@ -53,20 +54,20 @@ export class ChannelBlur extends ProceduralEffect {
     const gBlur = crossBlur(gi.greenIntensity);
     const bBlur = crossBlur(gi.blueIntensity);
 
-    const sepR = b.add("separate-color", {});
-    b.connect(rBlur, sepR.nodeId, "v");
-    const sepG = b.add("separate-color", {});
-    b.connect(gBlur, sepG.nodeId, "v");
-    const sepB = b.add("separate-color", {});
-    b.connect(bBlur, sepB.nodeId, "v");
+    const sepR = b.add(new N.SeparateColor());
+    b.connect(rBlur).to(sepR, "v");
+    const sepG = b.add(new N.SeparateColor());
+    b.connect(gBlur).to(sepG, "v");
+    const sepB = b.add(new N.SeparateColor());
+    b.connect(bBlur).to(sepB, "v");
 
-    const out = b.add("combine-color", {});
-    b.connect({ nodeId: sepR.nodeId, pin: "r" }, out.nodeId, "r");
-    b.connect({ nodeId: sepG.nodeId, pin: "g" }, out.nodeId, "g");
-    b.connect({ nodeId: sepB.nodeId, pin: "b" }, out.nodeId, "b");
+    const out = b.add(new N.CombineColor());
+    b.connect(sepR, "r").to(out, "r");
+    b.connect(sepG, "g").to(out, "g");
+    b.connect(sepB, "b").to(out, "b");
 
-    const center = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, center.nodeId, "uv");
+    const center = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(center, "uv");
 
     return b.output(out, { nodeId: center.nodeId, pin: "alpha" });
   }

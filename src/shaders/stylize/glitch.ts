@@ -5,12 +5,13 @@
 // what the migration captures.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Glitch",
   description: "Banded jitter with scanline distortion",
   color: "#22d3ee",
@@ -31,75 +32,75 @@ export class Glitch extends ProceduralEffect {
       { id: "scanlineDistortion", type: "float", label: "Scanline Distortion", default: 0 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const t = b.add("time", {}, undefined, "out");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const t = b.add(new N.Time(), undefined, "out");
 
     // lines = mix(8, 400, blockDensity)
-    const lines = b.add("math", { op: "mix" }, { a: 8, b: 400 });
-    b.connect(gi.blockDensity, lines.nodeId, "c");
+    const lines = b.add(new N.Math({ op: "mix" }), { a: 8, b: 400 });
+    b.connect(gi.blockDensity).to(lines, "c");
 
     // band = floor(uv.y · lines)
-    const sepUv = b.add("separate-xy", {});
-    b.connect(uv, sepUv.nodeId, "v");
-    const yl = b.add("math", { op: "mul" });
-    b.connect({ nodeId: sepUv.nodeId, pin: "y" }, yl.nodeId, "a");
-    b.connect(lines, yl.nodeId, "b");
-    const band = b.add("math", { op: "floor" });
-    b.connect(yl, band.nodeId, "x");
+    const sepUv = b.add(new N.SeparateXy());
+    b.connect(uv).to(sepUv, "v");
+    const yl = b.add(new N.Math({ op: "mul" }));
+    b.connect(sepUv, "y").to(yl, "a");
+    b.connect(lines).to(yl, "b");
+    const band = b.add(new N.Math({ op: "floor" }));
+    b.connect(yl).to(band, "x");
 
     // ts = floor(t · speed)
-    const tsRaw = b.add("math", { op: "mul" });
-    b.connect(t, tsRaw.nodeId, "a");
-    b.connect(gi.speed, tsRaw.nodeId, "b");
-    const ts = b.add("math", { op: "floor" });
-    b.connect(tsRaw, ts.nodeId, "x");
+    const tsRaw = b.add(new N.Math({ op: "mul" }));
+    b.connect(t).to(tsRaw, "a");
+    b.connect(gi.speed).to(tsRaw, "b");
+    const ts = b.add(new N.Math({ op: "floor" }));
+    b.connect(tsRaw).to(ts, "x");
 
     // h = hash(vec2(band, ts))
-    const bv = b.add("combine-xy", {});
-    b.connect(band, bv.nodeId, "x");
-    b.connect(ts, bv.nodeId, "y");
-    const h = b.add("white-noise-texture", {});
-    b.connect(bv, h.nodeId, "p");
+    const bv = b.add(new N.CombineXy());
+    b.connect(band).to(bv, "x");
+    b.connect(ts).to(bv, "y");
+    const h = b.add(new N.Hash());
+    b.connect(bv).to(h, "p");
 
     // jitter = (h − 0.5) · 2 · intensity
-    const h5 = b.add("math", { op: "sub" }, { b: 0.5 });
-    b.connect(h, h5.nodeId, "a");
-    const h2 = b.add("math", { op: "mul" }, { b: 2 });
-    b.connect(h5, h2.nodeId, "a");
-    const jitter = b.add("math", { op: "mul" });
-    b.connect(h2, jitter.nodeId, "a");
-    b.connect(gi.intensity, jitter.nodeId, "b");
+    const h5 = b.add(new N.Math({ op: "sub" }), { b: 0.5 });
+    b.connect(h).to(h5, "a");
+    const h2 = b.add(new N.Math({ op: "mul" }), { b: 2 });
+    b.connect(h5).to(h2, "a");
+    const jitter = b.add(new N.Math({ op: "mul" }));
+    b.connect(h2).to(jitter, "a");
+    b.connect(gi.intensity).to(jitter, "b");
 
     // scanWave = sin(uv.y · 800 + t · speed · 4)
-    const y800 = b.add("math", { op: "mul" }, { b: 800 });
-    b.connect({ nodeId: sepUv.nodeId, pin: "y" }, y800.nodeId, "a");
-    const ts4 = b.add("math", { op: "mul" }, { b: 4 });
-    b.connect(tsRaw, ts4.nodeId, "a");
-    const swp = b.add("math", { op: "add" });
-    b.connect(y800, swp.nodeId, "a");
-    b.connect(ts4, swp.nodeId, "b");
-    const scan = b.add("math", { op: "sin" });
-    b.connect(swp, scan.nodeId, "x");
-    const scan01 = b.add("math", { op: "mul" }, { b: 0.01 });
-    b.connect(scan, scan01.nodeId, "a");
-    const scanX = b.add("math", { op: "mul" });
-    b.connect(scan01, scanX.nodeId, "a");
-    b.connect(gi.scanlineDistortion, scanX.nodeId, "b");
+    const y800 = b.add(new N.Math({ op: "mul" }), { b: 800 });
+    b.connect(sepUv, "y").to(y800, "a");
+    const ts4 = b.add(new N.Math({ op: "mul" }), { b: 4 });
+    b.connect(tsRaw).to(ts4, "a");
+    const swp = b.add(new N.Math({ op: "add" }));
+    b.connect(y800).to(swp, "a");
+    b.connect(ts4).to(swp, "b");
+    const scan = b.add(new N.Math({ op: "sin" }));
+    b.connect(swp).to(scan, "x");
+    const scan01 = b.add(new N.Math({ op: "mul" }), { b: 0.01 });
+    b.connect(scan).to(scan01, "a");
+    const scanX = b.add(new N.Math({ op: "mul" }));
+    b.connect(scan01).to(scanX, "a");
+    b.connect(gi.scanlineDistortion).to(scanX, "b");
 
     // totalX = jitter + scanX
-    const totalX = b.add("math", { op: "add" });
-    b.connect(jitter, totalX.nodeId, "a");
-    b.connect(scanX, totalX.nodeId, "b");
+    const totalX = b.add(new N.Math({ op: "add" }));
+    b.connect(jitter).to(totalX, "a");
+    b.connect(scanX).to(totalX, "b");
 
     // q = uv + vec2(totalX, 0)
-    const offV = b.add("combine-xy", {}, { y: 0 });
-    b.connect(totalX, offV.nodeId, "x");
-    const q = b.add("vector-math", { op: "add" });
-    b.connect(uv, q.nodeId, "a");
-    b.connect(offV, q.nodeId, "b");
+    const offV = b.add(new N.CombineXy(), { y: 0 });
+    b.connect(totalX).to(offV, "x");
+    const q = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(uv).to(q, "a");
+    b.connect(offV).to(q, "b");
 
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(q, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(q).to(sample, "uv");
 
     return b.output(
       { nodeId: sample.nodeId, pin: "color" },

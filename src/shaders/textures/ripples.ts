@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Ripples",
   description: "Concentric animated ripples",
   color: "#22d3ee",
@@ -20,9 +21,9 @@ export class Ripples extends ProceduralShader {
     b.groupInput([]);
     const p = b.position();
     const t = b.time();
-    const rw = b.add("ripple-texture", { frequency: 20, speed: 1, phase: 0 });
-    b.connect(p, rw.nodeId, "p");
-    b.connect(t, rw.nodeId, "t");
+    const rw = b.add(new N.RippleWave({ frequency: 20, speed: 1, phase: 0 }));
+    b.connect(p).to(rw, "p");
+    b.connect(t).to(rw, "t");
     const ramp = b.colorRamp(rw, [
       [0, 0, 0],
       [1, 1, 1],

@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Sine Wave",
   description: "Animated sine wave bands",
   color: "#0ea5e9",
@@ -21,15 +22,15 @@ export class SineWave extends ProceduralShader {
     const p = b.position();
     const t = b.time();
     const src = b.fieldTransform(p, t, { scale: 1, speed: 1, seed: 0 });
-    const wv = b.add("wave-texture", {
+    const wv = b.add(new N.WaveTexture({
       type: "bands",
       profile: "sine",
       scale: 5,
       phaseOffset: 0,
       distortion: 0,
       detail: 3,
-    });
-    b.connect(src.p, wv.nodeId, "p");
+    }));
+    b.connect(src.p).to(wv, "p");
     const ramp = b.colorRamp(wv, [
       [0, 0, 0],
       [1, 1, 1],

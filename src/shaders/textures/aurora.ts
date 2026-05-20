@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Aurora",
   description: "Layered curtains of light",
   color: "#22ee88",
@@ -41,7 +42,10 @@ export class Aurora extends ProceduralShader {
       { id: "seed", type: "float", label: "Seed", default: 0 },
       { id: "colorSpace", type: "int", label: "Color Space", default: 0 },
     ]);
-    const au = b.add("aurora-texture", {});
+    // `aurora-texture` is the only node type without a static class — it's
+    // a legacy stub referenced here for forward compatibility. Routed through
+    // the explicit dynamic-typeId escape hatch.
+    const au = b.addByTypeId("aurora-texture");
     for (const id of [
       "colorA",
       "colorB",
@@ -57,11 +61,11 @@ export class Aurora extends ProceduralShader {
       "seed",
       "colorSpace",
     ] as const) {
-      b.connect(gi[id], au.nodeId, id);
+      b.connect(gi[id]).to(au, id);
     }
-    const mix = b.add("mix-color", {});
-    b.connect({ nodeId: au.nodeId, pin: "color" }, mix.nodeId, "b");
-    b.connect({ nodeId: au.nodeId, pin: "alpha" }, mix.nodeId, "t");
+    const mix = b.add(new N.MixColor());
+    b.connect(au, "color").to(mix, "b");
+    b.connect(au, "alpha").to(mix, "t");
     return b.output(mix);
   }
 }

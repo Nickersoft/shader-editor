@@ -2,8 +2,8 @@
   import * as Popover from "@/components/ui/popover";
   import { composer } from "@/lib/state/composer.svelte";
   import {
-    inspectUiFields,
-    type InspectedUiField,
+    inspectFields,
+    type InspectedField,
   } from "@/lib/codegen/schema-introspection";
   import type { Effect, StaticShaderClass } from "@/shaders/core/shader.svelte";
   import { ScrollArea } from "@/components/ui/scroll-area";
@@ -33,11 +33,11 @@
   // Schema-based effects: split fields by structural (enum dropdowns) vs live
   // (numeric / vector / color / image). Live knobs come first; structural
   // switches render after.
-  let allFields = $derived(cls.schema ? inspectUiFields(cls.schema) : []);
+  let allFields = $derived(cls.schema ? inspectFields(cls.schema) : []);
   let uniformFields = $derived(allFields.filter((f) => f.glslType !== "enumString"));
   let configFields = $derived(allFields.filter((f) => f.glslType === "enumString"));
 
-  function fieldLabel(field: InspectedUiField): string {
+  function fieldLabel(field: InspectedField): string {
     return field.schema.description ?? field.key;
   }
 </script>

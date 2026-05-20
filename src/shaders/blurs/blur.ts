@@ -7,12 +7,13 @@
 // and the single-pass form fits inside `ProceduralEffect`.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Blur",
   description: "Symmetric Gaussian blur",
   color: "#94a3b8",
@@ -30,28 +31,28 @@ export class Blur extends ProceduralEffect {
       { id: "intensity", type: "float", label: "Intensity", default: 0.25 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-    b.connect(uv, h.nodeId, "uv");
-    b.connect(gi.intensity, h.nodeId, "amount");
-    b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
+    const h = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+    b.connect(uv).to(h, "uv");
+    b.connect(gi.intensity).to(h, "amount");
+    b.connect(b.add(new N.Const({ value: 0 }))).to(h, "direction");
 
-    const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-    b.connect(uv, v.nodeId, "uv");
-    b.connect(gi.intensity, v.nodeId, "amount");
-    b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
+    const v = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+    b.connect(uv).to(v, "uv");
+    b.connect(gi.intensity).to(v, "amount");
+    b.connect(b.add(new N.Const({ value: 90 }))).to(v, "direction");
 
     // out = (H + V) * 0.5
-    const sum = b.add("color-math", { op: "add" });
-    b.connect(h, sum.nodeId, "a");
-    b.connect(v, sum.nodeId, "b");
-    const avg = b.add("color-math", { op: "scale" });
-    b.connect(sum, avg.nodeId, "a");
-    b.connect(b.add("value", { value: 0.5 }), avg.nodeId, "b");
+    const sum = b.add(new N.ColorMath({ op: "add" }));
+    b.connect(h).to(sum, "a");
+    b.connect(v).to(sum, "b");
+    const avg = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(sum).to(avg, "a");
+    b.connect(b.add(new N.Const({ value: 0.5 }))).to(avg, "b");
 
-    const center = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, center.nodeId, "uv");
+    const center = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(center, "uv");
 
     return b.output(avg, { nodeId: center.nodeId, pin: "alpha" });
   }

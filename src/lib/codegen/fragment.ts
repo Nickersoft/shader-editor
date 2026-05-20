@@ -17,7 +17,7 @@ import { Effect, type Shader, type StaticShaderClass } from "@/shaders/core/shad
 import { BLEND_MODE_FUNCTIONS } from "./blend-modes";
 import { GLSL_HELPERS as GLSL_UTILS } from "./helpers";
 import type { PassPlan } from "./passes";
-import { inspectObjectSchema } from "./schema-introspection";
+import { inspectUniformFields } from "./schema-introspection";
 import type { GeneratedPass } from "./types";
 import type { Layer } from "@/shaders/core/scene.svelte";
 
@@ -30,6 +30,18 @@ interface BuildContext {
 export function buildFragment(plan: PassPlan, _ctx: BuildContext): GeneratedPass {
   if (plan.mode === "js") return buildJsFragment(plan);
   return buildGlslFragment(plan);
+}
+
+/**
+ * Backdrop fragment — same shape as the scene compositor, but the caller
+ * supplies a truncated layers list (only the layers below the consuming
+ * layer). The runtime routes the output to the dedicated backdrop FBO and
+ * binds it as `u_backdrop` on any downstream pass marked `readsBackdrop`.
+ */
+export function buildBackdropFragment(specs: CompositorLayerSpec[]): GeneratedPass {
+  const out = buildCompositorFragment(specs);
+  out.mode = "backdrop";
+  return out;
 }
 
 /**
@@ -157,7 +169,7 @@ void main() {
 }
 
 function buildGlslFragment(plan: PassPlan): GeneratedPass {
-  const { nodes, readsPrevPass, mode, blockIndex } = plan;
+  const { nodes, readsPrevPass, mode, blockIndex, readsBackdrop } = plan;
   const dependencies = new Set<string>();
   const blendModes = new Set<string>();
 
@@ -188,6 +200,9 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
   if (readsPrevPass) {
     uniformDeclarations.push("uniform sampler2D u_prevPass;");
   }
+  if (readsBackdrop) {
+    uniformDeclarations.push("uniform sampler2D u_backdrop;");
+  }
 
   // Optional global uniforms — declared only if any node in this pass
   // references them. The runtime always binds them when the location resolves;
@@ -217,7 +232,7 @@ function buildGlslFragment(plan: PassPlan): GeneratedPass {
     // ProceduralShader/ProceduralEffect have no static schema — they emit
     // their uniforms via `extraUniforms()` instead. Only iterate schema
     // fields when the class actually declares one.
-    const uniformFields = cls.schema ? inspectObjectSchema(cls.schema) : [];
+    const uniformFields = cls.schema ? inspectUniformFields(cls.schema) : [];
 
     for (const field of uniformFields) {
       const baseName = `u_${prefix}_${field.key}`;
@@ -348,6 +363,7 @@ ${mainCalls.length > 0 ? mainCalls.join("\n") : "  vec4 color = vec4(0.0, 0.0, 0
     readsPrevPass,
     nodeIds: nodes.map((n) => n.id),
     ...(mode ? { mode } : {}),
+    ...(readsBackdrop ? { readsBackdrop: true } : {}),
   };
 }
 
@@ -412,6 +428,8 @@ const DEP_ORDER: Record<string, number> = {
   voronoi: 2,
   snoise: 2,
   oklchTransforms: 2,
+  hslRgbTransforms: 2,
+  cielabTransforms: 3,
   oklchColorRampLookup: 3,
   luma: 0,
   colorBandingFix: 3,

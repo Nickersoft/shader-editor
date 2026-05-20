@@ -3,12 +3,13 @@
 // Flicker is sin-of-time scaled by the `flicker` knob.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
-import { GraphBuilder, type PrevRef } from "@/shaders/node-graph";
+import { GraphBuilder, type NodeHandle } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Neon",
   description: "Glowing-edges neon effect",
   color: "#facc15",
@@ -31,21 +32,21 @@ export class Neon extends ProceduralEffect {
       { id: "glowColor", type: "vec3", label: "Glow Color", default: [1, 0.6, 0.2] },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const t = b.add("time", {}, undefined, "out");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const t = b.add(new N.Time(), undefined, "out");
 
     // Tap luma at uv ± 0.001 in X and Y, take |l1 − l2| in each axis.
-    const lumaAt = (dx: number, dy: number): PrevRef => {
-      const dv = b.add("combine-xy", {});
-      b.connect(b.add("value", { value: dx }), dv.nodeId, "x");
-      b.connect(b.add("value", { value: dy }), dv.nodeId, "y");
-      const u = b.add("vector-math", { op: "add" });
-      b.connect(uv, u.nodeId, "a");
-      b.connect(dv, u.nodeId, "b");
-      const s = b.add("sample-previous-pass", { edges: "stretch" });
-      b.connect(u, s.nodeId, "uv");
-      const l = b.add("color-math", { op: "luminance" });
-      b.connect({ nodeId: s.nodeId, pin: "color" }, l.nodeId, "a");
+    const lumaAt = (dx: number, dy: number): NodeHandle => {
+      const dv = b.add(new N.CombineXy());
+      b.connect(b.add(new N.Const({ value: dx }))).to(dv, "x");
+      b.connect(b.add(new N.Const({ value: dy }))).to(dv, "y");
+      const u = b.add(new N.VectorMath({ op: "add" }));
+      b.connect(uv).to(u, "a");
+      b.connect(dv).to(u, "b");
+      const s = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+      b.connect(u).to(s, "uv");
+      const l = b.add(new N.ColorMath({ op: "luminance" }));
+      b.connect(s, "color").to(l, "a");
       return l;
     };
 
@@ -54,79 +55,79 @@ export class Neon extends ProceduralEffect {
     const lY1 = lumaAt(0, 0.002);
     const lY2 = lumaAt(0, -0.002);
 
-    const dX = b.add("math", { op: "sub" });
-    b.connect(lX1, dX.nodeId, "a");
-    b.connect(lX2, dX.nodeId, "b");
-    const aX = b.add("math", { op: "abs" });
-    b.connect(dX, aX.nodeId, "x");
-    const dY = b.add("math", { op: "sub" });
-    b.connect(lY1, dY.nodeId, "a");
-    b.connect(lY2, dY.nodeId, "b");
-    const aY = b.add("math", { op: "abs" });
-    b.connect(dY, aY.nodeId, "x");
-    const edge = b.add("math", { op: "add" });
-    b.connect(aX, edge.nodeId, "a");
-    b.connect(aY, edge.nodeId, "b");
+    const dX = b.add(new N.Math({ op: "sub" }));
+    b.connect(lX1).to(dX, "a");
+    b.connect(lX2).to(dX, "b");
+    const aX = b.add(new N.Math({ op: "abs" }));
+    b.connect(dX).to(aX, "x");
+    const dY = b.add(new N.Math({ op: "sub" }));
+    b.connect(lY1).to(dY, "a");
+    b.connect(lY2).to(dY, "b");
+    const aY = b.add(new N.Math({ op: "abs" }));
+    b.connect(dY).to(aY, "x");
+    const edge = b.add(new N.Math({ op: "add" }));
+    b.connect(aX).to(edge, "a");
+    b.connect(aY).to(edge, "b");
 
     // Cross-blurred sample for the halo.
-    const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-    b.connect(uv, h.nodeId, "uv");
-    b.connect(gi.glowSize, h.nodeId, "amount");
-    b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
-    const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-    b.connect(uv, v.nodeId, "uv");
-    b.connect(gi.glowSize, v.nodeId, "amount");
-    b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
-    const sum = b.add("color-math", { op: "add" });
-    b.connect(h, sum.nodeId, "a");
-    b.connect(v, sum.nodeId, "b");
-    const blurred = b.add("color-math", { op: "scale" });
-    b.connect(sum, blurred.nodeId, "a");
-    b.connect(b.add("value", { value: 0.5 }), blurred.nodeId, "b");
-    const blurLuma = b.add("color-math", { op: "luminance" });
-    b.connect(blurred, blurLuma.nodeId, "a");
+    const h = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+    b.connect(uv).to(h, "uv");
+    b.connect(gi.glowSize).to(h, "amount");
+    b.connect(b.add(new N.Const({ value: 0 }))).to(h, "direction");
+    const v = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+    b.connect(uv).to(v, "uv");
+    b.connect(gi.glowSize).to(v, "amount");
+    b.connect(b.add(new N.Const({ value: 90 }))).to(v, "direction");
+    const sum = b.add(new N.ColorMath({ op: "add" }));
+    b.connect(h).to(sum, "a");
+    b.connect(v).to(sum, "b");
+    const blurred = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(sum).to(blurred, "a");
+    b.connect(b.add(new N.Const({ value: 0.5 }))).to(blurred, "b");
+    const blurLuma = b.add(new N.ColorMath({ op: "luminance" }));
+    b.connect(blurred).to(blurLuma, "a");
 
     // flick = 1 − flicker · (0.5 + 0.5 · sin(t · 20))
-    const t20 = b.add("math", { op: "mul" }, { b: 20 });
-    b.connect(t, t20.nodeId, "a");
-    const s = b.add("math", { op: "sin" });
-    b.connect(t20, s.nodeId, "x");
-    const s5 = b.add("math", { op: "mul" }, { b: 0.5 });
-    b.connect(s, s5.nodeId, "a");
-    const wave = b.add("math", { op: "add" }, { b: 0.5 });
-    b.connect(s5, wave.nodeId, "a");
-    const fmul = b.add("math", { op: "mul" });
-    b.connect(gi.flicker, fmul.nodeId, "a");
-    b.connect(wave, fmul.nodeId, "b");
-    const flick = b.add("math", { op: "oneminus" });
-    b.connect(fmul, flick.nodeId, "x");
+    const t20 = b.add(new N.Math({ op: "mul" }), { b: 20 });
+    b.connect(t).to(t20, "a");
+    const s = b.add(new N.Math({ op: "sin" }));
+    b.connect(t20).to(s, "x");
+    const s5 = b.add(new N.Math({ op: "mul" }), { b: 0.5 });
+    b.connect(s).to(s5, "a");
+    const wave = b.add(new N.Math({ op: "add" }), { b: 0.5 });
+    b.connect(s5).to(wave, "a");
+    const fmul = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.flicker).to(fmul, "a");
+    b.connect(wave).to(fmul, "b");
+    const flick = b.add(new N.Math({ op: "oneminus" }));
+    b.connect(fmul).to(flick, "x");
 
     // core = coreColor · edge · 4
-    const e4 = b.add("math", { op: "mul" }, { b: 4 });
-    b.connect(edge, e4.nodeId, "a");
-    const core = b.add("color-math", { op: "scale" });
-    b.connect(gi.coreColor, core.nodeId, "a");
-    b.connect(e4, core.nodeId, "b");
+    const e4 = b.add(new N.Math({ op: "mul" }), { b: 4 });
+    b.connect(edge).to(e4, "a");
+    const core = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(gi.coreColor).to(core, "a");
+    b.connect(e4).to(core, "b");
 
     // halo = glowColor · blurLuma · 1.5
-    const bl15 = b.add("math", { op: "mul" }, { b: 1.5 });
-    b.connect(blurLuma, bl15.nodeId, "a");
-    const halo = b.add("color-math", { op: "scale" });
-    b.connect(gi.glowColor, halo.nodeId, "a");
-    b.connect(bl15, halo.nodeId, "b");
+    const bl15 = b.add(new N.Math({ op: "mul" }), { b: 1.5 });
+    b.connect(blurLuma).to(bl15, "a");
+    const halo = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(gi.glowColor).to(halo, "a");
+    b.connect(bl15).to(halo, "b");
 
     // out = (core + halo) · glowIntensity · flick
-    const ch = b.add("color-math", { op: "add" });
-    b.connect(core, ch.nodeId, "a");
-    b.connect(halo, ch.nodeId, "b");
-    const iMul = b.add("math", { op: "mul" });
-    b.connect(gi.glowIntensity, iMul.nodeId, "a");
-    b.connect(flick, iMul.nodeId, "b");
-    const out = b.add("color-math", { op: "scale" });
-    b.connect(ch, out.nodeId, "a");
-    b.connect(iMul, out.nodeId, "b");
+    const ch = b.add(new N.ColorMath({ op: "add" }));
+    b.connect(core).to(ch, "a");
+    b.connect(halo).to(ch, "b");
+    const iMul = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.glowIntensity).to(iMul, "a");
+    b.connect(flick).to(iMul, "b");
+    const out = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(ch).to(out, "a");
+    b.connect(iMul).to(out, "b");
 
-    const one = b.add("value", { value: 1 });
+    const one = b.add(new N.Const({ value: 1 }));
     return b.output(out, one);
   }
 }

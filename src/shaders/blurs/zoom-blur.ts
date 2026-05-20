@@ -3,12 +3,13 @@
 // far each tap is pulled toward the centre.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Zoom Blur",
   description: "Radial zoom blur from a focal point",
   color: "#94a3b8",
@@ -28,21 +29,18 @@ export class ZoomBlur extends ProceduralEffect {
       { id: "centerY", type: "float", label: "Center Y", default: 0.5 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const center = b.add("combine-xy", {});
-    b.connect(gi.centerX, center.nodeId, "x");
-    b.connect(gi.centerY, center.nodeId, "y");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const center = b.add(new N.CombineXy());
+    b.connect(gi.centerX).to(center, "x");
+    b.connect(gi.centerY).to(center, "y");
 
-    const sampler = b.add(
-      "sampler",
-      { mode: "zoom", samples: 32, edges: "stretch" },
-    );
-    b.connect(uv, sampler.nodeId, "uv");
-    b.connect(gi.intensity, sampler.nodeId, "amount");
-    b.connect(center, sampler.nodeId, "center");
+    const sampler = b.add(new N.Sampler({ mode: "zoom", samples: 32, edges: "stretch" }), );
+    b.connect(uv).to(sampler, "uv");
+    b.connect(gi.intensity).to(sampler, "amount");
+    b.connect(center).to(sampler, "center");
 
-    const passthrough = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, passthrough.nodeId, "uv");
+    const passthrough = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(passthrough, "uv");
 
     return b.output(sampler, { nodeId: passthrough.nodeId, pin: "alpha" });
   }

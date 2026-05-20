@@ -3,12 +3,13 @@
 // by that mask × intensity.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Vignette",
   description: "Off-center radial darkening with configurable falloff",
   color: "#475569",
@@ -31,35 +32,35 @@ export class Vignette extends ProceduralEffect {
       { id: "color", type: "vec3", label: "Color", default: [0, 0, 0] },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const center = b.add("combine-xy", {});
-    b.connect(gi.centerX, center.nodeId, "x");
-    b.connect(gi.centerY, center.nodeId, "y");
+    const center = b.add(new N.CombineXy());
+    b.connect(gi.centerX).to(center, "x");
+    b.connect(gi.centerY).to(center, "y");
 
     // mask:vignette outputs 1 inside the radius and falls to 0 across
     // `softness`. The legacy effect's geometry is inverted (0 at centre,
     // 1 at edge), so flip with oneminus and gate by intensity.
-    const mask = b.add("mask", { shape: "vignette" });
-    b.connect(uv, mask.nodeId, "uv");
-    b.connect(center, mask.nodeId, "center");
-    b.connect(gi.radius, mask.nodeId, "radius");
-    b.connect(gi.falloff, mask.nodeId, "softness");
+    const mask = b.add(new N.Mask({ shape: "vignette" }));
+    b.connect(uv).to(mask, "uv");
+    b.connect(center).to(mask, "center");
+    b.connect(gi.radius).to(mask, "radius");
+    b.connect(gi.falloff).to(mask, "softness");
 
-    const edge = b.add("math", { op: "oneminus" });
-    b.connect(mask, edge.nodeId, "x");
+    const edge = b.add(new N.Math({ op: "oneminus" }));
+    b.connect(mask).to(edge, "x");
 
-    const gated = b.add("math", { op: "mul" });
-    b.connect(edge, gated.nodeId, "a");
-    b.connect(gi.intensity, gated.nodeId, "b");
+    const gated = b.add(new N.Math({ op: "mul" }));
+    b.connect(edge).to(gated, "a");
+    b.connect(gi.intensity).to(gated, "b");
 
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sample, "uv");
 
-    const mixed = b.add("mix-color", {});
-    b.connect({ nodeId: sample.nodeId, pin: "color" }, mixed.nodeId, "a");
-    b.connect(gi.color, mixed.nodeId, "b");
-    b.connect(gated, mixed.nodeId, "t");
+    const mixed = b.add(new N.MixColor());
+    b.connect(sample, "color").to(mixed, "a");
+    b.connect(gi.color).to(mixed, "b");
+    b.connect(gated).to(mixed, "t");
 
     return b.output(mixed, { nodeId: sample.nodeId, pin: "alpha" });
   }

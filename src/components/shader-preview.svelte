@@ -416,6 +416,8 @@
         readsPrevPass: p.readsPrevPass,
         bindLayerTextures: p.bindLayerTextures,
         commitToLayer: p.commitToLayer,
+        mode: p.mode,
+        readsBackdrop: p.readsBackdrop,
       })),
       {
         layerCount: layerRefs.length,

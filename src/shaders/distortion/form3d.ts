@@ -8,12 +8,13 @@
 //   finalUV = vec2(warpedX, warpedY) + c
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Form 3D",
   description: "Pseudo-3D pan/tilt projection",
   color: "#22d3ee",
@@ -35,82 +36,82 @@ export class Form3D extends ProceduralEffect {
       { id: "fov", type: "float", label: "FOV (deg)", default: 60 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const c = b.add("combine-xy", {});
-    b.connect(gi.centerX, c.nodeId, "x");
-    b.connect(gi.centerY, c.nodeId, "y");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const c = b.add(new N.CombineXy());
+    b.connect(gi.centerX).to(c, "x");
+    b.connect(gi.centerY).to(c, "y");
 
-    const deg2rad = b.add("value", { value: Math.PI / 180 });
-    const deg360 = b.add("value", { value: Math.PI / 360 });
-    const eps = b.add("value", { value: 0.001 });
+    const deg2rad = b.add(new N.Const({ value: Math.PI / 180 }));
+    const deg360 = b.add(new N.Const({ value: Math.PI / 360 }));
+    const eps = b.add(new N.Const({ value: 0.001 }));
 
-    const panR = b.add("math", { op: "mul" });
-    b.connect(gi.pan, panR.nodeId, "a");
-    b.connect(deg2rad, panR.nodeId, "b");
-    const tiltR = b.add("math", { op: "mul" });
-    b.connect(gi.tilt, tiltR.nodeId, "a");
-    b.connect(deg2rad, tiltR.nodeId, "b");
-    const halfFov = b.add("math", { op: "mul" });
-    b.connect(gi.fov, halfFov.nodeId, "a");
-    b.connect(deg360, halfFov.nodeId, "b");
+    const panR = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.pan).to(panR, "a");
+    b.connect(deg2rad).to(panR, "b");
+    const tiltR = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.tilt).to(tiltR, "a");
+    b.connect(deg2rad).to(tiltR, "b");
+    const halfFov = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.fov).to(halfFov, "a");
+    b.connect(deg360).to(halfFov, "b");
 
-    const fovScale = b.add("math", { op: "tan" });
-    b.connect(halfFov, fovScale.nodeId, "x");
-    const tanPan = b.add("math", { op: "tan" });
-    b.connect(panR, tanPan.nodeId, "x");
-    const tanTilt = b.add("math", { op: "tan" });
-    b.connect(tiltR, tanTilt.nodeId, "x");
+    const fovScale = b.add(new N.Math({ op: "tan" }));
+    b.connect(halfFov).to(fovScale, "x");
+    const tanPan = b.add(new N.Math({ op: "tan" }));
+    b.connect(panR).to(tanPan, "x");
+    const tanTilt = b.add(new N.Math({ op: "tan" }));
+    b.connect(tiltR).to(tanTilt, "x");
 
-    const dCenter = b.add("vector-math", { op: "sub" });
-    b.connect(uv, dCenter.nodeId, "a");
-    b.connect(c, dCenter.nodeId, "b");
-    const p = b.add("vector-math", { op: "scale" });
-    b.connect(dCenter, p.nodeId, "a");
-    b.connect(fovScale, p.nodeId, "b");
+    const dCenter = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(uv).to(dCenter, "a");
+    b.connect(c).to(dCenter, "b");
+    const p = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(dCenter).to(p, "a");
+    b.connect(fovScale).to(p, "b");
 
-    const split = b.add("separate-xy", {});
-    b.connect(p, split.nodeId, "v");
+    const split = b.add(new N.SeparateXy());
+    b.connect(p).to(split, "v");
     const px = { nodeId: split.nodeId, pin: "x" };
     const py = { nodeId: split.nodeId, pin: "y" };
 
     // denomY = 1 + p.x · tan(pan)
-    const one = b.add("value", { value: 1 });
-    const pxTan = b.add("math", { op: "mul" });
-    b.connect(px, pxTan.nodeId, "a");
-    b.connect(tanPan, pxTan.nodeId, "b");
-    const denomY = b.add("math", { op: "add" });
-    b.connect(one, denomY.nodeId, "a");
-    b.connect(pxTan, denomY.nodeId, "b");
-    const safeDenomY = b.add("math", { op: "max" });
-    b.connect(denomY, safeDenomY.nodeId, "a");
-    b.connect(eps, safeDenomY.nodeId, "b");
-    const warpedY = b.add("math", { op: "div" });
-    b.connect(py, warpedY.nodeId, "a");
-    b.connect(safeDenomY, warpedY.nodeId, "b");
+    const one = b.add(new N.Const({ value: 1 }));
+    const pxTan = b.add(new N.Math({ op: "mul" }));
+    b.connect(px).to(pxTan, "a");
+    b.connect(tanPan).to(pxTan, "b");
+    const denomY = b.add(new N.Math({ op: "add" }));
+    b.connect(one).to(denomY, "a");
+    b.connect(pxTan).to(denomY, "b");
+    const safeDenomY = b.add(new N.Math({ op: "max" }));
+    b.connect(denomY).to(safeDenomY, "a");
+    b.connect(eps).to(safeDenomY, "b");
+    const warpedY = b.add(new N.Math({ op: "div" }));
+    b.connect(py).to(warpedY, "a");
+    b.connect(safeDenomY).to(warpedY, "b");
 
-    const wyTan = b.add("math", { op: "mul" });
-    b.connect(warpedY, wyTan.nodeId, "a");
-    b.connect(tanTilt, wyTan.nodeId, "b");
-    const denomX = b.add("math", { op: "add" });
-    b.connect(one, denomX.nodeId, "a");
-    b.connect(wyTan, denomX.nodeId, "b");
-    const safeDenomX = b.add("math", { op: "max" });
-    b.connect(denomX, safeDenomX.nodeId, "a");
-    b.connect(eps, safeDenomX.nodeId, "b");
-    const warpedX = b.add("math", { op: "div" });
-    b.connect(px, warpedX.nodeId, "a");
-    b.connect(safeDenomX, warpedX.nodeId, "b");
+    const wyTan = b.add(new N.Math({ op: "mul" }));
+    b.connect(warpedY).to(wyTan, "a");
+    b.connect(tanTilt).to(wyTan, "b");
+    const denomX = b.add(new N.Math({ op: "add" }));
+    b.connect(one).to(denomX, "a");
+    b.connect(wyTan).to(denomX, "b");
+    const safeDenomX = b.add(new N.Math({ op: "max" }));
+    b.connect(denomX).to(safeDenomX, "a");
+    b.connect(eps).to(safeDenomX, "b");
+    const warpedX = b.add(new N.Math({ op: "div" }));
+    b.connect(px).to(warpedX, "a");
+    b.connect(safeDenomX).to(warpedX, "b");
 
-    const warped = b.add("combine-xy", {});
-    b.connect(warpedX, warped.nodeId, "x");
-    b.connect(warpedY, warped.nodeId, "y");
+    const warped = b.add(new N.CombineXy());
+    b.connect(warpedX).to(warped, "x");
+    b.connect(warpedY).to(warped, "y");
 
-    const finalUv = b.add("vector-math", { op: "add" });
-    b.connect(warped, finalUv.nodeId, "a");
-    b.connect(c, finalUv.nodeId, "b");
+    const finalUv = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(warped).to(finalUv, "a");
+    b.connect(c).to(finalUv, "b");
 
-    const sample = b.add("sample-previous-pass", { edges: "transparent" });
-    b.connect(finalUv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "transparent" }));
+    b.connect(finalUv).to(sample, "uv");
 
     return b.output(
       { nodeId: sample.nodeId, pin: "color" },

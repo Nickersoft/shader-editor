@@ -2,11 +2,8 @@
   import { NumberInput } from "@/components/ui/number-input";
   import { Label } from "@/components/ui/label";
   import * as Select from "@/components/ui/select";
-  import type {
-    InspectedField,
-    InspectedUiField,
-  } from "@/lib/codegen/schema-introspection";
-  import { getMetaDeep, type ImageInputValue } from "@/shaders/core/schemas";
+  import type { InspectedField } from "@/lib/codegen/schema-introspection";
+  import type { ImageInputValue } from "@/shaders/core/schemas";
   import * as Inputs from "./inputs";
 
   interface PaletteValue {
@@ -15,7 +12,7 @@
   }
 
   interface Props {
-    field: InspectedField | InspectedUiField;
+    field: InspectedField;
     label: string;
     value: unknown;
     onChange: (value: unknown) => void;
@@ -23,15 +20,14 @@
 
   let { field, label, value, onChange }: Props = $props();
 
-  let meta = $derived(getMetaDeep(field.schema));
-  let ui = $derived(meta?.ui);
+  let ui = $derived(field.meta?.ui);
 
   const AXIS_LABELS = ["X", "Y", "Z", "W"];
 </script>
 
 {#if field.glslType === "enumString"}
-  {@const opts = (field as InspectedUiField).enumValues ?? []}
-  {@const labels = (field as InspectedUiField).enumLabels}
+  {@const opts = field.enumValues ?? []}
+  {@const labels = field.enumLabels}
   {@const current = (value as string | undefined) ?? opts[0] ?? ""}
   {@const labelFor = (opt: string) =>
     labels?.[opt] ?? opt.charAt(0).toUpperCase() + opt.slice(1)}

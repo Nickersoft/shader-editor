@@ -4,12 +4,13 @@
 //   finalUV = center + rotate2D(uv − center, angle_rad)
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Twirl",
   description: "Local rotation, falls off with distance",
   color: "#22d3ee",
@@ -30,46 +31,46 @@ export class Twirl extends ProceduralEffect {
       { id: "angle", type: "float", label: "Angle (deg)", default: 90 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const c = b.add("combine-xy", {});
-    b.connect(gi.centerX, c.nodeId, "x");
-    b.connect(gi.centerY, c.nodeId, "y");
+    const c = b.add(new N.CombineXy());
+    b.connect(gi.centerX).to(c, "x");
+    b.connect(gi.centerY).to(c, "y");
 
-    const d = b.add("vector-math", { op: "sub" });
-    b.connect(uv, d.nodeId, "a");
-    b.connect(c, d.nodeId, "b");
+    const d = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(uv).to(d, "a");
+    b.connect(c).to(d, "b");
 
-    const r = b.add("vector-math", { op: "length" });
-    b.connect(d, r.nodeId, "a");
+    const r = b.add(new N.VectorMath({ op: "length" }));
+    b.connect(d).to(r, "a");
 
-    const zero = b.add("value", { value: 0 });
-    const ss = b.add("smoothstep", {});
-    b.connect(zero, ss.nodeId, "edge0");
-    b.connect(gi.radius, ss.nodeId, "edge1");
-    b.connect(r, ss.nodeId, "x");
+    const zero = b.add(new N.Const({ value: 0 }));
+    const ss = b.add(new N.Smoothstep());
+    b.connect(zero).to(ss, "edge0");
+    b.connect(gi.radius).to(ss, "edge1");
+    b.connect(r).to(ss, "x");
 
-    const falloff = b.add("math", { op: "oneminus" });
-    b.connect(ss, falloff.nodeId, "x");
+    const falloff = b.add(new N.Math({ op: "oneminus" }));
+    b.connect(ss).to(falloff, "x");
 
-    const deg2rad = b.add("value", { value: Math.PI / 180 });
-    const rad = b.add("math", { op: "mul" });
-    b.connect(gi.angle, rad.nodeId, "a");
-    b.connect(deg2rad, rad.nodeId, "b");
-    const angleRad = b.add("math", { op: "mul" });
-    b.connect(rad, angleRad.nodeId, "a");
-    b.connect(falloff, angleRad.nodeId, "b");
+    const deg2rad = b.add(new N.Const({ value: Math.PI / 180 }));
+    const rad = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.angle).to(rad, "a");
+    b.connect(deg2rad).to(rad, "b");
+    const angleRad = b.add(new N.Math({ op: "mul" }));
+    b.connect(rad).to(angleRad, "a");
+    b.connect(falloff).to(angleRad, "b");
 
-    const rotated = b.add("vector-math", { op: "rotate-2d" });
-    b.connect(d, rotated.nodeId, "a");
-    b.connect(angleRad, rotated.nodeId, "b");
+    const rotated = b.add(new N.VectorMath({ op: "rotate-2d" }));
+    b.connect(d).to(rotated, "a");
+    b.connect(angleRad).to(rotated, "b");
 
-    const finalUv = b.add("vector-math", { op: "add" });
-    b.connect(c, finalUv.nodeId, "a");
-    b.connect(rotated, finalUv.nodeId, "b");
+    const finalUv = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(c).to(finalUv, "a");
+    b.connect(rotated).to(finalUv, "b");
 
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(finalUv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(finalUv).to(sample, "uv");
 
     return b.output(
       { nodeId: sample.nodeId, pin: "color" },

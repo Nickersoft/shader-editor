@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Flowing Gradient",
   description: "Liquid silk gradient",
   color: "#6b17e6",
@@ -27,9 +28,9 @@ export class FlowingGradient extends ProceduralShader {
     const w2 = b.domainWarp(w1, src.t, {
       amplitude: 0.8, detail: 2, scale: 1, timePhase: 1.3,
     });
-    const fbm = b.add("noise-texture", { kind: "fbm", detail: 2, lacunarity: 2, roughness: 0.5, distortion: 0 });
-    b.connect(w2, fbm.nodeId, "p");
-    b.connect(src.t, fbm.nodeId, "t");
+    const fbm = b.add(new N.NoiseTexture({ kind: "fbm", detail: 2, lacunarity: 2, roughness: 0.5, distortion: 0 }));
+    b.connect(w2).to(fbm, "p");
+    b.connect(src.t).to(fbm, "t");
     const ramp = b.colorRamp(fbm, [
       [0.04, 0.0, 0.08],
       [0.42, 0.09, 0.9],

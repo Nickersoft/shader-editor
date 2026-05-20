@@ -4,12 +4,13 @@
 //   result = mix(colorA, colorB, t)
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Duotone",
   description: "Map colors to two tones based on luminance",
   color: "#a855f7",
@@ -34,32 +35,32 @@ export class Duotone extends ProceduralEffect {
       { id: "blend", type: "float", label: "Blend", default: 0.5 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sample.nodeId, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sample, "uv");
     const color = { nodeId: sample.nodeId, pin: "color" };
     const alpha = { nodeId: sample.nodeId, pin: "alpha" };
 
-    const lum = b.add("color-math", { op: "luminance" });
-    b.connect(color, lum.nodeId, "a");
+    const lum = b.add(new N.ColorMath({ op: "luminance" }));
+    b.connect(color).to(lum, "a");
 
-    const half = b.add("value", { value: 0.5 });
-    const e0 = b.add("math", { op: "sub" });
-    b.connect(gi.blend, e0.nodeId, "a");
-    b.connect(half, e0.nodeId, "b");
-    const e1 = b.add("math", { op: "add" });
-    b.connect(gi.blend, e1.nodeId, "a");
-    b.connect(half, e1.nodeId, "b");
+    const half = b.add(new N.Const({ value: 0.5 }));
+    const e0 = b.add(new N.Math({ op: "sub" }));
+    b.connect(gi.blend).to(e0, "a");
+    b.connect(half).to(e0, "b");
+    const e1 = b.add(new N.Math({ op: "add" }));
+    b.connect(gi.blend).to(e1, "a");
+    b.connect(half).to(e1, "b");
 
-    const t = b.add("smoothstep", {});
-    b.connect(e0, t.nodeId, "edge0");
-    b.connect(e1, t.nodeId, "edge1");
-    b.connect(lum, t.nodeId, "x");
+    const t = b.add(new N.Smoothstep());
+    b.connect(e0).to(t, "edge0");
+    b.connect(e1).to(t, "edge1");
+    b.connect(lum).to(t, "x");
 
-    const result = b.add("mix-color", { clampT: true });
-    b.connect(gi.colorA, result.nodeId, "a");
-    b.connect(gi.colorB, result.nodeId, "b");
-    b.connect(t, result.nodeId, "t");
+    const result = b.add(new N.MixColor({ clampT: true }));
+    b.connect(gi.colorA).to(result, "a");
+    b.connect(gi.colorB).to(result, "b");
+    b.connect(t).to(result, "t");
 
     return b.output(result, alpha);
   }

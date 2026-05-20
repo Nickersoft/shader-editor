@@ -22,8 +22,8 @@
 	import { isProceduralShader } from '@/shaders/core/procedural-shader.svelte';
 	import {
 		canCoerce,
-		getPrimitive,
-		listPrimitives,
+		getNode,
+		listNodes,
 		type GraphNode,
 		type PinSpec,
 	} from '@/shaders/node-graph';
@@ -225,7 +225,7 @@
 	function pinSpecOf(nodeId: string, pinId: string, side: 'input' | 'output'): PinSpec | null {
 		const node = nodeById.get(nodeId);
 		if (!node) return null;
-		const prim = getPrimitive(node.typeId);
+		const prim = getNode(node.typeId);
 		if (!prim) return null;
 		const pins = side === 'input' ? prim.inputs(node.config) : prim.outputs(node.config);
 		return pins.find((p) => p.id === pinId) ?? null;
@@ -440,7 +440,7 @@
 	}
 
 	let primitives = $derived(
-		listPrimitives()
+		listNodes()
 			.filter((p) => p.typeId !== 'group-input' && p.typeId !== 'group-output')
 			.sort((a, b) => a.name.localeCompare(b.name))
 	);
@@ -562,7 +562,7 @@
 					nodeColor={(n) => {
 						const data = n.data as { typeId?: string } | undefined;
 						if (!data?.typeId) return '#666';
-						const prim = getPrimitive(data.typeId);
+						const prim = getNode(data.typeId);
 						return categoryColorFor(prim?.category, prim?.color ?? '#818cf8');
 					}}
 				/>

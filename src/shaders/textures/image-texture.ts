@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import type { GlslBlock, ShaderMeta } from "@/shaders/core/types";
 import { noImage, zColorRgba, zImageInput } from "@/shaders/core/schemas";
 
 const schema = z.object({
@@ -9,7 +9,7 @@ const schema = z.object({
   tint: zColorRgba().default([1, 1, 1, 1]).describe("Tint"),
 });
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Image Texture",
   description: "Sample an uploaded image as a texture",
   color: "#3b82f6",

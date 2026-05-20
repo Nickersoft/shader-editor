@@ -7,12 +7,13 @@
 // not migrating; this graph captures the practical case.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Dither",
   description: "White-noise dither (2-color)",
   color: "#475569",
@@ -33,48 +34,48 @@ export class Dither extends ProceduralEffect {
       { id: "colorLight", type: "vec3", label: "Light", default: [1, 1, 0.95] },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sample, "uv");
     const sampleColor = { nodeId: sample.nodeId, pin: "color" };
     const sampleAlpha = { nodeId: sample.nodeId, pin: "alpha" };
 
-    const lum = b.add("color-math", { op: "luminance" });
-    b.connect(sampleColor, lum.nodeId, "a");
+    const lum = b.add(new N.ColorMath({ op: "luminance" }));
+    b.connect(sampleColor).to(lum, "a");
 
     // High-frequency noise across screen — multiply uv by resolution so each
     // texel gets its own hash.
-    const reso = b.add("resolution", {}, undefined, "out");
-    const px = b.add("vector-math", { op: "scale" });
-    b.connect(uv, px.nodeId, "a");
+    const reso = b.add(new N.Resolution(), undefined, "out");
+    const px = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(uv).to(px, "a");
     // resolution is vec2, scale needs (vec2, float). Hack: collapse via length.
     // Simpler: feed uv directly with a big scale.
     void reso;
-    b.connect(b.add("value", { value: 1000 }), px.nodeId, "b");
+    b.connect(b.add(new N.Const({ value: 1000 }))).to(px, "b");
 
-    const n = b.add("white-noise-texture", {});
-    b.connect(px, n.nodeId, "p");
+    const n = b.add(new N.Hash());
+    b.connect(px).to(n, "p");
 
     // d = lum + (n − 0.5) · spread
-    const noff = b.add("math", { op: "sub" }, { b: 0.5 });
-    b.connect(n, noff.nodeId, "a");
-    const nss = b.add("math", { op: "mul" });
-    b.connect(noff, nss.nodeId, "a");
-    b.connect(gi.spread, nss.nodeId, "b");
-    const d = b.add("math", { op: "add" });
-    b.connect(lum, d.nodeId, "a");
-    b.connect(nss, d.nodeId, "b");
+    const noff = b.add(new N.Math({ op: "sub" }), { b: 0.5 });
+    b.connect(n).to(noff, "a");
+    const nss = b.add(new N.Math({ op: "mul" }));
+    b.connect(noff).to(nss, "a");
+    b.connect(gi.spread).to(nss, "b");
+    const d = b.add(new N.Math({ op: "add" }));
+    b.connect(lum).to(d, "a");
+    b.connect(nss).to(d, "b");
 
     // v = step(threshold, d)
-    const v = b.add("math", { op: "step" });
-    b.connect(gi.threshold, v.nodeId, "a");
-    b.connect(d, v.nodeId, "b");
+    const v = b.add(new N.Math({ op: "step" }));
+    b.connect(gi.threshold).to(v, "a");
+    b.connect(d).to(v, "b");
 
-    const out = b.add("mix-color", {});
-    b.connect(gi.colorDark, out.nodeId, "a");
-    b.connect(gi.colorLight, out.nodeId, "b");
-    b.connect(v, out.nodeId, "t");
+    const out = b.add(new N.MixColor());
+    b.connect(gi.colorDark).to(out, "a");
+    b.connect(gi.colorLight).to(out, "b");
+    b.connect(v).to(out, "t");
 
     return b.output(out, sampleAlpha);
   }

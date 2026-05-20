@@ -4,12 +4,13 @@
 //   result = hsv2rgb(hsv)
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Hue Shift",
   description: "Rotate hue around the color wheel",
   color: "#a855f7",
@@ -27,38 +28,38 @@ export class HueShift extends ProceduralEffect {
       { id: "shift", type: "float", label: "Shift", default: 0 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sample.nodeId, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sample, "uv");
     const color = { nodeId: sample.nodeId, pin: "color" };
     const alpha = { nodeId: sample.nodeId, pin: "alpha" };
 
-    const hsv = b.add("rgb-to-hsv", {}, undefined, "hsv");
-    b.connect(color, hsv.nodeId, "rgb");
+    const hsv = b.add(new N.RgbToHsv(), undefined, "hsv");
+    b.connect(color).to(hsv, "rgb");
 
-    const split = b.add("separate-color", {});
-    b.connect(hsv, split.nodeId, "v");
+    const split = b.add(new N.SeparateColor());
+    b.connect(hsv).to(split, "v");
 
     // Normalise shift (deg) into hue space [0,1] and wrap with fract.
-    const deg = b.add("value", { value: 1 / 360 });
-    const factor = b.add("math", { op: "mul" });
-    b.connect(gi.shift, factor.nodeId, "a");
-    b.connect(deg, factor.nodeId, "b");
+    const deg = b.add(new N.Const({ value: 1 / 360 }));
+    const factor = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.shift).to(factor, "a");
+    b.connect(deg).to(factor, "b");
 
-    const sumH = b.add("math", { op: "add" });
-    b.connect({ nodeId: split.nodeId, pin: "r" }, sumH.nodeId, "a");
-    b.connect(factor, sumH.nodeId, "b");
+    const sumH = b.add(new N.Math({ op: "add" }));
+    b.connect(split, "r").to(sumH, "a");
+    b.connect(factor).to(sumH, "b");
 
-    const wrapH = b.add("math", { op: "fract" });
-    b.connect(sumH, wrapH.nodeId, "x");
+    const wrapH = b.add(new N.Math({ op: "fract" }));
+    b.connect(sumH).to(wrapH, "x");
 
-    const newHsv = b.add("combine-color", {});
-    b.connect(wrapH, newHsv.nodeId, "r");
-    b.connect({ nodeId: split.nodeId, pin: "g" }, newHsv.nodeId, "g");
-    b.connect({ nodeId: split.nodeId, pin: "b" }, newHsv.nodeId, "b");
+    const newHsv = b.add(new N.CombineColor());
+    b.connect(wrapH).to(newHsv, "r");
+    b.connect(split, "g").to(newHsv, "g");
+    b.connect(split, "b").to(newHsv, "b");
 
-    const result = b.add("hsv-to-rgb", {}, undefined, "rgb");
-    b.connect(newHsv, result.nodeId, "hsv");
+    const result = b.add(new N.HsvToRgb(), undefined, "rgb");
+    b.connect(newHsv).to(result, "hsv");
 
     return b.output(result, alpha);
   }

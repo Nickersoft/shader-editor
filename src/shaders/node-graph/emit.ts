@@ -16,12 +16,28 @@ import { sanitizeName } from "@/shaders/core/shader.svelte";
 import type { GlslHelperName } from "@/shaders/core/types";
 import type { ExtraUniformDecl } from "@/lib/codegen/types";
 import { coerce } from "./coerce";
-import { requirePrimitive, type UniformSpec } from "./registry";
+import { requireNode, type UniformSpec } from "./registry";
 import { glslLiteral, glslTypeOf, type Edge, type GraphNode, type NodeGraph, type PinSpec } from "./types";
 
 export const GROUP_INPUT_TYPE_ID = "group-input";
 export const GROUP_OUTPUT_TYPE_ID = "group-output";
 export const GROUP_TYPE_ID = "group";
+export const ITERATE_TYPE_ID = "iterate";
+
+// Pin-id conventions for `Iterate` accumulators. The inner GroupInput receives
+// `${name}_in`, the inner GroupOutput emits `${name}_out`, and the synthetic
+// loop counter is delivered on the inner GroupInput's `index` pin.
+export const ACCUMULATOR_IN_SUFFIX = "_in";
+export const ACCUMULATOR_OUT_SUFFIX = "_out";
+export const ITERATE_INDEX_PIN_ID = "index";
+
+export function accumulatorInPinId(name: string): string {
+  return `${name}${ACCUMULATOR_IN_SUFFIX}`;
+}
+
+export function accumulatorOutPinId(name: string): string {
+  return `${name}${ACCUMULATOR_OUT_SUFFIX}`;
+}
 
 export interface EmittedGraph {
   /** The fragment-function body — statements ending with `return vec4(...);`. */
@@ -162,7 +178,7 @@ function emitGraphInto(graph: NodeGraph, opts: EmitGraphIntoOpts): SubgraphResul
   for (const nodeId of order) {
     const node = nodeById.get(nodeId);
     if (!node) continue;
-    const prim = requirePrimitive(node.typeId);
+    const prim = requireNode(node.typeId);
     const frame: NodeFrame = {
       node,
       inputs: prim.inputs(node.config),
@@ -292,7 +308,7 @@ function emitGroupNode(state: EmitState, frame: NodeFrame): void {
 function emitStandardNode(
   state: EmitState,
   frame: NodeFrame,
-  prim: ReturnType<typeof requirePrimitive>,
+  prim: ReturnType<typeof requireNode>,
 ): void {
   const { node, inputs, outputs, slug, outputLocals } = frame;
   const uniformSpecs = prim.uniforms(node);

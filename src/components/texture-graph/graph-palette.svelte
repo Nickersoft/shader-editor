@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import type { NodePrimitive } from '@/shaders/node-graph';
+	import type { BaseNode } from '@/shaders/node-graph';
 
 	interface Props {
-		primitives: readonly NodePrimitive[];
+		primitives: readonly BaseNode[];
 		onPick: (typeId: string) => void;
 		onClose: () => void;
 	}
@@ -43,7 +43,7 @@
 		'other'
 	];
 
-	type Group = { key: string; label: string; items: readonly NodePrimitive[] };
+	type Group = { key: string; label: string; items: readonly BaseNode[] };
 
 	let filtered = $derived.by(() => {
 		const q = query.trim().toLowerCase();
@@ -56,7 +56,7 @@
 	});
 
 	let groups = $derived.by<Group[]>(() => {
-		const byCat = new Map<string, NodePrimitive[]>();
+		const byCat = new Map<string, BaseNode[]>();
 		for (const p of filtered) {
 			const cat = p.category ?? 'other';
 			let bucket = byCat.get(cat);
@@ -89,7 +89,7 @@
 	// instead of O(N) via Array.indexOf — the template renders one row per
 	// primitive, so a linear scan there is O(N²) per keystroke.
 	let flatIndex = $derived.by(() => {
-		const m = new Map<NodePrimitive, number>();
+		const m = new Map<BaseNode, number>();
 		for (let i = 0; i < flatList.length; i++) m.set(flatList[i], i);
 		return m;
 	});

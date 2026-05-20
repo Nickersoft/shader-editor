@@ -37,6 +37,9 @@ const cases: Case[] = [
   { name: "sampler linear", typeId: "sampler", config: { mode: "linear", samples: 8 }, outPin: "out", groupPin: "color" },
   { name: "sampler zoom", typeId: "sampler", config: { mode: "zoom", samples: 16 }, outPin: "out", groupPin: "color" },
   { name: "sampler angular", typeId: "sampler", config: { mode: "angular", samples: 16 }, outPin: "out", groupPin: "color" },
+  { name: "sampler gaussian R=1", typeId: "sampler", config: { mode: "gaussian", samples: 1 }, outPin: "out", groupPin: "color" },
+  { name: "sampler gaussian R=2", typeId: "sampler", config: { mode: "gaussian", samples: 2 }, outPin: "out", groupPin: "color" },
+  { name: "sampler gaussian R=3", typeId: "sampler", config: { mode: "gaussian", samples: 3 }, outPin: "out", groupPin: "color" },
   // Pixelate / grain / mask.
   { name: "pixelate", typeId: "pixelate", config: {}, outPin: "out", groupPin: "color" },
   { name: "grain", typeId: "grain", config: {}, outPin: "out", groupPin: "alpha" },
@@ -45,6 +48,10 @@ const cases: Case[] = [
   { name: "mask rect", typeId: "mask", config: { shape: "rect" }, outPin: "out", groupPin: "alpha" },
   { name: "mask gradient-linear", typeId: "mask", config: { shape: "gradient-linear" }, outPin: "out", groupPin: "alpha" },
   { name: "mask gradient-radial", typeId: "mask", config: { shape: "gradient-radial" }, outPin: "out", groupPin: "alpha" },
+  // SDF — each shape, float distance into group alpha.
+  { name: "sdf rounded-box", typeId: "sdf", config: { shape: "rounded-box" }, outPin: "distance", groupPin: "alpha" },
+  { name: "sdf circle", typeId: "sdf", config: { shape: "circle" }, outPin: "distance", groupPin: "alpha" },
+  { name: "sdf box", typeId: "sdf", config: { shape: "box" }, outPin: "distance", groupPin: "alpha" },
 ];
 
 function buildGraph(c: Case): NodeGraph {

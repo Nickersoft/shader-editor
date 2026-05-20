@@ -28,9 +28,7 @@ import type { ExtraUniformDecl } from "@/lib/codegen/types";
 import { makeId } from "@/lib/utils";
 
 import type { SpatialControlsSpec } from "./spatial";
-import type { BlendMode, GlslBlock, NodeMeta } from "./types";
-
-export type ShaderMeta = NodeMeta;
+import type { BlendMode, GlslBlock, ShaderMeta } from "./types";
 
 /** Filter `string` index-signatures out of `keyof T` (see legacy `ConcreteKeys`). */
 type ConcreteKeys<T> = string extends keyof T ? never : Extract<keyof T, string>;
@@ -196,9 +194,12 @@ export abstract class StaticShader<
 > extends Shader<I> {
   static readonly schema: z.ZodTypeAny;
 
+  get cls(): StaticShaderClass {
+    return this.constructor as StaticShaderClass;
+  }
+
   protected parseInputs(init: ShaderInit): Record<string, unknown> {
-    const cls = this.constructor as StaticShaderClass;
-    return cls.schema.parse(init.inputs ?? {}) as Record<string, unknown>;
+    return this.cls.schema.parse(init.inputs ?? {}) as Record<string, unknown>;
   }
 
   /**
@@ -207,8 +208,7 @@ export abstract class StaticShader<
    * and must not trigger rebuilds.
    */
   structuralKey(): string {
-    const cls = this.constructor as StaticShaderClass;
-    const keys = collectStructuralKeys(cls.schema);
+    const keys = collectStructuralKeys(this.cls.schema);
     if (keys.length === 0) return "";
     const bag = this.inputs as Record<string, unknown>;
     const parts: string[] = [];
@@ -232,6 +232,14 @@ export abstract class Effect<
 > extends Shader<I> {
   static readonly scope: EffectScope = "both";
   static readonly appliesTo: readonly EffectAppliesTo[] = ["any"];
+  /**
+   * Marks the effect as needing a backdrop sampler (`u_backdrop`) — the
+   * composite of every layer below this one. Setting this flag causes the
+   * scene planner to insert a pre-pass that composites only the layers below
+   * into a dedicated backdrop FBO, which the runtime then binds for this
+   * effect's GLSL passes.
+   */
+  static readonly needsBackdrop: boolean = false;
 
   abstract glsl(): GlslBlock | GlslBlock[];
 }
@@ -245,14 +253,16 @@ export abstract class StaticEffect<
 > extends Effect<I> {
   static readonly schema: z.ZodTypeAny;
 
+  get cls(): StaticShaderClass {
+    return this.constructor as unknown as StaticShaderClass;
+  }
+
   protected parseInputs(init: ShaderInit): Record<string, unknown> {
-    const cls = this.constructor as unknown as StaticShaderClass;
-    return cls.schema.parse(init.inputs ?? {}) as Record<string, unknown>;
+    return this.cls.schema.parse(init.inputs ?? {}) as Record<string, unknown>;
   }
 
   structuralKey(): string {
-    const cls = this.constructor as unknown as StaticShaderClass;
-    const keys = collectStructuralKeys(cls.schema);
+    const keys = collectStructuralKeys(this.cls.schema);
     if (keys.length === 0) return "";
     const bag = this.inputs as Record<string, unknown>;
     const parts: string[] = [];
@@ -358,6 +368,10 @@ export function getEffectScope(cls: ShaderClass): EffectScope {
 export function getEffectAppliesTo(cls: ShaderClass): readonly EffectAppliesTo[] {
   const v = (cls as unknown as { appliesTo?: readonly EffectAppliesTo[] }).appliesTo;
   return v ?? ["any"];
+}
+
+export function effectNeedsBackdrop(cls: ShaderClass): boolean {
+  return (cls as unknown as { needsBackdrop?: boolean }).needsBackdrop === true;
 }
 
 export function generatorSourceKind(cls: ShaderClass): EffectAppliesTo {

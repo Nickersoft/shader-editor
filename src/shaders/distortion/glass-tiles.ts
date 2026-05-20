@@ -15,12 +15,13 @@
 // the graph encodes both branches and `mix`es by step(1, aspect).
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Glass Tiles",
   description: "Refraction-like distortion in a tile grid pattern",
   color: "#22d3ee",
@@ -41,197 +42,197 @@ export class GlassTiles extends ProceduralEffect {
       { id: "roundness", type: "float", label: "Roundness", default: 0.5 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const res = b.add("resolution", {}, undefined, "out");
-    const splitRes = b.add("separate-xy", {});
-    b.connect(res, splitRes.nodeId, "v");
-    const aspect = b.add("math", { op: "div" });
-    b.connect({ nodeId: splitRes.nodeId, pin: "x" }, aspect.nodeId, "a");
-    b.connect({ nodeId: splitRes.nodeId, pin: "y" }, aspect.nodeId, "b");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const res = b.add(new N.Resolution(), undefined, "out");
+    const splitRes = b.add(new N.SeparateXy());
+    b.connect(res).to(splitRes, "v");
+    const aspect = b.add(new N.Math({ op: "div" }));
+    b.connect(splitRes, "x").to(aspect, "a");
+    b.connect(splitRes, "y").to(aspect, "b");
 
     // Two candidate tileC values, blended on step(1, aspect).
-    const wideX = b.add("value", { value: 1 });
-    const tileCWideX = b.add("math", { op: "mul" });
-    b.connect(gi.tileCount, tileCWideX.nodeId, "a");
-    b.connect(wideX, tileCWideX.nodeId, "b");
-    const tileCWideY = b.add("math", { op: "div" });
-    b.connect(gi.tileCount, tileCWideY.nodeId, "a");
-    b.connect(aspect, tileCWideY.nodeId, "b");
-    const tallX = b.add("math", { op: "mul" });
-    b.connect(gi.tileCount, tallX.nodeId, "a");
-    b.connect(aspect, tallX.nodeId, "b");
+    const wideX = b.add(new N.Const({ value: 1 }));
+    const tileCWideX = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.tileCount).to(tileCWideX, "a");
+    b.connect(wideX).to(tileCWideX, "b");
+    const tileCWideY = b.add(new N.Math({ op: "div" }));
+    b.connect(gi.tileCount).to(tileCWideY, "a");
+    b.connect(aspect).to(tileCWideY, "b");
+    const tallX = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.tileCount).to(tallX, "a");
+    b.connect(aspect).to(tallX, "b");
     const tallY = gi.tileCount;
-    const oneV = b.add("value", { value: 1 });
-    const isWide = b.add("math", { op: "step" });
-    b.connect(oneV, isWide.nodeId, "a");
-    b.connect(aspect, isWide.nodeId, "b");
+    const oneV = b.add(new N.Const({ value: 1 }));
+    const isWide = b.add(new N.Math({ op: "step" }));
+    b.connect(oneV).to(isWide, "a");
+    b.connect(aspect).to(isWide, "b");
     // mix(tall, wide, isWide) per channel
-    const tileCx = b.add("math", { op: "mix" });
-    b.connect(tallX, tileCx.nodeId, "a");
-    b.connect(tileCWideX, tileCx.nodeId, "b");
+    const tileCx = b.add(new N.Math({ op: "mix" }));
+    b.connect(tallX).to(tileCx, "a");
+    b.connect(tileCWideX).to(tileCx, "b");
     // math:mix hardcodes t=0.5; build it manually as lerp instead.
     // tileCx = tall + (wide - tall) · isWide
-    const diffX = b.add("math", { op: "sub" });
-    b.connect(tileCWideX, diffX.nodeId, "a");
-    b.connect(tallX, diffX.nodeId, "b");
-    const scaledX = b.add("math", { op: "mul" });
-    b.connect(diffX, scaledX.nodeId, "a");
-    b.connect(isWide, scaledX.nodeId, "b");
-    const finalTcX = b.add("math", { op: "add" });
-    b.connect(tallX, finalTcX.nodeId, "a");
-    b.connect(scaledX, finalTcX.nodeId, "b");
-    const diffY = b.add("math", { op: "sub" });
-    b.connect(tileCWideY, diffY.nodeId, "a");
-    b.connect(tallY, diffY.nodeId, "b");
-    const scaledY = b.add("math", { op: "mul" });
-    b.connect(diffY, scaledY.nodeId, "a");
-    b.connect(isWide, scaledY.nodeId, "b");
-    const finalTcY = b.add("math", { op: "add" });
-    b.connect(tallY, finalTcY.nodeId, "a");
-    b.connect(scaledY, finalTcY.nodeId, "b");
-    const tileC = b.add("combine-xy", {});
-    b.connect(finalTcX, tileC.nodeId, "x");
-    b.connect(finalTcY, tileC.nodeId, "y");
+    const diffX = b.add(new N.Math({ op: "sub" }));
+    b.connect(tileCWideX).to(diffX, "a");
+    b.connect(tallX).to(diffX, "b");
+    const scaledX = b.add(new N.Math({ op: "mul" }));
+    b.connect(diffX).to(scaledX, "a");
+    b.connect(isWide).to(scaledX, "b");
+    const finalTcX = b.add(new N.Math({ op: "add" }));
+    b.connect(tallX).to(finalTcX, "a");
+    b.connect(scaledX).to(finalTcX, "b");
+    const diffY = b.add(new N.Math({ op: "sub" }));
+    b.connect(tileCWideY).to(diffY, "a");
+    b.connect(tallY).to(diffY, "b");
+    const scaledY = b.add(new N.Math({ op: "mul" }));
+    b.connect(diffY).to(scaledY, "a");
+    b.connect(isWide).to(scaledY, "b");
+    const finalTcY = b.add(new N.Math({ op: "add" }));
+    b.connect(tallY).to(finalTcY, "a");
+    b.connect(scaledY).to(finalTcY, "b");
+    const tileC = b.add(new N.CombineXy());
+    b.connect(finalTcX).to(tileC, "x");
+    b.connect(finalTcY).to(tileC, "y");
 
     // aspectUV = (uv.x · aspect, uv.y)
-    const splitUv = b.add("separate-xy", {});
-    b.connect(uv, splitUv.nodeId, "v");
-    const uvAx = b.add("math", { op: "mul" });
-    b.connect({ nodeId: splitUv.nodeId, pin: "x" }, uvAx.nodeId, "a");
-    b.connect(aspect, uvAx.nodeId, "b");
-    const aspectUv = b.add("combine-xy", {});
-    b.connect(uvAx, aspectUv.nodeId, "x");
-    b.connect({ nodeId: splitUv.nodeId, pin: "y" }, aspectUv.nodeId, "y");
+    const splitUv = b.add(new N.SeparateXy());
+    b.connect(uv).to(splitUv, "v");
+    const uvAx = b.add(new N.Math({ op: "mul" }));
+    b.connect(splitUv, "x").to(uvAx, "a");
+    b.connect(aspect).to(uvAx, "b");
+    const aspectUv = b.add(new N.CombineXy());
+    b.connect(uvAx).to(aspectUv, "x");
+    b.connect(splitUv, "y").to(aspectUv, "y");
 
     // origin = (0.5 · aspect, 0.5)
-    const halfV = b.add("value", { value: 0.5 });
-    const halfAspect = b.add("math", { op: "mul" });
-    b.connect(halfV, halfAspect.nodeId, "a");
-    b.connect(aspect, halfAspect.nodeId, "b");
-    const origin = b.add("combine-xy", {});
-    b.connect(halfAspect, origin.nodeId, "x");
-    b.connect(halfV, origin.nodeId, "y");
+    const halfV = b.add(new N.Const({ value: 0.5 }));
+    const halfAspect = b.add(new N.Math({ op: "mul" }));
+    b.connect(halfV).to(halfAspect, "a");
+    b.connect(aspect).to(halfAspect, "b");
+    const origin = b.add(new N.CombineXy());
+    b.connect(halfAspect).to(origin, "x");
+    b.connect(halfV).to(origin, "y");
 
     // centered = aspectUV − origin
-    const centered = b.add("vector-math", { op: "sub" });
-    b.connect(aspectUv, centered.nodeId, "a");
-    b.connect(origin, centered.nodeId, "b");
+    const centered = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(aspectUv).to(centered, "a");
+    b.connect(origin).to(centered, "b");
 
     // rotated = rotate2D(centered, rotation·π/180) + origin
-    const deg2rad = b.add("value", { value: Math.PI / 180 });
-    const rotR = b.add("math", { op: "mul" });
-    b.connect(gi.rotation, rotR.nodeId, "a");
-    b.connect(deg2rad, rotR.nodeId, "b");
-    const rot = b.add("vector-math", { op: "rotate-2d" });
-    b.connect(centered, rot.nodeId, "a");
-    b.connect(rotR, rot.nodeId, "b");
-    const rotated = b.add("vector-math", { op: "add" });
-    b.connect(rot, rotated.nodeId, "a");
-    b.connect(origin, rotated.nodeId, "b");
+    const deg2rad = b.add(new N.Const({ value: Math.PI / 180 }));
+    const rotR = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.rotation).to(rotR, "a");
+    b.connect(deg2rad).to(rotR, "b");
+    const rot = b.add(new N.VectorMath({ op: "rotate-2d" }));
+    b.connect(centered).to(rot, "a");
+    b.connect(rotR).to(rot, "b");
+    const rotated = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(rot).to(rotated, "a");
+    b.connect(origin).to(rotated, "b");
 
     // gridUV = (rotated.x / aspect, rotated.y)
-    const splitRot = b.add("separate-xy", {});
-    b.connect(rotated, splitRot.nodeId, "v");
-    const gridX = b.add("math", { op: "div" });
-    b.connect({ nodeId: splitRot.nodeId, pin: "x" }, gridX.nodeId, "a");
-    b.connect(aspect, gridX.nodeId, "b");
-    const gridUv = b.add("combine-xy", {});
-    b.connect(gridX, gridUv.nodeId, "x");
-    b.connect({ nodeId: splitRot.nodeId, pin: "y" }, gridUv.nodeId, "y");
+    const splitRot = b.add(new N.SeparateXy());
+    b.connect(rotated).to(splitRot, "v");
+    const gridX = b.add(new N.Math({ op: "div" }));
+    b.connect(splitRot, "x").to(gridX, "a");
+    b.connect(aspect).to(gridX, "b");
+    const gridUv = b.add(new N.CombineXy());
+    b.connect(gridX).to(gridUv, "x");
+    b.connect(splitRot, "y").to(gridUv, "y");
 
     // tileSize = 1/tileC; tileOrigin = floor(gridUV · tileC) / tileC
-    const oneVec = b.add("combine-xy", {});
-    b.connect(oneV, oneVec.nodeId, "x");
-    b.connect(oneV, oneVec.nodeId, "y");
+    const oneVec = b.add(new N.CombineXy());
+    b.connect(oneV).to(oneVec, "x");
+    b.connect(oneV).to(oneVec, "y");
     // gridScaled = gridUV * tileC (component-wise)
-    const splitGrid = b.add("separate-xy", {});
-    b.connect(gridUv, splitGrid.nodeId, "v");
-    const gxTc = b.add("math", { op: "mul" });
-    b.connect({ nodeId: splitGrid.nodeId, pin: "x" }, gxTc.nodeId, "a");
-    b.connect(finalTcX, gxTc.nodeId, "b");
-    const gyTc = b.add("math", { op: "mul" });
-    b.connect({ nodeId: splitGrid.nodeId, pin: "y" }, gyTc.nodeId, "a");
-    b.connect(finalTcY, gyTc.nodeId, "b");
-    const fx = b.add("math", { op: "floor" });
-    b.connect(gxTc, fx.nodeId, "x");
-    const fy = b.add("math", { op: "floor" });
-    b.connect(gyTc, fy.nodeId, "x");
-    const origX = b.add("math", { op: "div" });
-    b.connect(fx, origX.nodeId, "a");
-    b.connect(finalTcX, origX.nodeId, "b");
-    const origY = b.add("math", { op: "div" });
-    b.connect(fy, origY.nodeId, "a");
-    b.connect(finalTcY, origY.nodeId, "b");
+    const splitGrid = b.add(new N.SeparateXy());
+    b.connect(gridUv).to(splitGrid, "v");
+    const gxTc = b.add(new N.Math({ op: "mul" }));
+    b.connect(splitGrid, "x").to(gxTc, "a");
+    b.connect(finalTcX).to(gxTc, "b");
+    const gyTc = b.add(new N.Math({ op: "mul" }));
+    b.connect(splitGrid, "y").to(gyTc, "a");
+    b.connect(finalTcY).to(gyTc, "b");
+    const fx = b.add(new N.Math({ op: "floor" }));
+    b.connect(gxTc).to(fx, "x");
+    const fy = b.add(new N.Math({ op: "floor" }));
+    b.connect(gyTc).to(fy, "x");
+    const origX = b.add(new N.Math({ op: "div" }));
+    b.connect(fx).to(origX, "a");
+    b.connect(finalTcX).to(origX, "b");
+    const origY = b.add(new N.Math({ op: "div" }));
+    b.connect(fy).to(origY, "a");
+    b.connect(finalTcY).to(origY, "b");
 
     // (gridUV − tileOrigin) / tileSize per channel = (gridUV − tileOrigin) · tileC
-    const dx = b.add("math", { op: "sub" });
-    b.connect({ nodeId: splitGrid.nodeId, pin: "x" }, dx.nodeId, "a");
-    b.connect(origX, dx.nodeId, "b");
-    const dy = b.add("math", { op: "sub" });
-    b.connect({ nodeId: splitGrid.nodeId, pin: "y" }, dy.nodeId, "a");
-    b.connect(origY, dy.nodeId, "b");
-    const dxN = b.add("math", { op: "mul" });
-    b.connect(dx, dxN.nodeId, "a");
-    b.connect(finalTcX, dxN.nodeId, "b");
-    const dyN = b.add("math", { op: "mul" });
-    b.connect(dy, dyN.nodeId, "a");
-    b.connect(finalTcY, dyN.nodeId, "b");
-    const fcx = b.add("math", { op: "sub" });
-    b.connect(dxN, fcx.nodeId, "a");
-    b.connect(halfV, fcx.nodeId, "b");
-    const fcy = b.add("math", { op: "sub" });
-    b.connect(dyN, fcy.nodeId, "a");
-    b.connect(halfV, fcy.nodeId, "b");
-    const fromCenter = b.add("combine-xy", {});
-    b.connect(fcx, fromCenter.nodeId, "x");
-    b.connect(fcy, fromCenter.nodeId, "y");
+    const dx = b.add(new N.Math({ op: "sub" }));
+    b.connect(splitGrid, "x").to(dx, "a");
+    b.connect(origX).to(dx, "b");
+    const dy = b.add(new N.Math({ op: "sub" }));
+    b.connect(splitGrid, "y").to(dy, "a");
+    b.connect(origY).to(dy, "b");
+    const dxN = b.add(new N.Math({ op: "mul" }));
+    b.connect(dx).to(dxN, "a");
+    b.connect(finalTcX).to(dxN, "b");
+    const dyN = b.add(new N.Math({ op: "mul" }));
+    b.connect(dy).to(dyN, "a");
+    b.connect(finalTcY).to(dyN, "b");
+    const fcx = b.add(new N.Math({ op: "sub" }));
+    b.connect(dxN).to(fcx, "a");
+    b.connect(halfV).to(fcx, "b");
+    const fcy = b.add(new N.Math({ op: "sub" }));
+    b.connect(dyN).to(fcy, "a");
+    b.connect(halfV).to(fcy, "b");
+    const fromCenter = b.add(new N.CombineXy());
+    b.connect(fcx).to(fromCenter, "x");
+    b.connect(fcy).to(fromCenter, "y");
 
     // dot(fromCenter, fromCenter)
-    const fcDot = b.add("vector-math", { op: "dot" });
-    b.connect(fromCenter, fcDot.nodeId, "a");
-    b.connect(fromCenter, fcDot.nodeId, "b");
-    const fourV = b.add("value", { value: 4 });
-    const rMul = b.add("math", { op: "mul" });
-    b.connect(gi.roundness, rMul.nodeId, "a");
-    b.connect(fourV, rMul.nodeId, "b");
-    const dr = b.add("math", { op: "mul" });
-    b.connect(fcDot, dr.nodeId, "a");
-    b.connect(rMul, dr.nodeId, "b");
-    const oneMinusDR = b.add("math", { op: "sub" });
-    b.connect(oneV, oneMinusDR.nodeId, "a");
-    b.connect(dr, oneMinusDR.nodeId, "b");
-    const zeroV = b.add("value", { value: 0 });
-    const roundMask = b.add("math", { op: "max" });
-    b.connect(zeroV, roundMask.nodeId, "a");
-    b.connect(oneMinusDR, roundMask.nodeId, "b");
+    const fcDot = b.add(new N.VectorMath({ op: "dot" }));
+    b.connect(fromCenter).to(fcDot, "a");
+    b.connect(fromCenter).to(fcDot, "b");
+    const fourV = b.add(new N.Const({ value: 4 }));
+    const rMul = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.roundness).to(rMul, "a");
+    b.connect(fourV).to(rMul, "b");
+    const dr = b.add(new N.Math({ op: "mul" }));
+    b.connect(fcDot).to(dr, "a");
+    b.connect(rMul).to(dr, "b");
+    const oneMinusDR = b.add(new N.Math({ op: "sub" }));
+    b.connect(oneV).to(oneMinusDR, "a");
+    b.connect(dr).to(oneMinusDR, "b");
+    const zeroV = b.add(new N.Const({ value: 0 }));
+    const roundMask = b.add(new N.Math({ op: "max" }));
+    b.connect(zeroV).to(roundMask, "a");
+    b.connect(oneMinusDR).to(roundMask, "b");
 
     // baseDist = fromCenter · intensity · 0.025 · roundMask
-    const c25 = b.add("value", { value: 0.025 });
-    const iC25 = b.add("math", { op: "mul" });
-    b.connect(gi.intensity, iC25.nodeId, "a");
-    b.connect(c25, iC25.nodeId, "b");
-    const totalScale = b.add("math", { op: "mul" });
-    b.connect(iC25, totalScale.nodeId, "a");
-    b.connect(roundMask, totalScale.nodeId, "b");
-    const baseDist = b.add("vector-math", { op: "scale" });
-    b.connect(fromCenter, baseDist.nodeId, "a");
-    b.connect(totalScale, baseDist.nodeId, "b");
+    const c25 = b.add(new N.Const({ value: 0.025 }));
+    const iC25 = b.add(new N.Math({ op: "mul" }));
+    b.connect(gi.intensity).to(iC25, "a");
+    b.connect(c25).to(iC25, "b");
+    const totalScale = b.add(new N.Math({ op: "mul" }));
+    b.connect(iC25).to(totalScale, "a");
+    b.connect(roundMask).to(totalScale, "b");
+    const baseDist = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(fromCenter).to(baseDist, "a");
+    b.connect(totalScale).to(baseDist, "b");
 
     // finalUV = uv + (baseDist.x / aspect, baseDist.y)
-    const splitBd = b.add("separate-xy", {});
-    b.connect(baseDist, splitBd.nodeId, "v");
-    const bdxOverA = b.add("math", { op: "div" });
-    b.connect({ nodeId: splitBd.nodeId, pin: "x" }, bdxOverA.nodeId, "a");
-    b.connect(aspect, bdxOverA.nodeId, "b");
-    const offV = b.add("combine-xy", {});
-    b.connect(bdxOverA, offV.nodeId, "x");
-    b.connect({ nodeId: splitBd.nodeId, pin: "y" }, offV.nodeId, "y");
-    const finalUv = b.add("vector-math", { op: "add" });
-    b.connect(uv, finalUv.nodeId, "a");
-    b.connect(offV, finalUv.nodeId, "b");
+    const splitBd = b.add(new N.SeparateXy());
+    b.connect(baseDist).to(splitBd, "v");
+    const bdxOverA = b.add(new N.Math({ op: "div" }));
+    b.connect(splitBd, "x").to(bdxOverA, "a");
+    b.connect(aspect).to(bdxOverA, "b");
+    const offV = b.add(new N.CombineXy());
+    b.connect(bdxOverA).to(offV, "x");
+    b.connect(splitBd, "y").to(offV, "y");
+    const finalUv = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(uv).to(finalUv, "a");
+    b.connect(offV).to(finalUv, "b");
 
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(finalUv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(finalUv).to(sample, "uv");
 
     return b.output(
       { nodeId: sample.nodeId, pin: "color" },

@@ -4,15 +4,16 @@
 //
 // User-facing pins (`brightness`, `contrast`) live on the graph's GroupInput,
 // so the property pane shows them exactly as before. The graph body uses the
-// primitives in node-graph/primitives/.
+// primitives in node-graph/nodes/.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Brightness/Contrast",
   description:
     "Adjusts brightness and contrast of the rendered pixels — applied after shading.",
@@ -32,40 +33,40 @@ export class BrightnessContrast extends ProceduralEffect {
       { id: "contrast", type: "float", label: "Contrast", default: 0 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sample.nodeId, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sample, "uv");
 
     const sampleColor = { nodeId: sample.nodeId, pin: "color" };
     const sampleAlpha = { nodeId: sample.nodeId, pin: "alpha" };
 
     // mid = rgb − 0.5
-    const negHalf = b.add("value", { value: -0.5 });
-    const mid = b.add("color-math", { op: "addScalar" });
-    b.connect(sampleColor, mid.nodeId, "a");
-    b.connect(negHalf, mid.nodeId, "b");
+    const negHalf = b.add(new N.Const({ value: -0.5 }));
+    const mid = b.add(new N.ColorMath({ op: "addScalar" }));
+    b.connect(sampleColor).to(mid, "a");
+    b.connect(negHalf).to(mid, "b");
 
     // gain = contrast + 1
-    const one = b.add("value", { value: 1 });
-    const gain = b.add("math", { op: "add" });
-    b.connect(gi.contrast, gain.nodeId, "a");
-    b.connect(one, gain.nodeId, "b");
+    const one = b.add(new N.Const({ value: 1 }));
+    const gain = b.add(new N.Math({ op: "add" }));
+    b.connect(gi.contrast).to(gain, "a");
+    b.connect(one).to(gain, "b");
 
     // scaled = mid * gain
-    const scaled = b.add("color-math", { op: "scale" });
-    b.connect(mid, scaled.nodeId, "a");
-    b.connect(gain, scaled.nodeId, "b");
+    const scaled = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(mid).to(scaled, "a");
+    b.connect(gain).to(scaled, "b");
 
     // shifted = scaled + 0.5
-    const half = b.add("value", { value: 0.5 });
-    const shifted = b.add("color-math", { op: "addScalar" });
-    b.connect(scaled, shifted.nodeId, "a");
-    b.connect(half, shifted.nodeId, "b");
+    const half = b.add(new N.Const({ value: 0.5 }));
+    const shifted = b.add(new N.ColorMath({ op: "addScalar" }));
+    b.connect(scaled).to(shifted, "a");
+    b.connect(half).to(shifted, "b");
 
     // final = shifted + brightness
-    const final = b.add("color-math", { op: "addScalar" });
-    b.connect(shifted, final.nodeId, "a");
-    b.connect(gi.brightness, final.nodeId, "b");
+    const final = b.add(new N.ColorMath({ op: "addScalar" }));
+    b.connect(shifted).to(final, "a");
+    b.connect(gi.brightness).to(final, "b");
 
     return b.output(final, sampleAlpha);
   }

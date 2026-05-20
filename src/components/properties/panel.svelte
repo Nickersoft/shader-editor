@@ -23,8 +23,8 @@
       </div>
     </Card.Header>
 
-    <Card.Content class="px-0">
-      <ScrollArea class="flex-1 min-h-0">
+    <Card.Content class="px-0 flex-1 min-h-0">
+      <ScrollArea class="size-full">
         {@render children?.()}
       </ScrollArea>
     </Card.Content>

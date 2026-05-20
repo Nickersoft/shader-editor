@@ -5,12 +5,13 @@
 // asin / sin chain rolls off naturally when r > R because asin clamps).
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Spherize",
   description: "Sphere lens distortion with directional light",
   color: "#22d3ee",
@@ -35,107 +36,107 @@ export class Spherize extends ProceduralEffect {
       { id: "lightColor", type: "vec3", label: "Light Color", default: [1, 1, 1] },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const centre = b.add("combine-xy", {});
-    b.connect(gi.centerX, centre.nodeId, "x");
-    b.connect(gi.centerY, centre.nodeId, "y");
+    const centre = b.add(new N.CombineXy());
+    b.connect(gi.centerX).to(centre, "x");
+    b.connect(gi.centerY).to(centre, "y");
 
     // p = uv − centre
-    const p = b.add("vector-math", { op: "sub" });
-    b.connect(uv, p.nodeId, "a");
-    b.connect(centre, p.nodeId, "b");
-    const r = b.add("vector-math", { op: "length" });
-    b.connect(p, r.nodeId, "a");
+    const p = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(uv).to(p, "a");
+    b.connect(centre).to(p, "b");
+    const r = b.add(new N.VectorMath({ op: "length" }));
+    b.connect(p).to(r, "a");
 
     // t = r / radius  (clamped via asin below)
-    const tRaw = b.add("math", { op: "div" });
-    b.connect(r, tRaw.nodeId, "a");
-    b.connect(gi.radius, tRaw.nodeId, "b");
+    const tRaw = b.add(new N.Math({ op: "div" }));
+    b.connect(r).to(tRaw, "a");
+    b.connect(gi.radius).to(tRaw, "b");
 
     // theta = asin(clamp(t, 0, 1))  (math.arcsine clamps internally)
-    const theta = b.add("math", { op: "arcsine" });
-    b.connect(tRaw, theta.nodeId, "x");
+    const theta = b.add(new N.Math({ op: "arcsine" }));
+    b.connect(tRaw).to(theta, "x");
     // newR = sin(theta · depth) · radius
-    const td = b.add("math", { op: "mul" });
-    b.connect(theta, td.nodeId, "a");
-    b.connect(gi.depth, td.nodeId, "b");
-    const sinTd = b.add("math", { op: "sin" });
-    b.connect(td, sinTd.nodeId, "x");
-    const newR = b.add("math", { op: "mul" });
-    b.connect(sinTd, newR.nodeId, "a");
-    b.connect(gi.radius, newR.nodeId, "b");
+    const td = b.add(new N.Math({ op: "mul" }));
+    b.connect(theta).to(td, "a");
+    b.connect(gi.depth).to(td, "b");
+    const sinTd = b.add(new N.Math({ op: "sin" }));
+    b.connect(td).to(sinTd, "x");
+    const newR = b.add(new N.Math({ op: "mul" }));
+    b.connect(sinTd).to(newR, "a");
+    b.connect(gi.radius).to(newR, "b");
 
     // dir = normalize(p)
-    const dir = b.add("vector-math", { op: "normalize" });
-    b.connect(p, dir.nodeId, "a");
+    const dir = b.add(new N.VectorMath({ op: "normalize" }));
+    b.connect(p).to(dir, "a");
     // newP = dir · newR; finalUV = centre + newP
-    const newP = b.add("vector-math", { op: "scale" });
-    b.connect(dir, newP.nodeId, "a");
-    b.connect(newR, newP.nodeId, "b");
-    const finalUv = b.add("vector-math", { op: "add" });
-    b.connect(centre, finalUv.nodeId, "a");
-    b.connect(newP, finalUv.nodeId, "b");
+    const newP = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(dir).to(newP, "a");
+    b.connect(newR).to(newP, "b");
+    const finalUv = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(centre).to(finalUv, "a");
+    b.connect(newP).to(finalUv, "b");
 
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(finalUv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(finalUv).to(sample, "uv");
 
     // Lighting: build a vec3 normal = normalize((p.x, p.y, sqrt(max(1−t²,0)) · R))
     // and a vec3 light dir = normalize((cos(la), sin(la), 0.5)), then
     // ndl = max(dot, 0); light = pow(ndl, 1/softness) · intensity.
-    const t2 = b.add("math", { op: "mul" });
-    b.connect(tRaw, t2.nodeId, "a");
-    b.connect(tRaw, t2.nodeId, "b");
-    const t2c = b.add("math", { op: "oneminus" });
-    b.connect(t2, t2c.nodeId, "x");
-    const t2cm = b.add("math", { op: "max" }, { b: 0 });
-    b.connect(t2c, t2cm.nodeId, "a");
-    const t2s = b.add("math", { op: "sqrt" });
-    b.connect(t2cm, t2s.nodeId, "x");
-    const nz = b.add("math", { op: "mul" });
-    b.connect(t2s, nz.nodeId, "a");
-    b.connect(gi.radius, nz.nodeId, "b");
-    const sepP = b.add("separate-xy", {});
-    b.connect(p, sepP.nodeId, "v");
-    const normalV = b.add("combine-color", {});
-    b.connect({ nodeId: sepP.nodeId, pin: "x" }, normalV.nodeId, "r");
-    b.connect({ nodeId: sepP.nodeId, pin: "y" }, normalV.nodeId, "g");
-    b.connect(nz, normalV.nodeId, "b");
-    const n = b.add("vector-math", { op: "normalize", dim: "vec3" });
-    b.connect(normalV, n.nodeId, "a");
+    const t2 = b.add(new N.Math({ op: "mul" }));
+    b.connect(tRaw).to(t2, "a");
+    b.connect(tRaw).to(t2, "b");
+    const t2c = b.add(new N.Math({ op: "oneminus" }));
+    b.connect(t2).to(t2c, "x");
+    const t2cm = b.add(new N.Math({ op: "max" }), { b: 0 });
+    b.connect(t2c).to(t2cm, "a");
+    const t2s = b.add(new N.Math({ op: "sqrt" }));
+    b.connect(t2cm).to(t2s, "x");
+    const nz = b.add(new N.Math({ op: "mul" }));
+    b.connect(t2s).to(nz, "a");
+    b.connect(gi.radius).to(nz, "b");
+    const sepP = b.add(new N.SeparateXy());
+    b.connect(p).to(sepP, "v");
+    const normalV = b.add(new N.CombineColor());
+    b.connect(sepP, "x").to(normalV, "r");
+    b.connect(sepP, "y").to(normalV, "g");
+    b.connect(nz).to(normalV, "b");
+    const n = b.add(new N.VectorMath({ op: "normalize", dim: "vec3" }));
+    b.connect(normalV).to(n, "a");
 
-    const la = b.add("math", { op: "to-radians" });
-    b.connect(gi.lightAngle, la.nodeId, "x");
-    const cosL = b.add("math", { op: "cos" });
-    b.connect(la, cosL.nodeId, "x");
-    const sinL = b.add("math", { op: "sin" });
-    b.connect(la, sinL.nodeId, "x");
-    const L = b.add("combine-color", {});
-    b.connect(cosL, L.nodeId, "r");
-    b.connect(sinL, L.nodeId, "g");
-    b.connect(b.add("value", { value: 0.5 }), L.nodeId, "b");
-    const Ln = b.add("vector-math", { op: "normalize", dim: "vec3" });
-    b.connect(L, Ln.nodeId, "a");
+    const la = b.add(new N.Math({ op: "to-radians" }));
+    b.connect(gi.lightAngle).to(la, "x");
+    const cosL = b.add(new N.Math({ op: "cos" }));
+    b.connect(la).to(cosL, "x");
+    const sinL = b.add(new N.Math({ op: "sin" }));
+    b.connect(la).to(sinL, "x");
+    const L = b.add(new N.CombineColor());
+    b.connect(cosL).to(L, "r");
+    b.connect(sinL).to(L, "g");
+    b.connect(b.add(new N.Const({ value: 0.5 }))).to(L, "b");
+    const Ln = b.add(new N.VectorMath({ op: "normalize", dim: "vec3" }));
+    b.connect(L).to(Ln, "a");
 
-    const ndl = b.add("vector-math", { op: "dot", dim: "vec3" });
-    b.connect(n, ndl.nodeId, "a");
-    b.connect(Ln, ndl.nodeId, "b");
-    const ndlMax = b.add("math", { op: "max" }, { b: 0 });
-    b.connect(ndl, ndlMax.nodeId, "a");
-    const invSoft = b.add("math", { op: "div" }, { a: 1 });
-    b.connect(gi.lightSoftness, invSoft.nodeId, "b");
-    const litPow = b.add("math", { op: "pow" });
-    b.connect(ndlMax, litPow.nodeId, "a");
-    b.connect(invSoft, litPow.nodeId, "b");
-    const light = b.add("math", { op: "mul" });
-    b.connect(litPow, light.nodeId, "a");
-    b.connect(gi.lightIntensity, light.nodeId, "b");
+    const ndl = b.add(new N.VectorMath({ op: "dot", dim: "vec3" }));
+    b.connect(n).to(ndl, "a");
+    b.connect(Ln).to(ndl, "b");
+    const ndlMax = b.add(new N.Math({ op: "max" }), { b: 0 });
+    b.connect(ndl).to(ndlMax, "a");
+    const invSoft = b.add(new N.Math({ op: "div" }), { a: 1 });
+    b.connect(gi.lightSoftness).to(invSoft, "b");
+    const litPow = b.add(new N.Math({ op: "pow" }));
+    b.connect(ndlMax).to(litPow, "a");
+    b.connect(invSoft).to(litPow, "b");
+    const light = b.add(new N.Math({ op: "mul" }));
+    b.connect(litPow).to(light, "a");
+    b.connect(gi.lightIntensity).to(light, "b");
 
     // out = mix(sample.rgb, lightColor, clamp(light, 0, 1))
-    const out = b.add("mix-color", {});
-    b.connect({ nodeId: sample.nodeId, pin: "color" }, out.nodeId, "a");
-    b.connect(gi.lightColor, out.nodeId, "b");
-    b.connect(light, out.nodeId, "t");
+    const out = b.add(new N.MixColor());
+    b.connect(sample, "color").to(out, "a");
+    b.connect(gi.lightColor).to(out, "b");
+    b.connect(light).to(out, "t");
 
     return b.output(out, { nodeId: sample.nodeId, pin: "alpha" });
   }

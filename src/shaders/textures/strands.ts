@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Strands",
   description: "Wavy strand bundle",
   color: "#0ea5e9",
@@ -18,11 +19,11 @@ export class Strands extends ProceduralShader {
   static graph(): NodeGraph {
     const b = new GraphBuilder();
     b.groupInput([]);
-    const st = b.add("strands", {});
+    const st = b.add(new N.Strands());
     // mix(black, strand.color, strand.alpha) — `a` defaults to vec3(0).
-    const mix = b.add("mix-color", {});
-    b.connect({ nodeId: st.nodeId, pin: "color" }, mix.nodeId, "b");
-    b.connect({ nodeId: st.nodeId, pin: "alpha" }, mix.nodeId, "t");
+    const mix = b.add(new N.MixColor());
+    b.connect(st, "color").to(mix, "b");
+    b.connect(st, "alpha").to(mix, "t");
     return b.output(mix);
   }
 }

@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Solid Color",
   description: "Fill the canvas with a single solid color",
   color: "#a3a3a3",
@@ -20,16 +21,12 @@ export class SolidColor extends ProceduralShader {
     b.groupInput([]);
     // A two-stop ramp sampled at t=0 collapses to its first stop — no
     // upstream wiring needed.
-    const ramp = b.add(
-      "color-ramp",
-      {
+    const ramp = b.add(new N.ColorRamp({
         stops: [
           { position: 0, color: [0.357, 0.094, 0.792] },
           { position: 1, color: [0.357, 0.094, 0.792] },
         ],
-      },
-      { t: 0 },
-    );
+      }), { t: 0 }, );
     return b.output(ramp);
   }
 }

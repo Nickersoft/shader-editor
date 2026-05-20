@@ -1,26 +1,38 @@
 // Public API for the node-graph subsystem.
 //
-// Importing this barrel also registers every primitive via the
-// `./primitives` side-effect import.
+// Importing this barrel also registers every node via the `./nodes`
+// side-effect import.
 
-import "./primitives";
+import "./nodes";
 
-export { emitGraph, GROUP_INPUT_TYPE_ID, GROUP_OUTPUT_TYPE_ID, GROUP_TYPE_ID } from "./emit";
-export type { EmittedGraph, EmitOptions } from "./emit";
 export {
-  BasePrimitive,
-  getPrimitive,
-  listPrimitives,
+  ACCUMULATOR_IN_SUFFIX,
+  ACCUMULATOR_OUT_SUFFIX,
+  accumulatorInPinId,
+  accumulatorOutPinId,
+  emitGraph,
+  GROUP_INPUT_TYPE_ID,
+  GROUP_OUTPUT_TYPE_ID,
+  GROUP_TYPE_ID,
+  ITERATE_INDEX_PIN_ID,
+  ITERATE_TYPE_ID,
+} from "./emit";
+export type { EmittedGraph, EmitOptions } from "./emit";
+export { syncIterateSubgraphPins } from "./nodes/iterate";
+export type { AccumulatorSpec } from "./nodes/iterate";
+export {
+  BaseNode,
+  getNode,
+  listNodes,
   register,
-  requirePrimitive,
+  requireNode,
 } from "./registry";
 export type {
   EmitContext,
   EmitResult,
-  NodePrimitive,
   PinSchemas,
-  PrimitiveClass,
-  PrimitiveMeta,
+  NodeClass,
+  NodeMeta,
   UniformSpec,
 } from "./registry";
 export {
@@ -40,8 +52,8 @@ export {
 } from "./pins";
 export { canCoerce, coerce } from "./coerce";
 export type { CoerceResult } from "./coerce";
-export { GraphBuilder } from "./graph-builder";
-export type { GroupInputPin, PrevRef } from "./graph-builder";
+export { ConnectBuilder, GraphBuilder, NodeHandle } from "./graph-builder";
+export type { GroupInputPin, InPinId, OutPinId } from "./graph-builder";
 // layoutGraph / relayoutGraph live in ./layout — import them directly. They
 // pull in @dagrejs/dagre (~95 KB min), so keeping them off the barrel makes
 // the dependency explicit at every consuming site.

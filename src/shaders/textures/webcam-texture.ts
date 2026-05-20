@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import type { GlslBlock, ShaderMeta } from "@/shaders/core/types";
 import { zBool, zColor } from "@/shaders/core/schemas";
 
 const schema = z.object({
@@ -17,7 +17,7 @@ const schema = z.object({
   placeholder: zColor().default([0.08, 0.1, 0.14]).describe("Placeholder Color"),
 });
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Webcam Texture",
   description: "Display a live webcam feed with customizable object-fit modes",
   color: "#10b981",

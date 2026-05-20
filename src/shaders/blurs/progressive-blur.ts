@@ -4,12 +4,13 @@
 // blur ramps up to `intensity`.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Progressive Blur",
   description: "Blur strength ramps along an axis",
   color: "#94a3b8",
@@ -31,62 +32,62 @@ export class ProgressiveBlur extends ProceduralEffect {
       { id: "falloff", type: "float", label: "Falloff", default: 0.5 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
     // dir = vec2(cos(a), sin(a))
-    const aRad = b.add("math", { op: "to-radians" });
-    b.connect(gi.angle, aRad.nodeId, "x");
-    const cosA = b.add("math", { op: "cos" });
-    b.connect(aRad, cosA.nodeId, "x");
-    const sinA = b.add("math", { op: "sin" });
-    b.connect(aRad, sinA.nodeId, "x");
-    const dir = b.add("combine-xy", {});
-    b.connect(cosA, dir.nodeId, "x");
-    b.connect(sinA, dir.nodeId, "y");
+    const aRad = b.add(new N.Math({ op: "to-radians" }));
+    b.connect(gi.angle).to(aRad, "x");
+    const cosA = b.add(new N.Math({ op: "cos" }));
+    b.connect(aRad).to(cosA, "x");
+    const sinA = b.add(new N.Math({ op: "sin" }));
+    b.connect(aRad).to(sinA, "x");
+    const dir = b.add(new N.CombineXy());
+    b.connect(cosA).to(dir, "x");
+    b.connect(sinA).to(dir, "y");
 
     // d = uv − centre
-    const centre = b.add("combine-xy", {});
-    b.connect(gi.centerX, centre.nodeId, "x");
-    b.connect(gi.centerY, centre.nodeId, "y");
-    const d = b.add("vector-math", { op: "sub" });
-    b.connect(uv, d.nodeId, "a");
-    b.connect(centre, d.nodeId, "b");
+    const centre = b.add(new N.CombineXy());
+    b.connect(gi.centerX).to(centre, "x");
+    b.connect(gi.centerY).to(centre, "y");
+    const d = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(uv).to(d, "a");
+    b.connect(centre).to(d, "b");
 
     // proj = max(0, dot(d, dir))
-    const dt = b.add("vector-math", { op: "dot" });
-    b.connect(d, dt.nodeId, "a");
-    b.connect(dir, dt.nodeId, "b");
-    const proj = b.add("math", { op: "max" }, { b: 0 });
-    b.connect(dt, proj.nodeId, "a");
+    const dt = b.add(new N.VectorMath({ op: "dot" }));
+    b.connect(d).to(dt, "a");
+    b.connect(dir).to(dt, "b");
+    const proj = b.add(new N.Math({ op: "max" }), { b: 0 });
+    b.connect(dt).to(proj, "a");
 
     // t = smoothstep(0, falloff, proj)
-    const t = b.add("smoothstep", {}, { edge0: 0 });
-    b.connect(gi.falloff, t.nodeId, "edge1");
-    b.connect(proj, t.nodeId, "x");
+    const t = b.add(new N.Smoothstep(), { edge0: 0 });
+    b.connect(gi.falloff).to(t, "edge1");
+    b.connect(proj).to(t, "x");
 
     // gatedIntensity = t · intensity
-    const gated = b.add("math", { op: "mul" });
-    b.connect(t, gated.nodeId, "a");
-    b.connect(gi.intensity, gated.nodeId, "b");
+    const gated = b.add(new N.Math({ op: "mul" }));
+    b.connect(t).to(gated, "a");
+    b.connect(gi.intensity).to(gated, "b");
 
     // Cross blur with gated amount
-    const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-    b.connect(uv, h.nodeId, "uv");
-    b.connect(gated, h.nodeId, "amount");
-    b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
-    const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-    b.connect(uv, v.nodeId, "uv");
-    b.connect(gated, v.nodeId, "amount");
-    b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
-    const sum = b.add("color-math", { op: "add" });
-    b.connect(h, sum.nodeId, "a");
-    b.connect(v, sum.nodeId, "b");
-    const avg = b.add("color-math", { op: "scale" });
-    b.connect(sum, avg.nodeId, "a");
-    b.connect(b.add("value", { value: 0.5 }), avg.nodeId, "b");
+    const h = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+    b.connect(uv).to(h, "uv");
+    b.connect(gated).to(h, "amount");
+    b.connect(b.add(new N.Const({ value: 0 }))).to(h, "direction");
+    const v = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+    b.connect(uv).to(v, "uv");
+    b.connect(gated).to(v, "amount");
+    b.connect(b.add(new N.Const({ value: 90 }))).to(v, "direction");
+    const sum = b.add(new N.ColorMath({ op: "add" }));
+    b.connect(h).to(sum, "a");
+    b.connect(v).to(sum, "b");
+    const avg = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(sum).to(avg, "a");
+    b.connect(b.add(new N.Const({ value: 0.5 }))).to(avg, "b");
 
-    const center = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, center.nodeId, "uv");
+    const center = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(center, "uv");
 
     return b.output(avg, { nodeId: center.nodeId, pin: "alpha" });
   }

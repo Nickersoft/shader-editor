@@ -6,7 +6,7 @@
 import { z } from "zod";
 import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import type { GlslBlock, ShaderMeta } from "@/shaders/core/types";
 import { zBool, zColor } from "@/shaders/core/schemas";
 
 const schema = z.object({
@@ -19,7 +19,7 @@ const schema = z.object({
   placeholder: zColor().default([0.1, 0.1, 0.12]).describe("Placeholder Color"),
 });
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Video Texture",
   description: "Display a video with customizable playback and object-fit modes",
   color: "#6366f1",

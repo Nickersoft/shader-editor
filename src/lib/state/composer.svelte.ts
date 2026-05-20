@@ -16,7 +16,7 @@ import { Scene } from "@/shaders/core/scene.svelte";
 import { Effect, isEffect, isGenerator, type Shader } from "@/shaders/core/shader.svelte";
 import type { BlendMode } from "@/shaders/core/types";
 import {
-  getPrimitive,
+  getNode,
   GROUP_TYPE_ID,
   makeGroup as makeGroupOp,
   ungroup as ungroupOp,
@@ -435,7 +435,7 @@ class ComposerStore {
   addGraphNode(layerId: string, typeId: string, position?: { x: number; y: number }) {
     const graph = this.activeGraphFor(layerId);
     if (!graph) return null;
-    const prim = getPrimitive(typeId);
+    const prim = getNode(typeId);
     if (!prim) return null;
     // Parse `{}` against the primitive's config schema so all defaults populate.
     const parsed = (prim.config ? prim.config.parse({}) : {}) as Record<string, unknown>;
@@ -713,7 +713,7 @@ class ComposerStore {
 export const composer = new ComposerStore();
 
 function pinTypeOf(node: GraphNode, pinId: string, side: "input" | "output"): PinType | null {
-  const prim = getPrimitive(node.typeId);
+  const prim = getNode(node.typeId);
   if (!prim) return null;
   const pins = side === "input" ? prim.inputs(node.config) : prim.outputs(node.config);
   return pins.find((p) => p.id === pinId)?.type ?? null;

@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Conic Gradient",
   description: "Angular sweep around a draggable center",
   color: "#a855f7",
@@ -19,8 +20,8 @@ export class ConicGradient extends ProceduralShader {
     const b = new GraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
-    const domain = b.add("gradient-domain", { mode: "conic" });
-    b.connect(uv, domain.nodeId, "p");
+    const domain = b.add(new N.GradientDomain({ mode: "conic" }));
+    b.connect(uv).to(domain, "p");
     const ramp = b.colorRamp(domain, [
       [0.95, 0.27, 0.42],
       [0.99, 0.62, 0.16],

@@ -3,12 +3,13 @@
 // repack the three channels via combine-color.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Chromatic Aberration",
   description: "Aspect-corrected RGB channel offset along an angle",
   color: "#ef4444",
@@ -27,58 +28,58 @@ export class ChromaticAberration extends ProceduralEffect {
       { id: "angle", type: "float", label: "Angle (deg)", default: 0 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
     // angle to radians
-    const angleRad = b.add("math", { op: "to-radians" });
-    b.connect(gi.angle, angleRad.nodeId, "x");
+    const angleRad = b.add(new N.Math({ op: "to-radians" }));
+    b.connect(gi.angle).to(angleRad, "x");
 
     // direction = vec2(cos(a), sin(a))
-    const cosA = b.add("math", { op: "cos" });
-    b.connect(angleRad, cosA.nodeId, "x");
-    const sinA = b.add("math", { op: "sin" });
-    b.connect(angleRad, sinA.nodeId, "x");
-    const dir = b.add("combine-xy", {});
-    b.connect(cosA, dir.nodeId, "x");
-    b.connect(sinA, dir.nodeId, "y");
+    const cosA = b.add(new N.Math({ op: "cos" }));
+    b.connect(angleRad).to(cosA, "x");
+    const sinA = b.add(new N.Math({ op: "sin" }));
+    b.connect(angleRad).to(sinA, "x");
+    const dir = b.add(new N.CombineXy());
+    b.connect(cosA).to(dir, "x");
+    b.connect(sinA).to(dir, "y");
 
     // off = dir * (strength * 0.01)
-    const scaled = b.add("math", { op: "mul" }, { b: 0.01 });
-    b.connect(gi.strength, scaled.nodeId, "a");
-    const off = b.add("vector-math", { op: "scale" });
-    b.connect(dir, off.nodeId, "a");
-    b.connect(scaled, off.nodeId, "b");
+    const scaled = b.add(new N.Math({ op: "mul" }), { b: 0.01 });
+    b.connect(gi.strength).to(scaled, "a");
+    const off = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(dir).to(off, "a");
+    b.connect(scaled).to(off, "b");
 
     // R: sample at uv − off
-    const uvR = b.add("vector-math", { op: "sub" });
-    b.connect(uv, uvR.nodeId, "a");
-    b.connect(off, uvR.nodeId, "b");
-    const sampleR = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uvR, sampleR.nodeId, "uv");
+    const uvR = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(uv).to(uvR, "a");
+    b.connect(off).to(uvR, "b");
+    const sampleR = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uvR).to(sampleR, "uv");
 
     // G: sample at uv (centre, also drives alpha)
-    const sampleG = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sampleG.nodeId, "uv");
+    const sampleG = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sampleG, "uv");
 
     // B: sample at uv + off
-    const uvB = b.add("vector-math", { op: "add" });
-    b.connect(uv, uvB.nodeId, "a");
-    b.connect(off, uvB.nodeId, "b");
-    const sampleB = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uvB, sampleB.nodeId, "uv");
+    const uvB = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(uv).to(uvB, "a");
+    b.connect(off).to(uvB, "b");
+    const sampleB = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uvB).to(sampleB, "uv");
 
     // Repack: R from R-sample, G from G-sample, B from B-sample.
-    const sepR = b.add("separate-color", {});
-    b.connect({ nodeId: sampleR.nodeId, pin: "color" }, sepR.nodeId, "v");
-    const sepG = b.add("separate-color", {});
-    b.connect({ nodeId: sampleG.nodeId, pin: "color" }, sepG.nodeId, "v");
-    const sepB = b.add("separate-color", {});
-    b.connect({ nodeId: sampleB.nodeId, pin: "color" }, sepB.nodeId, "v");
+    const sepR = b.add(new N.SeparateColor());
+    b.connect(sampleR, "color").to(sepR, "v");
+    const sepG = b.add(new N.SeparateColor());
+    b.connect(sampleG, "color").to(sepG, "v");
+    const sepB = b.add(new N.SeparateColor());
+    b.connect(sampleB, "color").to(sepB, "v");
 
-    const out = b.add("combine-color", {});
-    b.connect({ nodeId: sepR.nodeId, pin: "r" }, out.nodeId, "r");
-    b.connect({ nodeId: sepG.nodeId, pin: "g" }, out.nodeId, "g");
-    b.connect({ nodeId: sepB.nodeId, pin: "b" }, out.nodeId, "b");
+    const out = b.add(new N.CombineColor());
+    b.connect(sepR, "r").to(out, "r");
+    b.connect(sepG, "g").to(out, "g");
+    b.connect(sepB, "b").to(out, "b");
 
     return b.output(out, { nodeId: sampleG.nodeId, pin: "alpha" });
   }

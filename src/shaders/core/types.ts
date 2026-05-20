@@ -29,7 +29,7 @@ export type Category =
   | "blurs"
   | "adjustments";
 
-export interface NodeMeta {
+export interface ShaderMeta {
   name: string;
   description: string;
   // Accent color for the layer-stack UI chip.

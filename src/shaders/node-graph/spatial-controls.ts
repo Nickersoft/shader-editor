@@ -30,7 +30,7 @@ import type {
   ColorStopVec2Control,
 } from "@/shaders/core/spatial";
 import { GROUP_TYPE_ID } from "./emit";
-import { getPrimitive } from "./registry";
+import { getNode } from "./registry";
 import type { NodeGraph } from "./types";
 
 export const GRAPH_ADDRESS_PREFIX = "graph:";
@@ -93,7 +93,7 @@ function collect(
 ): void {
   for (const node of graph.nodes) {
     const path: readonly string[] = [...prefix, node.id];
-    const prim = getPrimitive(node.typeId);
+    const prim = getNode(node.typeId);
     const local = prim?.spatialControls?.(node);
     if (local && local.length > 0) {
       for (const c of local) out.push(rewriteAddresses(c, path));

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps, type Node } from '@xyflow/svelte';
-	import { defaultForPinType, getPrimitive, PIN_TYPES, type PinType } from '@/shaders/node-graph';
+	import { defaultForPinType, getNode, PIN_TYPES, type PinType } from '@/shaders/node-graph';
+	import { HEADER_H, INLINE_PIN_ROW_H as PIN_ROW_H } from '@/shaders/node-graph/node-metrics';
 	import { colorForPin } from './pin-color';
 	import { composer } from '@/lib/state/composer.svelte';
 	import Plus from '@lucide/svelte/icons/plus';
@@ -8,7 +9,7 @@
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 
 	// Pin declaration as stored in the GroupInput node's config. Mirrors the
-	// Zod schema in src/shaders/node-graph/primitives/group-input.ts — kept
+	// Zod schema in src/shaders/node-graph/nodes/group-input.ts — kept
 	// duplicated here so the node component owns the same shape it mutates.
 	type PinDecl = {
 		id: string;
@@ -28,13 +29,12 @@
 	let { data, selected }: NodeProps<GroupInputGraphNodeType> = $props();
 
 	// Geometry mirrors graph-primitive-node.svelte so handle dots line up with
-	// row text baselines. The "add input" button at the foot adds a fixed
-	// trailing row that has no handle.
-	const HEADER_H = 34;
-	const PIN_ROW_H = 32;
+	// row text baselines. Pin rows host an inline editor (so they're tall, like
+	// unwired inputs on a primitive). The "add input" button at the foot adds a
+	// fixed trailing row that has no handle.
 	const FOOTER_H = 30;
 
-	let prim = $derived(getPrimitive(data.typeId));
+	let prim = $derived(getNode(data.typeId));
 	let pins = $derived<PinDecl[]>(Array.isArray(data.config.pins) ? data.config.pins : []);
 
 	let categoryColor = $derived(prim?.color ?? '#22c55e');

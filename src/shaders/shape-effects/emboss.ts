@@ -7,12 +7,13 @@
 // just two taps, not N. Build directly with sample-previous-pass.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Emboss",
   description: "Embossed relief",
   color: "#475569",
@@ -33,64 +34,64 @@ export class Emboss extends ProceduralEffect {
       { id: "softness", type: "float", label: "Softness", default: 0.5 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
     // dir = vec2(cos(a), sin(a)) * (1/u_resolution) * mix(1, 4, softness)
     // Skip the per-texel scaling by treating `softness` as a unit-UV offset
     // directly — the visual differs only in physical scale. Use a baked
     // scaling factor of 1/200 for a sensible default look.
-    const a = b.add("math", { op: "to-radians" });
-    b.connect(gi.lightAngle, a.nodeId, "x");
-    const cosA = b.add("math", { op: "cos" });
-    b.connect(a, cosA.nodeId, "x");
-    const sinA = b.add("math", { op: "sin" });
-    b.connect(a, sinA.nodeId, "x");
-    const dirUnit = b.add("combine-xy", {});
-    b.connect(cosA, dirUnit.nodeId, "x");
-    b.connect(sinA, dirUnit.nodeId, "y");
+    const a = b.add(new N.Math({ op: "to-radians" }));
+    b.connect(gi.lightAngle).to(a, "x");
+    const cosA = b.add(new N.Math({ op: "cos" }));
+    b.connect(a).to(cosA, "x");
+    const sinA = b.add(new N.Math({ op: "sin" }));
+    b.connect(a).to(sinA, "x");
+    const dirUnit = b.add(new N.CombineXy());
+    b.connect(cosA).to(dirUnit, "x");
+    b.connect(sinA).to(dirUnit, "y");
 
     // reach = mix(0.005, 0.02, softness) in UV space
-    const reach = b.add("math", { op: "mix" }, { a: 0.005, b: 0.02 });
-    b.connect(gi.softness, reach.nodeId, "c");
+    const reach = b.add(new N.Math({ op: "mix" }), { a: 0.005, b: 0.02 });
+    b.connect(gi.softness).to(reach, "c");
 
-    const dir = b.add("vector-math", { op: "scale" });
-    b.connect(dirUnit, dir.nodeId, "a");
-    b.connect(reach, dir.nodeId, "b");
+    const dir = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(dirUnit).to(dir, "a");
+    b.connect(reach).to(dir, "b");
 
-    const uv1 = b.add("vector-math", { op: "add" });
-    b.connect(uv, uv1.nodeId, "a");
-    b.connect(dir, uv1.nodeId, "b");
-    const s1 = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv1, s1.nodeId, "uv");
-    const l1 = b.add("color-math", { op: "luminance" });
-    b.connect({ nodeId: s1.nodeId, pin: "color" }, l1.nodeId, "a");
+    const uv1 = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(uv).to(uv1, "a");
+    b.connect(dir).to(uv1, "b");
+    const s1 = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv1).to(s1, "uv");
+    const l1 = b.add(new N.ColorMath({ op: "luminance" }));
+    b.connect(s1, "color").to(l1, "a");
 
-    const uv2 = b.add("vector-math", { op: "sub" });
-    b.connect(uv, uv2.nodeId, "a");
-    b.connect(dir, uv2.nodeId, "b");
-    const s2 = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv2, s2.nodeId, "uv");
-    const l2 = b.add("color-math", { op: "luminance" });
-    b.connect({ nodeId: s2.nodeId, pin: "color" }, l2.nodeId, "a");
+    const uv2 = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(uv).to(uv2, "a");
+    b.connect(dir).to(uv2, "b");
+    const s2 = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv2).to(s2, "uv");
+    const l2 = b.add(new N.ColorMath({ op: "luminance" }));
+    b.connect(s2, "color").to(l2, "a");
 
     // v = (l1 − l2) · intensity · 4 + 0.5
-    const diff = b.add("math", { op: "sub" });
-    b.connect(l1, diff.nodeId, "a");
-    b.connect(l2, diff.nodeId, "b");
-    const scaled = b.add("math", { op: "mul" });
-    b.connect(diff, scaled.nodeId, "a");
-    b.connect(gi.intensity, scaled.nodeId, "b");
-    const amped = b.add("math", { op: "mul" }, { b: 4 });
-    b.connect(scaled, amped.nodeId, "a");
-    const v = b.add("math", { op: "add" }, { b: 0.5 });
-    b.connect(amped, v.nodeId, "a");
+    const diff = b.add(new N.Math({ op: "sub" }));
+    b.connect(l1).to(diff, "a");
+    b.connect(l2).to(diff, "b");
+    const scaled = b.add(new N.Math({ op: "mul" }));
+    b.connect(diff).to(scaled, "a");
+    b.connect(gi.intensity).to(scaled, "b");
+    const amped = b.add(new N.Math({ op: "mul" }), { b: 4 });
+    b.connect(scaled).to(amped, "a");
+    const v = b.add(new N.Math({ op: "add" }), { b: 0.5 });
+    b.connect(amped).to(v, "a");
 
-    const grey = b.add("combine-color", {});
-    b.connect(v, grey.nodeId, "r");
-    b.connect(v, grey.nodeId, "g");
-    b.connect(v, grey.nodeId, "b");
+    const grey = b.add(new N.CombineColor());
+    b.connect(v).to(grey, "r");
+    b.connect(v).to(grey, "g");
+    b.connect(v).to(grey, "b");
 
-    const one = b.add("value", { value: 1 });
+    const one = b.add(new N.Const({ value: 1 }));
     return b.output(grey, one);
   }
 }

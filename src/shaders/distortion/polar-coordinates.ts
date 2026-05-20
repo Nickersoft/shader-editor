@@ -4,12 +4,13 @@
 // blends between identity and the polar remap.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Polar Coordinates",
   description: "Rectangular ↔ polar UV remap",
   color: "#22d3ee",
@@ -30,55 +31,55 @@ export class PolarCoordinates extends ProceduralEffect {
       { id: "intensity", type: "float", label: "Intensity", default: 1 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const c = b.add("combine-xy", {});
-    b.connect(gi.centerX, c.nodeId, "x");
-    b.connect(gi.centerY, c.nodeId, "y");
+    const c = b.add(new N.CombineXy());
+    b.connect(gi.centerX).to(c, "x");
+    b.connect(gi.centerY).to(c, "y");
 
     // d = uv − centre
-    const d = b.add("vector-math", { op: "sub" });
-    b.connect(uv, d.nodeId, "a");
-    b.connect(c, d.nodeId, "b");
-    const sep = b.add("separate-xy", {});
-    b.connect(d, sep.nodeId, "v");
+    const d = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(uv).to(d, "a");
+    b.connect(c).to(d, "b");
+    const sep = b.add(new N.SeparateXy());
+    b.connect(d).to(sep, "v");
 
     // angleN = (atan2(dy, dx) + π) / 2π
-    const ang = b.add("math", { op: "atan2" });
-    b.connect({ nodeId: sep.nodeId, pin: "y" }, ang.nodeId, "a");
-    b.connect({ nodeId: sep.nodeId, pin: "x" }, ang.nodeId, "b");
-    const shifted = b.add("math", { op: "add" }, { b: Math.PI });
-    b.connect(ang, shifted.nodeId, "a");
-    const angleN = b.add("math", { op: "mul" }, { b: 1 / (Math.PI * 2) });
-    b.connect(shifted, angleN.nodeId, "a");
+    const ang = b.add(new N.Math({ op: "atan2" }));
+    b.connect(sep, "y").to(ang, "a");
+    b.connect(sep, "x").to(ang, "b");
+    const shifted = b.add(new N.Math({ op: "add" }), { b: Math.PI });
+    b.connect(ang).to(shifted, "a");
+    const angleN = b.add(new N.Math({ op: "mul" }), { b: 1 / (Math.PI * 2) });
+    b.connect(shifted).to(angleN, "a");
 
     // r = length(d) / radius
-    const len = b.add("vector-math", { op: "length" });
-    b.connect(d, len.nodeId, "a");
-    const r = b.add("math", { op: "div" });
-    b.connect(len, r.nodeId, "a");
-    b.connect(gi.radius, r.nodeId, "b");
+    const len = b.add(new N.VectorMath({ op: "length" }));
+    b.connect(d).to(len, "a");
+    const r = b.add(new N.Math({ op: "div" }));
+    b.connect(len).to(r, "a");
+    b.connect(gi.radius).to(r, "b");
 
-    const transformed = b.add("combine-xy", {});
-    b.connect(angleN, transformed.nodeId, "x");
-    b.connect(r, transformed.nodeId, "y");
+    const transformed = b.add(new N.CombineXy());
+    b.connect(angleN).to(transformed, "x");
+    b.connect(r).to(transformed, "y");
 
     // finalUV = mix(uv, transformed, intensity) — implemented with two
     // scale+add nodes because mix-color works on vec3 and there's no vec2 mix.
-    const oneMinus = b.add("math", { op: "oneminus" });
-    b.connect(gi.intensity, oneMinus.nodeId, "x");
-    const part1 = b.add("vector-math", { op: "scale" });
-    b.connect(uv, part1.nodeId, "a");
-    b.connect(oneMinus, part1.nodeId, "b");
-    const part2 = b.add("vector-math", { op: "scale" });
-    b.connect(transformed, part2.nodeId, "a");
-    b.connect(gi.intensity, part2.nodeId, "b");
-    const finalUv = b.add("vector-math", { op: "add" });
-    b.connect(part1, finalUv.nodeId, "a");
-    b.connect(part2, finalUv.nodeId, "b");
+    const oneMinus = b.add(new N.Math({ op: "oneminus" }));
+    b.connect(gi.intensity).to(oneMinus, "x");
+    const part1 = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(uv).to(part1, "a");
+    b.connect(oneMinus).to(part1, "b");
+    const part2 = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(transformed).to(part2, "a");
+    b.connect(gi.intensity).to(part2, "b");
+    const finalUv = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(part1).to(finalUv, "a");
+    b.connect(part2).to(finalUv, "b");
 
-    const sample = b.add("sample-previous-pass", { edges: "transparent" });
-    b.connect(finalUv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "transparent" }));
+    b.connect(finalUv).to(sample, "uv");
 
     return b.output(
       { nodeId: sample.nodeId, pin: "color" },

@@ -44,7 +44,7 @@ export type PinDefault =
   | readonly [number, number, number, number];
 
 /**
- * One node placed on the canvas. `typeId` resolves to a NodePrimitive in the
+ * One node placed on the canvas. `typeId` resolves to a BaseNode in the
  * registry. `config` is the per-instance state shaped by the primitive's
  * config schema. `position` is the xyflow canvas position.
  */
@@ -172,6 +172,16 @@ export function defaultForPinType(type: PinType): PinDefault {
  * graph hydration / GroupInput-uniform-binding time when the raw value may
  * have come from JSON and is structurally unknown.
  */
+export function coerceToPinDefault(type: "float", raw: unknown): number;
+export function coerceToPinDefault(type: "int", raw: unknown): number;
+export function coerceToPinDefault(type: "bool", raw: unknown): boolean;
+export function coerceToPinDefault(type: "vec2", raw: unknown): [number, number];
+export function coerceToPinDefault(type: "vec3", raw: unknown): [number, number, number];
+export function coerceToPinDefault(
+  type: "vec4",
+  raw: unknown,
+): [number, number, number, number];
+export function coerceToPinDefault(type: PinType, raw: unknown): PinDefault;
 export function coerceToPinDefault(type: PinType, raw: unknown): PinDefault {
   switch (type) {
     case "float":

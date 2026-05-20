@@ -3,7 +3,7 @@
 // Each helper (`float`, `vec2`, …) returns a Zod schema tagged via `.meta()`
 // with the GLSL pin type and an optional display label. Primitives compose
 // these into `z.object({...})` bags for `static pins.in` / `static pins.out`,
-// then `BasePrimitive`'s default `inputs()`/`outputs()` use
+// then `BaseNode`'s default `inputs()`/`outputs()` use
 // `pinSpecsFromSchema()` to project the bag back into the `PinSpec[]` shape
 // the editor and emitter consume.
 //

@@ -5,12 +5,13 @@
 // harder, but the visual character (directional smear) is preserved.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Linear Blur",
   description: "Directional motion blur",
   color: "#94a3b8",
@@ -29,18 +30,15 @@ export class LinearBlur extends ProceduralEffect {
       { id: "angle", type: "float", label: "Angle (deg)", default: 0 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const sampler = b.add(
-      "sampler",
-      { mode: "linear", samples: 32, edges: "stretch" },
-    );
-    b.connect(uv, sampler.nodeId, "uv");
-    b.connect(gi.intensity, sampler.nodeId, "amount");
-    b.connect(gi.angle, sampler.nodeId, "direction");
+    const sampler = b.add(new N.Sampler({ mode: "linear", samples: 32, edges: "stretch" }), );
+    b.connect(uv).to(sampler, "uv");
+    b.connect(gi.intensity).to(sampler, "amount");
+    b.connect(gi.angle).to(sampler, "direction");
 
-    const center = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, center.nodeId, "uv");
+    const center = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(center, "uv");
 
     return b.output(sampler, { nodeId: center.nodeId, pin: "alpha" });
   }

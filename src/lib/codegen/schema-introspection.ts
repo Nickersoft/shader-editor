@@ -1,8 +1,10 @@
-// Walks Zod schemas to extract GLSL uniform information.
+// Walks Zod schemas to extract field information for both codegen (uniform
+// declarations) and UI rendering (property panels, inline node editors).
 //
-// Each Node class declares `static config` and `static inputs` as Zod object
-// schemas. The codegen iterates the shape of each, peers through wrappers
-// (.optional / .default / .nullable), and emits uniform declarations.
+// Each Node class declares `static schema` as a Zod object. This module walks
+// the shape, peers through wrappers (.optional / .default / .nullable), and
+// classifies each field by its GLSL uniform type — or by `"enumString"` for
+// string-enum fields that branch GLSL source rather than binding as uniforms.
 
 import { z } from "zod";
 import { getMetaDeep, tryUnwrap, type UiMeta } from "@/shaders/core/schemas";
@@ -11,147 +13,109 @@ import type { UniformGlType } from "./types";
 /** Default fixed length for vec4Array (palette) uniforms. */
 export const DEFAULT_VEC4_ARRAY_LENGTH = 10;
 
-type MetaKind = NonNullable<UiMeta["kind"]>;
+export type FieldGlslType = UniformGlType | "enumString";
 
 export interface InspectedField {
   key: string;
-  glslType: UniformGlType;
+  glslType: FieldGlslType;
   schema: z.ZodType;
-  kind?: MetaKind;
+  /** Fully merged metadata across the wrapper chain; undefined if none attached. */
+  meta?: UiMeta;
+  /** Set for vec4Array fields — fixed GLSL array length. */
   arrayLength?: number;
-}
-
-export interface InspectedUiField {
-  key: string;
-  glslType: UniformGlType | "enumString";
-  schema: z.ZodType;
-  kind?: MetaKind;
-  arrayLength?: number;
-  /** For enum strings, the allowed values. */
+  /** Set for enumString fields — allowed string values. */
   enumValues?: readonly string[];
-  /** Optional display labels for enum string values. */
+  /** Set for enumString fields — optional display labels keyed by enum value. */
   enumLabels?: Record<string, string>;
 }
 
-/**
- * Walk through wrapper types (`.optional()`, `.default(...)`, `.nullable()`,
- * etc.) to reach the underlying schema.
- */
-export function unwrap(schema: z.ZodType): z.ZodType {
+/** Walk wrapper types (`.optional()`, `.default(...)`, …) to the underlying schema. */
+function unwrap(schema: z.ZodType): z.ZodType {
   let s = schema;
-  for (let next = tryUnwrap(s); next; next = tryUnwrap(s)) {
-    s = next;
-  }
+  for (let next = tryUnwrap(s); next; next = tryUnwrap(s)) s = next;
   return s;
 }
 
-/**
- * Infer the GLSL uniform type for a Zod schema. Returns undefined if the
- * schema isn't representable as a single GLSL uniform. Pass a precomputed
- * `meta` to avoid a redundant `getMetaDeep` walk in tight loops.
- */
-export function inferGlslType(
-  schema: z.ZodType,
-  meta: UiMeta | undefined = getMetaDeep(schema),
-): UniformGlType | undefined {
-  if (meta?.kind === "image-input" || meta?.kind === "sampler2D") {
-    return "sampler2D";
-  }
+function inferGlslType(meta: UiMeta | undefined, inner: z.ZodType): UniformGlType | undefined {
+  if (meta?.kind === "image-input" || meta?.kind === "sampler2D") return "sampler2D";
   if (meta?.kind === "palette") return "vec4Array";
-
-  const inner = unwrap(schema);
-
-  if (inner instanceof z.ZodNumber) {
-    return inner.format?.includes("int") ? "int" : "float";
-  }
+  if (inner instanceof z.ZodNumber) return inner.format?.includes("int") ? "int" : "float";
   if (inner instanceof z.ZodBoolean) return "bool";
   if (inner instanceof z.ZodTuple) {
     switch (inner.def.items.length) {
-      case 2:
-        return "vec2";
-      case 3:
-        return "vec3";
-      case 4:
-        return "vec4";
+      case 2: return "vec2";
+      case 3: return "vec3";
+      case 4: return "vec4";
     }
   }
   return undefined;
 }
 
-function buildUniformField(
-  key: string,
-  schema: z.ZodType,
-  glslType: UniformGlType,
-  meta: UiMeta | undefined,
-): InspectedField {
-  return {
-    key,
-    glslType,
-    schema,
-    kind: meta?.kind,
-    arrayLength:
-      glslType === "vec4Array"
-        ? (meta?.ui?.array?.maxLength ?? DEFAULT_VEC4_ARRAY_LENGTH)
-        : undefined,
-  };
-}
+// Schemas are class-static, so inspection results are stable for the lifetime
+// of a class. A WeakMap keyed by schema avoids re-walking on every render.
+const fieldsCache = new WeakMap<z.ZodType, InspectedField[]>();
+const EMPTY: InspectedField[] = [];
 
 /**
- * Walk a Zod object schema's shape, returning one InspectedField per top-level
- * field. Skips fields that aren't representable as uniforms.
+ * Walk a Zod object schema's shape and return one entry per UI-relevant field
+ * — both GLSL-uniform fields and string-enum fields (which render dropdowns
+ * but don't bind as uniforms). Cached by schema identity.
  */
-export function inspectObjectSchema(schema: z.ZodType): InspectedField[] {
-  const inner = unwrap(schema);
-  if (!(inner instanceof z.ZodObject)) return [];
-  const out: InspectedField[] = [];
-  for (const [key, fieldSchema] of Object.entries(inner.shape)) {
-    const meta = getMetaDeep(fieldSchema);
-    const glslType = inferGlslType(fieldSchema, meta);
-    if (!glslType) continue;
-    out.push(buildUniformField(key, fieldSchema, glslType, meta));
-  }
-  return out;
-}
-
-// Schemas are class-static, so the result of inspection is stable for the
-// lifetime of a class. A WeakMap keyed by schema avoids re-walking the shape
-// on every property-panel render.
-const uiFieldsCache = new WeakMap<z.ZodType, InspectedUiField[]>();
-
-/**
- * Like `inspectObjectSchema` but additionally includes enum-string fields so
- * the property panel can render dropdowns for non-uniform config fields
- * (e.g. a Gradient node's `type: 'linear' | 'radial'`).
- */
-export function inspectUiFields(schema: z.ZodType): InspectedUiField[] {
-  const cached = uiFieldsCache.get(schema);
+export function inspectFields(schema: z.ZodType): InspectedField[] {
+  const cached = fieldsCache.get(schema);
   if (cached) return cached;
-  const inner = unwrap(schema);
-  if (!(inner instanceof z.ZodObject)) {
-    uiFieldsCache.set(schema, EMPTY_FIELDS);
-    return EMPTY_FIELDS;
+
+  const root = unwrap(schema);
+  if (!(root instanceof z.ZodObject)) {
+    fieldsCache.set(schema, EMPTY);
+    return EMPTY;
   }
-  const out: InspectedUiField[] = [];
-  for (const [key, fieldSchema] of Object.entries(inner.shape)) {
+
+  const out: InspectedField[] = [];
+  for (const [key, fieldSchema] of Object.entries(root.shape)) {
     const meta = getMetaDeep(fieldSchema);
-    const glslType = inferGlslType(fieldSchema, meta);
+    const inner = unwrap(fieldSchema);
+    const glslType = inferGlslType(meta, inner);
+
     if (glslType) {
-      out.push(buildUniformField(key, fieldSchema, glslType, meta));
+      out.push({
+        key,
+        glslType,
+        schema: fieldSchema,
+        meta,
+        arrayLength:
+          glslType === "vec4Array"
+            ? (meta?.ui?.array?.maxLength ?? DEFAULT_VEC4_ARRAY_LENGTH)
+            : undefined,
+      });
       continue;
     }
-    const innerField = unwrap(fieldSchema);
-    if (innerField instanceof z.ZodEnum) {
+
+    if (inner instanceof z.ZodEnum) {
       out.push({
         key,
         glslType: "enumString",
         schema: fieldSchema,
-        enumValues: innerField.options.filter((v): v is string => typeof v === "string"),
+        meta,
+        enumValues: inner.options.filter((v): v is string => typeof v === "string"),
         enumLabels: meta?.enumLabels,
       });
     }
   }
-  uiFieldsCache.set(schema, out);
+
+  fieldsCache.set(schema, out);
   return out;
 }
 
-const EMPTY_FIELDS: InspectedUiField[] = [];
+/** An InspectedField narrowed to a real GLSL uniform type (no enumString). */
+export type InspectedUniform = InspectedField & { glslType: UniformGlType };
+
+/**
+ * Subset of `inspectFields` that excludes enum-string fields — those branch
+ * GLSL source at codegen time rather than binding as uniforms.
+ */
+export function inspectUniformFields(schema: z.ZodType): InspectedUniform[] {
+  return inspectFields(schema).filter(
+    (f): f is InspectedUniform => f.glslType !== "enumString",
+  );
+}

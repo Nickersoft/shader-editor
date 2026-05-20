@@ -1,98 +1,74 @@
 <script lang="ts">
-  import * as Select from "@/components/ui/select";
   import { composer } from "@/lib/state";
-  import { BlendMode } from "@/shaders";
+  import {
+    Effect,
+    getEffectScope,
+    isGenerator,
+    StaticEffect,
+    StaticShader,
+  } from "@/shaders/core/shader.svelte";
 
-  import * as Inputs from "../inputs";
   import Panel from "../panel.svelte";
   import LayerBlending from "./layer-blending.svelte";
+  import LayerEffectsSections from "./layer-effects-sections.svelte";
+  import LayerFields from "./layer-fields.svelte";
   import LayerOpacity from "./layer-opacity.svelte";
+  import LayerPins, { asGraphHost } from "./layer-pins.svelte";
 
-  interface Props {
-    layerNode: Node<Record<string, unknown>, Record<string, unknown>>;
-    // node:
+  // Resolve the current selection out of the composer. Returns null when the
+  // selection is the scene root (handled by SceneProperties instead) or when
+  // nothing is selected.
+  let node = $derived.by(() => {
+    if (!composer.selectedNodeId) return null;
+    return composer.scene.findShader(composer.selectedNodeId)?.shader ?? null;
+  });
 
-    //      {@const meta = selectedNode.meta}
-    //      {@const allFieldsCount =
-    //        (fields?.uniformFields.length ?? 0) + (fields?.configFields.length ?? 0)}
-  }
+  // The layer that owns `node`. Used to surface that layer's effect stacks at
+  // the bottom of the panel when the selected node IS the layer's source
+  // generator. Selecting an individual effect hides those stacks so the user
+  // only sees that effect's properties.
+  let layer = $derived.by(() => {
+    if (!composer.selectedNodeId) return null;
+    return composer.scene.findShader(composer.selectedNodeId)?.layer ?? null;
+  });
 
-  const { layerNode }: Props = $props();
+  let isLayerSource = $derived(
+    layer != null && node != null && node === layer.source,
+  );
+
+  let graphHost = $derived(asGraphHost(node));
+
+  // Schema-driven property rows only make sense for shaders whose inputs are
+  // declared via a Zod `static schema`. Procedural shaders / effects expose
+  // their parameters through LayerPins instead, and the abstract Shader base
+  // has no schema at all — gate at the parent so LayerFields can accept a
+  // concrete narrowed type.
+  let staticNode = $derived(
+    node instanceof StaticShader || node instanceof StaticEffect ? node : null,
+  );
+
+  let selectionScope = $derived.by(() => {
+    if (!node) return "";
+    if (node instanceof Effect) {
+      return getEffectScope(node.cls) === "scene" ? "Scene Effect" : "Effect Layer";
+    }
+    if (isGenerator(node)) return "Layer";
+    return "";
+  });
 </script>
 
-<Panel title={layerNode.meta.name}>
-  <LayerBlending {layerNode} />
-  <LayerOpacity {layerNode} /> 
-
-    {#if selectedGraphHost}
-      <GraphParameterPanel field={selectedGraphHost} />
+{#if node}
+  <Panel title={node.meta.name} label={selectionScope}>
+    <LayerBlending {node} />
+    <LayerOpacity {node} />
+    {#if graphHost}
+      <LayerPins field={graphHost} />
     {/if}
-
-    {#if allFieldsCount > 0}
-      {#each groupedFields as section (section.key)}
-        <section
-          class="space-y-4 border-b border-[rgba(255,255,255,0.1)] px-3 py-3 last:border-b-0"
-        >
-          <div class="px-1">
-            <p class="text-[14px] font-medium text-white">
-              {section.label}
-            </p>
-          </div>
-          {#each section.entries as entry (entryKey(entry))}
-            {#if Array.isArray(entry)}
-              <div
-                class="grid gap-1.5"
-                style:grid-template-columns="repeat({entry.length}, minmax(0,1fr))"
-              >
-                {#each entry as field (field.key)}
-                  <NodeFieldRow
-                    node={selectedNode}
-                    {field}
-                    label={rowLabel(field)}
-                  />
-                {/each}
-              </div>
-            {:else}
-              <NodeFieldRow
-                node={selectedNode}
-                field={entry}
-                label={fieldLabel(entry)}
-              />
-            {/if}
-          {/each}
-        </section>
-      {/each}
-      {#if configEntries.length > 0}
-        <section
-          class="space-y-4 border-b border-[rgba(255,255,255,0.1)] px-3 py-3 last:border-b-0"
-        >
-          <div class="px-1">
-            <p class="text-[14px] font-medium text-white">Configuration</p>
-          </div>
-          {#each configEntries as entry (entryKey(entry))}
-            {#if Array.isArray(entry)}
-              <div
-                class="grid gap-1.5"
-                style:grid-template-columns="repeat({entry.length}, minmax(0,1fr))"
-              >
-                {#each entry as field (field.key)}
-                  <NodeFieldRow node={selectedNode} {field} label={rowLabel(field)} />
-                {/each}
-              </div>
-            {:else}
-              <NodeFieldRow
-                node={selectedNode}
-                field={entry}
-                label={fieldLabel(entry)}
-              />
-            {/if}
-          {/each}
-        </section>
-      {/if}
+    {#if staticNode}
+      <LayerFields node={staticNode} />
     {/if}
-
-    {#if selectedIsLayerSource && selectedLayer}
-      <LayerEffectsSections layer={selectedLayer} />
+    {#if isLayerSource && layer}
+      <LayerEffectsSections {layer} />
     {/if}
-  </div>
-</Panel>
+  </Panel>
+{/if} 

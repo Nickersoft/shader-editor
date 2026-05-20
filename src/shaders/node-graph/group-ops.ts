@@ -15,7 +15,7 @@
 
 import { makeId } from "@/lib/utils";
 import { GROUP_INPUT_TYPE_ID, GROUP_OUTPUT_TYPE_ID, GROUP_TYPE_ID } from "./emit";
-import { getPrimitive } from "./registry";
+import { getNode } from "./registry";
 import type { Edge, GraphNode, NodeGraph, PinSpec, PinType } from "./types";
 
 const STRUCTURAL_TYPE_IDS = new Set([GROUP_INPUT_TYPE_ID, GROUP_OUTPUT_TYPE_ID]);
@@ -343,7 +343,7 @@ function pinSpecOf(
 ): PinSpec | null {
   const node = graph.nodes.find((n) => n.id === nodeId);
   if (!node) return null;
-  const prim = getPrimitive(node.typeId);
+  const prim = getNode(node.typeId);
   if (!prim) return null;
   const pins = side === "input" ? prim.inputs(node.config) : prim.outputs(node.config);
   return pins.find((p) => p.id === pinId) ?? null;

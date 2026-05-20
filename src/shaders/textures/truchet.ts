@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Truchet",
   description: "Quarter-circle arc tiles",
   color: "#0ea5e9",
@@ -28,90 +29,90 @@ export class Truchet extends ProceduralShader {
     const p = b.position();
 
     // scaled = p * scale
-    const scaled = b.add("vector-math", { op: "scale" });
-    b.connect(p, scaled.nodeId, "a");
-    b.connect(gi.scale, scaled.nodeId, "b");
+    const scaled = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(p).to(scaled, "a");
+    b.connect(gi.scale).to(scaled, "b");
 
     // cell = floor(scaled); local = fract(scaled)
-    const cell = b.add("vector-math", { op: "floor" });
-    b.connect(scaled, cell.nodeId, "a");
-    const local = b.add("vector-math", { op: "fract" });
-    b.connect(scaled, local.nodeId, "a");
+    const cell = b.add(new N.VectorMath({ op: "floor" }));
+    b.connect(scaled).to(cell, "a");
+    const local = b.add(new N.VectorMath({ op: "fract" }));
+    b.connect(scaled).to(local, "a");
 
     // seed_v = vec2(seed, seed); h_input = cell + seed_v
-    const seedV = b.add("combine-xy", {});
-    b.connect(gi.seed, seedV.nodeId, "x");
-    b.connect(gi.seed, seedV.nodeId, "y");
-    const hashIn = b.add("vector-math", { op: "add" });
-    b.connect(cell, hashIn.nodeId, "a");
-    b.connect(seedV, hashIn.nodeId, "b");
-    const hOut = b.add("white-noise-texture", {});
-    b.connect(hashIn, hOut.nodeId, "p");
+    const seedV = b.add(new N.CombineXy());
+    b.connect(gi.seed).to(seedV, "x");
+    b.connect(gi.seed).to(seedV, "y");
+    const hashIn = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(cell).to(hashIn, "a");
+    b.connect(seedV).to(hashIn, "b");
+    const hOut = b.add(new N.Hash());
+    b.connect(hashIn).to(hOut, "p");
 
     // flip = step(h, 0.5)  → 1 if h < 0.5, else 0
-    const flip = b.add("math", { op: "step" }, { b: 0.5 });
-    b.connect(hOut, flip.nodeId, "a");
+    const flip = b.add(new N.Math({ op: "step" }), { b: 0.5 });
+    b.connect(hOut).to(flip, "a");
 
     // local_flipped = mix(local, vec2(local.x, 1 - local.y), flip)
-    const sep = b.add("separate-xy", {});
-    b.connect(local, sep.nodeId, "v");
+    const sep = b.add(new N.SeparateXy());
+    b.connect(local).to(sep, "v");
     const localY = { nodeId: sep.nodeId, pin: "y" };
-    const oneMinusY = b.add("math", { op: "oneminus" });
-    b.connect(localY, oneMinusY.nodeId, "x");
-    const flippedV = b.add("combine-xy", {});
-    b.connect({ nodeId: sep.nodeId, pin: "x" }, flippedV.nodeId, "x");
-    b.connect(oneMinusY, flippedV.nodeId, "y");
+    const oneMinusY = b.add(new N.Math({ op: "oneminus" }));
+    b.connect(localY).to(oneMinusY, "x");
+    const flippedV = b.add(new N.CombineXy());
+    b.connect(sep, "x").to(flippedV, "x");
+    b.connect(oneMinusY).to(flippedV, "y");
     // Per-component mix via SeparateXY + Combine.mix isn't trivial (mix is
     // hardcoded at 0.5). Cheaper: build it as `local + flip * (flipped - local)`.
-    const diff = b.add("vector-math", { op: "sub" });
-    b.connect(flippedV, diff.nodeId, "a");
-    b.connect(local, diff.nodeId, "b");
-    const scaledDiff = b.add("vector-math", { op: "scale" });
-    b.connect(diff, scaledDiff.nodeId, "a");
-    b.connect(flip, scaledDiff.nodeId, "b");
-    const localF = b.add("vector-math", { op: "add" });
-    b.connect(local, localF.nodeId, "a");
-    b.connect(scaledDiff, localF.nodeId, "b");
+    const diff = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(flippedV).to(diff, "a");
+    b.connect(local).to(diff, "b");
+    const scaledDiff = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(diff).to(scaledDiff, "a");
+    b.connect(flip).to(scaledDiff, "b");
+    const localF = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(local).to(localF, "a");
+    b.connect(scaledDiff).to(localF, "b");
 
     // d1 = abs(length(localF) - 0.5)
-    const lenA = b.add("vector-math", { op: "length" });
-    b.connect(localF, lenA.nodeId, "a");
-    const dA = b.add("math", { op: "sub" }, { b: 0.5 });
-    b.connect(lenA, dA.nodeId, "a");
-    const d1 = b.add("math", { op: "abs" });
-    b.connect(dA, d1.nodeId, "x");
+    const lenA = b.add(new N.VectorMath({ op: "length" }));
+    b.connect(localF).to(lenA, "a");
+    const dA = b.add(new N.Math({ op: "sub" }), { b: 0.5 });
+    b.connect(lenA).to(dA, "a");
+    const d1 = b.add(new N.Math({ op: "abs" }));
+    b.connect(dA).to(d1, "x");
 
     // d2 = abs(length(localF - vec2(1)) - 0.5)
-    const oneV = b.add("combine-xy", {}, { x: 1, y: 1 });
-    const localFm1 = b.add("vector-math", { op: "sub" });
-    b.connect(localF, localFm1.nodeId, "a");
-    b.connect(oneV, localFm1.nodeId, "b");
-    const lenB = b.add("vector-math", { op: "length" });
-    b.connect(localFm1, lenB.nodeId, "a");
-    const dB = b.add("math", { op: "sub" }, { b: 0.5 });
-    b.connect(lenB, dB.nodeId, "a");
-    const d2 = b.add("math", { op: "abs" });
-    b.connect(dB, d2.nodeId, "x");
+    const oneV = b.add(new N.CombineXy(), { x: 1, y: 1 });
+    const localFm1 = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(localF).to(localFm1, "a");
+    b.connect(oneV).to(localFm1, "b");
+    const lenB = b.add(new N.VectorMath({ op: "length" }));
+    b.connect(localFm1).to(lenB, "a");
+    const dB = b.add(new N.Math({ op: "sub" }), { b: 0.5 });
+    b.connect(lenB).to(dB, "a");
+    const d2 = b.add(new N.Math({ op: "abs" }));
+    b.connect(dB).to(d2, "x");
 
     // dd = min(d1, d2)
-    const dd = b.add("math", { op: "min" });
-    b.connect(d1, dd.nodeId, "a");
-    b.connect(d2, dd.nodeId, "b");
+    const dd = b.add(new N.Math({ op: "min" }));
+    b.connect(d1).to(dd, "a");
+    b.connect(d2).to(dd, "b");
 
     // lw = lineWidth * 0.025; mask = 1 - smoothstep(lw - eps, lw + eps, dd)
     // Use a small fixed `eps` instead of fwidth so the falloff is uniform.
-    const lw = b.add("math", { op: "mul" }, { b: 0.025 });
-    b.connect(gi.lineWidth, lw.nodeId, "a");
-    const lwHi = b.add("math", { op: "add" }, { b: 0.01 });
-    b.connect(lw, lwHi.nodeId, "a");
-    const lwLo = b.add("math", { op: "sub" }, { b: 0.01 });
-    b.connect(lw, lwLo.nodeId, "a");
-    const ss = b.add("smoothstep", {});
-    b.connect(lwLo, ss.nodeId, "edge0");
-    b.connect(lwHi, ss.nodeId, "edge1");
-    b.connect(dd, ss.nodeId, "x");
-    const mask = b.add("math", { op: "oneminus" });
-    b.connect(ss, mask.nodeId, "x");
+    const lw = b.add(new N.Math({ op: "mul" }), { b: 0.025 });
+    b.connect(gi.lineWidth).to(lw, "a");
+    const lwHi = b.add(new N.Math({ op: "add" }), { b: 0.01 });
+    b.connect(lw).to(lwHi, "a");
+    const lwLo = b.add(new N.Math({ op: "sub" }), { b: 0.01 });
+    b.connect(lw).to(lwLo, "a");
+    const ss = b.add(new N.Smoothstep());
+    b.connect(lwLo).to(ss, "edge0");
+    b.connect(lwHi).to(ss, "edge1");
+    b.connect(dd).to(ss, "x");
+    const mask = b.add(new N.Math({ op: "oneminus" }));
+    b.connect(ss).to(mask, "x");
 
     const ramp = b.colorRamp(mask, [
       [0, 0, 0],

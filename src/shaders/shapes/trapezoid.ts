@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import type { GlslBlock, ShaderMeta } from "@/shaders/core/types";
 import { transformFields, zColor, zFloat } from "@/shaders/core/schemas";
 import type { SpatialControl } from "@/shaders/core/spatial";
 
@@ -14,7 +14,7 @@ const schema = z.object({
   strokeWidth: zFloat(0, 0.1, 0.001).default(0).describe("Stroke Width"),
 });
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Trapezoid",
   description: "Trapezoid filling its bounding box; top width is a ratio of the bottom",
   color: "#f59e0b",

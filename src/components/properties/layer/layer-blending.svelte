@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as Field from "@/components/ui/field";
+  import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
   import * as Select from "@/components/ui/select";
   import { composer } from "@/lib/state";
   import type { BlendMode, Shader } from "@/shaders";
@@ -8,23 +8,23 @@
   import PanelSection from "../panel-section.svelte";
 
   interface Props {
-    layerNode: Shader;
+    node: Shader;
   }
 
-  const { layerNode }: Props = $props();
+  const { node }: Props = $props();
 
   const blendModeLabels = Object.fromEntries(BLEND_MODES.map(({ label, value }) => [value, label]));
-  const blendModeLabel = $derived(blendModeLabels[layerNode.blendMode] ?? "normal");
+  const blendModeLabel = $derived(blendModeLabels[node.blendMode] ?? "normal");
 </script>
 
 <PanelSection>
-  <Field.Root>
-    <Field.Label>Blending</Field.Label>
-    <Field.Content>
+  <Field>
+    <FieldLabel>Blending</FieldLabel>
+    <FieldContent>
       <Select.Root
         type="single"
-        value={layerNode.blendMode || "normal"}
-        onValueChange={(v) => composer.updateBlendMode(layerNode.id, v as BlendMode)}
+        value={node.blendMode || "normal"}
+        onValueChange={(v) => composer.updateBlendMode(node.id, v as BlendMode)}
       >
         <Select.Trigger>
           {blendModeLabel}
@@ -35,6 +35,6 @@
           {/each}
         </Select.Content>
       </Select.Root>
-    </Field.Content>
-  </Field.Root>
+    </FieldContent>
+  </Field>
 </PanelSection>

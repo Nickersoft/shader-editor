@@ -13,6 +13,7 @@
 // blending them via each layer's blendMode + opacity.
 
 import type { Scene, Layer } from "@/shaders/core/scene.svelte";
+import { effectNeedsBackdrop, type ShaderClass } from "@/shaders/core/shader.svelte";
 import type { PassPlan } from "./passes";
 import { splitIntoPasses } from "./passes";
 
@@ -57,6 +58,28 @@ export function planScene(scene: Scene): ScenePlan {
     // Mark the final pass to commit into this layer's texture slot.
     const last = layerPasses[layerPasses.length - 1];
     last.commitToLayer = entryIndex;
+
+    // If any node in this layer's chain is a backdrop-aware Effect, prepend
+    // a backdrop compositor pass that blends only the layers already
+    // committed (`entryIndex` of them) into the dedicated backdrop FBO.
+    // Tag every pass in the mini-chain as readsBackdrop so the runtime
+    // binds u_backdrop on each — at minimum the effect's pass needs it,
+    // and tagging the whole chain is safe (the runtime no-ops the bind if
+    // the program never references the uniform).
+    const needsBackdrop = layerNodes.some((n) => effectNeedsBackdrop(n.constructor as ShaderClass));
+    if (needsBackdrop) {
+      // Even at entryIndex 0 we still emit the backdrop pass — the compositor
+      // produces the scene background alone, which is the correct backdrop
+      // when nothing sits below this layer.
+      passes.push({
+        nodes: [],
+        readsPrevPass: false,
+        mode: "backdrop",
+        bindLayerTextures: true,
+        layerCountForBackdrop: entryIndex,
+      });
+      for (const p of layerPasses) p.readsBackdrop = true;
+    }
 
     const startIndex = passes.length;
     passes.push(...layerPasses);

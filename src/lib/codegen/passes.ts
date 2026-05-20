@@ -23,8 +23,18 @@ export interface PassPlan {
   // 'js' = degenerate fragment pass that samples a ProcessingShader's CPU output.
   // 'glsl-render' = ProcessingShader's follow-on render phase using its own glsl().
   // 'compositor' = scene compositor that blends layer textures via u_layer_*.
+  // 'backdrop' = backdrop compositor that blends only layers BELOW a target
+  //   layer, writing into the dedicated backdrop FBO. Synthesised by the
+  //   scene planner ahead of any layer whose effect chain reads u_backdrop.
   // Otherwise a normal GLSL pass containing one or more generator/Effect shaders.
-  mode?: "js" | "glsl-render" | "compositor";
+  mode?: "js" | "glsl-render" | "compositor" | "backdrop";
+  // For backdrop-mode passes: number of layers below to include in the
+  // composite. Layers [0..layerCountForBackdrop) are sampled; the remainder
+  // (the current layer and above) are excluded.
+  layerCountForBackdrop?: number;
+  // True when this pass's GLSL references `u_backdrop` and the runtime should
+  // bind the backdrop texture before invoking it.
+  readsBackdrop?: boolean;
   // For Effects whose `glsl()` returns multiple blocks (multi-pass effects
   // like separable blurs), this is the index into that block array. Undefined
   // / 0 means "the first / only block." Each multi-block pass after the first

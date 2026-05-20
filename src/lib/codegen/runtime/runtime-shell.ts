@@ -19,9 +19,12 @@ import { getShaderNoiseTexture } from "./noise-texture";
 
 const NOISE_TEXTURE_UNIT = 15;
 const PREV_FRAME_TEXTURE_UNIT = 14;
-// Layer textures occupy a contiguous range starting at this unit. With ~14
-// units left after reserving prev-pass (0), prev-frame (14), and noise (15),
-// there's room for ~13 layers. Practical cap is 16.
+// Reserved unit for the backdrop sampler — the composite of every layer
+// below a given layer, used by backdrop-aware shape effects (Glass).
+const BACKDROP_TEXTURE_UNIT = 13;
+// Layer textures occupy a contiguous range starting at this unit. With ~13
+// units left after reserving prev-pass (0), backdrop (13), prev-frame (14),
+// and noise (15), there's room for ~12 layers. Practical cap is 16.
 const LAYER_TEXTURE_BASE_UNIT = 1;
 
 export interface PipelinePass {
@@ -36,6 +39,18 @@ export interface PipelinePass {
    * compositor program. Provided per-layer; index aligns with `commitToLayer`.
    */
   layerOpacity?: number;
+  /**
+   * 'backdrop' = this is a backdrop-compositor pre-pass; runtime renders it
+   * into the shared backdrop FBO rather than the ping-pong target. Other
+   * mode values are descriptive only and don't affect runtime behaviour.
+   */
+  mode?: "js" | "glsl-render" | "compositor" | "backdrop";
+  /**
+   * When true, the runtime binds the backdrop texture as `u_backdrop` on
+   * this pass — set on layer-effect passes whose GLSL refracts what's
+   * beneath the current layer.
+   */
+  readsBackdrop?: boolean;
 }
 
 export interface PassContext {
@@ -163,6 +178,11 @@ void main() { fragColor = texture(u_src, v_uv); }`;
   // cursor-ripples wave equation, particle trails, fluid sims, etc.).
   let prevFrameTex: WebGLTexture | null = null;
   let prevFrameFbo: WebGLFramebuffer | null = null;
+  // Shared backdrop FBO. Holds the composite of every layer below a
+  // backdrop-aware layer (i.e. one whose effect chain uses u_backdrop).
+  // Allocated lazily on first use since most scenes don't need it.
+  let backdropTex: WebGLTexture | null = null;
+  let backdropFbo: WebGLFramebuffer | null = null;
   // One persistent texture per scene Layer. The compositor pass samples
   // these via `u_layer_<i>` to blend layers in render order.
   let layerTextures: (WebGLTexture | null)[] = [];
@@ -230,6 +250,10 @@ void main() { fragColor = texture(u_src, v_uv); }`;
     if (fboB) gl.deleteFramebuffer(fboB);
     if (prevFrameTex) gl.deleteTexture(prevFrameTex);
     if (prevFrameFbo) gl.deleteFramebuffer(prevFrameFbo);
+    if (backdropTex) gl.deleteTexture(backdropTex);
+    if (backdropFbo) gl.deleteFramebuffer(backdropFbo);
+    backdropTex = null;
+    backdropFbo = null;
     for (const t of layerTextures) if (t) gl.deleteTexture(t);
     for (const f of layerFbos) if (f) gl.deleteFramebuffer(f);
     layerTextures = [];
@@ -274,6 +298,14 @@ void main() { fragColor = texture(u_src, v_uv); }`;
     const [tP, fP] = make();
     prevFrameTex = tP;
     prevFrameFbo = fP;
+    // Backdrop FBO: same shape as the ping-pong/prev-frame textures so a
+    // backdrop-compositor pass can write into it without any plumbing. Plain
+    // LINEAR — backdrop sampling never needs mipmaps.
+    const [tBd, fBd] = make();
+    backdropTex = tBd;
+    backdropFbo = fBd;
+    gl.bindTexture(gl.TEXTURE_2D, backdropTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     // Allocate one persistent texture per scene Layer.
     for (let i = 0; i < layerCount; i++) {
       const [t, f] = make();
@@ -362,6 +394,15 @@ void main() { fragColor = texture(u_src, v_uv); }`;
       const uPrevFrame = gl.getUniformLocation(prog, "u_prevFrame");
       if (uPrevFrame !== null) gl.uniform1i(uPrevFrame, PREV_FRAME_TEXTURE_UNIT);
 
+      // Bind the backdrop texture on its reserved unit. The bind is harmless
+      // for programs that don't reference u_backdrop (location resolves null).
+      if (pass.readsBackdrop && backdropTex) {
+        gl.activeTexture(gl.TEXTURE0 + BACKDROP_TEXTURE_UNIT);
+        gl.bindTexture(gl.TEXTURE_2D, backdropTex);
+        const uBackdrop = gl.getUniformLocation(prog, "u_backdrop");
+        if (uBackdrop !== null) gl.uniform1i(uBackdrop, BACKDROP_TEXTURE_UNIT);
+      }
+
       // Bind global noise texture on the reserved high unit. getUniformLocation
       // returns null in passes that don't sample it, so the bind is harmless.
       gl.activeTexture(gl.TEXTURE0 + NOISE_TEXTURE_UNIT);
@@ -394,9 +435,15 @@ void main() { fragColor = texture(u_src, v_uv); }`;
 
       // Decide write target. Layer commits redirect to the persistent layer
       // FBO. The very last pass renders to prevFrameFbo so it can be blit to
-      // the canvas while preserving the prev-frame state.
+      // the canvas while preserving the prev-frame state. Backdrop passes
+      // write into the shared backdrop FBO and leave the ping-pong state
+      // untouched — the layer chain that consumes the backdrop will start
+      // its own ping-pong sequence on the following pass.
+      const isBackdropPass = pass.mode === "backdrop";
       let writeTarget: WebGLFramebuffer | null;
-      if (isLayerCommit) {
+      if (isBackdropPass) {
+        writeTarget = backdropFbo;
+      } else if (isLayerCommit) {
         writeTarget = layerFbos[pass.commitToLayer!] ?? null;
       } else if (isLast) {
         writeTarget = prevFrameFbo;
@@ -405,15 +452,20 @@ void main() { fragColor = texture(u_src, v_uv); }`;
       }
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeTarget);
       gl.viewport(0, 0, width, height);
-      // Layer commits start from a clean slate so the source generator's
-      // alpha is the only thing in the texture.
-      if (isLayerCommit) {
+      // Layer commits and backdrop composites start from a clean slate so
+      // the output reflects only this pass's contribution.
+      if (isLayerCommit || isBackdropPass) {
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
       }
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-      if (isLayerCommit) {
+      if (isBackdropPass) {
+        // No ping-pong rotation — the next pass belongs to a layer's effect
+        // chain and will read u_backdrop, not u_prevPass. Leave read/writeFbo
+        // as they were (still scoped to a freshly-cleared ping-pong from the
+        // previous layer commit).
+      } else if (isLayerCommit) {
         // Reset ping-pong for the next layer's first pass — it does not read
         // from the previous layer (each layer renders independently).
         if (fboA) {
@@ -478,6 +530,8 @@ void main() { fragColor = texture(u_src, v_uv); }`;
     if (fboB) gl.deleteFramebuffer(fboB);
     if (prevFrameTex) gl.deleteTexture(prevFrameTex);
     if (prevFrameFbo) gl.deleteFramebuffer(prevFrameFbo);
+    if (backdropTex) gl.deleteTexture(backdropTex);
+    if (backdropFbo) gl.deleteFramebuffer(backdropFbo);
     for (const t of layerTextures) if (t) gl.deleteTexture(t);
     for (const f of layerFbos) if (f) gl.deleteFramebuffer(f);
     if (noiseTexture) gl.deleteTexture(noiseTexture);

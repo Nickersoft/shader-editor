@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import type { GlslBlock, ShaderMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
 const schema = z.object({
@@ -13,7 +13,7 @@ const schema = z.object({
   color2: zColor().default([0.76, 0.11, 0.47]).describe("Color 2"),
 });
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Smoke",
   description: "Drifting smoky cloud field",
   color: "#94a3b8",

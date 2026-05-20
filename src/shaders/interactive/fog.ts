@@ -2,12 +2,13 @@
 // plus a horizontal time scroll; mixed with the underlying frame.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Fog",
   description: "Drifting volumetric fog",
   color: "#cbd5e1",
@@ -29,40 +30,40 @@ export class Fog extends ProceduralEffect {
       { id: "color2", type: "vec3", label: "Color 2", default: [0.5, 0.5, 0.5] },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const t = b.add("time", {}, undefined, "out");
-    const mouse = b.add("mouse", {}, undefined, "position");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const t = b.add(new N.Time(), undefined, "out");
+    const mouse = b.add(new N.Mouse(), undefined, "position");
 
     // mouseDrift = (mouse − 0.5) · 0.5
-    const half = b.add("value", { value: 0.5 });
-    const halfV = b.add("combine-xy", {});
-    b.connect(half, halfV.nodeId, "x");
-    b.connect(half, halfV.nodeId, "y");
-    const md1 = b.add("vector-math", { op: "sub" });
-    b.connect(mouse, md1.nodeId, "a");
-    b.connect(halfV, md1.nodeId, "b");
-    const drift = b.add("vector-math", { op: "scale" });
-    b.connect(md1, drift.nodeId, "a");
-    b.connect(half, drift.nodeId, "b");
+    const half = b.add(new N.Const({ value: 0.5 }));
+    const halfV = b.add(new N.CombineXy());
+    b.connect(half).to(halfV, "x");
+    b.connect(half).to(halfV, "y");
+    const md1 = b.add(new N.VectorMath({ op: "sub" }));
+    b.connect(mouse).to(md1, "a");
+    b.connect(halfV).to(md1, "b");
+    const drift = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(md1).to(drift, "a");
+    b.connect(half).to(drift, "b");
 
     // sample point: (uv + drift) · scale, plus time scroll along x.
-    const offset = b.add("vector-math", { op: "add" });
-    b.connect(uv, offset.nodeId, "a");
-    b.connect(drift, offset.nodeId, "b");
-    const q = b.add("vector-math", { op: "scale" });
-    b.connect(offset, q.nodeId, "a");
-    b.connect(gi.scale, q.nodeId, "b");
+    const offset = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(uv).to(offset, "a");
+    b.connect(drift).to(offset, "b");
+    const q = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(offset).to(q, "a");
+    b.connect(gi.scale).to(q, "b");
 
-    const ts = b.add("math", { op: "mul" });
-    b.connect(t, ts.nodeId, "a");
-    b.connect(gi.speed, ts.nodeId, "b");
-    const tsV = b.add("combine-xy", {}, { y: 0 });
-    b.connect(ts, tsV.nodeId, "x");
-    const sampleP = b.add("vector-math", { op: "add" });
-    b.connect(q, sampleP.nodeId, "a");
-    b.connect(tsV, sampleP.nodeId, "b");
+    const ts = b.add(new N.Math({ op: "mul" }));
+    b.connect(t).to(ts, "a");
+    b.connect(gi.speed).to(ts, "b");
+    const tsV = b.add(new N.CombineXy(), { y: 0 });
+    b.connect(ts).to(tsV, "x");
+    const sampleP = b.add(new N.VectorMath({ op: "add" }));
+    b.connect(q).to(sampleP, "a");
+    b.connect(tsV).to(sampleP, "b");
 
-    const n = b.add("noise-texture", {
+    const n = b.add(new N.NoiseTexture({
       kind: "fbm",
       scale: 1,
       seed: 0,
@@ -70,28 +71,28 @@ export class Fog extends ProceduralEffect {
       lacunarity: 2,
       roughness: 0.5,
       distortion: 0,
-    });
-    b.connect(sampleP, n.nodeId, "p");
+    }));
+    b.connect(sampleP).to(n, "p");
 
     // fogColor = mix(c1, c2, n)
-    const fogColor = b.add("mix-color", {});
-    b.connect(gi.color1, fogColor.nodeId, "a");
-    b.connect(gi.color2, fogColor.nodeId, "b");
-    b.connect(n, fogColor.nodeId, "t");
+    const fogColor = b.add(new N.MixColor());
+    b.connect(gi.color1).to(fogColor, "a");
+    b.connect(gi.color2).to(fogColor, "b");
+    b.connect(n).to(fogColor, "t");
 
     // Underlying frame
-    const base = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, base.nodeId, "uv");
+    const base = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(base, "uv");
 
     // mixT = n · intensity
-    const mixT = b.add("math", { op: "mul" });
-    b.connect(n, mixT.nodeId, "a");
-    b.connect(gi.intensity, mixT.nodeId, "b");
+    const mixT = b.add(new N.Math({ op: "mul" }));
+    b.connect(n).to(mixT, "a");
+    b.connect(gi.intensity).to(mixT, "b");
 
-    const out = b.add("mix-color", {});
-    b.connect({ nodeId: base.nodeId, pin: "color" }, out.nodeId, "a");
-    b.connect(fogColor, out.nodeId, "b");
-    b.connect(mixT, out.nodeId, "t");
+    const out = b.add(new N.MixColor());
+    b.connect(base, "color").to(out, "a");
+    b.connect(fogColor).to(out, "b");
+    b.connect(mixT).to(out, "t");
 
     return b.output(out, { nodeId: base.nodeId, pin: "alpha" });
   }

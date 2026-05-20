@@ -2,13 +2,20 @@
 	import { Handle, Position, type NodeProps, type Node } from '@xyflow/svelte';
 	import {
 		defaultForPinType,
-		getPrimitive,
+		getNode,
 		type PinDefault,
 		type PinSpec,
 	} from '@/shaders/node-graph';
+	import {
+		CONFIG_ROW_H,
+		HEADER_H,
+		INLINE_CONFIG_TYPES,
+		INLINE_PIN_ROW_H,
+		PIN_ROW_H,
+	} from '@/shaders/node-graph/node-metrics';
 	import { categoryColorFor, colorForPin } from './pin-color';
 	import PinEditor from './pin-editor.svelte';
-	import { inspectUiFields, type InspectedUiField } from '@/lib/codegen/schema-introspection';
+	import { inspectFields, type InspectedField } from '@/lib/codegen/schema-introspection';
 	import { composer } from '@/lib/state/composer.svelte';
 	import { NumberInput } from '@/components/ui/number-input';
 	import * as Select from '@/components/ui/select';
@@ -25,29 +32,16 @@
 
 	let { data, selected }: NodeProps<PrimitiveGraphNodeType> = $props();
 
-	// Fixed row geometry. Pin rows align 1:1 with handle pixel offsets so the
-	// dot sits exactly on the row's text baseline — like Blender. Unwired
-	// input pins host an inline editor (NumberInput / VecScrubber /
-	// ColorSwatch) and need a taller row.
-	const HEADER_H = 34;
-	const PIN_ROW_H = 24;
-	const INLINE_PIN_ROW_H = 32;
-	const CONFIG_ROW_H = 32;
-
-	let prim = $derived(getPrimitive(data.typeId));
+	let prim = $derived(getNode(data.typeId));
 	let inputs = $derived((prim?.inputs(data.config) ?? []) as readonly PinSpec[]);
 	let outputs = $derived((prim?.outputs(data.config) ?? []) as readonly PinSpec[]);
 
 	// Inline config — only field types that fit a 220px-wide node row render
 	// here. Complex shapes (palettes, vec colors, images, the GroupInput pin
 	// editor) stay in the dedicated property panel.
-	let allConfigFields = $derived.by<InspectedUiField[]>(() => {
+	let configFields = $derived.by<InspectedField[]>(() => {
 		if (!prim?.config) return [];
-		return inspectUiFields(prim.config).filter((f) => {
-			if (f.glslType === 'float' || f.glslType === 'int' || f.glslType === 'bool') return true;
-			if (f.glslType === 'enumString') return true;
-			return false;
-		});
+		return inspectFields(prim.config).filter((f) => INLINE_CONFIG_TYPES.has(f.glslType));
 	});
 
 	let displayTitle = $derived(prim?.displayTitle(data.config) ?? data.typeId);
@@ -62,8 +56,6 @@
 		e.stopPropagation();
 		composer.enterGraphGroup(data.nodeId);
 	}
-
-	let configFields = $derived(allConfigFields);
 
 	// Pixel offset of each pin's handle, measured from the node's top edge.
 	// Outputs sit immediately under the header; inputs sit under the config
@@ -122,7 +114,7 @@
 		return drafts[pin.id] ?? data.pinValues?.[pin.id] ?? pin.default;
 	}
 
-	function configLabel(field: InspectedUiField): string {
+	function configLabel(field: InspectedField): string {
 		return field.schema.description ?? field.key;
 	}
 

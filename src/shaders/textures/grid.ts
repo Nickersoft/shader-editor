@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Grid",
   description: "Orthogonal grid lines",
   color: "#0ea5e9",
@@ -19,8 +20,8 @@ export class Grid extends ProceduralShader {
     const b = new GraphBuilder();
     b.groupInput([]);
     const p = b.position();
-    const gl = b.add("lattice-mask", { mode: "lines", scale: 10, lineWidth: 0.06, softness: 0.04 });
-    b.connect(p, gl.nodeId, "p");
+    const gl = b.add(new N.LatticeMask({ mode: "lines", scale: 10, lineWidth: 0.06, softness: 0.04 }));
+    b.connect(p).to(gl, "p");
     const ramp = b.colorRamp(gl, [
       [1, 1, 1],
       [0, 0, 0],

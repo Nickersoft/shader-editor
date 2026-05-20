@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Gradient",
   description: "Two-stop linear gradient",
   color: "#10b981",
@@ -19,8 +20,8 @@ export class Gradient extends ProceduralShader {
     const b = new GraphBuilder();
     b.groupInput([]);
     const uv = b.screenUv();
-    const domain = b.add("gradient-domain", { mode: "linear" });
-    b.connect(uv, domain.nodeId, "p");
+    const domain = b.add(new N.GradientDomain({ mode: "linear" }));
+    b.connect(uv).to(domain, "p");
     const ramp = b.colorRamp(domain, [
       [0.0, 0.0, 1.0],
       [0.1, 1.0, 0.0],

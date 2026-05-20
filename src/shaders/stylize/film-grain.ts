@@ -4,12 +4,13 @@
 // or dark regions.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Film Grain",
   description: "Per-pixel grain biased toward dark or light areas",
   color: "#a3a3a3",
@@ -28,45 +29,45 @@ export class FilmGrain extends ProceduralEffect {
       { id: "bias", type: "float", label: "Bias", default: 0 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
-    const t = b.add("time", {}, undefined, "out");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
+    const t = b.add(new N.Time(), undefined, "out");
 
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sample, "uv");
     const sampleColor = { nodeId: sample.nodeId, pin: "color" };
     const sampleAlpha = { nodeId: sample.nodeId, pin: "alpha" };
 
-    const grain = b.add("grain", {});
-    b.connect(uv, grain.nodeId, "uv");
-    b.connect(t, grain.nodeId, "time");
-    b.connect(gi.intensity, grain.nodeId, "intensity");
+    const grain = b.add(new N.Grain());
+    b.connect(uv).to(grain, "uv");
+    b.connect(t).to(grain, "time");
+    b.connect(gi.intensity).to(grain, "intensity");
 
     // grain is a float; convert to vec3 by combine-color so we can add to
     // an RGB sample.
-    const grainRgb = b.add("combine-color", {});
-    b.connect(grain, grainRgb.nodeId, "r");
-    b.connect(grain, grainRgb.nodeId, "g");
-    b.connect(grain, grainRgb.nodeId, "b");
+    const grainRgb = b.add(new N.CombineColor());
+    b.connect(grain).to(grainRgb, "r");
+    b.connect(grain).to(grainRgb, "g");
+    b.connect(grain).to(grainRgb, "b");
 
-    const grainy = b.add("color-math", { op: "add" });
-    b.connect(sampleColor, grainy.nodeId, "a");
-    b.connect(grainRgb, grainy.nodeId, "b");
+    const grainy = b.add(new N.ColorMath({ op: "add" }));
+    b.connect(sampleColor).to(grainy, "a");
+    b.connect(grainRgb).to(grainy, "b");
 
     // Luminance weighting: w = smoothstep(0, 0.5 + bias, luma(rgb))
-    const lum = b.add("color-math", { op: "luminance" });
-    b.connect(sampleColor, lum.nodeId, "a");
+    const lum = b.add(new N.ColorMath({ op: "luminance" }));
+    b.connect(sampleColor).to(lum, "a");
 
-    const edge1 = b.add("math", { op: "add" }, { a: 0.5 });
-    b.connect(gi.bias, edge1.nodeId, "b");
+    const edge1 = b.add(new N.Math({ op: "add" }), { a: 0.5 });
+    b.connect(gi.bias).to(edge1, "b");
 
-    const w = b.add("smoothstep", {}, { edge0: 0 });
-    b.connect(edge1, w.nodeId, "edge1");
-    b.connect(lum, w.nodeId, "x");
+    const w = b.add(new N.Smoothstep(), { edge0: 0 });
+    b.connect(edge1).to(w, "edge1");
+    b.connect(lum).to(w, "x");
 
-    const mixed = b.add("mix-color", {});
-    b.connect(sampleColor, mixed.nodeId, "a");
-    b.connect(grainy, mixed.nodeId, "b");
-    b.connect(w, mixed.nodeId, "t");
+    const mixed = b.add(new N.MixColor());
+    b.connect(sampleColor).to(mixed, "a");
+    b.connect(grainy).to(mixed, "b");
+    b.connect(w).to(mixed, "t");
 
     return b.output(mixed, sampleAlpha);
   }

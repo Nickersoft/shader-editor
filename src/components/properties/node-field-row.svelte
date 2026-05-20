@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { composer } from '@/lib/state/composer.svelte';
-	import type {
-		InspectedField,
-		InspectedUiField
-	} from '@/lib/codegen/schema-introspection';
+	import type { InspectedField } from '@/lib/codegen/schema-introspection';
 	import type { Shader } from '@/shaders/core/shader.svelte';
 	import FieldControl from './field-control.svelte';
 
 	interface Props {
 		node: Shader;
-		field: InspectedField | InspectedUiField;
+		field: InspectedField;
 		label?: string;
 	}
 

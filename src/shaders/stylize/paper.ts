@@ -4,12 +4,13 @@
 // untouched sample by `roughness`.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Paper",
   description: "Multi-octave paper-fiber overlay",
   color: "#fef3c7",
@@ -30,10 +31,10 @@ export class Paper extends ProceduralEffect {
       { id: "seed", type: "float", label: "Seed", default: 0 },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
-    const sample = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, sample.nodeId, "uv");
+    const sample = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(sample, "uv");
     const sampleColor = { nodeId: sample.nodeId, pin: "color" };
     const sampleAlpha = { nodeId: sample.nodeId, pin: "alpha" };
 
@@ -41,11 +42,11 @@ export class Paper extends ProceduralEffect {
     // shifts both axes; noise-texture's `seed` does the same internally,
     // so we route the user pin straight into the primitive's config-derived
     // seed by baking a single multiply here for `frequency` only.
-    const q = b.add("vector-math", { op: "scale" });
-    b.connect(uv, q.nodeId, "a");
-    b.connect(gi.frequency, q.nodeId, "b");
+    const q = b.add(new N.VectorMath({ op: "scale" }));
+    b.connect(uv).to(q, "a");
+    b.connect(gi.frequency).to(q, "b");
 
-    const fbm = b.add("noise-texture", {
+    const fbm = b.add(new N.NoiseTexture({
       kind: "fbm",
       scale: 1,
       detail: 4,
@@ -53,28 +54,28 @@ export class Paper extends ProceduralEffect {
       roughness: 0.5,
       distortion: 0,
       seed: 0,
-    });
-    b.connect(q, fbm.nodeId, "p");
-    b.connect(gi.seed, fbm.nodeId, "t");
+    }));
+    b.connect(q).to(fbm, "p");
+    b.connect(gi.seed).to(fbm, "t");
 
     // disp = rgb + (n − 0.5) · displacement   (broadcast across channels)
-    const offset = b.add("math", { op: "sub" }, { b: 0.5 });
-    b.connect(fbm, offset.nodeId, "a");
-    const scaled = b.add("math", { op: "mul" });
-    b.connect(offset, scaled.nodeId, "a");
-    b.connect(gi.displacement, scaled.nodeId, "b");
-    const dispRgb = b.add("combine-color", {});
-    b.connect(scaled, dispRgb.nodeId, "r");
-    b.connect(scaled, dispRgb.nodeId, "g");
-    b.connect(scaled, dispRgb.nodeId, "b");
-    const disp = b.add("color-math", { op: "add" });
-    b.connect(sampleColor, disp.nodeId, "a");
-    b.connect(dispRgb, disp.nodeId, "b");
+    const offset = b.add(new N.Math({ op: "sub" }), { b: 0.5 });
+    b.connect(fbm).to(offset, "a");
+    const scaled = b.add(new N.Math({ op: "mul" }));
+    b.connect(offset).to(scaled, "a");
+    b.connect(gi.displacement).to(scaled, "b");
+    const dispRgb = b.add(new N.CombineColor());
+    b.connect(scaled).to(dispRgb, "r");
+    b.connect(scaled).to(dispRgb, "g");
+    b.connect(scaled).to(dispRgb, "b");
+    const disp = b.add(new N.ColorMath({ op: "add" }));
+    b.connect(sampleColor).to(disp, "a");
+    b.connect(dispRgb).to(disp, "b");
 
-    const mixed = b.add("mix-color", {});
-    b.connect(sampleColor, mixed.nodeId, "a");
-    b.connect(disp, mixed.nodeId, "b");
-    b.connect(gi.roughness, mixed.nodeId, "t");
+    const mixed = b.add(new N.MixColor());
+    b.connect(sampleColor).to(mixed, "a");
+    b.connect(disp).to(mixed, "b");
+    b.connect(gi.roughness).to(mixed, "t");
 
     return b.output(mixed, sampleAlpha);
   }

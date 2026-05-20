@@ -6,12 +6,13 @@
 // original.
 
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { ProceduralEffect } from "@/shaders/core/procedural-effect.svelte";
 import type { NodeGraph } from "@/shaders/node-graph";
 import { GraphBuilder } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Glow",
   description: "True bloom — bright pass + blur + add",
   color: "#fbbf24",
@@ -32,49 +33,49 @@ export class Glow extends ProceduralEffect {
       { id: "tint", type: "vec3", label: "Tint", default: [1, 1, 1] },
     ]);
 
-    const uv = b.add("screen-uv", {}, undefined, "uv");
+    const uv = b.add(new N.ScreenUV(), undefined, "uv");
 
     // Cross-blur the previous pass.
-    const h = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-    b.connect(uv, h.nodeId, "uv");
-    b.connect(gi.radius, h.nodeId, "amount");
-    b.connect(b.add("value", { value: 0 }), h.nodeId, "direction");
-    const v = b.add("sampler", { mode: "linear", samples: 16, edges: "stretch" });
-    b.connect(uv, v.nodeId, "uv");
-    b.connect(gi.radius, v.nodeId, "amount");
-    b.connect(b.add("value", { value: 90 }), v.nodeId, "direction");
-    const sum = b.add("color-math", { op: "add" });
-    b.connect(h, sum.nodeId, "a");
-    b.connect(v, sum.nodeId, "b");
-    const blurred = b.add("color-math", { op: "scale" });
-    b.connect(sum, blurred.nodeId, "a");
-    b.connect(b.add("value", { value: 0.5 }), blurred.nodeId, "b");
+    const h = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+    b.connect(uv).to(h, "uv");
+    b.connect(gi.radius).to(h, "amount");
+    b.connect(b.add(new N.Const({ value: 0 }))).to(h, "direction");
+    const v = b.add(new N.Sampler({ mode: "linear", samples: 16, edges: "stretch" }));
+    b.connect(uv).to(v, "uv");
+    b.connect(gi.radius).to(v, "amount");
+    b.connect(b.add(new N.Const({ value: 90 }))).to(v, "direction");
+    const sum = b.add(new N.ColorMath({ op: "add" }));
+    b.connect(h).to(sum, "a");
+    b.connect(v).to(sum, "b");
+    const blurred = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(sum).to(blurred, "a");
+    b.connect(b.add(new N.Const({ value: 0.5 }))).to(blurred, "b");
 
     // bright = max(blurred − threshold, 0) — approximated by addScalar(−thr).
-    const negThr = b.add("math", { op: "neg" });
-    b.connect(gi.threshold, negThr.nodeId, "x");
-    const shifted = b.add("color-math", { op: "addScalar" });
-    b.connect(blurred, shifted.nodeId, "a");
-    b.connect(negThr, shifted.nodeId, "b");
-    const bright = b.add("color-math", { op: "max" });
-    b.connect(shifted, bright.nodeId, "a");
+    const negThr = b.add(new N.Math({ op: "neg" }));
+    b.connect(gi.threshold).to(negThr, "x");
+    const shifted = b.add(new N.ColorMath({ op: "addScalar" }));
+    b.connect(blurred).to(shifted, "a");
+    b.connect(negThr).to(shifted, "b");
+    const bright = b.add(new N.ColorMath({ op: "max" }));
+    b.connect(shifted).to(bright, "a");
     // float → vec3 broadcast via coerce produces vec3(0).
-    b.connect(b.add("value", { value: 0 }), bright.nodeId, "b");
+    b.connect(b.add(new N.Const({ value: 0 }))).to(bright, "b");
 
     // tinted = bright · tint · intensity
-    const tinted = b.add("color-math", { op: "mul" });
-    b.connect(bright, tinted.nodeId, "a");
-    b.connect(gi.tint, tinted.nodeId, "b");
-    const tintedI = b.add("color-math", { op: "scale" });
-    b.connect(tinted, tintedI.nodeId, "a");
-    b.connect(gi.intensity, tintedI.nodeId, "b");
+    const tinted = b.add(new N.ColorMath({ op: "mul" }));
+    b.connect(bright).to(tinted, "a");
+    b.connect(gi.tint).to(tinted, "b");
+    const tintedI = b.add(new N.ColorMath({ op: "scale" }));
+    b.connect(tinted).to(tintedI, "a");
+    b.connect(gi.intensity).to(tintedI, "b");
 
     // out = src + tinted
-    const src = b.add("sample-previous-pass", { edges: "stretch" });
-    b.connect(uv, src.nodeId, "uv");
-    const out = b.add("color-math", { op: "add" });
-    b.connect({ nodeId: src.nodeId, pin: "color" }, out.nodeId, "a");
-    b.connect(tintedI, out.nodeId, "b");
+    const src = b.add(new N.SamplePreviousPass({ edges: "stretch" }));
+    b.connect(uv).to(src, "uv");
+    const out = b.add(new N.ColorMath({ op: "add" }));
+    b.connect(src, "color").to(out, "a");
+    b.connect(tintedI).to(out, "b");
 
     return b.output(out, { nodeId: src.nodeId, pin: "alpha" });
   }

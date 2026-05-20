@@ -9,11 +9,11 @@ import { isProcessingShader, type Shader, type StaticShaderClass } from "@/shade
 import { generateReactComponent } from "./export/react";
 import { generateTypeScript } from "./export/typescript";
 import { generateVanillaJs } from "./export/vanilla";
-import { buildCompositorFragment, buildFragment } from "./fragment";
+import { buildBackdropFragment, buildCompositorFragment, buildFragment } from "./fragment";
 import { splitIntoPasses } from "./passes";
 import { assignPrefixSlugs } from "./prefix-slugs";
 import { planScene } from "./scene-passes";
-import { inspectObjectSchema } from "./schema-introspection";
+import { inspectUniformFields } from "./schema-introspection";
 import type { GeneratedPass, GeneratedShader, GeneratedUniform } from "./types";
 import { buildVertexShader, fragmentNeedsStructuredUv } from "./vertex";
 
@@ -54,12 +54,12 @@ export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedSh
       });
     }
 
-    // The unified `schema` declares every uniform-eligible field. Fields
-    // marked `.structural()` (and enum-string types) branch GLSL source
-    // and are filtered out of GPU bindings by `inspectObjectSchema` —
-    // they remain in the schema only for parsing + property-panel.
+    // The unified `schema` declares every uniform-eligible field. Enum-string
+    // fields branch GLSL source and are filtered out of GPU bindings by
+    // `inspectUniformFields` — they remain in the schema only for parsing +
+    // property-panel.
     const cls = node.cls as StaticShaderClass;
-    const uniformFields = cls.schema ? inspectObjectSchema(cls.schema) : [];
+    const uniformFields = cls.schema ? inspectUniformFields(cls.schema) : [];
     const inputs = node.inputs as Record<string, unknown>;
     for (const field of uniformFields) {
       const value = inputs[field.key];
@@ -125,9 +125,23 @@ export function generate(scene: Scene, shaderName = "CustomShader"): GeneratedSh
         plan.layers.map((l) => ({ layer: l.layer, parentIndex: l.parentIndex })),
       );
     }
+    if (p.mode === "backdrop") {
+      const upTo = p.layerCountForBackdrop ?? 0;
+      const sliced = plan.layers
+        .slice(0, upTo)
+        .map((l) => ({
+          layer: l.layer,
+          // Clip-mask parent references point into the *full* layer array;
+          // when a child slips into the backdrop set without its parent,
+          // drop the parent reference to keep the slice self-contained.
+          parentIndex: l.parentIndex !== null && l.parentIndex < upTo ? l.parentIndex : null,
+        }));
+      return buildBackdropFragment(sliced);
+    }
     const built = buildFragment(p, { usesStructuredUv: false });
     if (p.commitToLayer !== undefined) built.commitToLayer = p.commitToLayer;
     if (p.bindLayerTextures) built.bindLayerTextures = true;
+    if (p.readsBackdrop) built.readsBackdrop = true;
     return built;
   });
 

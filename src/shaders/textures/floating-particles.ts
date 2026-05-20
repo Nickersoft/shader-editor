@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Floating Particles",
   description: "Layered drifting particles",
   color: "#fbbf24",
@@ -18,11 +19,11 @@ export class FloatingParticles extends ProceduralShader {
   static graph(): NodeGraph {
     const b = new GraphBuilder();
     b.groupInput([]);
-    const fp = b.add("floating-particles", {});
+    const fp = b.add(new N.FloatingParticles());
     // mix(black, particle.color, particle.alpha) — `a` defaults to vec3(0).
-    const mix = b.add("mix-color", {});
-    b.connect({ nodeId: fp.nodeId, pin: "color" }, mix.nodeId, "b");
-    b.connect({ nodeId: fp.nodeId, pin: "alpha" }, mix.nodeId, "t");
+    const mix = b.add(new N.MixColor());
+    b.connect(fp, "color").to(mix, "b");
+    b.connect(fp, "alpha").to(mix, "t");
     return b.output(mix);
   }
 }

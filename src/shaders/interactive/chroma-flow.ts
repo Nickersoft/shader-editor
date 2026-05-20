@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { StaticShader } from "@/shaders/core/shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { GlslBlock, NodeMeta } from "@/shaders/core/types";
+import type { GlslBlock, ShaderMeta } from "@/shaders/core/types";
 import { zColor, zFloat } from "@/shaders/core/schemas";
 
 const schema = z.object({
@@ -15,7 +15,7 @@ const schema = z.object({
   color5: zColor().default([1.0, 1.0, 0.2]).describe("Color 5"),
 });
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Chroma Flow",
   description: "Animated multi-color simplex flow",
   color: "#a855f7",

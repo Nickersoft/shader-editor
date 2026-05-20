@@ -17,8 +17,11 @@
   import {
     coerceToPinDefault,
     GROUP_INPUT_TYPE_ID,
+    PIN_TYPES,
     type GraphNode,
+    type PinDefault,
     type PinSpec,
+    type PinType,
   } from "@/shaders/node-graph";
 
   import * as Inputs from "../inputs";
@@ -29,28 +32,48 @@
 
   let { field }: Props = $props();
 
+  function isPinType(v: unknown): v is PinType {
+    return typeof v === "string" && (PIN_TYPES as readonly string[]).includes(v);
+  }
+
+  function isPinSpec(v: unknown): v is PinSpec {
+    if (!v || typeof v !== "object") return false;
+    const o = v as { id?: unknown; type?: unknown; label?: unknown };
+    return (
+      typeof o.id === "string" &&
+      isPinType(o.type) &&
+      (o.label === undefined || typeof o.label === "string")
+    );
+  }
+
+  function readPins(node: GraphNode | null): PinSpec[] {
+    if (!node) return [];
+    const raw = node.config.pins;
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(isPinSpec);
+  }
+
   let giNode = $derived<GraphNode | null>(
     field.graph.nodes.find((n) => n.typeId === GROUP_INPUT_TYPE_ID) ?? null,
   );
 
-  let pins = $derived<PinSpec[]>(
-    giNode ? ((giNode.config as { pins?: PinSpec[] }).pins ?? []) : [],
-  );
+  let pins = $derived<PinSpec[]>(readPins(giNode));
 
   function setPin(index: number, value: unknown) {
     const node = giNode;
     if (!node) return;
-    const cfg = node.config as { pins: PinSpec[] };
-    const existing = cfg.pins[index];
+    const current = readPins(node);
+    const existing = current[index];
     if (!existing) return;
+    const coerced: PinDefault = coerceToPinDefault(existing.type, value);
     // Drag scrubs fire per-frame; equal-value writes would invalidate every
     // $derived reading node.config for no reason.
-    if (pinValuesEqual(existing.default, value)) return;
-    const next = [...cfg.pins];
-    next[index] = { ...existing, default: value as PinSpec["default"] };
+    if (pinValuesEqual(existing.default, coerced)) return;
+    const next = [...current];
+    next[index] = { ...existing, default: coerced };
     // Per-pin `default` is excluded from the shader fingerprint (see
     // group-input.ts valuePath), so this won't trigger a rebuild.
-    cfg.pins = next;
+    node.config.pins = next;
   }
 
   function pinValuesEqual(a: unknown, b: unknown): boolean {
@@ -77,20 +100,20 @@
         {#if pin.type === "float"}
           <NumberInput
             {label}
-            value={coerceToPinDefault("float", pin.default) as number}
+            value={coerceToPinDefault("float", pin.default)}
             onChange={(v) => setPin(i, v)}
             step={0.01}
           />
         {:else if pin.type === "int"}
           <NumberInput
             {label}
-            value={coerceToPinDefault("int", pin.default) as number}
+            value={coerceToPinDefault("int", pin.default)}
             onChange={(v) => setPin(i, Math.trunc(v))}
             step={1}
             integer
           />
         {:else if pin.type === "vec3"}
-          {@const rgb = coerceToPinDefault("vec3", pin.default) as [number, number, number]}
+          {@const rgb = coerceToPinDefault("vec3", pin.default)}
           <div class="space-y-1.5">
             <p class="px-1 text-[12px] text-white/70">{label}</p>
             <Inputs.Color
@@ -99,18 +122,13 @@
             />
           </div>
         {:else if pin.type === "vec4"}
-          {@const rgba = coerceToPinDefault("vec4", pin.default) as [
-            number,
-            number,
-            number,
-            number,
-          ]}
+          {@const rgba = coerceToPinDefault("vec4", pin.default)}
           <div class="space-y-1.5">
             <p class="px-1 text-[12px] text-white/70">{label}</p>
             <Inputs.Color value={rgba} onChange={(v) => setPin(i, v)} />
           </div>
         {:else if pin.type === "vec2"}
-          {@const xy = coerceToPinDefault("vec2", pin.default) as [number, number]}
+          {@const xy = coerceToPinDefault("vec2", pin.default)}
           <div class="space-y-1.5">
             <p class="px-1 text-[12px] text-white/70">{label}</p>
             <div class="grid grid-cols-2 gap-1.5">

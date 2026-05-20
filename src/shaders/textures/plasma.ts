@@ -1,9 +1,10 @@
 import { ProceduralShader } from "@/shaders/core/procedural-shader.svelte";
 import { register } from "@/shaders/core/registry";
-import type { NodeMeta } from "@/shaders/core/types";
+import type { ShaderMeta } from "@/shaders/core/types";
 import { GraphBuilder, type NodeGraph } from "@/shaders/node-graph";
+import * as N from "@/shaders/node-graph/nodes";
 
-const meta: NodeMeta = {
+const meta: ShaderMeta = {
   name: "Plasma",
   description: "Animated plasma effect",
   color: "#ec4899",
@@ -26,11 +27,11 @@ export class Plasma extends ProceduralShader {
       src.t,
       { amplitude: 0.4, detail: 4, scale: 1, timePhase: 1 },
     );
-    const pl = b.add("magic-texture", { intensity: 1.5 });
-    b.connect(warp, pl.nodeId, "p");
-    b.connect(src.t, pl.nodeId, "t");
-    const rm = b.add("remap", { balance: 0, contrast: 0 });
-    b.connect(pl, rm.nodeId, "x");
+    const pl = b.add(new N.PlasmaSample({ intensity: 1.5 }));
+    b.connect(warp).to(pl, "p");
+    b.connect(src.t).to(pl, "t");
+    const rm = b.add(new N.Remap({ balance: 0, contrast: 0 }));
+    b.connect(pl).to(rm, "x");
     const ramp = b.colorRamp(rm, [
       [0, 0, 0],
       [0.44, 0.09, 0.75],

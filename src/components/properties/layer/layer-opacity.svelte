@@ -6,17 +6,17 @@
   import PanelSection from "../panel-section.svelte";
 
   interface Props {
-    layerNode: Shader;
+    node: Shader;
   }
 
-  const { layerNode }: Props = $props();
+  const { node }: Props = $props();
 </script>
 
 <PanelSection>
   <NumberInput
     label="Opacity"
-    value={Math.round(layerNode.opacity * 100)}
-    onChange={(v) => composer.updateOpacity(layerNode.id, v / 100)}
+    value={Math.round(node.opacity * 100)}
+    onChange={(v) => composer.updateOpacity(node.id, v / 100)}
     min={0}
     max={100}
     step={1}
